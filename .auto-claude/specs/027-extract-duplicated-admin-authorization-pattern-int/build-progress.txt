@@ -57,6 +57,12 @@
   - Function now uses the auth utility (lines 158-164)
   - Properly imports and handles the result pattern with isAuthError() type guard
   - Code is cleaner and follows DRY principles
+- ✅ 2.2: Refactored rejectParticipation in challenges.ts
+  - Replaced 17-line authorization block with requireAdminOrCreator() call
+  - Function now uses the centralized auth utility (lines 241-247)
+  - Properly handles the result pattern with isAuthError() type guard
+  - Net reduction of ~10 lines
+  - Commit: 98359e0
 
 ---
 Last Updated: 2026-01-07

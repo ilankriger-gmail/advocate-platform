@@ -78,21 +78,25 @@
           "id": "2.1",
           "title": "Refactor approveParticipation in challenges.ts",
           "description": "Replace the 12-line authorization block in approveParticipation with requireAdminOrCreator() call. Import the auth utility and handle the result pattern.",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/actions/challenges.ts"
           ],
-          "estimated_lines": -8
+          "estimated_lines": -8,
+          "notes": "Successfully refactored approveParticipation in challenges.ts. Replaced the 12-line authorization block (createClient, getUser, profile check) with requireAdminOrCreator() call. The function now uses the centralized auth utility, reducing code duplication and following the new pattern. Net reduction of ~10 lines. Commit: 2160de1",
+          "updated_at": "2026-01-07T16:38:10.516762+00:00"
         },
         {
           "id": "2.2",
           "title": "Refactor rejectParticipation in challenges.ts",
           "description": "Replace the authorization block in rejectParticipation with requireAdminOrCreator() call.",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/actions/challenges.ts"
           ],
-          "estimated_lines": -8
+          "estimated_lines": -8,
+          "notes": "Successfully refactored rejectParticipation in challenges.ts. Replaced the 17-line authorization block (createClient, getUser, profile check) with requireAdminOrCreator() call. The function now uses the centralized auth utility, reducing code duplication and following the new pattern. Net reduction of ~10 lines. Commit: 98359e0",
+          "updated_at": "2026-01-07T16:39:57.579592+00:00"
         },
         {
           "id": "2.3",
@@ -389,5 +393,5 @@
     "issues": "",
     "tests_passed": ""
   },
-  "last_updated": "2026-01-07T14:43:30.885063+00:00"
+  "last_updated": "2026-01-07T16:39:57.579602+00:00"
 }
