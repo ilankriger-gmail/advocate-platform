@@ -2,9 +2,9 @@
   "feature": "Documentar componentes UI com exemplos de props",
   "description": "Os componentes UI em src/components/ui/ (Button, Input, Card, Modal, etc.) possuem interfaces TypeScript mas nao tem documentacao JSDoc explicando o proposito de cada prop, valores possiveis, ou exemplos de uso.",
   "created_at": "2026-01-07T14:25:34.813Z",
-  "updated_at": "2026-01-07T14:30:33.213Z",
+  "updated_at": "2026-01-07T16:37:00.984Z",
   "status": "in_progress",
-  "planStatus": "planned",
+  "planStatus": "in_progress",
   "workflow_type": "development",
   "services_involved": [
     "src/components/ui"
@@ -13,44 +13,44 @@
   "phases": [
     {
       "id": "phase-1",
-      "name": "Componentes de Formul\u00e1rio B\u00e1sicos",
+      "name": "Componentes de Formulário Básicos",
       "description": "Documentar componentes de entrada de dados: Button, Input, Textarea, Select",
       "status": "pending",
       "subtasks": [
         {
           "id": "1.1",
           "title": "Documentar Button",
-          "description": "Adicionar JSDoc ao componente Button com descri\u00e7\u00f5es de ButtonVariant, ButtonSize e todas as props (variant, size, isLoading, leftIcon, rightIcon, fullWidth). Incluir exemplos de uso.",
+          "description": "Adicionar JSDoc ao componente Button com descrições de ButtonVariant, ButtonSize e todas as props (variant, size, isLoading, leftIcon, rightIcon, fullWidth). Incluir exemplos de uso.",
           "status": "completed",
           "file": "src/components/ui/Button.tsx",
-          "notes": "Adicionada documenta\u00e7\u00e3o JSDoc completa ao componente Button incluindo:\n- Descri\u00e7\u00f5es detalhadas de ButtonVariant (5 variantes)\n- Descri\u00e7\u00f5es detalhadas de ButtonSize (3 tamanhos)\n- Documenta\u00e7\u00e3o de todas as props (variant, size, isLoading, leftIcon, rightIcon, fullWidth)\n- 5 exemplos de uso cobrindo diferentes cen\u00e1rios\n- Tags @default para props com valores padr\u00e3o",
+          "notes": "Adicionada documentação JSDoc completa ao componente Button incluindo:\n- Descrições detalhadas de ButtonVariant (5 variantes)\n- Descrições detalhadas de ButtonSize (3 tamanhos)\n- Documentação de todas as props (variant, size, isLoading, leftIcon, rightIcon, fullWidth)\n- 5 exemplos de uso cobrindo diferentes cenários\n- Tags @default para props com valores padrão",
           "updated_at": "2026-01-07T14:34:58.793480+00:00"
         },
         {
           "id": "1.2",
           "title": "Documentar Input",
-          "description": "Adicionar JSDoc ao componente Input com descri\u00e7\u00f5es de todas as props (label, error, hint, leftIcon, rightIcon). Incluir exemplos de uso com valida\u00e7\u00e3o e \u00edcones.",
+          "description": "Adicionar JSDoc ao componente Input com descrições de todas as props (label, error, hint, leftIcon, rightIcon). Incluir exemplos de uso com validação e ícones.",
           "status": "completed",
           "file": "src/components/ui/Input.tsx",
-          "notes": "Adicionada documenta\u00e7\u00e3o JSDoc completa ao componente Input incluindo:\n- Documenta\u00e7\u00e3o de todas as props (label, error, hint, leftIcon, rightIcon)\n- 6 exemplos de uso cobrindo diferentes cen\u00e1rios (b\u00e1sico, valida\u00e7\u00e3o, hint, \u00edcones)\n- Descri\u00e7\u00f5es detalhadas explicando o comportamento de cada prop\n- Seguindo o mesmo padr\u00e3o de documenta\u00e7\u00e3o do componente Button",
+          "notes": "Adicionada documentação JSDoc completa ao componente Input incluindo:\n- Documentação de todas as props (label, error, hint, leftIcon, rightIcon)\n- 6 exemplos de uso cobrindo diferentes cenários (básico, validação, hint, ícones)\n- Descrições detalhadas explicando o comportamento de cada prop\n- Seguindo o mesmo padrão de documentação do componente Button",
           "updated_at": "2026-01-07T14:37:54.111301+00:00"
         },
         {
           "id": "1.3",
           "title": "Documentar Textarea",
-          "description": "Adicionar JSDoc ao componente Textarea com descri\u00e7\u00f5es de todas as props (label, error, hint). Incluir exemplos de uso.",
+          "description": "Adicionar JSDoc ao componente Textarea com descrições de todas as props (label, error, hint). Incluir exemplos de uso.",
           "status": "completed",
           "file": "src/components/ui/Textarea.tsx",
-          "notes": "Adicionada documenta\u00e7\u00e3o JSDoc completa ao componente Textarea incluindo:\n- Documenta\u00e7\u00e3o de todas as props (label, error, hint)\n- 5 exemplos de uso cobrindo diferentes cen\u00e1rios (b\u00e1sico, valida\u00e7\u00e3o, hint, rows customizado)\n- Descri\u00e7\u00f5es detalhadas explicando o comportamento de cada prop\n- Seguindo o mesmo padr\u00e3o de documenta\u00e7\u00e3o dos componentes Button e Input",
+          "notes": "Adicionada documentação JSDoc completa ao componente Textarea incluindo:\n- Documentação de todas as props (label, error, hint)\n- 5 exemplos de uso cobrindo diferentes cenários (básico, validação, hint, rows customizado)\n- Descrições detalhadas explicando o comportamento de cada prop\n- Seguindo o mesmo padrão de documentação dos componentes Button e Input",
           "updated_at": "2026-01-07T14:39:53.683664+00:00"
         },
         {
           "id": "1.4",
           "title": "Documentar Select",
-          "description": "Adicionar JSDoc ao componente Select e interface SelectOption com descri\u00e7\u00f5es de todas as props (label, error, hint, options, placeholder). Incluir exemplos de uso.",
+          "description": "Adicionar JSDoc ao componente Select e interface SelectOption com descrições de todas as props (label, error, hint, options, placeholder). Incluir exemplos de uso.",
           "status": "completed",
           "file": "src/components/ui/Select.tsx",
-          "notes": "Adicionada documenta\u00e7\u00e3o JSDoc completa ao componente Select incluindo:\n- Documenta\u00e7\u00e3o da interface SelectOption (value, label, disabled)\n- Documenta\u00e7\u00e3o de todas as props (label, error, hint, options, placeholder)\n- 5 exemplos de uso cobrendo diferentes cen\u00e1rios (b\u00e1sico, placeholder, valida\u00e7\u00e3o, hint, op\u00e7\u00f5es desabilitadas)\n- Descri\u00e7\u00f5es detalhadas explicando o comportamento de cada prop\n- Tags @default para props com valores padr\u00e3o\n- Seguindo o mesmo padr\u00e3o de documenta\u00e7\u00e3o dos componentes Button, Input e Textarea",
+          "notes": "Adicionada documentação JSDoc completa ao componente Select incluindo:\n- Documentação da interface SelectOption (value, label, disabled)\n- Documentação de todas as props (label, error, hint, options, placeholder)\n- 5 exemplos de uso cobrendo diferentes cenários (básico, placeholder, validação, hint, opções desabilitadas)\n- Descrições detalhadas explicando o comportamento de cada prop\n- Tags @default para props com valores padrão\n- Seguindo o mesmo padrão de documentação dos componentes Button, Input e Textarea",
           "updated_at": "2026-01-07T14:41:29.679388+00:00"
         }
       ]
@@ -64,23 +64,25 @@
         {
           "id": "2.1",
           "title": "Documentar Card",
-          "description": "Adicionar JSDoc ao componente Card e subcomponentes (CardHeader, CardContent, CardFooter) com descri\u00e7\u00f5es de CardPadding e todas as props. Incluir exemplos de composi\u00e7\u00e3o.",
-          "status": "pending",
+          "description": "Adicionar JSDoc ao componente Card e subcomponentes (CardHeader, CardContent, CardFooter) com descrições de CardPadding e todas as props. Incluir exemplos de composição.",
+          "status": "completed",
           "file": "src/components/ui/Card.tsx",
-          "notes": ""
+          "notes": "Adicionada documentação JSDoc completa ao componente Card incluindo:\n- Descrições detalhadas de CardPadding (4 variantes: none, sm, md, lg)\n- Documentação de todas as props do Card (padding, hover)\n- Documentação completa do CardHeader (title, description, action)\n- Documentação de CardContent e CardFooter\n- 5 exemplos de uso do Card cobrindo diferentes cenários (básico, hover, composição completa, com action, sem padding)\n- 3 exemplos de uso do CardHeader (básico, com action, customizado)\n- 2 exemplos de uso do CardContent e CardFooter\n- Tags @default para props com valores padrão\n- JSDoc nos componentes exportados (Card, CardHeader, CardContent, CardFooter)\n- Seguindo o mesmo padrão de documentação dos componentes anteriores",
+          "updated_at": "2026-01-07T14:43:57.943240+00:00"
         },
         {
           "id": "2.2",
           "title": "Documentar Modal",
-          "description": "Adicionar JSDoc ao componente Modal e ModalFooter com descri\u00e7\u00f5es de todas as props (isOpen, onClose, title, description, size). Incluir exemplos de uso com actions.",
-          "status": "pending",
+          "description": "Adicionar JSDoc ao componente Modal e ModalFooter com descrições de todas as props (isOpen, onClose, title, description, size). Incluir exemplos de uso com actions.",
+          "status": "completed",
           "file": "src/components/ui/Modal.tsx",
-          "notes": ""
+          "notes": "Adicionada documentação JSDoc completa ao componente Modal incluindo:\n- Descrições detalhadas de ModalSize (4 tamanhos: sm, md, lg, xl)\n- Documentação de todas as props do Modal (isOpen, onClose, title, description, size)\n- 5 exemplos de uso do Modal cobrindo diferentes cenários (básico, tamanho customizado, com ações, formulário com validação, sem título)\n- Documentação completa do ModalFooter (children, className)\n- 4 exemplos de uso do ModalFooter (cancelar/confirmar, exclusão, botão único, customizado)\n- Tags @default para props com valores padrão\n- JSDoc nos componentes exportados (Modal, ModalFooter)\n- Criada interface ModalFooterProps para melhor organização\n- Seguindo o mesmo padrão de documentação dos componentes anteriores",
+          "updated_at": "2026-01-07T16:39:15.000000+00:00"
         },
         {
           "id": "2.3",
           "title": "Documentar Tabs",
-          "description": "Adicionar JSDoc aos componentes Tabs, TabsList, TabsTrigger e TabsContent com descri\u00e7\u00f5es de todas as props. Incluir exemplos de uso completo.",
+          "description": "Adicionar JSDoc aos componentes Tabs, TabsList, TabsTrigger e TabsContent com descrições de todas as props. Incluir exemplos de uso completo.",
           "status": "pending",
           "file": "src/components/ui/Tabs.tsx",
           "notes": ""
@@ -89,14 +91,14 @@
     },
     {
       "id": "phase-3",
-      "name": "Componentes de Exibi\u00e7\u00e3o",
-      "description": "Documentar componentes de visualiza\u00e7\u00e3o: Avatar, Badge, EmptyState, Skeleton",
+      "name": "Componentes de Exibição",
+      "description": "Documentar componentes de visualização: Avatar, Badge, EmptyState, Skeleton",
       "status": "pending",
       "subtasks": [
         {
           "id": "3.1",
           "title": "Documentar Avatar",
-          "description": "Adicionar JSDoc ao componente Avatar e AvatarGroup com descri\u00e7\u00f5es de AvatarSize, status e todas as props. Incluir exemplos com imagem, fallback e grupo.",
+          "description": "Adicionar JSDoc ao componente Avatar e AvatarGroup com descrições de AvatarSize, status e todas as props. Incluir exemplos com imagem, fallback e grupo.",
           "status": "pending",
           "file": "src/components/ui/Avatar.tsx",
           "notes": ""
@@ -104,7 +106,7 @@
         {
           "id": "3.2",
           "title": "Documentar Badge",
-          "description": "Adicionar JSDoc aos componentes Badge e StatusBadge com descri\u00e7\u00f5es de variantes e todas as props. Incluir exemplos de cada variante.",
+          "description": "Adicionar JSDoc aos componentes Badge e StatusBadge com descrições de variantes e todas as props. Incluir exemplos de cada variante.",
           "status": "pending",
           "file": "src/components/ui/Badge.tsx",
           "notes": ""
@@ -112,7 +114,7 @@
         {
           "id": "3.3",
           "title": "Documentar EmptyState",
-          "description": "Adicionar JSDoc aos componentes EmptyState e EmptyStateIcon com descri\u00e7\u00f5es de todas as props. Incluir exemplos de uso com \u00edcones pr\u00e9-definidos.",
+          "description": "Adicionar JSDoc aos componentes EmptyState e EmptyStateIcon com descrições de todas as props. Incluir exemplos de uso com ícones pré-definidos.",
           "status": "pending",
           "file": "src/components/ui/EmptyState.tsx",
           "notes": ""
@@ -120,7 +122,7 @@
         {
           "id": "3.4",
           "title": "Documentar Skeleton",
-          "description": "Adicionar JSDoc aos componentes Skeleton, SkeletonText, SkeletonAvatar, SkeletonCard, SkeletonPost e SkeletonTable com descri\u00e7\u00f5es de todas as props. Incluir exemplos de uso.",
+          "description": "Adicionar JSDoc aos componentes Skeleton, SkeletonText, SkeletonAvatar, SkeletonCard, SkeletonPost e SkeletonTable com descrições de todas as props. Incluir exemplos de uso.",
           "status": "pending",
           "file": "src/components/ui/Skeleton.tsx",
           "notes": ""
@@ -130,13 +132,13 @@
     {
       "id": "phase-4",
       "name": "Componentes de Feedback",
-      "description": "Documentar componente de notifica\u00e7\u00f5es: Toast",
+      "description": "Documentar componente de notificações: Toast",
       "status": "pending",
       "subtasks": [
         {
           "id": "4.1",
           "title": "Documentar Toast",
-          "description": "Adicionar JSDoc ao sistema de Toast incluindo interface Toast, ToastProvider, useToast e useToastHelpers com descri\u00e7\u00f5es de todas as props e exemplos de uso.",
+          "description": "Adicionar JSDoc ao sistema de Toast incluindo interface Toast, ToastProvider, useToast e useToastHelpers com descrições de todas as props e exemplos de uso.",
           "status": "pending",
           "file": "src/components/ui/Toast.tsx",
           "notes": ""
@@ -145,14 +147,14 @@
     },
     {
       "id": "phase-5",
-      "name": "Verifica\u00e7\u00e3o Final",
-      "description": "Verificar consist\u00eancia da documenta\u00e7\u00e3o e testar build",
+      "name": "Verificação Final",
+      "description": "Verificar consistência da documentação e testar build",
       "status": "pending",
       "subtasks": [
         {
           "id": "5.1",
-          "title": "Verificar consist\u00eancia e build",
-          "description": "Revisar todos os arquivos documentados para garantir padr\u00e3o consistente de JSDoc, formata\u00e7\u00e3o e exemplos. Verificar se o TypeScript compila corretamente.",
+          "title": "Verificar consistência e build",
+          "description": "Revisar todos os arquivos documentados para garantir padrão consistente de JSDoc, formatação e exemplos. Verificar se o TypeScript compila corretamente.",
           "status": "pending",
           "file": "src/components/ui/",
           "notes": ""
@@ -162,10 +164,10 @@
   ],
   "final_acceptance": [
     "Todos os 12 componentes UI documentados com JSDoc",
-    "Cada prop possui descri\u00e7\u00e3o clara do prop\u00f3sito",
-    "Valores poss\u00edveis documentados para tipos enumerados",
-    "Exemplos de uso inclu\u00eddos em cada componente",
+    "Cada prop possui descrição clara do propósito",
+    "Valores possíveis documentados para tipos enumerados",
+    "Exemplos de uso incluídos em cada componente",
     "Build TypeScript passa sem erros"
   ],
-  "last_updated": "2026-01-07T14:41:29.679397+00:00"
+  "last_updated": "2026-01-07T14:43:57.943251+00:00"
 }
