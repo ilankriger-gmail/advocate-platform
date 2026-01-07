@@ -1,0 +1,186 @@
+{
+  "feature": "Consolidate duplicated ActionResponse type into shared types module",
+  "description": "The ActionResponse type is defined identically 5 times across action files (challenges.ts, rewards.ts, events.ts, posts.ts, profile.ts). This implementation consolidates them into a shared type with optional generic support for type-safe data.",
+  "created_at": "2026-01-07T14:25:35.461Z",
+  "updated_at": "2026-01-07T14:30:00.000Z",
+  "status": "in_progress",
+  "planStatus": "approved",
+  "workflow_type": "development",
+  "services_involved": [
+    "types",
+    "actions"
+  ],
+  "spec_file": "spec.md",
+  "phases": [
+    {
+      "id": "phase-1",
+      "name": "Create Shared ActionResponse Type",
+      "description": "Create a new shared type file for action response types with generic support for type-safe data",
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": "1.1",
+          "title": "Create src/types/actions.ts with ActionResponse type",
+          "description": "Create a new file with a generic ActionResponse<T = unknown> type that allows callers to specify the expected data type while maintaining backward compatibility with the existing `data?: any` pattern",
+          "status": "completed",
+          "files": [
+            "src/types/actions.ts"
+          ],
+          "acceptance_criteria": [
+            "ActionResponse type is defined with optional generic parameter T = unknown",
+            "Type includes error?: string, success?: boolean, data?: T fields",
+            "Comments explain usage in Portuguese (per CLAUDE.md)"
+          ],
+          "notes": "Created src/types/actions.ts with generic ActionResponse<T = unknown> type. Includes error?, success?, and data? fields with Portuguese comments and JSDoc examples. Maintains backward compatibility with T = unknown default.",
+          "updated_at": "2026-01-07T14:28:31.579951+00:00"
+        },
+        {
+          "id": "1.2",
+          "title": "Export ActionResponse from src/types/index.ts",
+          "description": "Add export for the new actions.ts types module to the centralized types index",
+          "status": "completed",
+          "files": [
+            "src/types/index.ts"
+          ],
+          "acceptance_criteria": [
+            "ActionResponse is re-exported from types/index.ts",
+            "Export follows existing pattern in the file"
+          ],
+          "notes": "Added export for actions.ts module to src/types/index.ts following the existing pattern. Export uses wildcard pattern (export * from './actions') with Portuguese section comment \"Tipos de Actions\". Committed: f859cf2",
+          "updated_at": "2026-01-07T14:30:02.636647+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-2",
+      "name": "Update Action Files",
+      "description": "Remove duplicated ActionResponse definitions from all action files and import from shared types",
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": "2.1",
+          "title": "Update src/actions/challenges.ts to use shared ActionResponse",
+          "description": "Remove local ActionResponse type definition and import from @/types",
+          "status": "completed",
+          "files": [
+            "src/actions/challenges.ts"
+          ],
+          "acceptance_criteria": [
+            "Local ActionResponse type definition is removed",
+            "ActionResponse is imported from @/types",
+            "All function return types still work correctly"
+          ],
+          "notes": "Successfully removed local ActionResponse type definition from challenges.ts and imported from @/types. All function return types remain compatible. Commit: fe16b0a",
+          "updated_at": "2026-01-07T14:31:44.928419+00:00"
+        },
+        {
+          "id": "2.2",
+          "title": "Update src/actions/rewards.ts to use shared ActionResponse",
+          "description": "Remove local ActionResponse type definition and import from @/types",
+          "status": "completed",
+          "files": [
+            "src/actions/rewards.ts"
+          ],
+          "acceptance_criteria": [
+            "Local ActionResponse type definition is removed",
+            "ActionResponse is imported from @/types",
+            "All function return types still work correctly"
+          ],
+          "notes": "Successfully removed local ActionResponse type definition from rewards.ts and imported from @/types. All function return types remain compatible. Commit: b6e7131",
+          "updated_at": "2026-01-07T14:32:59.018102+00:00"
+        },
+        {
+          "id": "2.3",
+          "title": "Update src/actions/events.ts to use shared ActionResponse",
+          "description": "Remove local ActionResponse type definition and import from @/types",
+          "status": "completed",
+          "files": [
+            "src/actions/events.ts"
+          ],
+          "acceptance_criteria": [
+            "Local ActionResponse type definition is removed",
+            "ActionResponse is imported from @/types",
+            "All function return types still work correctly"
+          ],
+          "notes": "Successfully removed local ActionResponse type definition from events.ts and imported from @/types. All function return types remain compatible. Commit: dc0109e",
+          "updated_at": "2026-01-07T14:34:53.607690+00:00"
+        },
+        {
+          "id": "2.4",
+          "title": "Update src/actions/posts.ts to use shared ActionResponse",
+          "description": "Remove local ActionResponse type definition and import from @/types",
+          "status": "completed",
+          "files": [
+            "src/actions/posts.ts"
+          ],
+          "acceptance_criteria": [
+            "Local ActionResponse type definition is removed",
+            "ActionResponse is imported from @/types",
+            "All function return types still work correctly"
+          ],
+          "notes": "Successfully removed local ActionResponse type definition from posts.ts and imported from @/types. All function return types remain compatible. Commit: dc05e6b",
+          "updated_at": "2026-01-07T14:36:00.320893+00:00"
+        },
+        {
+          "id": "2.5",
+          "title": "Update src/actions/profile.ts to use shared ActionResponse",
+          "description": "Remove local ActionResponse type definition and import from @/types",
+          "status": "completed",
+          "files": [
+            "src/actions/profile.ts"
+          ],
+          "acceptance_criteria": [
+            "Local ActionResponse type definition is removed",
+            "ActionResponse is imported from @/types",
+            "All function return types still work correctly"
+          ],
+          "notes": "Successfully removed local ActionResponse type definition from profile.ts and imported from @/types. All function return types remain compatible. Commit: bc74ece",
+          "updated_at": "2026-01-07T14:37:38.948686+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-3",
+      "name": "Verification",
+      "description": "Verify all changes work correctly with TypeScript and build",
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": "3.1",
+          "title": "Run TypeScript type check",
+          "description": "Run `npx tsc --noEmit` to verify no type errors were introduced",
+          "status": "pending",
+          "files": [],
+          "acceptance_criteria": [
+            "No TypeScript errors related to ActionResponse",
+            "All action files compile successfully"
+          ]
+        },
+        {
+          "id": "3.2",
+          "title": "Run build to verify compilation",
+          "description": "Run `npm run build` to ensure the project compiles correctly",
+          "status": "pending",
+          "files": [],
+          "acceptance_criteria": [
+            "Build completes successfully",
+            "No runtime errors related to type changes"
+          ]
+        }
+      ]
+    }
+  ],
+  "final_acceptance": [
+    "ActionResponse type is defined once in src/types/actions.ts",
+    "All 5 action files import ActionResponse from @/types instead of defining it locally",
+    "TypeScript compilation passes with no errors",
+    "Build completes successfully",
+    "Generic parameter allows for type-safe data when needed"
+  ],
+  "qa_status": {
+    "status": "pending",
+    "tests_passed": "",
+    "issues": ""
+  },
+  "last_updated": "2026-01-07T14:37:38.948697+00:00"
+}

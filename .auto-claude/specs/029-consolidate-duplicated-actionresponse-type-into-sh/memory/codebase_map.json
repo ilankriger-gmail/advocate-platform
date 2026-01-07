@@ -1,0 +1,10 @@
+{
+  "discovered_files": {
+    "src/types/index.ts": {
+      "description": "Centralized types exports - exports from post.ts, profile.ts, and re-exports from @/lib/supabase/types. New type modules should be added here following the same pattern.",
+      "category": "architecture",
+      "discovered_at": "2026-01-07T14:27:00.783816+00:00"
+    }
+  },
+  "last_updated": "2026-01-07T14:27:00.783824+00:00"
+}
