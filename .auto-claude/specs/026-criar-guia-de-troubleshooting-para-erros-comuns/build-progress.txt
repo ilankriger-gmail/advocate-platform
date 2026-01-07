@@ -49,13 +49,13 @@
 
 ## Plano de Implementação
 
-### Fase 1: Documentação Principal (TROUBLESHOOTING.md)
+### Fase 1: Documentação Principal (TROUBLESHOOTING.md) ✅ COMPLETA
 - [x] Estrutura planejada
-- [ ] 1.1 - Criar estrutura base
-- [ ] 1.2 - Erros de variáveis de ambiente
-- [ ] 1.3 - Erros de autenticação
-- [ ] 1.4 - Erros do Supabase
-- [ ] 1.5 - Erros de APIs externas
+- [x] 1.1 - Criar estrutura base
+- [x] 1.2 - Erros de variáveis de ambiente (7 subseções)
+- [x] 1.3 - Erros de autenticação (5 subseções)
+- [x] 1.4 - Erros do Supabase (8 subseções)
+- [x] 1.5 - Erros de APIs externas (6 subseções: 4.1-4.6)
 
 ### Fase 2: Guias de Configuração
 - [ ] 2.1 - Guia SETUP_SUPABASE.md
@@ -75,3 +75,55 @@
 - Código usa mix de português (mensagens UI) e inglês (variáveis)
 - Supabase RLS é crítico - erros de permissão podem ser confusos
 - Gemini API é opcional mas comum gerar confusão quando não configurada
+
+---
+
+## Histórico de Implementação
+
+### 2026-01-07 - Subtask 1.5: Erros de APIs Externas ✅
+**Commit:** dbca774
+
+Expandida seção 4 (Erros de APIs Externas) do guia TROUBLESHOOTING.md:
+
+**Subseções adicionadas:**
+1. **4.1 - API Gemini não configurada** (já existia, mantida)
+   - Instruções para obter API Key do Google AI Studio
+   - Configuração da variável GEMINI_API_KEY
+
+2. **4.2 - Erro ao conectar com API Gemini** (já existia, mantida)
+   - Validação de API Key
+   - Troubleshooting de rate limits
+   - Verificação de restrições no Google Cloud
+
+3. **4.3 - URL de Vídeo Inválida** (já existia, mantida)
+   - Plataformas suportadas: Instagram, YouTube, TikTok, Facebook
+   - Exemplos de URLs válidas
+   - Padrões de validação
+
+4. **4.4 - Rate Limit/Quota Excedida do Gemini** (NOVA ✨)
+   - Limites do tier gratuito (60 RPM, 1.500 RPD)
+   - Instruções para verificar uso atual
+   - Estratégias de cache e otimização
+   - Opções de upgrade para tier pago
+
+5. **4.5 - Resposta Inesperada da API Gemini** (NOVA ✨)
+   - Causas comuns: breaking changes, timeouts, limites de tokens
+   - Debugging de respostas malformadas
+   - Exemplo de handling robusto com TypeScript
+   - Validação de estrutura de resposta
+
+6. **4.6 - Preparando para Futuras Integrações de APIs** (NOVA ✨)
+   - Princípios de integração: fallback, retry, logging
+   - Exemplos de código TypeScript para patterns recomendados
+   - Checklist completo para nova integração (10 itens)
+   - Tabela de APIs planejadas (SendGrid, Stripe, Twilio, etc.)
+   - Referências de implementação
+
+**Melhorias gerais:**
+- Removido aviso "Esta seção será expandida" (agora está completa)
+- Adicionado overview da seção com lista de APIs integradas/planejadas
+- Documentado comportamento de fallback para operação manual
+- Total de 254 linhas adicionadas ao documento
+
+**Resultado:** Fase 1 (Documentação Principal) agora está 100% completa (5/5 subtasks).
+Próxima fase: Guias de Configuração Inicial (Fase 2)
