@@ -1,0 +1,113 @@
+'use client';
+
+import Link from 'next/link';
+import { useAuth } from '@/contexts/AuthContext';
+import { Avatar } from '@/components/ui';
+import { cn } from '@/lib/utils';
+
+interface HeaderProps {
+  onMenuClick?: () => void;
+  showMenuButton?: boolean;
+  className?: string;
+}
+
+export function Header({ onMenuClick, showMenuButton = false, className }: HeaderProps) {
+  const { user, signOut } = useAuth();
+
+  const userName = user?.user_metadata?.full_name || 'Usuario';
+  const userAvatar = user?.user_metadata?.avatar_url;
+
+  return (
+    <header
+      className={cn(
+        'bg-white border-b border-gray-200 sticky top-0 z-30',
+        className
+      )}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-14">
+          {/* Left: Menu button + Logo */}
+          <div className="flex items-center gap-3">
+            {/* Mobile menu button */}
+            {showMenuButton && onMenuClick && (
+              <button
+                onClick={onMenuClick}
+                className="lg:hidden p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                aria-label="Abrir menu"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+            )}
+
+            {/* Logo */}
+            <Link href="/" className="flex items-center gap-2">
+              <span className="text-lg font-bold text-indigo-600">
+                NextLOVERS
+              </span>
+            </Link>
+          </div>
+
+          {/* Right: User menu or Login */}
+          <div className="flex items-center gap-3">
+            {user ? (
+              <div className="relative group">
+                <button className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100">
+                  <Avatar
+                    name={userName}
+                    src={userAvatar}
+                    size="sm"
+                  />
+                  <svg className="w-4 h-4 text-gray-500 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {/* Dropdown menu */}
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                  <div className="px-4 py-2 border-b border-gray-100">
+                    <p className="text-sm font-medium text-gray-900 truncate">{userName}</p>
+                    <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                  </div>
+                  <Link
+                    href="/perfil"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                  >
+                    Meu Perfil
+                  </Link>
+                  <Link
+                    href="/premios"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                  >
+                    Meus Premios
+                  </Link>
+                  <Link
+                    href="/perfil/editar"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                  >
+                    Configuracoes
+                  </Link>
+                  <hr className="my-1" />
+                  <button
+                    onClick={signOut}
+                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                  >
+                    Sair
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
+              >
+                Entrar
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+}

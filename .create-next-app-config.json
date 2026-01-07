@@ -1,0 +1,11 @@
+{
+  "typescript": true,
+  "tailwind": true,
+  "eslint": true,
+  "app": true,
+  "srcDir": true,
+  "importAlias": "@/*",
+  "src-directory": true,
+  "react-compiler": false,
+  "use-react-compiler": false
+}
