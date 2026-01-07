@@ -22,18 +22,18 @@ and recognition tiers (Bronze, Silver, Gold, Diamond).
 - [x] 3.1 Create leaderboard queries file
 - [x] 3.2 Create server actions for leaderboard
 
-### Phase 4: UI Components (In Progress)
+### Phase 4: UI Components ✅
 - [x] 4.1 Create TierBadge component
 - [x] 4.2 Create LeaderboardEntry component
 - [x] 4.3 Create LeaderboardList component
 - [x] 4.4 Create UserRankCard component
 - [x] 4.5 Create LeaderboardTabs component
-- [ ] 4.6 Create CategorySelector component
-- [ ] 4.7 Create index exports
+- [x] 4.6 Create CategorySelector component
+- [x] 4.7 Create index exports
 
-### Phase 5: Page Implementation
-- [ ] 5.1 Create leaderboard page (/ranking)
-- [ ] 5.2 Add leaderboard to navigation
+### Phase 5: Page Implementation ✅
+- [x] 5.1 Create leaderboard page (/ranking)
+- [x] 5.2 Add leaderboard to navigation
 
 ### Phase 6: Dashboard Integration
 - [ ] 6.1 Create LeaderboardPreview widget
@@ -156,3 +156,13 @@ and recognition tiers (Bronze, Silver, Gold, Diamond).
     - Proper accessibility attributes (role, aria-selected, aria-controls)
     - Responsive design with smooth transitions
     - TypeScript typed with TimePeriod from @/lib/supabase/types
+  - 4.6: Created CategorySelector component (previously completed)
+  - 4.7: Created index exports for leaderboard components (previously completed)
+- 2026-01-07: Completed Phase 5 (Page Implementation)
+  - 5.1: Created /ranking page (previously completed)
+  - 5.2: Added ranking page to sidebar navigation (2 files modified)
+    - Added 'Ranking' item to MAIN_NAV in src/lib/constants.ts
+    - Added Trophy icon SVG to sidebar icons in src/components/layout/Sidebar.tsx
+    - Positioned between 'Eventos' and 'Meus Premios' for logical navigation flow
+    - Trophy icon uses badge/medal design matching leaderboard theme
+    - All acceptance criteria met (Ranking in MAIN_NAV, Trophy icon, correct href)

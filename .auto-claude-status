@@ -3,23 +3,23 @@
   "spec": "032-public-leaderboards-rankings",
   "state": "building",
   "subtasks": {
-    "completed": 9,
+    "completed": 14,
     "total": 18,
     "in_progress": 1,
     "failed": 0
   },
   "phase": {
-    "current": "UI Components",
+    "current": "Dashboard Integration",
     "id": null,
-    "total": 7
+    "total": 2
   },
   "workers": {
     "active": 0,
     "max": 1
   },
   "session": {
-    "number": 11,
+    "number": 16,
     "started_at": "2026-01-07T15:11:31.528768"
   },
-  "last_update": "2026-01-07T15:47:19.547809"
+  "last_update": "2026-01-07T15:59:18.948853"
 }
