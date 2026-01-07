@@ -1,0 +1,359 @@
+{
+  "feature": "Public Leaderboards & Rankings",
+  "description": "Display public leaderboards showing top fans by coins earned, challenges completed, and event attendance. Include weekly, monthly, and all-time rankings with badges and recognition tiers.",
+  "created_at": "2025-01-07",
+  "updated_at": "2025-01-07",
+  "status": "in_progress",
+  "planStatus": "approved",
+  "phases": [
+    {
+      "id": "phase-1",
+      "name": "Database Layer",
+      "description": "Create SQL migration for leaderboard aggregation views and RLS policies",
+      "subtasks": [
+        {
+          "id": "1.1",
+          "title": "Create leaderboard SQL migration",
+          "description": "Create SQL migration file with views for aggregating user rankings by coins, challenges completed, and events attended. Include time-based filtering (weekly, monthly, all-time) and user tier calculation.",
+          "status": "completed",
+          "files": [
+            "migrations/leaderboard-rankings.sql"
+          ],
+          "acceptance_criteria": [
+            "View for coins leaderboard with time filters",
+            "View for challenges completed leaderboard",
+            "View for events attended leaderboard",
+            "Function to calculate user tier (Bronze/Silver/Gold/Diamond)",
+            "Function to get user's own rank in any leaderboard"
+          ],
+          "notes": "Created comprehensive SQL migration file with:\n- get_user_tier() function for tier calculation (Bronze/Silver/Gold/Diamond based on score thresholds)\n- leaderboard_coins view for ranking users by coin balance\n- leaderboard_challenges view for ranking by challenges completed\n- leaderboard_events view for ranking by events attended with check-in\n- leaderboard_combined view for overall ranking (weighted score formula)\n- get_user_coins_rank() function with time period filters (weekly/monthly/all-time)\n- get_user_challenges_rank() function with time filters\n- get_user_events_rank() function with time filters\n- get_user_combined_rank() function with time filters\n- RLS policies for public authenticated access to leaderboards\n- Performance indexes on key columns (balance, approved_at, check_in_time, created_at)\nFile: migrations/leaderboard-rankings.sql (515 lines)",
+          "updated_at": "2026-01-07T18:18:33.844490+00:00"
+        },
+        {
+          "id": "1.2",
+          "title": "Add RLS policies for public access",
+          "description": "Create RLS policies that allow public/authenticated access to leaderboard data while protecting sensitive user information.",
+          "status": "pending",
+          "files": [
+            "migrations/leaderboard-rankings.sql"
+          ],
+          "acceptance_criteria": [
+            "Public read access to leaderboard rankings",
+            "Only display approved/public user data",
+            "Protect private user information"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phase-2",
+      "name": "TypeScript Types",
+      "description": "Define TypeScript types for leaderboard data structures",
+      "subtasks": [
+        {
+          "id": "2.1",
+          "title": "Create leaderboard types",
+          "description": "Add TypeScript types and interfaces for leaderboard entries, tiers, time periods, and ranking categories.",
+          "status": "pending",
+          "files": [
+            "src/lib/supabase/types.ts"
+          ],
+          "acceptance_criteria": [
+            "LeaderboardEntry type with user info and score",
+            "LeaderboardTier enum (Bronze, Silver, Gold, Diamond)",
+            "TimePeriod type (weekly, monthly, all_time)",
+            "LeaderboardCategory type (coins, challenges, events)",
+            "UserRanking type for user's own position"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phase-3",
+      "name": "Backend Queries",
+      "description": "Create Supabase queries for fetching leaderboard data",
+      "subtasks": [
+        {
+          "id": "3.1",
+          "title": "Create leaderboard queries file",
+          "description": "Create src/lib/supabase/leaderboard.ts with functions for fetching leaderboard data by category and time period.",
+          "status": "pending",
+          "files": [
+            "src/lib/supabase/leaderboard.ts",
+            "src/lib/supabase/index.ts"
+          ],
+          "acceptance_criteria": [
+            "getCoinsLeaderboard(period, limit) function",
+            "getChallengesLeaderboard(period, limit) function",
+            "getEventsLeaderboard(period, limit) function",
+            "getUserRank(userId, category, period) function",
+            "getCombinedLeaderboard(period, limit) function"
+          ]
+        },
+        {
+          "id": "3.2",
+          "title": "Create server actions for leaderboard",
+          "description": "Create server actions that can be called from components to fetch leaderboard data with proper error handling.",
+          "status": "pending",
+          "files": [
+            "src/actions/leaderboard.ts",
+            "src/actions/index.ts"
+          ],
+          "acceptance_criteria": [
+            "Server action for fetching leaderboard by category",
+            "Server action for fetching user's own rank",
+            "Proper error handling and loading states"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phase-4",
+      "name": "UI Components",
+      "description": "Create reusable UI components for leaderboard display",
+      "subtasks": [
+        {
+          "id": "4.1",
+          "title": "Create TierBadge component",
+          "description": "Create a badge component that displays user recognition tiers (Bronze, Silver, Gold, Diamond) with appropriate icons and colors.",
+          "status": "pending",
+          "files": [
+            "src/components/leaderboard/TierBadge.tsx"
+          ],
+          "acceptance_criteria": [
+            "Bronze tier with bronze color scheme",
+            "Silver tier with silver/gray color scheme",
+            "Gold tier with gold/yellow color scheme",
+            "Diamond tier with blue/purple color scheme",
+            "Icons for each tier level"
+          ]
+        },
+        {
+          "id": "4.2",
+          "title": "Create LeaderboardEntry component",
+          "description": "Create a component for displaying individual leaderboard entries with rank, avatar, name, score, and tier badge.",
+          "status": "pending",
+          "files": [
+            "src/components/leaderboard/LeaderboardEntry.tsx"
+          ],
+          "acceptance_criteria": [
+            "Display rank position (1st, 2nd, 3rd with medals)",
+            "Display user avatar",
+            "Display user name",
+            "Display score/points",
+            "Display tier badge",
+            "Highlight current user's entry"
+          ]
+        },
+        {
+          "id": "4.3",
+          "title": "Create LeaderboardList component",
+          "description": "Create a component that displays a list of leaderboard entries with pagination support (top 10/25/50).",
+          "status": "pending",
+          "files": [
+            "src/components/leaderboard/LeaderboardList.tsx"
+          ],
+          "acceptance_criteria": [
+            "Display top 10/25/50 fans option",
+            "Empty state when no data",
+            "Loading skeleton state",
+            "Responsive design for mobile/desktop"
+          ]
+        },
+        {
+          "id": "4.4",
+          "title": "Create UserRankCard component",
+          "description": "Create a component that shows the current user's rank even if they're not in the top positions.",
+          "status": "pending",
+          "files": [
+            "src/components/leaderboard/UserRankCard.tsx"
+          ],
+          "acceptance_criteria": [
+            "Show user's current rank position",
+            "Show user's score",
+            "Show how many points to next rank",
+            "Show user's tier",
+            "Motivational message based on position"
+          ]
+        },
+        {
+          "id": "4.5",
+          "title": "Create LeaderboardTabs component",
+          "description": "Create a tabbed interface for switching between weekly, monthly, and all-time views.",
+          "status": "pending",
+          "files": [
+            "src/components/leaderboard/LeaderboardTabs.tsx"
+          ],
+          "acceptance_criteria": [
+            "Weekly tab with date range indicator",
+            "Monthly tab with month indicator",
+            "All-time tab",
+            "Active tab styling",
+            "Callback for tab change"
+          ]
+        },
+        {
+          "id": "4.6",
+          "title": "Create CategorySelector component",
+          "description": "Create a component for selecting leaderboard category (coins, challenges, events).",
+          "status": "pending",
+          "files": [
+            "src/components/leaderboard/CategorySelector.tsx"
+          ],
+          "acceptance_criteria": [
+            "Coins earned category",
+            "Challenges completed category",
+            "Events attended category",
+            "Icon for each category",
+            "Active state styling"
+          ]
+        },
+        {
+          "id": "4.7",
+          "title": "Create index exports for leaderboard components",
+          "description": "Create index.ts file to export all leaderboard components for clean imports.",
+          "status": "pending",
+          "files": [
+            "src/components/leaderboard/index.ts"
+          ],
+          "acceptance_criteria": [
+            "Export all leaderboard components",
+            "Clean import path"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phase-5",
+      "name": "Page Implementation",
+      "description": "Create the main leaderboard page and integrate with navigation",
+      "subtasks": [
+        {
+          "id": "5.1",
+          "title": "Create leaderboard page",
+          "description": "Create the main /ranking page that displays the public leaderboards with all categories and time filters.",
+          "status": "pending",
+          "files": [
+            "src/app/(dashboard)/ranking/page.tsx"
+          ],
+          "acceptance_criteria": [
+            "Display leaderboard with category tabs",
+            "Time period filter (weekly/monthly/all-time)",
+            "Show top 10/25/50 option",
+            "Show current user's rank card",
+            "Page header with title and description",
+            "Responsive layout"
+          ]
+        },
+        {
+          "id": "5.2",
+          "title": "Add leaderboard to navigation",
+          "description": "Add the ranking page to the sidebar navigation with appropriate icon.",
+          "status": "pending",
+          "files": [
+            "src/lib/constants.ts",
+            "src/components/layout/Sidebar.tsx"
+          ],
+          "acceptance_criteria": [
+            "Add 'Ranking' item to MAIN_NAV",
+            "Add Trophy icon to sidebar icons",
+            "Correct href to /ranking"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phase-6",
+      "name": "Dashboard Integration",
+      "description": "Integrate leaderboard preview into the main dashboard",
+      "subtasks": [
+        {
+          "id": "6.1",
+          "title": "Create LeaderboardPreview widget",
+          "description": "Create a compact leaderboard widget for the dashboard showing top 5 users with link to full ranking.",
+          "status": "pending",
+          "files": [
+            "src/components/leaderboard/LeaderboardPreview.tsx"
+          ],
+          "acceptance_criteria": [
+            "Show top 5 users",
+            "Compact design",
+            "Link to full ranking page",
+            "Show user's rank if not in top 5"
+          ]
+        },
+        {
+          "id": "6.2",
+          "title": "Add leaderboard preview to dashboard",
+          "description": "Integrate the LeaderboardPreview widget into the main dashboard page.",
+          "status": "pending",
+          "files": [
+            "src/app/(dashboard)/dashboard/page.tsx"
+          ],
+          "acceptance_criteria": [
+            "Display leaderboard widget on dashboard",
+            "Proper positioning in layout",
+            "Loading state handling"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phase-7",
+      "name": "Testing & Polish",
+      "description": "Final testing, bug fixes, and polish",
+      "subtasks": [
+        {
+          "id": "7.1",
+          "title": "Test all leaderboard functionality",
+          "description": "Comprehensive testing of all leaderboard features including edge cases.",
+          "status": "pending",
+          "files": [],
+          "acceptance_criteria": [
+            "Test with no data (empty state)",
+            "Test with large datasets",
+            "Test time period filters",
+            "Test user rank calculation",
+            "Test tier badge display",
+            "Test responsive design"
+          ]
+        },
+        {
+          "id": "7.2",
+          "title": "Update build progress and documentation",
+          "description": "Update build-progress.txt with completion status and any notes for future reference.",
+          "status": "pending",
+          "files": [
+            ".auto-claude/specs/032-public-leaderboards-rankings/build-progress.txt"
+          ],
+          "acceptance_criteria": [
+            "Document all implemented features",
+            "Note any known limitations",
+            "Provide SQL migration instructions"
+          ]
+        }
+      ]
+    }
+  ],
+  "qa_signoff": {
+    "status": "pending",
+    "issues": "",
+    "tests_passed": ""
+  },
+  "dependencies": {
+    "external": [],
+    "internal": [
+      "src/lib/supabase/server.ts (createClient)",
+      "src/lib/supabase/types.ts (existing types)",
+      "src/components/ui/* (existing UI components)",
+      "src/contexts/AuthContext.tsx (user context)"
+    ]
+  },
+  "notes": [
+    "Rankings should update in real-time after challenge completion or event check-in",
+    "Tier thresholds: Bronze (0-99), Silver (100-499), Gold (500-999), Diamond (1000+)",
+    "Time periods: Weekly (last 7 days), Monthly (last 30 days), All-time",
+    "User must be authenticated to see their own rank, but leaderboard is public"
+  ],
+  "last_updated": "2026-01-07T18:18:33.844508+00:00"
+}

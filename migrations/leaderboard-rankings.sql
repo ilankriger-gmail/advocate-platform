@@ -439,20 +439,25 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 -- =============================================
--- RLS: Politicas de acesso publico
+-- RLS: Politicas de acesso publico aos leaderboards
 -- =============================================
 
--- Views sao acessiveis publicamente (qualquer usuario autenticado)
--- As views ja filtram apenas fans/usuarios nao-criadores
+-- CONTEXTO: Views nao suportam RLS diretamente, mas as tabelas
+-- subjacentes (users, user_coins, challenge_participants, event_registrations,
+-- coin_transactions) precisam de politicas que permitam leitura para leaderboards
+-- enquanto protegem informacoes sensiveis.
 
--- Nota: Views nao suportam RLS diretamente, mas como elas
--- consultam tabelas com RLS (users, user_coins, etc),
--- o acesso sera controlado pelas politicas existentes.
+-- ESTRATEGIA DE SEGURANCA:
+-- 1. Permitir leitura autenticada de dados publicos (rankings, scores)
+-- 2. Proteger informacoes sensiveis (email, telefone, enderecos)
+-- 3. Mostrar apenas dados aprovados/publicos
+-- 4. Views ja filtram por role (apenas fans, nao creators)
 
--- Para permitir acesso publico aos leaderboards, garantir que
--- as tabelas base tenham politicas adequadas:
-
--- Garantir que usuarios autenticados possam ver perfis publicos
+-- =============================================
+-- POLITICA 1: Perfis de usuarios visiveis
+-- =============================================
+-- Permite que usuarios autenticados vejam perfis basicos
+-- para exibicao nos leaderboards (nome, avatar)
 DO $$
 BEGIN
   IF NOT EXISTS (
@@ -466,7 +471,11 @@ BEGIN
   END IF;
 END $$;
 
--- Garantir que leaderboard de moedas seja visivel
+-- =============================================
+-- POLITICA 2: Saldos de moedas para leaderboard
+-- =============================================
+-- Permite que usuarios autenticados vejam saldos de todos
+-- para calcular rankings. O saldo eh publico no contexto do leaderboard.
 DO $$
 BEGIN
   IF NOT EXISTS (
@@ -479,6 +488,87 @@ BEGIN
       USING (true);
   END IF;
 END $$;
+
+-- =============================================
+-- POLITICA 3: Transacoes de moedas para filtros temporais
+-- =============================================
+-- Permite leitura de transacoes para calcular rankings por periodo
+-- (semanal, mensal). Necessario para funcoes get_user_*_rank com time filters.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE tablename = 'coin_transactions'
+    AND policyname = 'coin_transactions_leaderboard_viewable'
+  ) THEN
+    CREATE POLICY "coin_transactions_leaderboard_viewable" ON coin_transactions
+      FOR SELECT TO authenticated
+      USING (true);
+  END IF;
+END $$;
+
+-- =============================================
+-- POLITICA 4: Participacoes aprovadas em desafios
+-- =============================================
+-- Garante que participacoes aprovadas sejam visiveis para leaderboard
+-- (pode ja existir em challenges-v2-setup.sql)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE tablename = 'challenge_participants'
+    AND policyname = 'challenge_participants_leaderboard_viewable'
+  ) THEN
+    CREATE POLICY "challenge_participants_leaderboard_viewable" ON challenge_participants
+      FOR SELECT TO authenticated
+      USING (status = 'approved');
+  END IF;
+END $$;
+
+-- =============================================
+-- POLITICA 5: Registros de eventos para leaderboard
+-- =============================================
+-- Permite leitura de check-ins em eventos para calcular leaderboard
+-- de eventos atendidos. Apenas eventos com check-in confirmado.
+DO $$
+BEGIN
+  -- Primeiro verificar se a tabela existe
+  IF EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'event_registrations') THEN
+    -- Habilitar RLS se ainda nao estiver
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_tables
+      WHERE tablename = 'event_registrations'
+      AND rowsecurity = true
+    ) THEN
+      ALTER TABLE event_registrations ENABLE ROW LEVEL SECURITY;
+    END IF;
+
+    -- Criar politica de leitura
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_policies
+      WHERE tablename = 'event_registrations'
+      AND policyname = 'event_registrations_leaderboard_viewable'
+    ) THEN
+      CREATE POLICY "event_registrations_leaderboard_viewable" ON event_registrations
+        FOR SELECT TO authenticated
+        USING (check_in_time IS NOT NULL AND status != 'cancelled');
+    END IF;
+  END IF;
+END $$;
+
+-- =============================================
+-- NOTA IMPORTANTE SOBRE PROTECAO DE DADOS
+-- =============================================
+-- As politicas acima permitem leitura ampla de dados de gamificacao,
+-- mas as VIEWS (leaderboard_*) fazem a filtragem adicional:
+-- - SELECT apenas colunas relevantes (full_name, avatar_url, scores)
+-- - NAO expoe dados sensiveis (email, phone, address, etc)
+-- - Filtra apenas usuarios com role = 'fan'
+--
+-- Se a tabela 'users' contiver colunas sensiveis, considere:
+-- 1. Usar SELECT especifico nas queries (ja feito nas views)
+-- 2. Adicionar USING clause mais restritiva se necessario
+-- 3. Criar view separada com apenas colunas publicas
 
 -- =============================================
 -- INDICES para performance

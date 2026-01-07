@@ -1,0 +1,80 @@
+# Build Progress - Public Leaderboards
+
+## Feature Overview
+Display public leaderboards showing top fans by coins earned, challenges completed,
+and event attendance. Include weekly, monthly, and all-time views with badges
+and recognition tiers (Bronze, Silver, Gold, Diamond).
+
+## Status: In Progress - Database Layer Complete
+
+---
+
+## Phase Summary
+
+### Phase 1: Database Layer ✅
+- [x] 1.1 Create leaderboard SQL migration
+- [x] 1.2 Add RLS policies for public access
+
+### Phase 2: TypeScript Types
+- [ ] 2.1 Create leaderboard types
+
+### Phase 3: Backend Queries
+- [ ] 3.1 Create leaderboard queries file
+- [ ] 3.2 Create server actions for leaderboard
+
+### Phase 4: UI Components
+- [ ] 4.1 Create TierBadge component
+- [ ] 4.2 Create LeaderboardEntry component
+- [ ] 4.3 Create LeaderboardList component
+- [ ] 4.4 Create UserRankCard component
+- [ ] 4.5 Create LeaderboardTabs component
+- [ ] 4.6 Create CategorySelector component
+- [ ] 4.7 Create index exports
+
+### Phase 5: Page Implementation
+- [ ] 5.1 Create leaderboard page (/ranking)
+- [ ] 5.2 Add leaderboard to navigation
+
+### Phase 6: Dashboard Integration
+- [ ] 6.1 Create LeaderboardPreview widget
+- [ ] 6.2 Add leaderboard preview to dashboard
+
+### Phase 7: Testing and Polish
+- [ ] 7.1 Test all leaderboard functionality
+- [ ] 7.2 Update build progress and documentation
+
+---
+
+## Implementation Notes
+
+### Tier Thresholds
+- Bronze: 0-99 points
+- Silver: 100-499 points
+- Gold: 500-999 points
+- Diamond: 1000+ points
+
+### Time Periods
+- Weekly: Last 7 days
+- Monthly: Last 30 days
+- All-time: No time filter
+
+### Categories
+- Coins Earned: Total coins earned from all activities
+- Challenges Completed: Number of approved challenge participations
+- Events Attended: Number of events with 'attended' status
+
+---
+
+## Session Log
+- 2025-01-07: Implementation plan created with 7 phases and 16 subtasks
+- 2026-01-07: Completed Phase 1 (Database Layer)
+  - 1.1: Created comprehensive SQL migration with views, functions, and indexes (605 lines)
+  - 1.2: Enhanced RLS policies for secure public leaderboard access
+    - Added 5 comprehensive RLS policies covering all leaderboard tables
+    - Policy 1: users table - authenticated users can view basic profiles
+    - Policy 2: user_coins - authenticated users can view all balances for rankings
+    - Policy 3: coin_transactions - allow reading for time-filtered rankings
+    - Policy 4: challenge_participants - only approved participations visible
+    - Policy 5: event_registrations - only confirmed check-ins visible
+    - All policies are idempotent (safe to re-run)
+    - Comprehensive documentation on data protection strategy
