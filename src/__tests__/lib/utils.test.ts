@@ -6,6 +6,8 @@ import {
   formatDate,
   formatDateTime,
   formatRelativeTime,
+  formatPoints,
+  formatCompactNumber,
   getInitials,
   truncate,
   slugify,
@@ -710,6 +712,202 @@ describe('String Utility Functions', () => {
     it('should validate YouTube URL', () => {
       const result = isValidUrl('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
       expect(result).toBe(true);
+    });
+  });
+});
+
+describe('Number Formatting Functions', () => {
+  describe('formatPoints', () => {
+    it('should format small numbers without separator', () => {
+      const result = formatPoints(100);
+      expect(result).toBe('100');
+    });
+
+    it('should format numbers with thousand separator', () => {
+      const result = formatPoints(1000);
+      expect(result).toBe('1.000');
+    });
+
+    it('should format large numbers with multiple thousand separators', () => {
+      const result = formatPoints(1000000);
+      expect(result).toBe('1.000.000');
+    });
+
+    it('should format numbers in the thousands range', () => {
+      const result = formatPoints(5432);
+      expect(result).toBe('5.432');
+    });
+
+    it('should format numbers in the hundreds of thousands range', () => {
+      const result = formatPoints(234567);
+      expect(result).toBe('234.567');
+    });
+
+    it('should handle zero correctly', () => {
+      const result = formatPoints(0);
+      expect(result).toBe('0');
+    });
+
+    it('should format single digit numbers', () => {
+      const result = formatPoints(5);
+      expect(result).toBe('5');
+    });
+
+    it('should format double digit numbers', () => {
+      const result = formatPoints(42);
+      expect(result).toBe('42');
+    });
+
+    it('should format triple digit numbers', () => {
+      const result = formatPoints(999);
+      expect(result).toBe('999');
+    });
+
+    it('should format exactly 1000', () => {
+      const result = formatPoints(1000);
+      expect(result).toBe('1.000');
+    });
+
+    it('should format millions correctly', () => {
+      const result = formatPoints(2500000);
+      expect(result).toBe('2.500.000');
+    });
+
+    it('should format very large numbers', () => {
+      const result = formatPoints(123456789);
+      expect(result).toBe('123.456.789');
+    });
+
+    it('should format numbers close to threshold', () => {
+      const result = formatPoints(1001);
+      expect(result).toBe('1.001');
+    });
+
+    it('should format numbers just below thousand', () => {
+      const result = formatPoints(999);
+      expect(result).toBe('999');
+    });
+
+    it('should format typical point values', () => {
+      const result = formatPoints(15000);
+      expect(result).toBe('15.000');
+    });
+  });
+
+  describe('formatCompactNumber', () => {
+    it('should return number as string for values below 1000', () => {
+      const result = formatCompactNumber(500);
+      expect(result).toBe('500');
+    });
+
+    it('should format numbers in thousands with K suffix', () => {
+      const result = formatCompactNumber(5000);
+      expect(result).toBe('5K');
+    });
+
+    it('should format numbers in thousands with one decimal place', () => {
+      const result = formatCompactNumber(5500);
+      expect(result).toBe('5.5K');
+    });
+
+    it('should remove trailing .0 for round thousands', () => {
+      const result = formatCompactNumber(10000);
+      expect(result).toBe('10K');
+    });
+
+    it('should format numbers in millions with M suffix', () => {
+      const result = formatCompactNumber(5000000);
+      expect(result).toBe('5M');
+    });
+
+    it('should format numbers in millions with one decimal place', () => {
+      const result = formatCompactNumber(5500000);
+      expect(result).toBe('5.5M');
+    });
+
+    it('should remove trailing .0 for round millions', () => {
+      const result = formatCompactNumber(10000000);
+      expect(result).toBe('10M');
+    });
+
+    it('should handle exactly 1000', () => {
+      const result = formatCompactNumber(1000);
+      expect(result).toBe('1K');
+    });
+
+    it('should handle exactly 1000000', () => {
+      const result = formatCompactNumber(1000000);
+      expect(result).toBe('1M');
+    });
+
+    it('should handle zero', () => {
+      const result = formatCompactNumber(0);
+      expect(result).toBe('0');
+    });
+
+    it('should handle single digit numbers', () => {
+      const result = formatCompactNumber(7);
+      expect(result).toBe('7');
+    });
+
+    it('should handle double digit numbers', () => {
+      const result = formatCompactNumber(42);
+      expect(result).toBe('42');
+    });
+
+    it('should handle triple digit numbers', () => {
+      const result = formatCompactNumber(999);
+      expect(result).toBe('999');
+    });
+
+    it('should format 1100 as 1.1K', () => {
+      const result = formatCompactNumber(1100);
+      expect(result).toBe('1.1K');
+    });
+
+    it('should format 1500 as 1.5K', () => {
+      const result = formatCompactNumber(1500);
+      expect(result).toBe('1.5K');
+    });
+
+    it('should format 999999 as 1000K', () => {
+      const result = formatCompactNumber(999999);
+      expect(result).toBe('1000K');
+    });
+
+    it('should format 1100000 as 1.1M', () => {
+      const result = formatCompactNumber(1100000);
+      expect(result).toBe('1.1M');
+    });
+
+    it('should format large millions', () => {
+      const result = formatCompactNumber(25000000);
+      expect(result).toBe('25M');
+    });
+
+    it('should format hundreds of millions', () => {
+      const result = formatCompactNumber(350000000);
+      expect(result).toBe('350M');
+    });
+
+    it('should handle decimal rounding for K', () => {
+      const result = formatCompactNumber(1234);
+      expect(result).toBe('1.2K');
+    });
+
+    it('should handle decimal rounding for M', () => {
+      const result = formatCompactNumber(1234567);
+      expect(result).toBe('1.2M');
+    });
+
+    it('should format typical follower counts', () => {
+      const result = formatCompactNumber(12500);
+      expect(result).toBe('12.5K');
+    });
+
+    it('should format viral content numbers', () => {
+      const result = formatCompactNumber(2300000);
+      expect(result).toBe('2.3M');
     });
   });
 });
