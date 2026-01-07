@@ -2,7 +2,7 @@
   "feature": "Extract duplicated admin authorization pattern into reusable utility",
   "description": "Refactor the admin/creator authorization check pattern that is duplicated 19+ times across action files (challenges.ts, rewards.ts, events.ts, admin.ts) into reusable utility functions in src/lib/auth.ts",
   "created_at": "2026-01-07T14:25:35.146Z",
-  "updated_at": "2026-01-07T14:30:32.185Z",
+  "updated_at": "2026-01-07T16:36:56.889Z",
   "status": "in_progress",
   "planStatus": "in_progress",
   "workflow_type": "development",
@@ -46,21 +46,25 @@
           "id": "1.3",
           "title": "Implement requireAdminOrCreator function",
           "description": "Create requireAdminOrCreator() function that checks if user has role='admin' OR is_creator=true. Returns user data with profile or error. This handles the most common authorization pattern (16 occurrences).",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/lib/auth.ts"
           ],
-          "estimated_lines": 35
+          "estimated_lines": 35,
+          "notes": "Created requireAdminOrCreator() function in src/lib/auth.ts. The function checks if user has role='admin' OR is_creator=true. Returns AuthResult with user, profile, and supabase client on success, or AuthError on failure. Follows existing patterns with Portuguese error messages. Total 34 lines added including JSDoc documentation. This handles the most common authorization pattern (16 occurrences).",
+          "updated_at": "2026-01-07T14:41:32.346522+00:00"
         },
         {
           "id": "1.4",
           "title": "Implement requireAdmin function",
           "description": "Create requireAdmin() function that checks if user has role='admin' only. Returns user data with profile or error. This handles the admin-only authorization pattern (5 occurrences).",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/lib/auth.ts"
           ],
-          "estimated_lines": 30
+          "estimated_lines": 30,
+          "notes": "Created requireAdmin() function in src/lib/auth.ts. The function checks if user has role='admin' only. Returns AuthResult with user, profile, and supabase client on success, or AuthError on failure. Follows existing patterns with Portuguese error messages. Total 33 lines added including JSDoc documentation. This handles the admin-only authorization pattern (5 occurrences).",
+          "updated_at": "2026-01-07T14:43:30.885056+00:00"
         }
       ]
     },
@@ -385,5 +389,5 @@
     "issues": "",
     "tests_passed": ""
   },
-  "last_updated": "2026-01-07T14:39:32.886727+00:00"
+  "last_updated": "2026-01-07T14:43:30.885063+00:00"
 }
