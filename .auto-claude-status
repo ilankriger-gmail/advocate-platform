@@ -3,7 +3,7 @@
   "spec": "032-public-leaderboards-rankings",
   "state": "building",
   "subtasks": {
-    "completed": 6,
+    "completed": 9,
     "total": 18,
     "in_progress": 1,
     "failed": 0
@@ -18,8 +18,8 @@
     "max": 1
   },
   "session": {
-    "number": 8,
+    "number": 11,
     "started_at": "2026-01-07T15:11:31.528768"
   },
-  "last_update": "2026-01-07T15:39:12.130995"
+  "last_update": "2026-01-07T15:47:19.547809"
 }
