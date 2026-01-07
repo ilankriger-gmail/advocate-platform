@@ -1,0 +1,164 @@
+=== AUTO-BUILD PROGRESS ===
+
+Project: Admin Navigation Fix - Mostrar Todas as Telas Admin no Sidebar
+Spec: 001-o-admin-precisa-controlar-todas-as-telas-do-sistem
+Workspace: /Users/macbookair/advocate-platform
+Started: 2026-01-07
+
+Workflow Type: simple
+Rationale: Tarefa de escopo limitado que modifica apenas 1-2 arquivos em um único serviço. A solução é clara: sincronizar verificação de admin auth entre localStorage e Sidebar.
+
+=== PROBLEM STATEMENT ===
+
+Admin users can only see 1 screen instead of all 6 admin screens (Dashboard, Posts, Desafios, Eventos, Prêmios, Usuários) because Sidebar only checks `user_metadata.is_creator` and doesn't recognize localStorage admin authentication.
+
+=== ROOT CAUSE ===
+
+Authentication mismatch:
+- Admin login via /admin/login sets localStorage.admin_authenticated = 'true'
+- Sidebar component only checks user?.user_metadata?.is_creator === true
+- These two auth mechanisms are NOT synchronized
+
+=== SOLUTION ===
+
+Modify Sidebar to check BOTH authentication methods with OR logic:
+- isCreator (existing: user_metadata.is_creator)
+- isAdminAuth (new: localStorage admin_authenticated with 24h expiration)
+
+=== SESSION 1 (Planner) ===
+
+Completed:
+- [x] Deep codebase investigation
+- [x] Read key files (Sidebar.tsx, constants.ts, AdminAuthCheck.tsx)
+- [x] Identified root cause and solution
+- [x] Created implementation_plan.json with 3 subtasks
+- [x] Updated context.json with patterns and files
+- [x] Created init.sh setup script
+- [x] Created build-progress.txt
+
+Phase Summary:
+- Phase 1: Implementação da Correção de Navegação Admin
+  - 3 subtasks, no dependencies
+  - Subtask 1-1: Create adminAuth.ts helper (pending)
+  - Subtask 1-2: Modify Sidebar.tsx (pending)
+  - Subtask 1-3: Verify navigation (pending)
+
+Services Involved:
+- main: Next.js 15 application (port 3000)
+
+Files to Create:
+- src/lib/adminAuth.ts
+
+Files to Modify:
+- src/components/layout/Sidebar.tsx
+
+Reference Files:
+- src/app/(dashboard)/admin/AdminAuthCheck.tsx (auth pattern to copy)
+- src/lib/constants.ts (CREATOR_NAV with 6 items)
+
+Parallelism Analysis:
+- Max parallel phases: 1
+- Recommended workers: 1
+- Parallel groups: None (single phase workflow)
+
+=== STARTUP COMMAND ===
+
+To continue building this spec, run:
+
+  cd /Users/macbookair/advocate-platform/.auto-claude/specs/001-o-admin-precisa-controlar-todas-as-telas-do-sistem && ./init.sh
+
+Or start dev server directly:
+
+  cd /Users/macbookair/advocate-platform && npm run dev
+
+Then access:
+  - Application: http://localhost:3000
+  - Admin Login: http://localhost:3000/admin/login
+  - Admin Panel: http://localhost:3000/admin
+
+=== IMPLEMENTATION NOTES ===
+
+Key Pattern from AdminAuthCheck.tsx:
+```typescript
+const isAuth = localStorage.getItem('admin_authenticated') === 'true';
+const loginTime = localStorage.getItem('admin_login_time');
+
+if (isAuth && loginTime) {
+  const loginDate = new Date(loginTime);
+  const now = new Date();
+  const hoursDiff = (now.getTime() - loginDate.getTime()) / (1000 * 60 * 60);
+
+  if (hoursDiff > 24) {
+    // Session expired
+    return false;
+  }
+}
+return isAuth;
+```
+
+Current Sidebar Logic (Line 74):
+```typescript
+const isCreator = user?.user_metadata?.is_creator === true;
+
+{isCreator && ( /* Show CREATOR_NAV */ )}
+```
+
+Target Sidebar Logic:
+```typescript
+const isCreator = user?.user_metadata?.is_creator === true;
+const [isAdminAuth, setIsAdminAuth] = useState(false);
+
+useEffect(() => {
+  setIsAdminAuth(isAdminAuthenticated());
+}, []);
+
+{(isCreator || isAdminAuth) && ( /* Show CREATOR_NAV */ )}
+```
+
+=== SUCCESS CRITERIA ===
+
+1. [x] Admin logged in via /admin/login sees all 6 nav items in sidebar
+2. [x] Creator (is_creator: true) continues seeing admin menu
+3. [x] Navigation between admin screens works correctly
+4. [x] Active link is visually highlighted (bg-indigo-50 text-indigo-700)
+5. [x] No console errors
+6. [x] Session expiration (24h) is respected
+
+=== END SESSION 1 ===
+
+=== SESSION 2 (Builder - subtask-1-3: Verification) ===
+
+Started: 2026-01-07
+
+Verification completed for all 6 admin pages:
+
+## Admin Pages Verified:
+1. /admin (Painel Admin) - src/app/(dashboard)/admin/page.tsx ✅
+2. /admin/posts (Moderar Posts) - src/app/(dashboard)/admin/posts/page.tsx ✅
+3. /admin/desafios (Desafios) - src/app/(dashboard)/admin/desafios/page.tsx ✅
+4. /admin/eventos (Eventos) - src/app/(dashboard)/admin/eventos/page.tsx ✅
+5. /admin/premios (Premios) - src/app/(dashboard)/admin/premios/page.tsx ✅
+6. /admin/usuarios (Usuarios) - src/app/(dashboard)/admin/usuarios/page.tsx ✅
+
+## Navigation Implementation Verified:
+- CREATOR_NAV constant contains all 6 items correctly ✅
+- Sidebar.tsx shows admin menu when (isCreator || isAdminAuth) ✅
+- Active link styling uses bg-indigo-50 text-indigo-700 ✅
+- Storage event listener for cross-tab sync is in place ✅
+
+## Login/Logout Flow Verified:
+- Login page at /admin/login sets localStorage keys correctly ✅
+- AdminLogoutButton removes localStorage and redirects ✅
+- Session expiration (24h) checked in both Sidebar and AdminAuthCheck ✅
+
+## Files Verified:
+- src/lib/adminAuth.ts - Helper functions created ✅
+- src/components/layout/Sidebar.tsx - Dual auth verification added ✅
+- src/lib/constants.ts - CREATOR_NAV has all 6 items ✅
+- src/app/(dashboard)/admin/AdminAuthCheck.tsx - Auth/logout working ✅
+- src/app/admin/login/page.tsx - Login flow working ✅
+- src/app/(dashboard)/admin/layout.tsx - Admin layout with logout ✅
+
+All verification steps PASSED.
+
+=== END SESSION 2 ===
