@@ -2,18 +2,14 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { ActionResponse } from '@/types/action';
 import type { CreatePostData } from '@/types/post';
-
-type ActionResponse = {
-  error?: string;
-  success?: boolean;
-  data?: any;
-};
+import type { Post, PostComment } from '@/lib/supabase/types';
 
 /**
  * Criar novo post
  */
-export async function createPost(data: CreatePostData): Promise<ActionResponse> {
+export async function createPost(data: CreatePostData): Promise<ActionResponse<Post>> {
   try {
     const supabase = await createClient();
 
@@ -164,7 +160,7 @@ export async function likePost(postId: string): Promise<ActionResponse> {
 /**
  * Comentar em post
  */
-export async function commentPost(postId: string, content: string): Promise<ActionResponse> {
+export async function commentPost(postId: string, content: string): Promise<ActionResponse<PostComment>> {
   try {
     const supabase = await createClient();
 
