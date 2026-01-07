@@ -1,76 +1,30 @@
-# Build Progress - Replace excessive any types with proper TypeScript types
+=== Build Progress for: Replace excessive any types with proper TypeScript ===
 
-## Status - In Progress
+Last Updated: 2026-01-07T16:37:38+00:00
 
-## Date - 2025-01-07
+## Completed Subtasks
 
-## Summary
-Created implementation plan with 6 phases and 18 subtasks to replace all 17 instances of any type usage across the codebase.
+### Phase 1: Create centralized ActionResponse generic type ✓
+- [✓] 1.1: Create shared ActionResponse type in types/action.ts
+- [✓] 1.2: Update src/actions/events.ts to use typed ActionResponse
+- [✓] 1.3: Update src/actions/challenges.ts to use typed ActionResponse
+- [✓] 1.4: Update src/actions/rewards.ts to use typed ActionResponse
+- [✓] 1.5: Update src/actions/posts.ts to use typed ActionResponse
+- [✓] 1.6: Update src/actions/profile.ts to use typed ActionResponse
 
-## Latest Update - Subtask 1.6 Completed (2026-01-07) - PHASE 1 COMPLETE! ✅
-✅ Updated src/actions/profile.ts to use the generic ActionResponse type
-- Removed local ActionResponse type definition with `data?: any`
-- Imported ActionResponse from @/types/action
-- updateProfile function uses `Promise<ActionResponse>` (defaults to `ActionResponse<void>`)
-- Profile actions don't return data, so void type is appropriate
-- **All 5 action files now properly typed** - Phase 1 complete!
+### Phase 2: Fix update object types in actions
+- [✓] 2.1: Create ChallengeParticipantUpdate type and fix updateParticipation
+  - Created ChallengeParticipantUpdate type interface
+  - Replaced any-typed updateData with properly typed interface
+  - Fields: result_value, video_proof_url, social_media_url (all optional)
+  - Location: src/actions/challenges.ts:134
 
-## Any Types Found (17 instances)
+## Current Status: In Progress (7/18 subtasks completed)
 
-### ActionResponse data fields (5 files)
-- src/actions/events.ts line 9 - data with any type
-- src/actions/challenges.ts line 10 - data with any type
-- src/actions/rewards.ts line 9 - data with any type
-- src/actions/posts.ts line 10 - data with any type
-- src/actions/profile.ts line 10 - data with any type
+## Next Steps
+- 2.2: Create RewardUpdate type and fix updateReward in src/actions/rewards.ts
 
-### Update objects (2 instances)
-- src/actions/challenges.ts line 129 - updateData with any type
-- src/actions/rewards.ts line 436 - updateData with any type
-
-### Type assertions (2 instances)
-- src/actions/challenges.ts line 186 - participation as any
-- src/actions/rewards.ts line 168 - claim as any
-
-### Map callbacks with joined data (7 instances)
-- src/lib/supabase/events.ts line 116 - reg with any type
-- src/lib/supabase/challenges.ts line 166 - participant with any type
-- src/lib/supabase/challenges.ts line 224 - participant with any type
-- src/lib/supabase/rewards.ts line 138 - claim with any type
-- src/lib/supabase/rewards.ts line 148 - user with any type in return
-- src/lib/supabase/rewards.ts line 159 - claim with any type
-- src/lib/supabase/queries.ts line 156 - post with any type
-- src/lib/supabase/queries.ts line 399 - reward with any type
-
-### Component files (1 instance)
-- src/app/(dashboard)/eventos/page.tsx line 116 - reg with any type
-
-## Implementation Phases
-
-### Phase 1 - Create centralized ActionResponse generic type (6 subtasks)
-- Create shared ActionResponse T type
-- Update all 5 action files
-
-### Phase 2 - Fix update object types (2 subtasks)
-- Create typed update objects for challenges and rewards
-
-### Phase 3 - Fix type assertions (2 subtasks)
-- Create proper types for Supabase joined queries
-
-### Phase 4 - Fix map callbacks in query files (7 subtasks)
-- Create intermediate types for Supabase joins
-
-### Phase 5 - Fix component files (1 subtask)
-- Create proper types for event registrations
-
-### Phase 6 - Verification and cleanup (2 subtasks)
-- TypeScript compilation check
-- Verify no any types remain
-
-## Progress - 6 of 18 subtasks completed (Phase 1: COMPLETE ✅)
-- ✅ Subtask 1.1: Created shared ActionResponse<T> type
-- ✅ Subtask 1.2: Updated events.ts to use typed ActionResponse
-- ✅ Subtask 1.3: Updated challenges.ts to use typed ActionResponse
-- ✅ Subtask 1.4: Updated rewards.ts to use typed ActionResponse
-- ✅ Subtask 1.5: Updated posts.ts to use typed ActionResponse
-- ✅ Subtask 1.6: Updated profile.ts to use typed ActionResponse
+## Notes
+- Following project patterns: comments in Portuguese, variable names in English
+- All type definitions include proper TypeScript interfaces
+- Type safety is maintained throughout the codebase
