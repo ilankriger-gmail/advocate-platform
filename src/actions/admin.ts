@@ -2,6 +2,7 @@
 
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
+import { requireAdmin, isAuthError } from '@/lib/auth';
 
 // Verificar estado do banco de dados
 export async function checkDatabaseSchema() {
@@ -81,22 +82,10 @@ export async function getPendingParticipations() {
 
 // Aprovar participacao
 export async function approveParticipation(participationId: string) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: 'Nao autorizado' };
-  }
-
-  // Verificar se e admin
-  const { data: userData } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-
-  if (userData?.role !== 'admin') {
-    return { error: 'Apenas admins podem aprovar' };
+  // Verificar autorizacao
+  const auth = await requireAdmin();
+  if (isAuthError(auth)) {
+    return auth;
   }
 
   const adminSupabase = createAdminClient();
