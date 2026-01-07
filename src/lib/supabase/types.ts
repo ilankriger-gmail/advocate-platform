@@ -400,3 +400,36 @@ export interface ExternalSubmission {
   created_at: string;
   updated_at: string;
 }
+
+// ============ LEADERBOARDS E RANKINGS ============
+
+// Tier de reconhecimento do usuário
+export type LeaderboardTier = 'bronze' | 'silver' | 'gold' | 'diamond';
+
+// Período de tempo para rankings
+export type TimePeriod = 'weekly' | 'monthly' | 'all_time';
+
+// Categoria de leaderboard
+export type LeaderboardCategory = 'coins' | 'challenges' | 'events' | 'combined';
+
+// Entrada individual no leaderboard
+export interface LeaderboardEntry {
+  user_id: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  score: number; // Pode ser total_coins, challenges_completed, events_attended, ou total_score
+  tier: LeaderboardTier;
+  rank?: number; // Posição no ranking (adicionado após ordenação)
+  last_activity: string | null;
+}
+
+// Ranking do usuário atual
+export interface UserRanking {
+  user_id: string;
+  rank: number;
+  score: number;
+  tier: LeaderboardTier;
+  total_participants: number;
+  category: LeaderboardCategory;
+  period: TimePeriod;
+}
