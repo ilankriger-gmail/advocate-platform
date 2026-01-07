@@ -10,7 +10,7 @@ import {
 import {
   createMockReward,
 } from '../factories';
-import { setMockData } from '../mocks/supabase';
+import { setMockData, getMockData } from '../mocks/supabase';
 
 // Mock do módulo Supabase server
 jest.mock('@/lib/supabase/server', () => ({
@@ -184,6 +184,62 @@ describe('claimReward', () => {
 
       // Assert: Não deve ter erro de saldo
       expect(result.error).not.toBe('Saldo insuficiente');
+    });
+  });
+
+  describe('Operações de Sucesso', () => {
+    it('deve criar resgate com sucesso e deduzir moedas', async () => {
+      // Arrange: Usuário com saldo suficiente
+      const initialBalance = 500;
+      const coinsRequired = 150;
+      const initialStock = 10;
+
+      const user = setupAuthenticatedUser({ coinBalance: initialBalance });
+      const reward = createMockReward({
+        coins_required: coinsRequired,
+        quantity_available: initialStock,
+      });
+      setMockData('rewards', [reward]);
+
+      // Act
+      const result = await claimReward(reward.id);
+
+      // Assert: Operação bem-sucedida
+      expect(result.success).toBe(true);
+      expect(result.error).toBeUndefined();
+      expect(result.data).toBeDefined();
+
+      // Assert: Resgate criado corretamente
+      const claims = getMockData('reward_claims');
+      expect(claims).toHaveLength(1);
+      expect(claims[0]).toMatchObject({
+        user_id: user.id,
+        reward_id: reward.id,
+        status: 'pending',
+        coins_spent: coinsRequired,
+      });
+
+      // Assert: Saldo foi deduzido corretamente
+      const userCoins = getMockData('user_coins');
+      expect(userCoins).toHaveLength(1);
+      expect(userCoins[0].balance).toBe(initialBalance - coinsRequired);
+      expect(userCoins[0].user_id).toBe(user.id);
+
+      // Assert: Transação registrada
+      const transactions = getMockData('coin_transactions');
+      expect(transactions).toHaveLength(1);
+      expect(transactions[0]).toMatchObject({
+        user_id: user.id,
+        amount: -coinsRequired,
+        type: 'spent',
+        reference_id: claims[0].id,
+      });
+      expect(transactions[0].description).toContain(reward.name);
+
+      // Assert: Estoque decrementado
+      const rewards = getMockData('rewards');
+      expect(rewards).toHaveLength(1);
+      expect(rewards[0].quantity_available).toBe(initialStock - 1);
     });
   });
 });
