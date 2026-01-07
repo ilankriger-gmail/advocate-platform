@@ -1,0 +1,25 @@
+{
+  "active": true,
+  "spec": "002-use-input-component-in-loginform",
+  "state": "building",
+  "subtasks": {
+    "completed": 4,
+    "total": 5,
+    "in_progress": 1,
+    "failed": 0
+  },
+  "phase": {
+    "current": "Verifica\u00e7\u00e3o e Testes",
+    "id": null,
+    "total": 2
+  },
+  "workers": {
+    "active": 0,
+    "max": 1
+  },
+  "session": {
+    "number": 6,
+    "started_at": "2026-01-07T11:25:01.993768"
+  },
+  "last_update": "2026-01-07T11:34:33.049008"
+}
