@@ -2,17 +2,13 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
-
-type ActionResponse = {
-  error?: string;
-  success?: boolean;
-  data?: any;
-};
+import { ActionResponse } from '@/types/action';
+import type { Reward, RewardClaim } from '@/lib/supabase/types';
 
 /**
  * Resgatar uma recompensa
  */
-export async function claimReward(rewardId: string): Promise<ActionResponse> {
+export async function claimReward(rewardId: string): Promise<ActionResponse<RewardClaim>> {
   try {
     const supabase = await createClient();
 
@@ -353,7 +349,7 @@ export async function createReward(data: {
   coins_cost: number;
   stock?: number | null;
   type: 'digital' | 'physical';
-}): Promise<ActionResponse> {
+}): Promise<ActionResponse<Reward>> {
   try {
     const supabase = await createClient();
 
