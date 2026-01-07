@@ -5,7 +5,7 @@ Display public leaderboards showing top fans by coins earned, challenges complet
 and event attendance. Include weekly, monthly, and all-time views with badges
 and recognition tiers (Bronze, Silver, Gold, Diamond).
 
-## Status: In Progress - UI Components Phase Started
+## Status: In Progress - Dashboard Integration Phase Started
 
 ---
 
@@ -36,7 +36,7 @@ and recognition tiers (Bronze, Silver, Gold, Diamond).
 - [x] 5.2 Add leaderboard to navigation
 
 ### Phase 6: Dashboard Integration
-- [ ] 6.1 Create LeaderboardPreview widget
+- [x] 6.1 Create LeaderboardPreview widget
 - [ ] 6.2 Add leaderboard preview to dashboard
 
 ### Phase 7: Testing and Polish
@@ -166,3 +166,19 @@ and recognition tiers (Bronze, Silver, Gold, Diamond).
     - Positioned between 'Eventos' and 'Meus Premios' for logical navigation flow
     - Trophy icon uses badge/medal design matching leaderboard theme
     - All acceptance criteria met (Ranking in MAIN_NAV, Trophy icon, correct href)
+- 2026-01-07: Started Phase 6 (Dashboard Integration)
+  - 6.1: Created LeaderboardPreview widget in src/components/leaderboard/LeaderboardPreview.tsx (234 lines)
+    - ✅ Show top 5 users - Displays top 5 from combined/overall ranking (all-time)
+    - ✅ Compact design - Clean, compact card layout optimized for dashboard widgets
+    - ✅ Link to full ranking page - "Ver tudo" button in header and "Ver ranking completo" button at bottom
+    - ✅ Show user's rank if not in top 5 - Displays UserRankCard.Compact when user is not in top 5
+    - Additional features:
+      - Loading skeleton states for better UX
+      - Empty state when no participants
+      - Error handling with user-friendly messages
+      - Real-time update indicator
+      - Fetches data automatically using server actions (fetchCombinedLeaderboard, fetchUserRank)
+      - Uses compact variants of LeaderboardEntry and UserRankCard for consistent styling
+      - Responsive design with proper spacing
+    - Updated src/components/leaderboard/index.ts to export LeaderboardPreview
+    - Ready for integration into dashboard page (subtask 6.2)

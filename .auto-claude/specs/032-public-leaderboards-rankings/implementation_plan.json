@@ -297,7 +297,7 @@
           "id": "6.1",
           "title": "Create LeaderboardPreview widget",
           "description": "Create a compact leaderboard widget for the dashboard showing top 5 users with link to full ranking.",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/components/leaderboard/LeaderboardPreview.tsx"
           ],
@@ -306,7 +306,9 @@
             "Compact design",
             "Link to full ranking page",
             "Show user's rank if not in top 5"
-          ]
+          ],
+          "notes": "Created comprehensive LeaderboardPreview widget for dashboard with all acceptance criteria met:\n✅ Show top 5 users - Displays top 5 from combined/overall ranking\n✅ Compact design - Clean, compact card layout optimized for dashboard widgets\n✅ Link to full ranking page - \"Ver tudo\" button in header and \"Ver ranking completo\" button at bottom\n✅ Show user's rank if not in top 5 - Displays UserRankCard.Compact with user's position when they're not in top 5\n\nAdditional features:\n- Loading skeleton states for better UX\n- Empty state when no participants\n- Error handling with user-friendly messages\n- Real-time update indicator\n- Fetches data automatically using server actions (fetchCombinedLeaderboard, fetchUserRank)\n- Uses compact variants of LeaderboardEntry and UserRankCard for consistent styling\n- Follows all established patterns from other leaderboard components\n- Portuguese comments following project guidelines\n- TypeScript typed with proper imports\n- Responsive design\n\nComponent structure:\n- Fetches top 5 from combined leaderboard (all-time period)\n- Fetches current user's rank (if authenticated)\n- Shows top 5 entries using LeaderboardEntry.Compact\n- Shows user's rank card below if user is not in top 5\n- Provides multiple navigation paths to full ranking page\n\nFiles created/modified:\n- src/components/leaderboard/LeaderboardPreview.tsx (234 lines, new file)\n- src/components/leaderboard/index.ts (added export for LeaderboardPreview)\n\nReady for integration into dashboard page (subtask 6.2).",
+          "updated_at": "2026-01-07T19:05:00.000000+00:00"
         },
         {
           "id": "6.2",
@@ -381,5 +383,5 @@
     "Time periods: Weekly (last 7 days), Monthly (last 30 days), All-time",
     "User must be authenticated to see their own rank, but leaderboard is public"
   ],
-  "last_updated": "2026-01-07T18:58:13.983254+00:00"
+  "last_updated": "2026-01-07T19:05:00.000000+00:00"
 }
