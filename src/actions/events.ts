@@ -345,23 +345,13 @@ export async function confirmEventRegistration(
   userId: string
 ): Promise<ActionResponse> {
   try {
-    const supabase = await createClient();
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return { error: 'Usuario nao autenticado' };
+    // Verificar autorizacao
+    const auth = await requireAdmin();
+    if (isAuthError(auth)) {
+      return auth;
     }
 
-    // Verificar se e admin
-    const { data: profile } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (!profile || profile.role !== 'admin') {
-      return { error: 'Acesso nao autorizado' };
-    }
+    const { supabase } = auth;
 
     const { error } = await supabase
       .from('event_registrations')
