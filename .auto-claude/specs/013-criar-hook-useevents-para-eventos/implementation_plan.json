@@ -63,11 +63,13 @@
           "id": "1.5",
           "title": "Implementar handler para submitEventFeedback",
           "description": "Implementar handleSubmitFeedback que encapsula a server action submitEventFeedback com tratamento de erro e refresh autom\u00e1tico",
-          "status": "pending",
+          "status": "completed",
           "estimated_minutes": 3,
           "files": [
             "src/hooks/useEvents.ts"
-          ]
+          ],
+          "notes": "Implementado handleSubmitFeedback com sucesso seguindo o padr\u00e3o de usePosts. O handler encapsula a server action submitEventFeedback com: tratamento de erro via setError, refresh autom\u00e1tico via startTransition + router.refresh(), retorno de { success, error } para feedback ao componente. Handler aceita dois par\u00e2metros (eventId, feedback) e \u00e9 exportado como 'submitFeedback' no retorno do hook. Commit: 26764ff",
+          "updated_at": "2026-01-07T14:38:02.663258+00:00"
         }
       ]
     },
@@ -80,11 +82,13 @@
           "id": "2.1",
           "title": "Adicionar export do useEvents no index.ts",
           "description": "Adicionar a exporta\u00e7\u00e3o do useEvents no arquivo src/hooks/index.ts seguindo o padr\u00e3o existente",
-          "status": "pending",
+          "status": "completed",
           "estimated_minutes": 2,
           "files": [
             "src/hooks/index.ts"
-          ]
+          ],
+          "notes": "Adicionada a exporta\u00e7\u00e3o do useEvents no arquivo src/hooks/index.ts seguindo o padr\u00e3o existente. O hook agora est\u00e1 dispon\u00edvel para importa\u00e7\u00e3o via barrel file, mantendo consist\u00eancia com useToast, usePosts e useProfile. Commit: 65483ea",
+          "updated_at": "2026-01-07T14:39:37.676297+00:00"
         }
       ]
     },
@@ -136,5 +140,5 @@
     "completed_subtasks": 0,
     "estimated_total_minutes": 24
   },
-  "last_updated": "2026-01-07T14:36:37.739909+00:00"
+  "last_updated": "2026-01-07T14:39:37.676308+00:00"
 }

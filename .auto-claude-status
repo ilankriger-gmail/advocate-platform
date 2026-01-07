@@ -3,23 +3,23 @@
   "spec": "013-criar-hook-useevents-para-eventos",
   "state": "building",
   "subtasks": {
-    "completed": 4,
+    "completed": 6,
     "total": 8,
     "in_progress": 1,
     "failed": 0
   },
   "phase": {
-    "current": "Criar hook useEvents",
+    "current": "Verifica\u00e7\u00e3o e QA",
     "id": null,
-    "total": 5
+    "total": 2
   },
   "workers": {
     "active": 0,
     "max": 1
   },
   "session": {
-    "number": 6,
+    "number": 8,
     "started_at": "2026-01-07T11:27:29.879708"
   },
-  "last_update": "2026-01-07T11:36:55.252098"
+  "last_update": "2026-01-07T11:40:16.160370"
 }
