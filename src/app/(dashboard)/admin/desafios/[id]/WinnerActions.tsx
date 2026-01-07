@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Input } from '@/components/ui';
-import { registerWinner, markWinnerPaid } from '@/actions/challenges';
+import { registerWinner, markWinnerPaid } from '@/actions/challenges-admin';
 
 interface WinnerActionsProps {
   challengeId: string;

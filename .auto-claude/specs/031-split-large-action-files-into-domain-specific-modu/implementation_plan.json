@@ -60,10 +60,12 @@
           "id": "2.2",
           "title": "Refatorar challenges.ts mantendo apenas user actions",
           "description": "Manter participateInChallenge e updateParticipation, importar tipos do arquivo compartilhado",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/actions/challenges.ts"
-          ]
+          ],
+          "notes": "Refatorado src/actions/challenges.ts para manter apenas fun\u00e7\u00f5es de usu\u00e1rio (participateInChallenge e updateParticipation). Removidas todas as actions administrativas que foram movidas para challenges-admin.ts. Importado ActionResponse de './types' para usar tipo compartilhado. Removido console.error statement. Arquivo reduzido de 588 para 143 linhas (~75% de redu\u00e7\u00e3o).",
+          "updated_at": "2026-01-07T14:36:17.447778+00:00"
         },
         {
           "id": "2.3",
@@ -265,5 +267,5 @@
     "issues": ""
   },
   "final_acceptance": [],
-  "last_updated": "2026-01-07T14:34:25.390058+00:00"
+  "last_updated": "2026-01-07T14:36:17.447783+00:00"
 }

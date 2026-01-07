@@ -1,0 +1,57 @@
+{
+  "subtasks": {
+    "1.1": {
+      "attempts": [
+        {
+          "session": 2,
+          "timestamp": "2026-01-07T11:30:58.947621",
+          "approach": "Implemented: Criar src/actions/types.ts com ActionResponse e outras interfaces compartilhadas para evitar duplica",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "1.2": {
+      "attempts": [
+        {
+          "session": 3,
+          "timestamp": "2026-01-07T11:32:30.119838",
+          "approach": "Implemented: Criar src/actions/utils.ts com fun\u00e7\u00e3o reutiliz\u00e1vel para verificar se usu\u00e1rio \u00e9 admin/creator, evitan",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "2.1": {
+      "attempts": [
+        {
+          "session": 4,
+          "timestamp": "2026-01-07T11:35:01.817119",
+          "approach": "Implemented: Mover approveParticipation, rejectParticipation, toggleChallengeActive, markWinnerPaid, createChalle",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "2.2": {
+      "attempts": [
+        {
+          "session": 5,
+          "timestamp": "2026-01-07T11:36:29.841830",
+          "approach": "Implemented: Manter participateInChallenge e updateParticipation, importar tipos do arquivo compartilhado",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    }
+  },
+  "stuck_subtasks": [],
+  "metadata": {
+    "created_at": "2026-01-07T11:25:42.358026",
+    "last_updated": "2026-01-07T11:36:29.841851"
+  }
+}

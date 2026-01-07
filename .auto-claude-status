@@ -1,0 +1,25 @@
+{
+  "active": true,
+  "spec": "031-split-large-action-files-into-domain-specific-modu",
+  "state": "building",
+  "subtasks": {
+    "completed": 4,
+    "total": 14,
+    "in_progress": 1,
+    "failed": 0
+  },
+  "phase": {
+    "current": "Split do m\u00f3dulo challenges",
+    "id": null,
+    "total": 3
+  },
+  "workers": {
+    "active": 0,
+    "max": 1
+  },
+  "session": {
+    "number": 6,
+    "started_at": "2026-01-07T11:25:42.358308"
+  },
+  "last_update": "2026-01-07T11:36:35.914624"
+}

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui';
-import { approveParticipation, rejectParticipation } from '@/actions/challenges';
+import { approveParticipation, rejectParticipation } from '@/actions/challenges-admin';
 
 interface ParticipationActionsProps {
   participationId: string;

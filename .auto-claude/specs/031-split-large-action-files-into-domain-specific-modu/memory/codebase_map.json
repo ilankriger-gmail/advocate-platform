@@ -1,0 +1,10 @@
+{
+  "discovered_files": {
+    "src/actions": {
+      "description": "Action files have mixed user and admin actions. challenges.ts (588 lines), rewards.ts (533 lines), events.ts (411 lines) all contain both. Admin actions are marked with comment '// ============ ADMIN ACTIONS ============' as separator. ActionResponse type is duplicated in each file.",
+      "category": "architecture",
+      "discovered_at": "2026-01-07T14:28:28.000565+00:00"
+    }
+  },
+  "last_updated": "2026-01-07T14:28:28.000582+00:00"
+}
