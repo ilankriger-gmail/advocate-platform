@@ -68,30 +68,34 @@
             "1.1"
           ],
           "estimated_minutes": 35,
-          "notes": "Documento DATA_FLOW_POSTS.md criado com sucesso contendo: (1) Visão geral da arquitetura de posts com diagrama de estados e camadas, (2) Fluxo completo de criação de post: Client Component -> Server Action -> Supabase com 3 diagramas (sequência, decisão, código), (3) Fluxo de moderação admin: aprovação e rejeição de posts com diagramas de sequência e estrutura do painel, (4) Fluxo de exibição no feed: Server Components, queries otimizadas com JOINs, e renderização, (5) Sistema de likes com atualização otimista: 4 diagramas incluindo arquitetura, sequência e código completo, (6) Sistema de comentários com Server Actions e busca de threads, (7) Fluxo de deleção de posts com validação de ownership, (8) Diagrama completo do fluxo de dados entre todas as camadas (Client, Server Actions, Server Components, Supabase, DB), (9) Timeline do ciclo de vida completo de um post (criação -> moderação -> publicação -> interação), (10) Estrutura de arquivos, mapa de responsabilidades e tabelas do banco, (11) Políticas RLS documentadas para cada operação (create, read, update, delete, like, comment), (12) Métricas de performance e resumo dos fluxos principais. Total: 960+ linhas com 15+ diagramas Mermaid, código TypeScript completo, queries SQL e documentação detalhada em português. Commit: 941331f",
-          "updated_at": "2026-01-07T16:41:00.000000+00:00"
+          "notes": "Documento DATA_FLOW_POSTS.md criado com sucesso contendo documentacao completa do sistema de posts incluindo: (1) Visao geral da arquitetura de posts com diagrama mostrando fluxo entre Client Components, Server Actions, e Supabase, (2) Fluxo completo de criacao de post com diagramas de sequencia e codigo, (3) Sistema de moderacao admin com aprovacao/rejeicao e diagramas de decisao, (4) Exibicao no feed com arquitetura de Server Components e queries otimizadas, (5) Sistema de likes com atualizacao otimista e toggle like/unlike, (6) Sistema de comentarios completo com validacao, (7) Sistema de delecao de posts, (8) Fluxo completo de dados mostrando todas as camadas (Client, Server Actions, Server Components, Supabase, Database), (9) Diagramas de estado e timeline do ciclo de vida de posts, (10) Documentacao completa de politicas RLS para posts, likes e comentarios, (11) Estrutura de arquivos e mapa de responsabilidades. Total de 1615 linhas com 15+ diagramas Mermaid. Commit: 941331f",
+          "updated_at": "2026-01-07T16:42:35.480353+00:00"
         },
         {
           "id": "2.3",
           "title": "Documentar fluxo de eventos",
           "description": "Criar documento DATA_FLOW_EVENTS.md com diagramas de: listagem de eventos, registro de participacao, verificacao de nivel de advocate, e fluxo admin para criacao/gestao de eventos.",
-          "status": "pending",
+          "status": "completed",
           "file_path": "docs/flows/DATA_FLOW_EVENTS.md",
           "dependencies": [
             "1.1"
           ],
-          "estimated_minutes": 30
+          "estimated_minutes": 30,
+          "notes": "Documento DATA_FLOW_EVENTS.md criado com sucesso contendo documentacao completa do sistema de eventos incluindo: (1) Visao geral da arquitetura de eventos com diagrama mostrando fluxo entre Client Components, Server Actions, e Supabase, (2) Fluxo completo de listagem de eventos com categorizacao (acontecendo agora, proximos, passados), (3) Sistema de registro de participacao com validacoes em multiplas camadas (evento ativo, nivel de advocate, vagas disponiveis, inscricao unica), (4) Verificacao de nivel de advocate com validacao tanto na UI quanto no servidor, (5) Fluxo admin completo para criacao de eventos com formulario dinamico baseado no tipo (virtual, presencial, hibrido), (6) Gestao de eventos por admins com painel organizado por status (ao vivo, proximos, passados), (7) Sistema de check-in para confirmacao de presenca em eventos ao vivo, (8) Sistema de feedback pos-evento para usuarios que participaram (status: attended), (9) Fluxo completo de dados mostrando todas as camadas (Client, Server Actions, Server Components, Supabase, Database), (10) Timeline gantt chart do ciclo de vida completo de um evento, (11) Diagramas de estado para inscricoes de eventos (registered \u2192 confirmed \u2192 attended \u2192 cancelled), (12) Documentacao completa de politicas RLS para tabelas events e event_registrations, (13) Diagrama ERD mostrando relacionamentos entre events, event_registrations e users, (14) Estrutura de arquivos e mapa de responsabilidades. Total de 1868 linhas com 20+ diagramas Mermaid. Commit: f8a3e89",
+          "updated_at": "2026-01-07T16:58:30.132664+00:00"
         },
         {
           "id": "2.4",
           "title": "Documentar fluxo de desafios",
           "description": "Criar documento DATA_FLOW_CHALLENGES.md com diagramas de: listagem de desafios, participacao, submissao de evidencias, selecao de vencedores, e sistema de recompensas.",
-          "status": "pending",
+          "status": "completed",
           "file_path": "docs/flows/DATA_FLOW_CHALLENGES.md",
           "dependencies": [
             "1.1"
           ],
-          "estimated_minutes": 35
+          "estimated_minutes": 35,
+          "notes": "Documento DATA_FLOW_CHALLENGES.md criado com sucesso contendo documenta\u00e7\u00e3o completa do sistema de desafios incluindo: (1) Vis\u00e3o geral da arquitetura de desafios com tr\u00eas tipos: f\u00edsico, engajamento e participe, (2) Fluxo completo de listagem de desafios com agrupamento por tipo e status de participa\u00e7\u00e3o do usu\u00e1rio, (3) Sistema de participa\u00e7\u00e3o em desafios f\u00edsicos com valida\u00e7\u00f5es em m\u00faltiplas camadas (client-side e server-side), (4) Submiss\u00e3o de evid\u00eancias: resultado num\u00e9rico obrigat\u00f3rio, v\u00eddeo prova opcional e post em rede social opcional, (5) Verifica\u00e7\u00e3o autom\u00e1tica por IA usando Google Gemini para an\u00e1lise de v\u00eddeos com veredicto estruturado (approved, count, confidence, reasoning), (6) Fluxo admin de modera\u00e7\u00e3o de participa\u00e7\u00f5es com aprova\u00e7\u00e3o/rejei\u00e7\u00e3o e possibilidade de moedas customizadas, (7) Sistema de sele\u00e7\u00e3o de vencedores para desafios de sorteio (engajamento/participe) com registro e controle de pagamento PIX, (8) Sistema completo de recompensas dual: moedas virtuais (cora\u00e7\u00f5es) creditadas em user_coins com transa\u00e7\u00f5es registradas em coin_transactions, e pr\u00eamios em dinheiro via PIX com controle de pagamento, (9) Fluxo admin de gest\u00e3o de desafios: cria\u00e7\u00e3o com campos din\u00e2micos por tipo, ativa\u00e7\u00e3o/desativa\u00e7\u00e3o via toggle, e encerramento de desafios, (10) Fluxo completo de dados mostrando todas as camadas (Client Components, Server Actions, Server Components, Google Gemini AI, Supabase, Database) com arquitetura integrada, (11) Timeline gantt chart do ciclo de vida completo de um desafio desde cria\u00e7\u00e3o at\u00e9 pagamento de pr\u00eamios, (12) Diagramas de estado para participa\u00e7\u00f5es (pending \u2192 approved/rejected) e vencedores (registered \u2192 pix_sent), (13) Documenta\u00e7\u00e3o completa de pol\u00edticas RLS para todas as tabelas: challenges (p\u00fablico v\u00ea ativos, admin v\u00ea todos), challenge_participants (usu\u00e1rio v\u00ea pr\u00f3prias, admin v\u00ea todas), challenge_winners (p\u00fablico v\u00ea todos, admin gerencia), user_coins (usu\u00e1rio v\u00ea pr\u00f3prio saldo, admin v\u00ea todos) e coin_transactions (usu\u00e1rio v\u00ea pr\u00f3prias, admin v\u00ea todas), (14) Diagrama ERD completo mostrando relacionamentos entre challenges, challenge_participants, challenge_winners, user_coins, coin_transactions e profiles, (15) Estrutura de arquivos e mapa de responsabilidades detalhando 10 Server Actions (participateInChallenge, updateParticipation, approveParticipation, rejectParticipation, toggleChallengeActive, markWinnerPaid, createChallenge, closeChallenge, registerWinner, markPrizeSent), Client Components (PhysicalChallengeCard, ChallengeParticipationModal, ChallengeRanking), Server Components (desafios/page.tsx, admin/desafios/page.tsx) e External Services (Google Gemini AI para an\u00e1lise de v\u00eddeo multimodal). Total de 2640 linhas com 30+ diagramas Mermaid incluindo sequ\u00eancia, flowcharts, state machines, ERD, gantt charts, e grafos de arquitetura. Commit: 489507b",
+          "updated_at": "2026-01-07T17:06:48.041548+00:00"
         },
         {
           "id": "2.5",
@@ -276,5 +280,5 @@
     "tests_passed": ""
   },
   "spec_file": "spec.md",
-  "last_updated": "2026-01-07T16:41:00.000000+00:00"
+  "last_updated": "2026-01-07T17:06:48.041559+00:00"
 }
