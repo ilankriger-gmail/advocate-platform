@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui';
-import { toggleEventActive } from '@/actions/events';
+import { toggleEventActive } from '@/actions/events-admin';
 
 interface EventAdminActionsProps {
   event: {

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, Button, Input, Textarea } from '@/components/ui';
-import { createEvent } from '@/actions/events';
+import { createEvent } from '@/actions/events-admin';
 
 type EventType = 'virtual' | 'presencial' | 'hibrido';
 
