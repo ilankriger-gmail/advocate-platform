@@ -1,11 +1,14 @@
 # Build Progress - Split large action files into domain-specific modules
 
-## Status: In Progress - Phase 2 (Split do módulo challenges)
+## Status: In Progress - Phase 3 (Split do módulo rewards)
 
 ### Completed Subtasks:
 - [x] 1.1 - Created src/actions/types.ts with ActionResponse<T> and shared type definitions
 - [x] 1.2 - Created src/actions/utils.ts with reusable admin verification utilities
 - [x] 2.1 - Created src/actions/challenges-admin.ts with 8 admin actions (approveParticipation, rejectParticipation, toggleChallengeActive, markWinnerPaid, createChallenge, closeChallenge, registerWinner, markPrizeSent)
+- [x] 2.2 - Refactored src/actions/challenges.ts to keep only user actions (participateInChallenge, updateParticipation)
+- [x] 2.3 - Updated all 4 admin challenge components to import from challenges-admin
+- [x] 3.1 - Created src/actions/rewards-admin.ts with 7 admin actions (toggleRewardActive, approveClaim, markClaimShipped, markClaimDelivered, createReward, updateReward, addCoinsToUser)
 
 ## Analysis Summary
 

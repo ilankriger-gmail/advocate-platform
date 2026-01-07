@@ -71,13 +71,15 @@
           "id": "2.3",
           "title": "Atualizar imports de challenges-admin nos componentes",
           "description": "Atualizar admin/desafios/novo/page.tsx, admin/desafios/[id]/ParticipationActions.tsx, admin/desafios/[id]/WinnerActions.tsx, admin/desafios/[id]/ChallengeActions.tsx",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/app/(dashboard)/admin/desafios/novo/page.tsx",
             "src/app/(dashboard)/admin/desafios/[id]/ParticipationActions.tsx",
             "src/app/(dashboard)/admin/desafios/[id]/WinnerActions.tsx",
             "src/app/(dashboard)/admin/desafios/[id]/ChallengeActions.tsx"
-          ]
+          ],
+          "notes": "Atualizados todos os 4 componentes admin de desafios para importar actions de challenges-admin:\n- admin/desafios/novo/page.tsx: createChallenge\n- admin/desafios/[id]/ParticipationActions.tsx: approveParticipation, rejectParticipation\n- admin/desafios/[id]/WinnerActions.tsx: registerWinner, markWinnerPaid\n- admin/desafios/[id]/ChallengeActions.tsx: toggleChallengeActive\n\nTodas as imports foram atualizadas de '@/actions/challenges' para '@/actions/challenges-admin'.",
+          "updated_at": "2026-01-07T14:37:45.236467+00:00"
         }
       ]
     },
@@ -90,10 +92,12 @@
           "id": "3.1",
           "title": "Criar rewards-admin.ts com actions administrativas",
           "description": "Mover toggleRewardActive, approveClaim, markClaimShipped, markClaimDelivered, createReward, updateReward, addCoinsToUser para novo arquivo",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/actions/rewards-admin.ts"
-          ]
+          ],
+          "notes": "Criado arquivo src/actions/rewards-admin.ts com todas as 7 actions administrativas (toggleRewardActive, approveClaim, markClaimShipped, markClaimDelivered, createReward, updateReward, addCoinsToUser). Refatorado para usar fun\u00e7\u00f5es utilit\u00e1rias compartilhadas (getAuthenticatedUser, verifyAdminOrCreator) e tipos do arquivo types.ts. Removido console.error statement de createReward e corrigida inconsist\u00eancia em updateReward que usava tabela 'users' ao inv\u00e9s de 'profiles'. Arquivo com 333 linhas seguindo padr\u00e3o estabelecido em challenges-admin.ts.",
+          "updated_at": "2026-01-07T14:39:24.674758+00:00"
         },
         {
           "id": "3.2",
@@ -267,5 +271,5 @@
     "issues": ""
   },
   "final_acceptance": [],
-  "last_updated": "2026-01-07T14:36:17.447783+00:00"
+  "last_updated": "2026-01-07T14:39:24.674784+00:00"
 }
