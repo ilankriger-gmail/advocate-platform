@@ -3,23 +3,23 @@
   "spec": "028-add-test-infrastructure-and-unit-tests-for-critica",
   "state": "building",
   "subtasks": {
-    "completed": 6,
+    "completed": 7,
     "total": 23,
     "in_progress": 1,
     "failed": 0
   },
   "phase": {
-    "current": "Test Mocks and Utilities",
+    "current": "Utility Function Tests",
     "id": null,
-    "total": 3
+    "total": 4
   },
   "workers": {
     "active": 0,
     "max": 1
   },
   "session": {
-    "number": 2,
+    "number": 3,
     "started_at": "2026-01-07T13:36:54.419436"
   },
-  "last_update": "2026-01-07T13:40:02.480950"
+  "last_update": "2026-01-07T13:43:07.183195"
 }
