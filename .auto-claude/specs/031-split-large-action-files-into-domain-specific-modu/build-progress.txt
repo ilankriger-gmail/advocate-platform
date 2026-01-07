@@ -1,6 +1,6 @@
 # Build Progress - Split large action files into domain-specific modules
 
-## Status: In Progress - Phase 3 (Split do módulo rewards)
+## Status: In Progress - Phase 4 (Split do módulo events)
 
 ### Completed Subtasks:
 - [x] 1.1 - Created src/actions/types.ts with ActionResponse<T> and shared type definitions
@@ -9,36 +9,49 @@
 - [x] 2.2 - Refactored src/actions/challenges.ts to keep only user actions (participateInChallenge, updateParticipation)
 - [x] 2.3 - Updated all 4 admin challenge components to import from challenges-admin
 - [x] 3.1 - Created src/actions/rewards-admin.ts with 7 admin actions (toggleRewardActive, approveClaim, markClaimShipped, markClaimDelivered, createReward, updateReward, addCoinsToUser)
+- [x] 3.2 - Refactored src/actions/rewards.ts to keep only user actions (claimReward, cancelClaim)
+- [x] 3.3 - Updated all 2 admin reward components to import from rewards-admin
+- [x] 4.1 - Created src/actions/events-admin.ts with 4 admin actions (createEvent, toggleEventActive, updateEvent, confirmEventRegistration)
+
+### Current Progress:
+Phase 4 is in progress. Successfully created events-admin.ts with all 4 admin actions following the established pattern.
+
+### Next Steps:
+- [ ] 4.2 - Refactor events.ts to keep only user actions
+- [ ] 4.3 - Update admin event components to import from events-admin
+- [ ] 5.1 - Update src/actions/index.ts with new modules
+- [ ] 5.2 - Verify TypeScript compilation
+- [ ] 5.3 - Execute production build
 
 ## Analysis Summary
 
 ### Files to Split:
-1. **challenges.ts** (588 lines)
+1. **challenges.ts** (588 lines) - COMPLETED ✓
    - User actions: participateInChallenge, updateParticipation (~150 lines)
    - Admin actions: approveParticipation, rejectParticipation, toggleChallengeActive, markWinnerPaid, createChallenge, closeChallenge, registerWinner, markPrizeSent (~440 lines)
 
-2. **rewards.ts** (533 lines)
+2. **rewards.ts** (533 lines) - COMPLETED ✓
    - User actions: claimReward, cancelClaim (~185 lines)
    - Admin actions: toggleRewardActive, approveClaim, markClaimShipped, markClaimDelivered, createReward, updateReward, addCoinsToUser (~350 lines)
 
-3. **events.ts** (411 lines)
+3. **events.ts** (411 lines) - IN PROGRESS
    - User actions: registerForEvent, cancelEventRegistration, checkInEvent, submitEventFeedback (~205 lines)
-   - Admin actions: createEvent, toggleEventActive, updateEvent, confirmEventRegistration (~205 lines)
+   - Admin actions: createEvent, toggleEventActive, updateEvent, confirmEventRegistration (~205 lines) - COMPLETED ✓
 
-### New Files to Create:
-- src/actions/types.ts (shared types)
-- src/actions/utils.ts (shared utilities)
-- src/actions/challenges-admin.ts
-- src/actions/rewards-admin.ts
-- src/actions/events-admin.ts
+### New Files Created:
+- src/actions/types.ts (shared types) ✓
+- src/actions/utils.ts (shared utilities) ✓
+- src/actions/challenges-admin.ts ✓
+- src/actions/rewards-admin.ts ✓
+- src/actions/events-admin.ts ✓
 
-### Components to Update:
-- Admin challenge pages (4 files)
-- Admin reward pages (2 files)
-- Admin event pages (2 files)
+### Components Updated:
+- Admin challenge pages (4 files) ✓
+- Admin reward pages (2 files) ✓
+- Admin event pages (2 files) - PENDING
 
 ## Implementation Plan:
 5 phases with 14 total subtasks. See implementation_plan.json for details.
 
 ---
-Last updated: 2025-01-07
+Last updated: 2026-01-07T16:38:15Z

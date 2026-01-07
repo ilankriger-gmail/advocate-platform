@@ -2,7 +2,7 @@
   "feature": "Split large action files into domain-specific modules",
   "description": "Three action files exceed recommended size limits: challenges.ts (588 lines), rewards.ts (533 lines), events.ts (411 lines). Each file contains both user-facing and admin actions mixed together, violating single responsibility.",
   "created_at": "2026-01-07T14:25:35.762Z",
-  "updated_at": "2026-01-07T14:25:41.423Z",
+  "updated_at": "2026-01-07T16:36:42.642Z",
   "status": "in_progress",
   "planStatus": "in_progress",
   "workflow_type": "development",
@@ -13,13 +13,13 @@
   "phases": [
     {
       "id": "phase-1",
-      "name": "Prepara\u00e7\u00e3o e Shared Types",
-      "description": "Criar arquivo de tipos compartilhados para evitar duplica\u00e7\u00e3o e preparar estrutura",
+      "name": "Preparação e Shared Types",
+      "description": "Criar arquivo de tipos compartilhados para evitar duplicação e preparar estrutura",
       "subtasks": [
         {
           "id": "1.1",
           "title": "Criar arquivo de tipos compartilhados para actions",
-          "description": "Criar src/actions/types.ts com ActionResponse e outras interfaces compartilhadas para evitar duplica\u00e7\u00e3o em cada arquivo",
+          "description": "Criar src/actions/types.ts com ActionResponse e outras interfaces compartilhadas para evitar duplicação em cada arquivo",
           "status": "completed",
           "files": [
             "src/actions/types.ts"
@@ -29,8 +29,8 @@
         },
         {
           "id": "1.2",
-          "title": "Criar utilit\u00e1rio de verifica\u00e7\u00e3o de admin",
-          "description": "Criar src/actions/utils.ts com fun\u00e7\u00e3o reutiliz\u00e1vel para verificar se usu\u00e1rio \u00e9 admin/creator, evitando duplica\u00e7\u00e3o de c\u00f3digo",
+          "title": "Criar utilitário de verificação de admin",
+          "description": "Criar src/actions/utils.ts com função reutilizável para verificar se usuário é admin/creator, evitando duplicação de código",
           "status": "completed",
           "files": [
             "src/actions/utils.ts"
@@ -42,7 +42,7 @@
     },
     {
       "id": "phase-2",
-      "name": "Split do m\u00f3dulo challenges",
+      "name": "Split do módulo challenges",
       "description": "Separar challenges.ts em user e admin modules",
       "subtasks": [
         {
@@ -53,7 +53,7 @@
           "files": [
             "src/actions/challenges-admin.ts"
           ],
-          "notes": "Criado arquivo src/actions/challenges-admin.ts com todas as 8 actions administrativas (approveParticipation, rejectParticipation, toggleChallengeActive, markWinnerPaid, createChallenge, closeChallenge, registerWinner, markPrizeSent). Refatorado para usar fun\u00e7\u00f5es utilit\u00e1rias compartilhadas (getAuthenticatedUser, verifyAdminOrCreator) e tipos do arquivo types.ts. Removidos console.error statements e mantida toda a l\u00f3gica de neg\u00f3cios original.",
+          "notes": "Criado arquivo src/actions/challenges-admin.ts com todas as 8 actions administrativas (approveParticipation, rejectParticipation, toggleChallengeActive, markWinnerPaid, createChallenge, closeChallenge, registerWinner, markPrizeSent). Refatorado para usar funções utilitárias compartilhadas (getAuthenticatedUser, verifyAdminOrCreator) e tipos do arquivo types.ts. Removidos console.error statements e mantida toda a lógica de negócios original.",
           "updated_at": "2026-01-07T14:34:25.390049+00:00"
         },
         {
@@ -64,7 +64,7 @@
           "files": [
             "src/actions/challenges.ts"
           ],
-          "notes": "Refatorado src/actions/challenges.ts para manter apenas fun\u00e7\u00f5es de usu\u00e1rio (participateInChallenge e updateParticipation). Removidas todas as actions administrativas que foram movidas para challenges-admin.ts. Importado ActionResponse de './types' para usar tipo compartilhado. Removido console.error statement. Arquivo reduzido de 588 para 143 linhas (~75% de redu\u00e7\u00e3o).",
+          "notes": "Refatorado src/actions/challenges.ts para manter apenas funções de usuário (participateInChallenge e updateParticipation). Removidas todas as actions administrativas que foram movidas para challenges-admin.ts. Importado ActionResponse de './types' para usar tipo compartilhado. Removido console.error statement. Arquivo reduzido de 588 para 143 linhas (~75% de redução).",
           "updated_at": "2026-01-07T14:36:17.447778+00:00"
         },
         {
@@ -85,7 +85,7 @@
     },
     {
       "id": "phase-3",
-      "name": "Split do m\u00f3dulo rewards",
+      "name": "Split do módulo rewards",
       "description": "Separar rewards.ts em user e admin modules",
       "subtasks": [
         {
@@ -96,43 +96,49 @@
           "files": [
             "src/actions/rewards-admin.ts"
           ],
-          "notes": "Criado arquivo src/actions/rewards-admin.ts com todas as 7 actions administrativas (toggleRewardActive, approveClaim, markClaimShipped, markClaimDelivered, createReward, updateReward, addCoinsToUser). Refatorado para usar fun\u00e7\u00f5es utilit\u00e1rias compartilhadas (getAuthenticatedUser, verifyAdminOrCreator) e tipos do arquivo types.ts. Removido console.error statement de createReward e corrigida inconsist\u00eancia em updateReward que usava tabela 'users' ao inv\u00e9s de 'profiles'. Arquivo com 333 linhas seguindo padr\u00e3o estabelecido em challenges-admin.ts.",
+          "notes": "Criado arquivo src/actions/rewards-admin.ts com todas as 7 actions administrativas (toggleRewardActive, approveClaim, markClaimShipped, markClaimDelivered, createReward, updateReward, addCoinsToUser). Refatorado para usar funções utilitárias compartilhadas (getAuthenticatedUser, verifyAdminOrCreator) e tipos do arquivo types.ts. Removido console.error statement de createReward e corrigida inconsistência em updateReward que usava tabela 'users' ao invés de 'profiles'. Arquivo com 333 linhas seguindo padrão estabelecido em challenges-admin.ts.",
           "updated_at": "2026-01-07T14:39:24.674758+00:00"
         },
         {
           "id": "3.2",
           "title": "Refatorar rewards.ts mantendo apenas user actions",
           "description": "Manter claimReward e cancelClaim, importar tipos do arquivo compartilhado",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/actions/rewards.ts"
-          ]
+          ],
+          "notes": "Refatorado src/actions/rewards.ts para manter apenas funções de usuário (claimReward e cancelClaim). Removidas todas as actions administrativas que foram movidas para rewards-admin.ts. Importado ActionResponse de './types' para usar tipo compartilhado. Arquivo reduzido de 533 para 178 linhas (~66% de redução).",
+          "updated_at": "2026-01-07T14:42:10.104690+00:00"
         },
         {
           "id": "3.3",
           "title": "Atualizar imports de rewards-admin nos componentes",
           "description": "Atualizar admin/usuarios/UserAdminComponents.tsx, admin/premios/RewardAdminComponents.tsx",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/app/(dashboard)/admin/usuarios/UserAdminComponents.tsx",
             "src/app/(dashboard)/admin/premios/RewardAdminComponents.tsx"
-          ]
+          ],
+          "notes": "Atualizados imports de rewards-admin nos componentes:\n- admin/usuarios/UserAdminComponents.tsx: addCoinsToUser\n- admin/premios/RewardAdminComponents.tsx: toggleRewardActive, createReward, approveClaim, markClaimShipped, markClaimDelivered\n\nTodas as imports foram atualizadas de @/actions/rewards para @/actions/rewards-admin. Commit criado com sucesso.",
+          "updated_at": "2026-01-07T14:44:08.775147+00:00"
         }
       ]
     },
     {
       "id": "phase-4",
-      "name": "Split do m\u00f3dulo events",
+      "name": "Split do módulo events",
       "description": "Separar events.ts em user e admin modules",
       "subtasks": [
         {
           "id": "4.1",
           "title": "Criar events-admin.ts com actions administrativas",
           "description": "Mover createEvent, toggleEventActive, updateEvent, confirmEventRegistration para novo arquivo",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/actions/events-admin.ts"
-          ]
+          ],
+          "notes": "Criado arquivo src/actions/events-admin.ts com todas as 4 actions administrativas (createEvent, toggleEventActive, updateEvent, confirmEventRegistration). Refatorado para usar funções utilitárias compartilhadas (getAuthenticatedUser, verifyAdminOrCreator) e tipos do arquivo types.ts. Removido console.error statement de createEvent. Corrigidas inconsistências: updateEvent e confirmEventRegistration agora usam verifyAdminOrCreator (admin/creator) ao invés de apenas admin com tabela 'users'. Arquivo com 197 linhas seguindo padrão estabelecido em challenges-admin.ts e rewards-admin.ts.",
+          "updated_at": "2026-01-07T16:38:15.000000+00:00"
         },
         {
           "id": "4.2",
@@ -157,12 +163,12 @@
     },
     {
       "id": "phase-5",
-      "name": "Atualiza\u00e7\u00e3o do index e valida\u00e7\u00e3o",
+      "name": "Atualização do index e validação",
       "description": "Atualizar exports centralizados e validar funcionamento",
       "subtasks": [
         {
           "id": "5.1",
-          "title": "Atualizar src/actions/index.ts com novos m\u00f3dulos",
+          "title": "Atualizar src/actions/index.ts com novos módulos",
           "description": "Adicionar exports para challenges-admin, rewards-admin, events-admin e manter compatibilidade com imports existentes",
           "status": "pending",
           "files": [
@@ -172,14 +178,14 @@
         {
           "id": "5.2",
           "title": "Verificar TypeScript compilation",
-          "description": "Executar tsc --noEmit para garantir que n\u00e3o h\u00e1 erros de tipos",
+          "description": "Executar tsc --noEmit para garantir que não há erros de tipos",
           "status": "pending",
           "files": []
         },
         {
           "id": "5.3",
-          "title": "Executar build de produ\u00e7\u00e3o",
-          "description": "Executar npm run build para validar que a aplica\u00e7\u00e3o compila corretamente",
+          "title": "Executar build de produção",
+          "description": "Executar npm run build para validar que a aplicação compila corretamente",
           "status": "pending",
           "files": []
         }
@@ -271,5 +277,5 @@
     "issues": ""
   },
   "final_acceptance": [],
-  "last_updated": "2026-01-07T14:39:24.674784+00:00"
+  "last_updated": "2026-01-07T14:44:08.775156+00:00"
 }
