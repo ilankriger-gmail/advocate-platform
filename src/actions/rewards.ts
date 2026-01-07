@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { ActionResponse } from '@/types/action';
-import type { Reward, RewardClaim } from '@/lib/supabase/types';
+import type { Reward, RewardClaim, ClaimWithReward } from '@/lib/supabase/types';
 
 /**
  * Resgatar uma recompensa
@@ -122,7 +122,7 @@ export async function cancelClaim(claimId: string): Promise<ActionResponse> {
       .eq('id', claimId)
       .eq('user_id', user.id)
       .eq('status', 'pending')
-      .single();
+      .single() as { data: ClaimWithReward | null };
 
     if (!claim) {
       return { error: 'Resgate nao encontrado ou nao pode ser cancelado' };
@@ -161,7 +161,7 @@ export async function cancelClaim(claimId: string): Promise<ActionResponse> {
           user_id: user.id,
           amount: claim.coins_spent,
           type: 'earned',
-          description: `Estorno: ${(claim as any).rewards?.name || 'Resgate cancelado'}`,
+          description: `Estorno: ${claim.rewards?.name || 'Resgate cancelado'}`,
           reference_id: claimId,
         });
     }

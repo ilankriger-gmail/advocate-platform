@@ -391,6 +391,14 @@ export interface RewardClaimWithDetails extends RewardClaim {
   reward: Reward;
 }
 
+/**
+ * Tipo para resgate com dados da recompensa associada
+ * Usado quando fazemos join com a tabela rewards
+ */
+export interface ClaimWithReward extends RewardClaim {
+  rewards: Reward | null;
+}
+
 // ============ SUBMISSÕES EXTERNAS ============
 
 export type VerificationStatus = 'pending' | 'verified' | 'rejected';
