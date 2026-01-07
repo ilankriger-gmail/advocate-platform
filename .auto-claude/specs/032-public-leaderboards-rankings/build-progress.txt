@@ -5,7 +5,7 @@ Display public leaderboards showing top fans by coins earned, challenges complet
 and event attendance. Include weekly, monthly, and all-time views with badges
 and recognition tiers (Bronze, Silver, Gold, Diamond).
 
-## Status: In Progress - Database Layer Complete
+## Status: In Progress - TypeScript Types Complete
 
 ---
 
@@ -15,8 +15,8 @@ and recognition tiers (Bronze, Silver, Gold, Diamond).
 - [x] 1.1 Create leaderboard SQL migration
 - [x] 1.2 Add RLS policies for public access
 
-### Phase 2: TypeScript Types
-- [ ] 2.1 Create leaderboard types
+### Phase 2: TypeScript Types ✅
+- [x] 2.1 Create leaderboard types
 
 ### Phase 3: Backend Queries
 - [ ] 3.1 Create leaderboard queries file
@@ -78,3 +78,12 @@ and recognition tiers (Bronze, Silver, Gold, Diamond).
     - Policy 5: event_registrations - only confirmed check-ins visible
     - All policies are idempotent (safe to re-run)
     - Comprehensive documentation on data protection strategy
+- 2026-01-07: Completed Phase 2 (TypeScript Types)
+  - 2.1: Added comprehensive TypeScript types for leaderboard system (33 new lines)
+    - LeaderboardTier: Union type for tier levels ('bronze' | 'silver' | 'gold' | 'diamond')
+    - TimePeriod: Union type for time filters ('weekly' | 'monthly' | 'all_time')
+    - LeaderboardCategory: Union type for ranking categories ('coins' | 'challenges' | 'events' | 'combined')
+    - LeaderboardEntry: Interface for leaderboard entries with user info, score, tier, and rank
+    - UserRanking: Interface for user's ranking position with metadata
+    - All types follow existing codebase patterns with Portuguese comments
+    - Types align perfectly with SQL views and functions from migration

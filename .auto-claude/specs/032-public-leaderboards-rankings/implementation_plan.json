@@ -33,7 +33,7 @@
           "id": "1.2",
           "title": "Add RLS policies for public access",
           "description": "Create RLS policies that allow public/authenticated access to leaderboard data while protecting sensitive user information.",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "migrations/leaderboard-rankings.sql"
           ],
@@ -41,7 +41,9 @@
             "Public read access to leaderboard rankings",
             "Only display approved/public user data",
             "Protect private user information"
-          ]
+          ],
+          "notes": "Enhanced RLS policies for secure public leaderboard access. Added 5 comprehensive policies:\n1. users_viewable_by_authenticated - Allows authenticated users to view basic user profiles\n2. user_coins_leaderboard_viewable - Allows viewing all coin balances for rankings\n3. coin_transactions_leaderboard_viewable - Enables time-filtered ranking calculations\n4. challenge_participants_leaderboard_viewable - Shows only approved participations\n5. event_registrations_leaderboard_viewable - Shows only confirmed check-ins\n\nAll policies are idempotent, include comprehensive documentation on data protection strategy, and ensure sensitive user information (email, phone, etc.) remains protected while allowing public access to leaderboard data. File: migrations/leaderboard-rankings.sql (lines 441-571)",
+          "updated_at": "2026-01-07T18:27:29.989666+00:00"
         }
       ]
     },
@@ -54,7 +56,7 @@
           "id": "2.1",
           "title": "Create leaderboard types",
           "description": "Add TypeScript types and interfaces for leaderboard entries, tiers, time periods, and ranking categories.",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/lib/supabase/types.ts"
           ],
@@ -64,7 +66,9 @@
             "TimePeriod type (weekly, monthly, all_time)",
             "LeaderboardCategory type (coins, challenges, events)",
             "UserRanking type for user's own position"
-          ]
+          ],
+          "notes": "Added comprehensive TypeScript types for leaderboard system in src/lib/supabase/types.ts (33 new lines):\n- LeaderboardTier: 'bronze' | 'silver' | 'gold' | 'diamond'\n- TimePeriod: 'weekly' | 'monthly' | 'all_time'\n- LeaderboardCategory: 'coins' | 'challenges' | 'events' | 'combined'\n- LeaderboardEntry: interface with user_id, full_name, avatar_url, score, tier, rank, last_activity\n- UserRanking: interface with user_id, rank, score, tier, total_participants, category, period\n\nAll types follow existing codebase patterns with Portuguese comments and proper TypeScript typing conventions. Types align with SQL views and functions from migration file.",
+          "updated_at": "2026-01-07T18:29:48.064145+00:00"
         }
       ]
     },
@@ -355,5 +359,5 @@
     "Time periods: Weekly (last 7 days), Monthly (last 30 days), All-time",
     "User must be authenticated to see their own rank, but leaderboard is public"
   ],
-  "last_updated": "2026-01-07T18:18:33.844508+00:00"
+  "last_updated": "2026-01-07T18:29:48.064151+00:00"
 }
