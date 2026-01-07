@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui';
-import { toggleChallengeActive } from '@/actions/challenges';
+import { toggleChallengeActive } from '@/actions/challenges-admin';
 
 interface ChallengeActionsProps {
   challenge: {

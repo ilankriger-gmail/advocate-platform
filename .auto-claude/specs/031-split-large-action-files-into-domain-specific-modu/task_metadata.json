@@ -1,0 +1,9 @@
+{
+  "sourceType": "ideation",
+  "ideationType": "code_quality",
+  "ideaId": "cq-005",
+  "rationale": "Large files increase cognitive load, make code reviews harder, and lead to merge conflicts. Separating user actions from admin actions improves security review and enables different access patterns.",
+  "category": "refactoring",
+  "codeQualitySeverity": "major",
+  "priority": "high"
+}
