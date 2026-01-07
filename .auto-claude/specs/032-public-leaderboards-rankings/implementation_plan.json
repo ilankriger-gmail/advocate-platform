@@ -142,7 +142,7 @@
           "id": "4.2",
           "title": "Create LeaderboardEntry component",
           "description": "Create a component for displaying individual leaderboard entries with rank, avatar, name, score, and tier badge.",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/components/leaderboard/LeaderboardEntry.tsx"
           ],
@@ -153,7 +153,9 @@
             "Display score/points",
             "Display tier badge",
             "Highlight current user's entry"
-          ]
+          ],
+          "notes": "Created comprehensive LeaderboardEntry component with all acceptance criteria met:\n- Display rank position (1st, 2nd, 3rd with medal emojis \ud83e\udd47\ud83e\udd48\ud83e\udd49)\n- Display user avatar using Avatar component\n- Display user name with proper truncation\n- Display score/points with thousand separators (formatScore function)\n- Display tier badge using TierBadge component\n- Highlight current user's entry with bg-primary-50 and border-l-4 border-primary-500\n- Optional last activity display with smart formatting (today, yesterday, days ago, etc.)\n- Created compact variant (LeaderboardEntry.Compact) for widgets/previews\n- Different visual states for top 3 (larger emoji), current user (highlighted), and others\n- Hover states with bg-surface-50 transition\n- Fully responsive design\n- Follows all established patterns from ChallengeRanking and other components\n- Portuguese comments following project guidelines\n- TypeScript typed with proper imports from @/lib/supabase/types\n- Uses existing UI components (Avatar, TierBadge) for consistency\n\nFile created: src/components/leaderboard/LeaderboardEntry.tsx (222 lines)",
+          "updated_at": "2026-01-07T18:41:12.316353+00:00"
         },
         {
           "id": "4.3",
@@ -365,5 +367,5 @@
     "Time periods: Weekly (last 7 days), Monthly (last 30 days), All-time",
     "User must be authenticated to see their own rank, but leaderboard is public"
   ],
-  "last_updated": "2026-01-07T18:38:47.129035+00:00"
+  "last_updated": "2026-01-07T18:41:12.316365+00:00"
 }
