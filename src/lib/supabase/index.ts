@@ -11,6 +11,7 @@ export * from './queries';
 export * from './events';
 export * from './challenges';
 export * from './rewards';
+export * from './leaderboard';
 
 // Types
 export * from './types';
