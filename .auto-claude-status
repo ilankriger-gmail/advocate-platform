@@ -1,0 +1,25 @@
+{
+  "active": true,
+  "spec": "026-criar-guia-de-troubleshooting-para-erros-comuns",
+  "state": "building",
+  "subtasks": {
+    "completed": 3,
+    "total": 11,
+    "in_progress": 1,
+    "failed": 0
+  },
+  "phase": {
+    "current": "Documenta\u00e7\u00e3o Principal de Troubleshooting",
+    "id": null,
+    "total": 5
+  },
+  "workers": {
+    "active": 0,
+    "max": 1
+  },
+  "session": {
+    "number": 5,
+    "started_at": "2026-01-07T11:30:34.381577"
+  },
+  "last_update": "2026-01-07T11:41:13.444768"
+}

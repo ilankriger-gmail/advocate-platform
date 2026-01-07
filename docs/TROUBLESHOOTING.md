@@ -1172,24 +1172,1125 @@ console.log('Error:', error)
 
 ### 3. Erros do Supabase
 
-> ⚠️ **Esta seção será expandida na próxima atualização**
+Erros relacionados ao banco de dados Supabase, incluindo conexão, queries, Row Level Security (RLS), storage e migrações.
 
-Erros relacionados ao banco de dados, queries, storage, migrações e Row Level Security (RLS).
-
-**Categorias:**
-- **Conexão**: Problemas ao conectar com o Supabase
-- **Queries**: Erros em consultas SQL
-- **RLS**: Políticas de segurança bloqueando operações
-- **Storage**: Problemas com upload/download de arquivos
-- **Migrações**: Erros ao aplicar mudanças no schema
+**Categorias Cobertas:**
+- 🔌 **Conexão**: Problemas ao conectar com o Supabase
+- 🔍 **Queries**: Erros em consultas SQL e operações no banco
+- 🔐 **RLS**: Políticas de segurança bloqueando operações
+- 📦 **Storage**: Problemas com upload/download de arquivos
+- 🔄 **Migrações**: Erros ao aplicar mudanças no schema
 
 **Ações Rápidas:**
 1. Verifique o status do projeto no [Supabase Dashboard](https://app.supabase.com)
 2. Confirme que as tabelas foram criadas corretamente
 3. Revise as políticas de RLS para a tabela em questão
-4. Verifique os logs de erro no Supabase Dashboard
+4. Verifique os logs de erro no Supabase Dashboard > Logs
 
-**Ver mais detalhes:** _(Esta seção será expandida com erros específicos e soluções detalhadas)_
+---
+
+#### 3.1. Erro: "Failed to fetch" / Erro de Conexão
+
+**Mensagem de Erro:**
+```
+Failed to fetch
+TypeError: Failed to fetch
+NetworkError when attempting to fetch resource
+```
+
+**Causa:**
+A aplicação não consegue se conectar com o servidor do Supabase. Possíveis causas:
+- Projeto Supabase pausado ou deletado
+- URL do Supabase incorreta
+- Problemas de rede/firewall
+- Supabase temporariamente indisponível
+- CORS não configurado corretamente
+
+**Impacto:**
+- ❌ Todas as operações no banco de dados falham
+- ❌ Autenticação não funciona
+- ❌ Aplicação pode ficar completamente inutilizável
+- ⚠️ Usuários veem mensagens de erro de conexão
+
+**Solução:**
+
+1. **Verificar status do projeto Supabase:**
+   - Acesse o [Supabase Dashboard](https://app.supabase.com)
+   - Verifique se o projeto está **Active** (não pausado)
+   - Projetos inativos por muito tempo são pausados automaticamente
+   - Se pausado, clique em **Resume Project**
+
+2. **Verificar URL do Supabase:**
+   ```bash
+   # Verifique se a URL está correta
+   echo $NEXT_PUBLIC_SUPABASE_URL
+   ```
+   - Deve ser algo como: `https://abcdefghijk.supabase.co`
+   - Compare com a URL no Dashboard: **Settings** > **API** > **Project URL**
+
+3. **Testar conexão direta:**
+   ```bash
+   # Testar se o servidor responde
+   curl https://seu-projeto-id.supabase.co/rest/v1/
+   ```
+   - Deve retornar uma resposta (pode ser erro 401, mas pelo menos conecta)
+   - Se não responder, o problema é de rede ou projeto pausado
+
+4. **Verificar firewall/proxy:**
+   - Algumas redes corporativas bloqueiam o Supabase
+   - Tente em uma rede diferente ou usando 4G
+   - Configure exceção no firewall para `*.supabase.co`
+
+5. **Verificar configuração de CORS (se usando domínio customizado):**
+   - No Dashboard, vá para **Settings** > **API**
+   - Em **CORS Configuration**, adicione seu domínio
+   - Exemplo: `https://seu-dominio.com`
+
+6. **Limpar cache e reiniciar:**
+   ```bash
+   # Limpar cache do Next.js
+   rm -rf .next
+
+   # Reiniciar servidor
+   npm run dev
+   ```
+
+**🔍 Debug:**
+```typescript
+// Adicione em um Server Action para testar conexão
+'use server'
+
+import { createClient } from '@/lib/supabase/server'
+
+export async function testConnection() {
+  try {
+    const supabase = createClient()
+    const { data, error } = await supabase.from('profiles').select('count').limit(1)
+
+    if (error) {
+      console.error('Connection test failed:', error)
+      return { success: false, error: error.message }
+    }
+
+    return { success: true, message: 'Connected successfully' }
+  } catch (err) {
+    console.error('Network error:', err)
+    return { success: false, error: 'Network error' }
+  }
+}
+```
+
+**⚠️ Atenção:**
+- Projetos Supabase gratuitos são pausados após 1 semana de inatividade
+- Reativar um projeto pode levar alguns minutos
+- Em produção, considere um plano pago para evitar pausas automáticas
+- Sempre verifique o status no Dashboard primeiro
+
+---
+
+#### 3.2. Erro: "relation does not exist" / Tabela não existe
+
+**Mensagem de Erro:**
+```
+relation "public.table_name" does not exist
+error: relation "profiles" does not exist
+```
+
+**Causa:**
+A aplicação está tentando acessar uma tabela que não existe no banco de dados. Causas comuns:
+- Migrações não foram executadas
+- Tabela foi deletada acidentalmente
+- Typo no nome da tabela
+- Schema incorreto (public vs outro schema)
+
+**Impacto:**
+- ❌ Operações que usam essa tabela falham
+- ❌ Pode causar crash da aplicação
+- ⚠️ Outras tabelas podem continuar funcionando
+
+**Solução:**
+
+1. **Verificar se a tabela existe:**
+   - Acesse o Supabase Dashboard
+   - Vá para **Table Editor**
+   - Procure pela tabela na lista
+
+2. **Se a tabela não existe, criar manualmente:**
+   ```sql
+   -- Exemplo: Criar tabela de profiles
+   CREATE TABLE profiles (
+     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+     full_name TEXT,
+     avatar_url TEXT,
+     role TEXT DEFAULT 'advocate',
+     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+   );
+
+   -- Criar índice para melhor performance
+   CREATE INDEX idx_profiles_user_id ON profiles(user_id);
+
+   -- Habilitar RLS
+   ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+
+   -- Criar políticas básicas
+   CREATE POLICY "Users can view own profile"
+     ON profiles FOR SELECT
+     USING (auth.uid() = user_id);
+
+   CREATE POLICY "Users can update own profile"
+     ON profiles FOR UPDATE
+     USING (auth.uid() = user_id);
+   ```
+
+3. **Executar migrações do projeto:**
+   ```bash
+   # Se o projeto tem migrações SQL na pasta supabase/migrations/
+   # Execute-as no SQL Editor do Supabase Dashboard
+
+   # Ou se estiver usando Supabase CLI:
+   supabase db push
+   ```
+
+4. **Verificar schema correto:**
+   ```typescript
+   // Se a tabela está em outro schema
+   const { data, error } = await supabase
+     .from('other_schema.table_name') // Especificar schema
+     .select('*')
+
+   // Ou configurar schema padrão no cliente
+   ```
+
+5. **Verificar typos no código:**
+   ```typescript
+   // ❌ ERRADO - typo no nome
+   await supabase.from('profles').select('*')
+
+   // ✅ CORRETO
+   await supabase.from('profiles').select('*')
+   ```
+
+**🔄 Criando Todas as Tabelas do Projeto:**
+
+Se você precisa recriar todas as tabelas do zero, execute este script SQL no Supabase Dashboard (**SQL Editor**):
+
+```sql
+-- Tabela de perfis
+CREATE TABLE profiles (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE UNIQUE NOT NULL,
+  full_name TEXT,
+  avatar_url TEXT,
+  role TEXT DEFAULT 'advocate' CHECK (role IN ('advocate', 'admin')),
+  points INTEGER DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Tabela de desafios
+CREATE TABLE challenges (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  points INTEGER NOT NULL DEFAULT 100,
+  status TEXT DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'archived')),
+  created_by UUID REFERENCES auth.users(id),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Tabela de submissões
+CREATE TABLE submissions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  challenge_id UUID REFERENCES challenges(id) ON DELETE CASCADE NOT NULL,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  video_url TEXT NOT NULL,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+  verification_notes TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Criar índices
+CREATE INDEX idx_profiles_user_id ON profiles(user_id);
+CREATE INDEX idx_challenges_status ON challenges(status);
+CREATE INDEX idx_submissions_user_id ON submissions(user_id);
+CREATE INDEX idx_submissions_challenge_id ON submissions(challenge_id);
+CREATE INDEX idx_submissions_status ON submissions(status);
+
+-- Habilitar RLS em todas as tabelas
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE challenges ENABLE ROW LEVEL SECURITY;
+ALTER TABLE submissions ENABLE ROW LEVEL SECURITY;
+
+-- Políticas para profiles
+CREATE POLICY "Users can view own profile" ON profiles
+  FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can update own profile" ON profiles
+  FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own profile" ON profiles
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- Políticas para challenges
+CREATE POLICY "Anyone can view active challenges" ON challenges
+  FOR SELECT USING (status = 'active');
+
+-- Políticas para submissions
+CREATE POLICY "Users can view own submissions" ON submissions
+  FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can create own submissions" ON submissions
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+```
+
+**⚠️ Atenção:**
+- Sempre faça backup antes de deletar/recriar tabelas
+- Execute migrações em ordem cronológica
+- Verifique se todas as tabelas têm RLS habilitado
+- Teste a aplicação após criar as tabelas
+
+---
+
+#### 3.3. Erro: "column does not exist" / Coluna não existe
+
+**Mensagem de Erro:**
+```
+column "column_name" does not exist
+error: column profiles.username does not exist
+```
+
+**Causa:**
+A query está tentando acessar uma coluna que não existe na tabela. Causas:
+- Coluna nunca foi criada
+- Typo no nome da coluna
+- Migração não foi executada
+- Coluna foi deletada
+
+**Impacto:**
+- ❌ Queries específicas falham
+- ⚠️ Pode quebrar funcionalidades que dependem dessa coluna
+- ✅ Outras colunas continuam funcionando
+
+**Solução:**
+
+1. **Verificar estrutura da tabela:**
+   - No Supabase Dashboard, vá para **Table Editor**
+   - Selecione a tabela
+   - Verifique as colunas existentes
+
+2. **Adicionar coluna faltante:**
+   ```sql
+   -- Adicionar coluna simples
+   ALTER TABLE profiles ADD COLUMN username TEXT;
+
+   -- Adicionar coluna com valor padrão
+   ALTER TABLE profiles ADD COLUMN bio TEXT DEFAULT '';
+
+   -- Adicionar coluna NOT NULL (requer default ou dados existentes)
+   ALTER TABLE profiles ADD COLUMN email TEXT NOT NULL DEFAULT '';
+
+   -- Adicionar coluna com constraint
+   ALTER TABLE profiles ADD COLUMN age INTEGER CHECK (age >= 18);
+   ```
+
+3. **Verificar typos no código:**
+   ```typescript
+   // ❌ ERRADO
+   const { data } = await supabase
+     .from('profiles')
+     .select('user_name') // Typo: deveria ser 'full_name'
+
+   // ✅ CORRETO
+   const { data } = await supabase
+     .from('profiles')
+     .select('full_name')
+   ```
+
+4. **Usar apenas colunas existentes:**
+   ```typescript
+   // Listar apenas as colunas que você precisa e que existem
+   const { data } = await supabase
+     .from('profiles')
+     .select('id, user_id, full_name, avatar_url')
+   ```
+
+5. **Se não souber quais colunas existem:**
+   ```sql
+   -- SQL para ver todas as colunas de uma tabela
+   SELECT column_name, data_type, is_nullable
+   FROM information_schema.columns
+   WHERE table_schema = 'public'
+     AND table_name = 'profiles'
+   ORDER BY ordinal_position;
+   ```
+
+**📝 Padrão para Adicionar Colunas:**
+
+```sql
+-- Template para adicionar coluna com segurança
+ALTER TABLE nome_da_tabela
+ADD COLUMN IF NOT EXISTS nome_coluna tipo_de_dado
+[DEFAULT valor_padrao]
+[NOT NULL]
+[CHECK (condicao)];
+
+-- Exemplo completo:
+ALTER TABLE profiles
+ADD COLUMN IF NOT EXISTS phone_number TEXT
+DEFAULT NULL
+CHECK (phone_number ~ '^\+?[0-9]{10,15}$');
+```
+
+**⚠️ Atenção:**
+- Adicionar colunas NOT NULL em tabelas com dados requer valor DEFAULT
+- Verifique se a mudança não quebra queries existentes
+- Atualize os tipos TypeScript após adicionar colunas
+- Execute migrações em staging antes de produção
+
+---
+
+#### 3.4. Erro: "duplicate key value violates unique constraint"
+
+**Mensagem de Erro:**
+```
+duplicate key value violates unique constraint "table_pkey"
+duplicate key value violates unique constraint "profiles_user_id_key"
+```
+
+**Causa:**
+Tentativa de inserir um valor duplicado em uma coluna com constraint UNIQUE ou PRIMARY KEY. Causas comuns:
+- Inserir registro com ID que já existe
+- Inserir user_id duplicado em profiles
+- Constraint UNIQUE violada
+- Tentar criar o mesmo registro duas vezes
+
+**Impacto:**
+- ❌ Operação de INSERT falha
+- ⚠️ Pode indicar bug na lógica da aplicação
+- ✅ Previne duplicação de dados (comportamento esperado)
+
+**Solução:**
+
+1. **Para profiles: usar UPSERT ao invés de INSERT:**
+   ```typescript
+   // ❌ ERRADO - pode falhar se profile já existe
+   const { error } = await supabase
+     .from('profiles')
+     .insert({ user_id: userId, full_name: name })
+
+   // ✅ CORRETO - upsert (insert or update)
+   const { error } = await supabase
+     .from('profiles')
+     .upsert(
+       { user_id: userId, full_name: name },
+       { onConflict: 'user_id' } // Especifica a coluna do conflito
+     )
+   ```
+
+2. **Verificar se registro já existe antes de inserir:**
+   ```typescript
+   // Verificar existência
+   const { data: existing } = await supabase
+     .from('profiles')
+     .select('id')
+     .eq('user_id', userId)
+     .single()
+
+   if (existing) {
+     // Atualizar registro existente
+     await supabase
+       .from('profiles')
+       .update({ full_name: name })
+       .eq('user_id', userId)
+   } else {
+     // Criar novo registro
+     await supabase
+       .from('profiles')
+       .insert({ user_id: userId, full_name: name })
+   }
+   ```
+
+3. **Para IDs: deixar o banco gerar automaticamente:**
+   ```typescript
+   // ❌ ERRADO - especificar ID manualmente
+   await supabase.from('profiles').insert({
+     id: '123-456-789', // Pode causar conflito
+     user_id: userId
+   })
+
+   // ✅ CORRETO - deixar o banco gerar UUID
+   await supabase.from('profiles').insert({
+     user_id: userId // ID será gerado automaticamente
+   })
+   ```
+
+4. **Adicionar constraint UNIQUE se necessário:**
+   ```sql
+   -- Adicionar constraint UNIQUE em coluna
+   ALTER TABLE profiles
+   ADD CONSTRAINT profiles_email_unique
+   UNIQUE (email);
+
+   -- Adicionar constraint UNIQUE composta (múltiplas colunas)
+   ALTER TABLE submissions
+   ADD CONSTRAINT submissions_user_challenge_unique
+   UNIQUE (user_id, challenge_id);
+   ```
+
+5. **Remover constraint UNIQUE se não for necessária:**
+   ```sql
+   -- ⚠️ Cuidado: só faça isso se realmente não precisar da constraint
+   ALTER TABLE profiles
+   DROP CONSTRAINT profiles_email_unique;
+   ```
+
+**🔍 Debug - Encontrar registro duplicado:**
+```sql
+-- Encontrar valores duplicados em uma coluna
+SELECT user_id, COUNT(*)
+FROM profiles
+GROUP BY user_id
+HAVING COUNT(*) > 1;
+
+-- Ver os registros duplicados
+SELECT *
+FROM profiles
+WHERE user_id IN (
+  SELECT user_id
+  FROM profiles
+  GROUP BY user_id
+  HAVING COUNT(*) > 1
+)
+ORDER BY user_id;
+```
+
+**⚠️ Atenção:**
+- UNIQUE constraints são importantes para integridade dos dados
+- Use UPSERT quando apropriado para evitar conflitos
+- Nunca ignore erros de UNIQUE - investigue a causa
+- Em casos de duplicação, limpe os dados antes de adicionar constraint
+
+---
+
+#### 3.5. Erro: "Foreign key violation" / Violação de chave estrangeira
+
+**Mensagem de Erro:**
+```
+insert or update on table "submissions" violates foreign key constraint
+Key (challenge_id)=(xxx) is not present in table "challenges"
+```
+
+**Causa:**
+Tentativa de criar/atualizar um registro que referencia um ID inexistente em outra tabela. Causas:
+- Challenge/User referenciado não existe
+- ID foi digitado incorretamente
+- Registro referenciado foi deletado
+- Ordem errada de criação de registros
+
+**Impacto:**
+- ❌ Operação de INSERT/UPDATE falha
+- ✅ Previne referências quebradas (comportamento esperado)
+- ⚠️ Pode indicar bug na lógica da aplicação
+
+**Solução:**
+
+1. **Verificar se o registro referenciado existe:**
+   ```typescript
+   // Verificar se o challenge existe antes de criar submission
+   const { data: challenge } = await supabase
+     .from('challenges')
+     .select('id')
+     .eq('id', challengeId)
+     .single()
+
+   if (!challenge) {
+     throw new Error('Challenge não encontrado')
+   }
+
+   // Agora criar a submission
+   await supabase.from('submissions').insert({
+     challenge_id: challengeId,
+     user_id: userId,
+     video_url: url
+   })
+   ```
+
+2. **Usar transações para garantir consistência:**
+   ```typescript
+   // Supabase não tem transações diretas, mas você pode usar RPC
+   // Criar function no Supabase:
+   /*
+   CREATE OR REPLACE FUNCTION create_submission_safe(
+     p_challenge_id UUID,
+     p_user_id UUID,
+     p_video_url TEXT
+   ) RETURNS UUID AS $$
+   DECLARE
+     v_submission_id UUID;
+   BEGIN
+     -- Verificar se challenge existe
+     IF NOT EXISTS (SELECT 1 FROM challenges WHERE id = p_challenge_id) THEN
+       RAISE EXCEPTION 'Challenge not found';
+     END IF;
+
+     -- Criar submission
+     INSERT INTO submissions (challenge_id, user_id, video_url)
+     VALUES (p_challenge_id, p_user_id, p_video_url)
+     RETURNING id INTO v_submission_id;
+
+     RETURN v_submission_id;
+   END;
+   $$ LANGUAGE plpgsql;
+   */
+
+   // Chamar no código:
+   const { data, error } = await supabase.rpc('create_submission_safe', {
+     p_challenge_id: challengeId,
+     p_user_id: userId,
+     p_video_url: videoUrl
+   })
+   ```
+
+3. **Adicionar constraint com ON DELETE CASCADE:**
+   ```sql
+   -- Recriar constraint com CASCADE para deletar automaticamente
+   ALTER TABLE submissions
+   DROP CONSTRAINT submissions_challenge_id_fkey;
+
+   ALTER TABLE submissions
+   ADD CONSTRAINT submissions_challenge_id_fkey
+   FOREIGN KEY (challenge_id)
+   REFERENCES challenges(id)
+   ON DELETE CASCADE; -- Deletar submissions se challenge for deletado
+
+   -- Ou SET NULL para apenas nullificar a referência
+   ALTER TABLE submissions
+   ADD CONSTRAINT submissions_challenge_id_fkey
+   FOREIGN KEY (challenge_id)
+   REFERENCES challenges(id)
+   ON DELETE SET NULL;
+   ```
+
+4. **Validar IDs no frontend antes de enviar:**
+   ```typescript
+   // Client Component
+   'use client'
+
+   export function SubmissionForm({ challenges }: { challenges: Challenge[] }) {
+     const [selectedChallengeId, setSelectedChallengeId] = useState('')
+
+     const handleSubmit = async (e: React.FormEvent) => {
+       e.preventDefault()
+
+       // Validar que o challenge ID é válido
+       const challengeExists = challenges.some(c => c.id === selectedChallengeId)
+       if (!challengeExists) {
+         alert('Por favor, selecione um desafio válido')
+         return
+       }
+
+       // Continuar com a submissão...
+     }
+
+     return (
+       <form onSubmit={handleSubmit}>
+         <select
+           value={selectedChallengeId}
+           onChange={(e) => setSelectedChallengeId(e.target.value)}
+         >
+           <option value="">Selecione um desafio</option>
+           {challenges.map(c => (
+             <option key={c.id} value={c.id}>{c.title}</option>
+           ))}
+         </select>
+         {/* ... resto do form */}
+       </form>
+     )
+   }
+   ```
+
+**🔍 Debug - Verificar constraints:**
+```sql
+-- Ver todas as foreign keys de uma tabela
+SELECT
+  tc.constraint_name,
+  tc.table_name,
+  kcu.column_name,
+  ccu.table_name AS foreign_table_name,
+  ccu.column_name AS foreign_column_name
+FROM information_schema.table_constraints AS tc
+JOIN information_schema.key_column_usage AS kcu
+  ON tc.constraint_name = kcu.constraint_name
+JOIN information_schema.constraint_column_usage AS ccu
+  ON ccu.constraint_name = tc.constraint_name
+WHERE tc.constraint_type = 'FOREIGN KEY'
+  AND tc.table_name = 'submissions';
+```
+
+**⚠️ Atenção:**
+- Foreign keys garantem integridade referencial
+- Sempre verifique se registros relacionados existem antes de criar referências
+- Use ON DELETE CASCADE com cuidado - pode deletar muitos dados
+- Considere usar soft deletes (campo `deleted_at`) ao invés de DELETE físico
+
+---
+
+#### 3.6. Erro: "Storage bucket not found" / Problemas com Storage
+
+**Mensagem de Erro:**
+```
+Error: Storage bucket 'avatars' not found
+The resource you are looking for was not found
+```
+
+**Causa:**
+O bucket de storage do Supabase não foi criado ou não está configurado corretamente. Buckets são necessários para upload de arquivos (imagens, vídeos, etc).
+
+**Impacto:**
+- ❌ Upload de arquivos falha
+- ❌ Usuários não conseguem fazer upload de avatars/mídia
+- ✅ Outras funcionalidades não relacionadas a storage continuam funcionando
+
+**Solução:**
+
+1. **Criar o bucket no Supabase:**
+   - Acesse o [Supabase Dashboard](https://app.supabase.com)
+   - Vá para **Storage**
+   - Clique em **Create bucket**
+   - Nome do bucket: `avatars` (ou outro nome necessário)
+   - Configure:
+     - ✅ **Public bucket** (se arquivos devem ser acessíveis publicamente)
+     - ⚠️ **Private bucket** (se precisar autenticação para acessar)
+   - Clique em **Create**
+
+2. **Criar políticas de acesso ao bucket:**
+   ```sql
+   -- Permitir usuários autenticados fazerem upload de avatars
+   CREATE POLICY "Users can upload own avatar"
+   ON storage.objects FOR INSERT
+   WITH CHECK (
+     bucket_id = 'avatars'
+     AND auth.uid()::text = (storage.foldername(name))[1]
+   );
+
+   -- Permitir usuários autenticados atualizarem próprio avatar
+   CREATE POLICY "Users can update own avatar"
+   ON storage.objects FOR UPDATE
+   USING (
+     bucket_id = 'avatars'
+     AND auth.uid()::text = (storage.foldername(name))[1]
+   );
+
+   -- Permitir qualquer pessoa ver avatars (bucket público)
+   CREATE POLICY "Anyone can view avatars"
+   ON storage.objects FOR SELECT
+   USING (bucket_id = 'avatars');
+
+   -- Permitir usuários deletarem próprio avatar
+   CREATE POLICY "Users can delete own avatar"
+   ON storage.objects FOR DELETE
+   USING (
+     bucket_id = 'avatars'
+     AND auth.uid()::text = (storage.foldername(name))[1]
+   );
+   ```
+
+3. **Fazer upload de arquivo via código:**
+   ```typescript
+   // Server Action para upload de avatar
+   'use server'
+
+   import { createClient } from '@/lib/supabase/server'
+
+   export async function uploadAvatar(formData: FormData) {
+     const supabase = createClient()
+     const { data: { user } } = await supabase.auth.getUser()
+
+     if (!user) {
+       throw new Error('Não autenticado')
+     }
+
+     const file = formData.get('avatar') as File
+     if (!file) {
+       throw new Error('Nenhum arquivo fornecido')
+     }
+
+     // Validar tipo de arquivo
+     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp']
+     if (!allowedTypes.includes(file.type)) {
+       throw new Error('Tipo de arquivo não suportado')
+     }
+
+     // Validar tamanho (máximo 2MB)
+     if (file.size > 2 * 1024 * 1024) {
+       throw new Error('Arquivo muito grande. Máximo: 2MB')
+     }
+
+     // Nome do arquivo: user_id/timestamp.ext
+     const fileExt = file.name.split('.').pop()
+     const fileName = `${user.id}/${Date.now()}.${fileExt}`
+
+     // Upload
+     const { data, error } = await supabase.storage
+       .from('avatars')
+       .upload(fileName, file, {
+         cacheControl: '3600',
+         upsert: false
+       })
+
+     if (error) {
+       console.error('Upload error:', error)
+       throw new Error('Erro ao fazer upload do arquivo')
+     }
+
+     // Obter URL pública
+     const { data: { publicUrl } } = supabase.storage
+       .from('avatars')
+       .getPublicUrl(fileName)
+
+     // Atualizar profile com nova URL
+     await supabase
+       .from('profiles')
+       .update({ avatar_url: publicUrl })
+       .eq('user_id', user.id)
+
+     return { success: true, url: publicUrl }
+   }
+   ```
+
+4. **Configurar limites de tamanho do bucket:**
+   - No Dashboard, vá para **Storage** > **Policies**
+   - Em **Configuration**, ajuste:
+     - **Max file size**: tamanho máximo por arquivo
+     - **Allowed MIME types**: tipos permitidos
+
+5. **Deletar arquivo antigo ao fazer upload de novo:**
+   ```typescript
+   // Antes de fazer upload de novo avatar, deletar o antigo
+   const { data: profile } = await supabase
+     .from('profiles')
+     .select('avatar_url')
+     .eq('user_id', user.id)
+     .single()
+
+   if (profile?.avatar_url) {
+     // Extrair path do arquivo da URL
+     const oldFilePath = profile.avatar_url.split('/').slice(-2).join('/')
+
+     // Deletar arquivo antigo
+     await supabase.storage
+       .from('avatars')
+       .remove([oldFilePath])
+   }
+
+   // Agora fazer upload do novo
+   ```
+
+**🎨 Exemplo Completo - Upload de Avatar no Frontend:**
+
+```typescript
+// components/avatar-upload.tsx
+'use client'
+
+import { useState } from 'react'
+import { uploadAvatar } from '@/actions/upload-avatar'
+
+export function AvatarUpload() {
+  const [uploading, setUploading] = useState(false)
+  const [preview, setPreview] = useState<string | null>(null)
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setPreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setUploading(true)
+
+    try {
+      const formData = new FormData(e.currentTarget)
+      const result = await uploadAvatar(formData)
+
+      if (result.success) {
+        alert('Avatar atualizado com sucesso!')
+      }
+    } catch (error) {
+      alert('Erro ao fazer upload: ' + (error as Error).message)
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div>
+        {preview && (
+          <img src={preview} alt="Preview" className="w-32 h-32 rounded-full" />
+        )}
+      </div>
+
+      <input
+        type="file"
+        name="avatar"
+        accept="image/jpeg,image/png,image/webp"
+        onChange={handleFileChange}
+        required
+      />
+
+      <button type="submit" disabled={uploading}>
+        {uploading ? 'Enviando...' : 'Atualizar Avatar'}
+      </button>
+    </form>
+  )
+}
+```
+
+**⚠️ Atenção:**
+- Sempre valide tipo e tamanho de arquivo no servidor
+- Configure políticas de RLS para buckets
+- Use folders organizados por user_id para facilitar gerenciamento
+- Considere usar CDN para melhor performance
+- Implemente limpeza de arquivos órfãos periodicamente
+
+---
+
+#### 3.7. Erro: "Invalid JSON" / Problemas com colunas JSON/JSONB
+
+**Mensagem de Erro:**
+```
+invalid input syntax for type json
+invalid json value
+```
+
+**Causa:**
+Tentativa de inserir/atualizar uma coluna JSON/JSONB com valor inválido. Causas:
+- String não é JSON válido
+- JSON mal formatado
+- Aspas simples ao invés de duplas
+- Vírgula extra no final
+
+**Impacto:**
+- ❌ Operação de INSERT/UPDATE falha
+- ⚠️ Pode indicar problemas de serialização no código
+
+**Solução:**
+
+1. **Sempre use `JSON.stringify()` antes de enviar:**
+   ```typescript
+   // ❌ ERRADO - enviar objeto diretamente
+   await supabase.from('profiles').insert({
+     user_id: userId,
+     metadata: { key: 'value' } // Pode não funcionar corretamente
+   })
+
+   // ✅ CORRETO - serializar para string
+   await supabase.from('profiles').insert({
+     user_id: userId,
+     metadata: JSON.stringify({ key: 'value' })
+   })
+
+   // ✅ AINDA MELHOR - Supabase faz serialização automática
+   // Se a coluna é JSONB, você pode passar objeto direto
+   await supabase.from('profiles').insert({
+     user_id: userId,
+     metadata: { key: 'value' } // Funciona com JSONB
+   })
+   ```
+
+2. **Validar JSON antes de enviar:**
+   ```typescript
+   function isValidJSON(str: string): boolean {
+     try {
+       JSON.parse(str)
+       return true
+     } catch (e) {
+       return false
+     }
+   }
+
+   const jsonString = '{"key": "value"}'
+   if (!isValidJSON(jsonString)) {
+     throw new Error('JSON inválido')
+   }
+   ```
+
+3. **Usar JSONB ao invés de JSON (recomendado):**
+   ```sql
+   -- JSONB é mais eficiente e permite indexação
+   ALTER TABLE profiles ALTER COLUMN metadata TYPE JSONB USING metadata::JSONB;
+
+   -- Criar índice GIN para queries em JSONB
+   CREATE INDEX idx_profiles_metadata ON profiles USING GIN (metadata);
+   ```
+
+4. **Queries em colunas JSONB:**
+   ```typescript
+   // Buscar por valor dentro do JSON
+   const { data } = await supabase
+     .from('profiles')
+     .select('*')
+     .eq('metadata->setting', 'value') // -> para acessar campo
+
+   // Buscar usando operadores JSONB
+   const { data } = await supabase
+     .from('profiles')
+     .select('*')
+     .contains('metadata', { role: 'admin' }) // Contém chave/valor
+
+   // Extrair valores do JSONB
+   const { data } = await supabase
+     .from('profiles')
+     .select('id, metadata->email as email')
+   ```
+
+**⚠️ Atenção:**
+- Use JSONB ao invés de JSON para melhor performance
+- Sempre valide JSON antes de armazenar
+- Considere normalizar dados ao invés de usar JSON quando possível
+- JSON/JSONB são úteis para dados não estruturados ou variáveis
+
+---
+
+#### 3.8. Erro: Migração falhou / Schema out of sync
+
+**Mensagem de Erro:**
+```
+Migration failed: column already exists
+Migration failed: relation already exists
+Schema mismatch detected
+```
+
+**Causa:**
+Problemas ao executar migrações SQL. Causas comuns:
+- Migração executada parcialmente
+- Migração executada duas vezes
+- Schema local diferente do remoto
+- Ordem errada de migrações
+
+**Impacto:**
+- ❌ Novas alterações de schema não são aplicadas
+- ⚠️ Banco pode ficar inconsistente
+- ⚠️ Aplicação pode não funcionar corretamente
+
+**Solução:**
+
+1. **Verificar quais migrações foram executadas:**
+   ```sql
+   -- Ver histórico de migrações (se você usa uma tabela de tracking)
+   SELECT * FROM schema_migrations ORDER BY version;
+   ```
+
+2. **Executar migração manualmente:**
+   - Acesse o SQL Editor no Supabase Dashboard
+   - Cole o conteúdo da migração
+   - Execute linha por linha para identificar qual linha falha
+   - Ajuste conforme necessário
+
+3. **Usar IF NOT EXISTS para evitar erros:**
+   ```sql
+   -- Criar tabela apenas se não existe
+   CREATE TABLE IF NOT EXISTS profiles (
+     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+     user_id UUID REFERENCES auth.users(id) UNIQUE NOT NULL,
+     full_name TEXT
+   );
+
+   -- Adicionar coluna apenas se não existe
+   DO $$
+   BEGIN
+     IF NOT EXISTS (
+       SELECT 1 FROM information_schema.columns
+       WHERE table_name = 'profiles' AND column_name = 'bio'
+     ) THEN
+       ALTER TABLE profiles ADD COLUMN bio TEXT;
+     END IF;
+   END $$;
+
+   -- Criar índice apenas se não existe
+   CREATE INDEX IF NOT EXISTS idx_profiles_user_id ON profiles(user_id);
+
+   -- Criar política apenas se não existe
+   DO $$
+   BEGIN
+     IF NOT EXISTS (
+       SELECT 1 FROM pg_policies
+       WHERE tablename = 'profiles'
+       AND policyname = 'Users can view own profile'
+     ) THEN
+       CREATE POLICY "Users can view own profile"
+         ON profiles FOR SELECT
+         USING (auth.uid() = user_id);
+     END IF;
+   END $$;
+   ```
+
+4. **Resetar schema (APENAS DESENVOLVIMENTO):**
+   ```sql
+   -- ⚠️ CUIDADO: Isso deleta TODOS os dados!
+   -- Apenas use em desenvolvimento local
+
+   -- Deletar todas as tabelas
+   DROP SCHEMA public CASCADE;
+   CREATE SCHEMA public;
+
+   -- Recriar extensões necessárias
+   CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+   -- Agora executar todas as migrações novamente
+   ```
+
+5. **Usar Supabase CLI para gerenciar migrações:**
+   ```bash
+   # Instalar Supabase CLI
+   npm install -g supabase
+
+   # Fazer login
+   supabase login
+
+   # Linkar com projeto remoto
+   supabase link --project-ref seu-projeto-id
+
+   # Criar nova migração
+   supabase migration new nome_da_migracao
+
+   # Aplicar migrações
+   supabase db push
+
+   # Ver diferenças entre local e remoto
+   supabase db diff
+   ```
+
+6. **Organizar migrações em ordem:**
+   ```
+   supabase/migrations/
+   ├── 20240101000000_create_profiles.sql
+   ├── 20240102000000_add_challenges.sql
+   ├── 20240103000000_add_submissions.sql
+   └── 20240104000000_add_rls_policies.sql
+   ```
+
+**📋 Checklist para Migrações:**
+- [ ] Testou a migração em ambiente local primeiro
+- [ ] Migração usa IF NOT EXISTS quando apropriado
+- [ ] Fez backup do banco antes de aplicar
+- [ ] Verificou que não há dependências não satisfeitas
+- [ ] Documentou o que a migração faz
+- [ ] Testou rollback se algo der errado
+
+**⚠️ Atenção:**
+- Sempre faça backup antes de executar migrações em produção
+- Teste migrações em staging primeiro
+- Use transações quando possível (BEGIN/COMMIT/ROLLBACK)
+- Mantenha migrações idempotentes (podem ser executadas múltiplas vezes)
+- Documente bem cada migração
 
 ---
 
