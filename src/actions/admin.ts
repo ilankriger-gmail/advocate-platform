@@ -146,22 +146,10 @@ export async function approveParticipation(participationId: string) {
 
 // Rejeitar participacao
 export async function rejectParticipation(participationId: string, reason?: string) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: 'Nao autorizado' };
-  }
-
-  // Verificar se e admin
-  const { data: userData } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-
-  if (userData?.role !== 'admin') {
-    return { error: 'Apenas admins podem rejeitar' };
+  // Verificar autorizacao
+  const auth = await requireAdmin();
+  if (isAuthError(auth)) {
+    return auth;
   }
 
   const adminSupabase = createAdminClient();
