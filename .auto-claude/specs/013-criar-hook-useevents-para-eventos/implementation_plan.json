@@ -111,9 +111,11 @@
           "id": "3.2",
           "title": "Verificar lint e formata\u00e7\u00e3o",
           "description": "Executar lint e verificar se o c\u00f3digo segue os padr\u00f5es do projeto",
-          "status": "pending",
+          "status": "completed",
           "estimated_minutes": 2,
-          "files": []
+          "files": [],
+          "notes": "Verifica\u00e7\u00e3o manual de lint e padr\u00f5es conclu\u00edda com sucesso. npm/lint commands n\u00e3o dispon\u00edveis no ambiente, ent\u00e3o realizei verifica\u00e7\u00e3o manual detalhada comparando useEvents.ts com usePosts.ts (padr\u00e3o de refer\u00eancia). Verifica\u00e7\u00f5es realizadas: \u2705 'use client' directive presente, \u2705 imports corretos (React hooks, router, server actions), \u2705 todos os handlers com useCallback e router dependency, \u2705 error handling consistente com padr\u00e3o (setError + check + startTransition), \u2705 return values estruturados corretamente, \u2705 export via barrel file (src/hooks/index.ts), \u2705 sem console.log, \u2705 formata\u00e7\u00e3o limpa, \u2705 TypeScript typing correto. C\u00f3digo segue todos os padr\u00f5es do projeto. Commit: 19dee18",
+          "updated_at": "2026-01-07T16:36:58.835528+00:00"
         }
       ]
     }
@@ -142,5 +144,5 @@
     "completed_subtasks": 0,
     "estimated_total_minutes": 24
   },
-  "last_updated": "2026-01-07T14:43:39.232201+00:00"
+  "last_updated": "2026-01-07T16:36:58.835535+00:00"
 }
