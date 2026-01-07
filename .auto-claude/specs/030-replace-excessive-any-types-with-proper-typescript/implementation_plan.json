@@ -2,7 +2,7 @@
   "feature": "Replace excessive any types with proper TypeScript types",
   "description": "Found 17 instances of `any` type usage across the codebase that need to be replaced with proper TypeScript types to improve type safety and developer experience.",
   "created_at": "2026-01-07T14:25:35.593Z",
-  "updated_at": "2026-01-07T16:36:49.098Z",
+  "updated_at": "2026-01-07T16:57:46.905Z",
   "status": "in_progress",
   "planStatus": "in_progress",
   "workflow_type": "development",
@@ -154,45 +154,49 @@
           "id": "4.1",
           "title": "Fix getUserEvents in src/lib/supabase/events.ts",
           "description": "Create EventRegistrationWithEvent type to replace (reg: any) at line 116",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/lib/supabase/events.ts",
             "src/lib/supabase/types.ts"
           ],
-          "notes": ""
+          "notes": "Successfully created EventRegistrationWithEvent type in src/lib/supabase/types.ts that includes the events join data with the full Event object. Updated src/lib/supabase/events.ts to import and use this type, replacing the (reg: any) map callback parameter with properly typed (reg: EventRegistrationWithEvent) at line 116. The type properly extends EventRegistration and includes a nullable events object following the same pattern as ParticipationWithChallenge and ClaimWithReward from previous subtasks.",
+          "updated_at": "2026-01-07T16:45:44.967021+00:00"
         },
         {
           "id": "4.2",
           "title": "Fix getChallengeRanking in src/lib/supabase/challenges.ts",
           "description": "Create ParticipantWithUsers type to replace (participant: any) at line 166",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/lib/supabase/challenges.ts",
             "src/lib/supabase/types.ts"
           ],
-          "notes": ""
+          "notes": "ParticipantWithUsers type already exists in src/lib/supabase/types.ts (lines 356-362) and is already being used in getChallengeRanking function at line 167. The type was created in a previous session and properly imports user data (id, full_name, avatar_url) from the users table join. No changes needed - task already completed.",
+          "updated_at": "2026-01-07T17:00:28.591465+00:00"
         },
         {
           "id": "4.3",
           "title": "Fix getPendingParticipations in src/lib/supabase/challenges.ts",
           "description": "Create ParticipantWithUsersAndChallenge type to replace (participant: any) at line 224",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/lib/supabase/challenges.ts",
             "src/lib/supabase/types.ts"
           ],
-          "notes": ""
+          "notes": "Successfully created ParticipantWithUsersAndChallenge type in src/lib/supabase/types.ts that includes both users (id, full_name, avatar_url) and challenges (title, type) join data. Updated src/lib/supabase/challenges.ts to import and use this type, replacing the (participant: any) map callback parameter with properly typed (participant: ParticipantWithUsersAndChallenge) at line 226. The type properly extends ChallengeParticipant and follows the same pattern as previous subtasks.",
+          "updated_at": "2026-01-07T17:02:40.547663+00:00"
         },
         {
           "id": "4.4",
           "title": "Fix getUserClaims in src/lib/supabase/rewards.ts",
           "description": "Create ClaimWithRewards type to replace (claim: any) at line 138",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/lib/supabase/rewards.ts",
             "src/lib/supabase/types.ts"
           ],
-          "notes": ""
+          "notes": "Successfully imported ClaimWithReward type and replaced (claim: any) with properly typed (claim: ClaimWithReward) at line 138 in getUserClaims function. The ClaimWithReward type was already defined in src/lib/supabase/types.ts (created in subtask 3.2) and extends RewardClaim with a nullable rewards property. This improves type safety when accessing claim.rewards in the map callback.",
+          "updated_at": "2026-01-07T17:04:48.854845+00:00"
         },
         {
           "id": "4.5",
@@ -271,7 +275,7 @@
     }
   ],
   "total_subtasks": 18,
-  "completed_subtasks": 7,
+  "completed_subtasks": 8,
   "qa_status": {
     "status": "not_started",
     "issues": "",
@@ -282,5 +286,5 @@
     "TypeScript compilation passes without errors",
     "grep -r ': any' returns no results in src/ directory"
   ],
-  "last_updated": "2026-01-07T16:43:59.322974+00:00"
+  "last_updated": "2026-01-07T17:04:48.854855+00:00"
 }

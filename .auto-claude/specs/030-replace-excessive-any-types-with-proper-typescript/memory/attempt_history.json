@@ -1,47 +1,35 @@
 {
   "subtasks": {
-    "2.1": {
+    "4.2": {
       "attempts": [
         {
           "session": 1,
-          "timestamp": "2026-01-07T13:37:51.757333",
-          "approach": "Implemented: Create a typed interface for challenge participant updates and replace the any-typed updateData obje",
+          "timestamp": "2026-01-07T14:00:38.214146",
+          "approach": "Implemented: Create ParticipantWithUsers type to replace (participant: any) at line 166",
           "success": true,
           "error": null
         }
       ],
       "status": "completed"
     },
-    "2.2": {
+    "4.3": {
       "attempts": [
         {
           "session": 2,
-          "timestamp": "2026-01-07T13:40:30.948960",
-          "approach": "Implemented: Create a typed interface for reward updates and replace the any-typed updateData object in src/actio",
+          "timestamp": "2026-01-07T14:02:57.453901",
+          "approach": "Implemented: Create ParticipantWithUsersAndChallenge type to replace (participant: any) at line 224",
           "success": true,
           "error": null
         }
       ],
       "status": "completed"
     },
-    "3.1": {
+    "4.4": {
       "attempts": [
         {
           "session": 3,
-          "timestamp": "2026-01-07T13:42:10.270075",
-          "approach": "Implemented: Create a type that includes the challenges join data to fix (participation as any).challenges?.coins",
-          "success": true,
-          "error": null
-        }
-      ],
-      "status": "completed"
-    },
-    "3.2": {
-      "attempts": [
-        {
-          "session": 4,
-          "timestamp": "2026-01-07T13:44:15.362880",
-          "approach": "Implemented: Create a type that includes the rewards join data to fix (claim as any).rewards?.name in src/actions",
+          "timestamp": "2026-01-07T14:05:10.711573",
+          "approach": "Implemented: Create ClaimWithRewards type to replace (claim: any) at line 138",
           "success": true,
           "error": null
         }
@@ -51,7 +39,7 @@
   },
   "stuck_subtasks": [],
   "metadata": {
-    "created_at": "2026-01-07T13:36:50.133035",
-    "last_updated": "2026-01-07T13:44:15.362898"
+    "created_at": "2026-01-07T13:57:47.768326",
+    "last_updated": "2026-01-07T14:05:10.711596"
   }
 }
