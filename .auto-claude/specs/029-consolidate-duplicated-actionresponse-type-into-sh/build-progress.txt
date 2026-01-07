@@ -1,0 +1,69 @@
+# Build Progress - Consolidate ActionResponse Type
+
+## Summary
+Consolidating the duplicated ActionResponse type from 5 action files into a shared types module.
+
+## Current Status: Phase 2 - Completed, Ready for Phase 3 (Verification)
+
+## Files Identified for Changes
+
+### New Files to Create:
+- src/types/actions.ts (new shared type definition)
+
+### Files to Modify:
+- src/types/index.ts (add export)
+- src/actions/challenges.ts (remove local type, add import)
+- src/actions/rewards.ts (remove local type, add import)
+- src/actions/events.ts (remove local type, add import)
+- src/actions/posts.ts (remove local type, add import)
+- src/actions/profile.ts (remove local type, add import)
+
+## Implementation Plan
+
+### Phase 1: Create Shared ActionResponse Type
+- [x] 1.1 Create src/types/actions.ts with ActionResponse<T = unknown> type ✓
+  - Created generic type with T = unknown for backward compatibility
+  - Includes error?, success?, and data? fields
+  - Added Portuguese comments and JSDoc examples
+  - Committed: a3038cc
+- [x] 1.2 Export ActionResponse from src/types/index.ts ✓
+  - Added export for actions.ts module following existing pattern
+  - Used wildcard export (export * from './actions')
+  - Added Portuguese section comment "Tipos de Actions"
+  - Committed: f859cf2
+
+### Phase 2: Update Action Files
+- [x] 2.1 Update src/actions/challenges.ts ✓
+  - Removed local ActionResponse type definition
+  - Imported ActionResponse from @/types
+  - All function return types remain compatible
+  - Committed: fe16b0a
+- [x] 2.2 Update src/actions/rewards.ts ✓
+  - Removed local ActionResponse type definition
+  - Imported ActionResponse from @/types
+  - All function return types remain compatible
+  - Committed: b6e7131
+- [x] 2.3 Update src/actions/events.ts ✓
+  - Removed local ActionResponse type definition
+  - Imported ActionResponse from @/types
+  - All function return types remain compatible
+  - Committed: dc0109e
+- [x] 2.4 Update src/actions/posts.ts ✓
+  - Removed local ActionResponse type definition
+  - Imported ActionResponse from @/types
+  - All function return types remain compatible
+  - Committed: dc05e6b
+- [x] 2.5 Update src/actions/profile.ts ✓
+  - Removed local ActionResponse type definition
+  - Imported ActionResponse from @/types
+  - All function return types remain compatible
+  - Committed: bc74ece
+
+### Phase 3: Verification
+- [ ] 3.1 Run TypeScript type check
+- [ ] 3.2 Run build to verify compilation
+
+## Notes
+- The new ActionResponse type will use a generic parameter T = unknown for type-safe data
+- This maintains backward compatibility while allowing stronger typing where needed
+- Comments will be in Portuguese per CLAUDE.md guidelines
