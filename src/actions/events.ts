@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { requireAdminOrCreator, isAuthError } from '@/lib/auth';
 
 type ActionResponse = {
   error?: string;
@@ -221,23 +222,13 @@ export async function createEvent(data: {
   image_url?: string | null;
 }): Promise<ActionResponse> {
   try {
-    const supabase = await createClient();
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return { error: 'Usuario nao autenticado' };
+    // Verificar autorizacao
+    const auth = await requireAdminOrCreator();
+    if (isAuthError(auth)) {
+      return auth;
     }
 
-    // Verificar se e admin/creator
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role, is_creator')
-      .eq('id', user.id)
-      .single();
-
-    if (!profile || (profile.role !== 'admin' && !profile.is_creator)) {
-      return { error: 'Acesso nao autorizado' };
-    }
+    const { supabase } = auth;
 
     const { data: event, error } = await supabase
       .from('events')
@@ -257,7 +248,6 @@ export async function createEvent(data: {
       .single();
 
     if (error) {
-      console.error('Error creating event:', error);
       return { error: 'Erro ao criar evento' };
     }
 
