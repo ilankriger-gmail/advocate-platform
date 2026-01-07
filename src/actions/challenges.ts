@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { analyzeVideoChallenge, type AIVerdict } from '@/lib/gemini';
 import { ActionResponse } from '@/types/action';
-import type { Challenge, ChallengeParticipant, ChallengeWinner } from '@/lib/supabase/types';
+import type { Challenge, ChallengeParticipant, ChallengeWinner, ParticipationWithChallenge } from '@/lib/supabase/types';
 
 /**
  * Participar de um desafio fisico
@@ -182,13 +182,13 @@ export async function approveParticipation(participationId: string, customCoins?
       .from('challenge_participants')
       .select('*, challenges(coins_reward)')
       .eq('id', participationId)
-      .single();
+      .single() as { data: ParticipationWithChallenge | null };
 
     if (!participation) {
       return { error: 'Participacao nao encontrada' };
     }
 
-    const coinsReward = customCoins !== undefined ? customCoins : ((participation as any).challenges?.coins_reward || 0);
+    const coinsReward = customCoins !== undefined ? customCoins : (participation.challenges?.coins_reward || 0);
 
     // Aprovar participacao
     const { error: updateError } = await supabase

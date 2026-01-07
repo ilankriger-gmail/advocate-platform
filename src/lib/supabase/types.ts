@@ -331,6 +331,16 @@ export interface ChallengeParticipantWithUser extends ChallengeParticipant {
   } | null;
 }
 
+/**
+ * Tipo para participação com dados do desafio associado
+ * Usado quando fazemos join com a tabela challenges
+ */
+export interface ParticipationWithChallenge extends ChallengeParticipant {
+  challenges: {
+    coins_reward: number;
+  } | null;
+}
+
 // ============ RECOMPENSAS E MOEDAS ============
 
 export type RewardClaimStatus = 'pending' | 'approved' | 'shipped' | 'delivered' | 'cancelled';

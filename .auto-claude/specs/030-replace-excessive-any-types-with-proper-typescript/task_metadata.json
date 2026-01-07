@@ -1,0 +1,9 @@
+{
+  "sourceType": "ideation",
+  "ideationType": "code_quality",
+  "ideaId": "cq-004",
+  "rationale": "Using `any` defeats the purpose of TypeScript - bugs that should be caught at compile time slip through to runtime. It also makes code harder to refactor safely and reduces IDE autocomplete/documentation benefits.",
+  "category": "refactoring",
+  "codeQualitySeverity": "minor",
+  "priority": "medium"
+}

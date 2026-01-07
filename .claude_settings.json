@@ -1,0 +1,34 @@
+{
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true
+  },
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "Read(./**)",
+      "Write(./**)",
+      "Edit(./**)",
+      "Glob(./**)",
+      "Grep(./**)",
+      "Read(/Users/macbookair/advocate-platform/.worktrees/030-replace-excessive-any-types-with-proper-typescript/**)",
+      "Write(/Users/macbookair/advocate-platform/.worktrees/030-replace-excessive-any-types-with-proper-typescript/**)",
+      "Edit(/Users/macbookair/advocate-platform/.worktrees/030-replace-excessive-any-types-with-proper-typescript/**)",
+      "Glob(/Users/macbookair/advocate-platform/.worktrees/030-replace-excessive-any-types-with-proper-typescript/**)",
+      "Grep(/Users/macbookair/advocate-platform/.worktrees/030-replace-excessive-any-types-with-proper-typescript/**)",
+      "Read(/Users/macbookair/advocate-platform/.worktrees/030-replace-excessive-any-types-with-proper-typescript/.auto-claude/specs/030-replace-excessive-any-types-with-proper-typescript/**)",
+      "Write(/Users/macbookair/advocate-platform/.worktrees/030-replace-excessive-any-types-with-proper-typescript/.auto-claude/specs/030-replace-excessive-any-types-with-proper-typescript/**)",
+      "Edit(/Users/macbookair/advocate-platform/.worktrees/030-replace-excessive-any-types-with-proper-typescript/.auto-claude/specs/030-replace-excessive-any-types-with-proper-typescript/**)",
+      "Bash(*)",
+      "WebFetch(*)",
+      "WebSearch(*)",
+      "mcp__context7__resolve-library-id(*)",
+      "mcp__context7__get-library-docs(*)",
+      "mcp__graphiti-memory__search_nodes(*)",
+      "mcp__graphiti-memory__search_facts(*)",
+      "mcp__graphiti-memory__add_episode(*)",
+      "mcp__graphiti-memory__get_episodes(*)",
+      "mcp__graphiti-memory__get_entity_edge(*)"
+    ]
+  }
+}
