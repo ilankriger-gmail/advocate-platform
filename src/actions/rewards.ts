@@ -316,23 +316,13 @@ export async function createReward(data: {
   type: 'digital' | 'physical';
 }): Promise<ActionResponse> {
   try {
-    const supabase = await createClient();
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return { error: 'Usuario nao autenticado' };
+    // Verificar autorizacao
+    const auth = await requireAdminOrCreator();
+    if (isAuthError(auth)) {
+      return auth;
     }
 
-    // Verificar se e admin/creator
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role, is_creator')
-      .eq('id', user.id)
-      .single();
-
-    if (!profile || (profile.role !== 'admin' && !profile.is_creator)) {
-      return { error: 'Acesso nao autorizado' };
-    }
+    const { supabase } = auth;
 
     const { data: reward, error } = await supabase
       .from('rewards')
@@ -349,7 +339,6 @@ export async function createReward(data: {
       .single();
 
     if (error) {
-      console.error('Error creating reward:', error);
       return { error: 'Erro ao criar recompensa' };
     }
 
