@@ -3,12 +3,8 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { analyzeVideoChallenge, type AIVerdict } from '@/lib/gemini';
-
-type ActionResponse = {
-  error?: string;
-  success?: boolean;
-  data?: any;
-};
+import { ActionResponse } from '@/types/action';
+import type { Challenge, ChallengeParticipant, ChallengeWinner } from '@/lib/supabase/types';
 
 /**
  * Participar de um desafio fisico
@@ -18,7 +14,7 @@ export async function participateInChallenge(data: {
   resultValue: number;
   videoProofUrl?: string;
   socialMediaUrl?: string;
-}): Promise<ActionResponse> {
+}): Promise<ActionResponse<ChallengeParticipant>> {
   try {
     const supabase = await createClient();
 
@@ -390,7 +386,7 @@ export async function createChallenge(data: {
   // Controle
   starts_at?: string | null;
   ends_at?: string | null;
-}): Promise<ActionResponse> {
+}): Promise<ActionResponse<Challenge>> {
   try {
     const supabase = await createClient();
 
@@ -498,7 +494,7 @@ export async function registerWinner(data: {
   userId?: string;
   instagramUsername?: string;
   prizeAmount?: number;
-}): Promise<ActionResponse> {
+}): Promise<ActionResponse<ChallengeWinner>> {
   try {
     const supabase = await createClient();
 
