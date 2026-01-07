@@ -3,12 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import type { CreatePostData } from '@/types/post';
-
-type ActionResponse = {
-  error?: string;
-  success?: boolean;
-  data?: any;
-};
+import { ActionResponse } from '@/types';
 
 /**
  * Criar novo post
