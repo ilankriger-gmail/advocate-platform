@@ -1,0 +1,361 @@
+
+## 2026-01-07 - Subtask 2.2 Completed ✅
+
+**Subtask:** Criar documento DATA_FLOW_POSTS.md com diagramas de criacao de post, moderacao, exibicao no feed, likes/comments e fluxo de dados entre Server Components, Server Actions e Supabase.
+
+**Status:** ✅ COMPLETED
+
+### Implementation Details
+
+Created comprehensive DATA_FLOW_POSTS.md documentation (1615 lines) covering the complete posts system architecture:
+
+#### Key Sections Documented:
+
+1. **Visão Geral**
+   - Architecture diagram showing flow between Client Components, Server Actions, and Supabase
+   - Post status state machine (pending → approved/rejected)
+   - Main characteristics of the posts system
+
+2. **Criação de Post**
+   - Complete sequence diagram for post creation flow
+   - Client-side form validation
+   - Server Action processing with authentication
+   - RLS policy enforcement
+   - Code examples for CreatePostForm and createPost Server Action
+
+3. **Moderação de Posts (Admin)**
+   - Approval and rejection flows with sequence diagrams
+   - Admin panel structure with tabs for pending/approved/rejected
+   - Server Actions for approvePost and rejectPost with full code
+   - Rejection reason tracking
+   - RLS policies for admin-only operations
+
+4. **Exibição no Feed**
+   - Feed architecture with Server Components data fetching
+   - Loading sequence diagram
+   - Query optimization with JOINs (profiles, post_likes)
+   - RLS policies for reading posts (approved only for public, own posts for authors, all for admins)
+
+5. **Sistema de Likes**
+   - Optimistic update pattern for instant UI feedback
+   - Toggle like/unlike mechanism
+   - Sequence diagram showing optimistic update → background sync → confirmation/rollback
+   - Database functions (increment_likes, decrement_likes RPC)
+   - Post likes counter caching for performance
+   - Complete code examples for like handler and Server Action
+
+6. **Sistema de Comentários**
+   - Comment creation flow with validation
+   - getPostComments query with author data JOIN
+   - Comments counter incrementation
+   - Soft delete pattern for comment removal
+   - RLS policies for comment operations
+
+7. **Deleção de Posts**
+   - Ownership validation flowchart
+   - Cascade delete for related data (likes, comments)
+   - RLS policies ensuring only owners can delete their posts
+
+8. **Fluxo Completo de Dados**
+   - Complete architecture layers diagram (Client → Server Actions → Server Components → Supabase → Database)
+   - Timeline gantt chart showing complete post lifecycle
+   - Integrated sequence diagram showing creation → moderation → publication → interaction
+   - State diagram for complete post lifecycle
+
+9. **Políticas RLS**
+   - Complete RLS policies for posts table (read, insert, update, delete)
+   - RLS policies for post_likes table
+   - RLS policies for post_comments table
+   - Admin vs user permission differentiation
+
+10. **Arquivos e Estrutura**
+    - Complete file structure map
+    - Responsibility matrix showing which files handle what
+    - Database tables structure
+    - RPC functions documentation
+
+#### Technical Highlights:
+
+- **15+ Mermaid diagrams** including sequence, flowcharts, state machines, architecture, gantt charts
+- **Complete code examples** from actual codebase with proper annotations
+- **Performance optimizations** documented (optimistic updates, counter caching, Server Components)
+- **Security layers** explained (RLS, authentication, ownership validation)
+- **Developer experience** considerations (error handling, revalidation, type safety)
+
+#### Files Created/Modified:
+- ✅ docs/flows/DATA_FLOW_POSTS.md (1615 lines)
+
+#### Commit:
+- 941331f: "auto-claude: 2.2 - Criar documento DATA_FLOW_POSTS.md com diagramas d"
+
+### Verification:
+
+✅ Document covers all required topics from spec:
+  - Criação de post (creation flow)
+  - Moderação admin (approval/rejection)
+  - Exibição no feed (Server Components fetching)
+  - Sistema de likes (optimistic updates)
+  - Sistema de comentários (with validation)
+  - Fluxo de dados entre Server Components, Server Actions e Supabase
+
+✅ Follows the same pattern and quality as DATA_FLOW_AUTH.md
+✅ All diagrams render correctly in Markdown
+✅ Code examples are accurate and from actual codebase
+✅ Portuguese documentation (as per project requirements)
+✅ Comprehensive coverage suitable for developer onboarding
+
+### Next Steps:
+- Proceed to subtask 2.3: Documentar fluxo de eventos
+
+## 2026-01-07 - Subtask 2.4 Completed ✅
+
+**Subtask:** Criar documento DATA_FLOW_CHALLENGES.md com diagramas de listagem de desafios, participacao, submissao de evidencias, selecao de vencedores e sistema de recompensas.
+
+**Status:** ✅ COMPLETED
+
+### Implementation Details
+
+Created comprehensive DATA_FLOW_CHALLENGES.md documentation (2640 lines) covering the complete challenges system architecture:
+
+#### Key Sections Documented:
+
+1. **Visão Geral**
+   - Architecture diagram showing three types of challenges: físico, engajamento, participe
+   - Challenge participation state machine (pending → approved/rejected)
+   - Main characteristics of the challenges system
+   - Dual reward system: virtual coins + cash prizes
+
+2. **Listagem de Desafios**
+   - Complete loading sequence with Server Component rendering
+   - Parallel data fetching (challenges, winners, participations, user balance)
+   - Grouping by challenge type (physical vs engagement)
+   - User participation status mapping
+   - Code examples for challenges page
+
+3. **Participação em Desafios**
+   - Complete participation flow with sequence diagram
+   - Multi-layer validation (client-side and server-side)
+   - Evidence submission: result value, video URL, social media URL
+   - Duplicate participation prevention
+   - Code examples for ChallengeParticipationModal and participateInChallenge
+
+4. **Submissão de Evidências**
+   - Three types of evidence: mandatory result value, optional video proof, optional social media post
+   - Evidence structure and data model (ERD diagram)
+   - Validation rules and requirements
+   - Hashtag and profile tagging for physical challenges
+
+5. **Verificação por IA (Google Gemini)**
+   - Automatic video analysis using Google Gemini AI
+   - AI verdict structure: approved, count, confidence, reasoning
+   - Sequence diagram showing AI analysis flow
+   - Prompt construction for Gemini API
+   - Advisory nature: final decision always with admin
+
+6. **Fluxo Admin - Moderação de Participações**
+   - Approval flow with sequence diagram and coin crediting
+   - Rejection flow with status update
+   - Custom coins feature for admins
+   - ParticipationActions component with edit functionality
+   - Complete code examples for approveParticipation and rejectParticipation
+
+7. **Seleção de Vencedores**
+   - Winner registration flow for engagement/participate challenges
+   - Prize payment flow via PIX with proof tracking
+   - Winner states diagram (registered → pix_sent)
+   - Public display of winners with payment status badges
+   - Code examples for registerWinner and markPrizeSent
+
+8. **Sistema de Recompensas**
+   - Dual reward architecture: virtual coins (corações) + cash prizes (PIX)
+   - Coins credit flow with user_coins and coin_transactions
+   - Transaction types: earned, spent, bonus
+   - Custom coins by admin for exceptional performance
+   - ERD showing relationships between coins tables
+
+9. **Fluxo Admin - Gestão de Desafios**
+   - Challenge creation flow with dynamic fields by type
+   - Physical challenges: goal_type, goal_value, record_video_url, hashtag, profile_to_tag
+   - Engagement/Participate challenges: instagram_embed_url, prize_amount, num_winners
+   - Challenge status management: active → inactive → closed
+   - Admin dashboard with statistics (participants, pending, approved, winners)
+   - Code examples for createChallenge and toggleChallengeActive
+
+10. **Fluxo Completo de Dados**
+    - Complete architecture showing all layers: Client, Server Actions, AI, Supabase, Database
+    - Timeline gantt chart of complete challenge lifecycle (creation → participation → AI analysis → moderation → rewards → winner selection → payment)
+    - Integrated sequence diagram showing end-to-end flow
+    - Consolidated state diagram with all possible states
+    - Complete ERD showing relationships between 6 tables
+
+11. **Políticas RLS**
+    - challenges table: public can view active, admin can view/manage all
+    - challenge_participants table: users view/update own, admin views/updates all
+    - challenge_winners table: public can view, admin can insert/update
+    - user_coins table: users view own balance, admin views all, updates via RPC only
+    - coin_transactions table: users view own, admin views all, inserts via Server Actions
+    - Permission diagram showing public vs user vs admin access levels
+
+12. **Arquivos Relacionados**
+    - Complete file structure map
+    - 10 Server Actions documented with parameters and responses
+    - Responsibility matrix showing components and their roles
+    - Database tables structure (6 tables)
+    - RPC functions (add_user_coins, increment)
+    - External services integration (Google Gemini AI)
+
+#### Technical Highlights:
+
+- **30+ Mermaid diagrams** including sequence, flowcharts, state machines, architecture, gantt charts, ERD
+- **Complete code examples** from actual codebase with comprehensive annotations
+- **AI Integration** documented in detail (Google Gemini video analysis with multimodal capabilities)
+- **Dual reward system** explained (virtual coins + cash prizes with PIX payment tracking)
+- **Security layers** documented (RLS policies for all 5 tables with different access levels)
+- **Admin flexibility** highlighted (custom coins, winner management, challenge lifecycle control)
+- **Developer experience** considerations (validation layers, error handling, revalidation, type safety)
+
+#### Files Created/Modified:
+- ✅ docs/flows/DATA_FLOW_CHALLENGES.md (2640 lines)
+
+#### Commit:
+- 489507b: "auto-claude: 2.4 - Criar documento DATA_FLOW_CHALLENGES.md com diagra"
+
+### Verification:
+
+✅ Document covers all required topics from spec:
+  - Listagem de desafios (challenge listing with grouping by type)
+  - Participação (participation with multi-layer validation)
+  - Submissão de evidências (evidence submission: result, video, social media)
+  - Seleção de vencedores (winner selection and PIX payment tracking)
+  - Sistema de recompensas (dual rewards: coins + cash prizes)
+
+✅ Follows the same pattern and quality as DATA_FLOW_AUTH.md, DATA_FLOW_POSTS.md, and DATA_FLOW_EVENTS.md
+✅ All diagrams render correctly in Markdown
+✅ Code examples are accurate and from actual codebase
+✅ Portuguese documentation (as per project requirements)
+✅ Comprehensive coverage suitable for developer onboarding
+✅ AI integration properly documented (Google Gemini video analysis)
+✅ External services integration documented
+
+### Next Steps:
+- Proceed to subtask 2.5: Documentar fluxo de perfil e recompensas
+
+## 2026-01-07 - Subtask 3.1 Completed ✅
+
+**Subtask:** Criar documento COMPONENTS.md explicando quando usar Server Components vs Client Components, com exemplos do código existente e diagrama de decisão.
+
+**Status:** ✅ COMPLETED
+
+### Implementation Details
+
+Created comprehensive COMPONENTS.md documentation (1073 lines) covering Server vs Client Components patterns:
+
+#### Key Sections Documented:
+
+1. **Visão Geral**
+   - Explanation of Next.js 15 Server Components by default principle
+   - Fundamental principle: use Server Components by default, Client Components only when needed
+   - Benefits of Server Components (performance, security, SEO, loading, cache)
+   - Benefits of Client Components (interactivity, events, browser APIs, libraries)
+
+2. **Quando Usar Server Components**
+   - 5 detailed use cases with code examples:
+     1. Data fetching (direct database/API access)
+     2. Pages and layouts (content display without complex interactivity)
+     3. Pure presentational components (props-based rendering)
+     4. Layout composition (organizing other components)
+     5. Data aggregation (combining data from multiple sources)
+   - Each use case includes practical code examples and explanations
+
+3. **Quando Usar Client Components**
+   - 6 detailed use cases with code examples:
+     1. State interactivity (useState, useReducer)
+     2. Side effects (useEffect)
+     3. Browser events (onClick, onChange, onSubmit)
+     4. Custom hooks (usePosts, useAuth)
+     5. Browser APIs (geolocation, camera, localStorage)
+     6. Context Providers (global state management)
+   - Each use case includes practical code examples and "when to use" guidance
+
+4. **Diagrama de Decisão**
+   - Interactive Mermaid flowchart guiding developers
+   - Decision tree based on: interactivity needs, data fetching, hooks usage, events, browser APIs, Context API
+   - Color-coded nodes (green for Server, blue for Client)
+   - Clear visual paths to help choose component type
+
+5. **Exemplos do Código Existente**
+   - 4 real Server Component examples from codebase:
+     1. `eventos/page.tsx` - Event listing with data fetching
+     2. `perfil/page.tsx` - Profile page with data aggregation
+     3. Layout examples - Organizing structure
+     4. Pure components - Presentation only
+   - 4 real Client Component examples from codebase:
+     1. `CreatePostForm.tsx` - Interactive form with useState
+     2. `PostCard.tsx` - Like system with optimistic updates
+     3. `EventCard.tsx` - Registration/cancellation actions
+     4. `AuthContext.tsx` - Context Provider with subscriptions
+   - Each example includes full code and explanation of "why this type"
+
+6. **Padrões e Boas Práticas**
+   - Pattern: Server/Client Component composition
+   - Pattern: Passing props from Server to Client
+   - Pattern: Server Actions for mutations
+   - Anti-pattern: Making everything Client Component unnecessarily
+   - Anti-pattern: Business logic in Client Components
+   - Code examples comparing good vs bad approaches
+
+7. **Comunicação Entre Componentes**
+   - Server → Client: Props (data passing)
+   - Client → Server: Server Actions (mutations)
+   - Client ↔ Client: Context/Props (state sharing)
+   - Code examples for each communication pattern
+
+8. **Checklist de Decisão**
+   - Practical checklist for Server Components (6 questions)
+   - Practical checklist for Client Components (7 questions)
+   - Easy reference for developers creating new components
+
+9. **Resumo Visual**
+   - Mermaid graph showing relationship between Server Components, Client Components, and Server Actions
+   - Data flow visualization (Props → Server Actions → Revalidation)
+   - Color-coded by component type
+   - Clear visual summary of the architecture
+
+10. **Próximos Passos**
+    - Links to related documentation (SERVER_ACTIONS.md, flows, ARCHITECTURE.md)
+    - References to Next.js 15 and React official documentation
+
+#### Technical Highlights:
+
+- **3 Mermaid diagrams** (decision flowchart, architecture graph, component relationships)
+- **20+ code examples** extracted from actual codebase
+- **Real file references** from the project structure
+- **Bilingual approach** (Portuguese documentation with English code examples)
+- **Practical guidance** for day-to-day development decisions
+- **Visual decision tools** to speed up component type selection
+
+#### Files Created/Modified:
+- ✅ docs/COMPONENTS.md (1073 lines)
+
+#### Commit:
+- 25fab80: "auto-claude: 3.1 - Criar documento COMPONENTS.md explicando quando usar Server Components vs Client Components"
+
+### Verification:
+
+✅ Document covers all required topics from spec:
+  - Explanation of when to use Server Components (5 use cases with examples)
+  - Explanation of when to use Client Components (6 use cases with examples)
+  - Examples from existing code (8 real components documented)
+  - Decision diagram (interactive Mermaid flowchart)
+
+✅ Follows the same pattern and quality as other architecture docs
+✅ All diagrams render correctly in Markdown
+✅ Code examples are accurate and from actual codebase
+✅ Portuguese documentation (as per project requirements)
+✅ Comprehensive coverage suitable for developer onboarding
+✅ Includes both good practices and anti-patterns
+✅ Visual aids for quick decision-making
+
+### Next Steps:
+- Proceed to subtask 3.2: Documentar estrutura de Server Actions
+

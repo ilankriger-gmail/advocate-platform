@@ -122,12 +122,14 @@
           "id": "3.1",
           "title": "Documentar padroes de Server vs Client Components",
           "description": "Criar documento COMPONENTS.md explicando quando usar Server Components vs Client Components, com exemplos do codigo existente e diagrama de decisao.",
-          "status": "pending",
+          "status": "completed",
           "file_path": "docs/COMPONENTS.md",
           "dependencies": [
             "1.1"
           ],
-          "estimated_minutes": 30
+          "estimated_minutes": 30,
+          "notes": "Documento COMPONENTS.md criado com sucesso contendo: (1) Vis\u00e3o geral explicando princ\u00edpios fundamentais de Server vs Client Components com benef\u00edcios de cada tipo, (2) Se\u00e7\u00e3o detalhada sobre quando usar Server Components com 5 casos de uso: busca de dados, p\u00e1ginas/layouts, componentes puros, composi\u00e7\u00e3o de layouts e agrega\u00e7\u00e3o de dados, cada um com exemplos de c\u00f3digo, (3) Se\u00e7\u00e3o detalhada sobre quando usar Client Components com 6 casos de uso: interatividade com estado (useState/useReducer), efeitos colaterais (useEffect), eventos do navegador (onClick/onChange), hooks customizados, APIs do navegador e Context Providers, cada um com exemplos pr\u00e1ticos, (4) Diagrama de decis\u00e3o interativo em Mermaid com flowchart completo guiando desenvolvedores na escolha entre Server e Client Components, (5) Exemplos do c\u00f3digo existente documentando 4 Server Components reais: EventosPage (listagem com busca de dados), PerfilPage (agrega\u00e7\u00e3o de m\u00faltiplas fontes), e 4 Client Components reais: CreatePostForm (formul\u00e1rio interativo com useState), PostCard (interatividade com likes e otimistic updates), EventCard (a\u00e7\u00f5es de inscri\u00e7\u00e3o/cancelamento), AuthContext (Context Provider com subscriptions), (6) Se\u00e7\u00e3o de padr\u00f5es e boas pr\u00e1ticas documentando: composi\u00e7\u00e3o de Server e Client Components, passar props de Server para Client, uso de Server Actions para muta\u00e7\u00f5es, anti-padr\u00f5es a evitar (tudo Client Component, l\u00f3gica de neg\u00f3cios no cliente), (7) Documenta\u00e7\u00e3o de comunica\u00e7\u00e3o entre componentes: Server \u2192 Client via Props, Client \u2192 Server via Server Actions, Client \u2194 Client via Context/Props, (8) Checklist de decis\u00e3o pr\u00e1tico com perguntas para determinar se usar Server ou Client Component, (9) Resumo visual com diagrama Mermaid mostrando relacionamento entre Server Components, Client Components e Server Actions com fluxo de dados, (10) Se\u00e7\u00e3o de pr\u00f3ximos passos com links para documentos relacionados (SERVER_ACTIONS.md, flows, ARCHITECTURE.md), (11) Refer\u00eancias para documenta\u00e7\u00e3o oficial do Next.js 15 e React. Total de 1073 linhas de documenta\u00e7\u00e3o abrangente com m\u00faltiplos diagramas Mermaid, exemplos de c\u00f3digo real extra\u00eddos da base de c\u00f3digo existente, explica\u00e7\u00f5es detalhadas de cada padr\u00e3o, e guias pr\u00e1ticos para tomada de decis\u00e3o. Commit: 25fab80",
+          "updated_at": "2026-01-07T18:12:42.359831+00:00"
         },
         {
           "id": "3.2",
@@ -282,5 +284,5 @@
     "tests_passed": ""
   },
   "spec_file": "spec.md",
-  "last_updated": "2026-01-07T18:08:25.060552+00:00"
+  "last_updated": "2026-01-07T18:12:42.359842+00:00"
 }
