@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Input } from '@/components/ui';
-import { addCoinsToUser } from '@/actions/rewards';
+import { addCoinsToUser } from '@/actions/rewards-admin';
 
 interface UserSearchProps {
   initialSearch: string;
