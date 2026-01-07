@@ -135,12 +135,14 @@
           "id": "3.2",
           "title": "Documentar estrutura de Server Actions",
           "description": "Criar documento SERVER_ACTIONS.md com lista de todas as Server Actions, seus parametros, retornos, e diagrama mostrando a relacao entre actions e queries do Supabase.",
-          "status": "pending",
+          "status": "completed",
           "file_path": "docs/SERVER_ACTIONS.md",
           "dependencies": [
             "1.1"
           ],
-          "estimated_minutes": 35
+          "estimated_minutes": 35,
+          "notes": "Documento SERVER_ACTIONS.md criado com sucesso contendo documenta\u00e7\u00e3o completa de todas as Server Actions da plataforma incluindo: (1) Vis\u00e3o geral explicando o que s\u00e3o Server Actions, caracter\u00edsticas (seguran\u00e7a, valida\u00e7\u00e3o, autoriza\u00e7\u00e3o, revalida\u00e7\u00e3o, redirecionamento), tipos de retorno comuns (ActionResponse, AuthResponse) e estat\u00edsticas (45+ actions, 7 m\u00f3dulos, 12+ tabelas), (2) Actions de Autentica\u00e7\u00e3o (auth.ts): login, register, logout, resetPassword, updatePassword, todas com documenta\u00e7\u00e3o completa de par\u00e2metros, retornos, queries Supabase e efeitos colaterais, (3) Actions de Posts (posts.ts): createPost, approvePost, rejectPost, likePost, commentPost, deletePost, getPostComments, todas com queries detalhadas, (4) Actions de Eventos (events.ts): registerForEvent com valida\u00e7\u00f5es multi-camada, cancelEventRegistration, checkInEvent, submitEventFeedback, createEvent, toggleEventActive, updateEvent, confirmEventRegistration, (5) Actions de Desafios (challenges.ts): participateInChallenge com integra\u00e7\u00e3o Google Gemini AI, updateParticipation, approveParticipation com cr\u00e9dito de moedas, rejectParticipation, toggleChallengeActive, markWinnerPaid, createChallenge, closeChallenge, registerWinner, markPrizeSent, (6) Actions de Perfil (profile.ts): updateProfile, getCurrentProfile, getProfileStats, getPublicProfile, (7) Actions de Recompensas (rewards.ts): claimReward com transa\u00e7\u00e3o completa e rollback, cancelClaim, toggleRewardActive, approveClaim, markClaimShipped, markClaimDelivered, createReward, updateReward, addCoinsToUser, (8) Actions Administrativas (admin.ts): checkDatabaseSchema, getPendingParticipations, runRaffle, (9) Diagrama de Relacionamentos mostrando arquitetura completa Client \u2192 Server Actions \u2192 Supabase \u2192 Database, (10) Fluxo de Dados completo com diagrama de sequ\u00eancia exemplificando claimReward com RLS, (11) Mapa de Tabelas e Actions mostrando relacionamentos entre m\u00f3dulos, (12) Matriz de Depend\u00eancias completa Actions x Tabelas mostrando opera\u00e7\u00f5es CRUD, (13) Padr\u00f5es de Uso documentando valida\u00e7\u00e3o multi-camada, transa\u00e7\u00e3o com rollback, revalida\u00e7\u00e3o, redirecionamento, autoriza\u00e7\u00e3o admin, RPC calls, (14) Tratamento de Erros com hierarquia e mensagens em portugu\u00eas, (15) Para cada Server Action: assinatura completa com tipos TypeScript, tabela de par\u00e2metros, valida\u00e7\u00f5es, queries Supabase, autoriza\u00e7\u00e3o, efeitos colaterais, retorno, exemplos. Total de 1847 linhas com 10+ diagramas Mermaid, 45+ Server Actions catalogadas organizadas por m\u00f3dulo. Commit: df54322",
+          "updated_at": "2026-01-07T18:25:08.595646+00:00"
         },
         {
           "id": "3.3",
@@ -284,5 +286,5 @@
     "tests_passed": ""
   },
   "spec_file": "spec.md",
-  "last_updated": "2026-01-07T18:12:42.359842+00:00"
+  "last_updated": "2026-01-07T18:25:08.595655+00:00"
 }
