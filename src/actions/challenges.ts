@@ -305,23 +305,13 @@ export async function toggleChallengeActive(
  */
 export async function markWinnerPaid(winnerId: string): Promise<ActionResponse> {
   try {
-    const supabase = await createClient();
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return { error: 'Usuario nao autenticado' };
+    // Verificar autorizacao
+    const auth = await requireAdminOrCreator();
+    if (isAuthError(auth)) {
+      return auth;
     }
 
-    // Verificar se e admin/creator
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role, is_creator')
-      .eq('id', user.id)
-      .single();
-
-    if (!profile || (profile.role !== 'admin' && !profile.is_creator)) {
-      return { error: 'Acesso nao autorizado' };
-    }
+    const { supabase } = auth;
 
     const { error } = await supabase
       .from('challenge_winners')
