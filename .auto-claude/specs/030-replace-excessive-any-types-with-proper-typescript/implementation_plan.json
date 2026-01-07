@@ -123,23 +123,25 @@
           "id": "3.1",
           "title": "Create ParticipationWithChallenge type for approveParticipation",
           "description": "Create a type that includes the challenges join data to fix (participation as any).challenges?.coins_reward in src/actions/challenges.ts:186",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/actions/challenges.ts",
             "src/lib/supabase/types.ts"
           ],
-          "notes": ""
+          "notes": "Successfully created ParticipationWithChallenge type in src/lib/supabase/types.ts that includes the challenges join data with coins_reward field. Updated src/actions/challenges.ts to import and use this type, replacing the (participation as any).challenges?.coins_reward with properly typed participation.challenges?.coins_reward. The type properly extends ChallengeParticipant and includes a nullable challenges object with coins_reward number field.",
+          "updated_at": "2026-01-07T16:41:52.787820+00:00"
         },
         {
           "id": "3.2",
           "title": "Create ClaimWithReward type for cancelClaim",
           "description": "Create a type that includes the rewards join data to fix (claim as any).rewards?.name in src/actions/rewards.ts:168",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/actions/rewards.ts",
             "src/lib/supabase/types.ts"
           ],
-          "notes": ""
+          "notes": "Successfully created ClaimWithReward type in src/lib/supabase/types.ts that includes the rewards join data with the full Reward object. Updated src/actions/rewards.ts to import and use this type, replacing the (claim as any).rewards?.name with properly typed claim.rewards?.name at line 164. The type properly extends RewardClaim and includes a nullable rewards object following the same pattern as ParticipationWithChallenge from subtask 3.1.",
+          "updated_at": "2026-01-07T16:43:59.322963+00:00"
         }
       ]
     },
@@ -280,5 +282,5 @@
     "TypeScript compilation passes without errors",
     "grep -r ': any' returns no results in src/ directory"
   ],
-  "last_updated": "2026-01-07T16:39:43.735097+00:00"
+  "last_updated": "2026-01-07T16:43:59.322974+00:00"
 }

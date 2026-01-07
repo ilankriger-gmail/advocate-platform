@@ -262,6 +262,14 @@ export interface EventWithRegistration extends Event {
   user_registration?: EventRegistration | null;
 }
 
+/**
+ * Tipo para registro de evento com dados do evento associado
+ * Usado quando fazemos join com a tabela events
+ */
+export interface EventRegistrationWithEvent extends EventRegistration {
+  events: Event | null;
+}
+
 // ============ DESAFIOS ============
 
 export type ChallengeType = 'engajamento' | 'fisico';
