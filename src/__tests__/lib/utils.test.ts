@@ -9,6 +9,8 @@ import {
   getInitials,
   truncate,
   slugify,
+  isValidEmail,
+  isValidUrl,
 } from '@/lib/utils';
 
 describe('Date Formatting Functions', () => {
@@ -484,6 +486,230 @@ describe('String Utility Functions', () => {
       expect(result).toBe('meu-artigo-sobre-typescript');
       // Verifica se é um slug válido para URL
       expect(result).toMatch(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
+    });
+  });
+
+  describe('isValidEmail', () => {
+    it('should validate a simple email address', () => {
+      const result = isValidEmail('user@example.com');
+      expect(result).toBe(true);
+    });
+
+    it('should validate email with subdomain', () => {
+      const result = isValidEmail('user@mail.example.com');
+      expect(result).toBe(true);
+    });
+
+    it('should validate email with plus sign', () => {
+      const result = isValidEmail('user+tag@example.com');
+      expect(result).toBe(true);
+    });
+
+    it('should validate email with dots in username', () => {
+      const result = isValidEmail('first.last@example.com');
+      expect(result).toBe(true);
+    });
+
+    it('should validate email with numbers', () => {
+      const result = isValidEmail('user123@example.com');
+      expect(result).toBe(true);
+    });
+
+    it('should validate email with hyphen in domain', () => {
+      const result = isValidEmail('user@my-domain.com');
+      expect(result).toBe(true);
+    });
+
+    it('should validate email with long TLD', () => {
+      const result = isValidEmail('user@example.consulting');
+      expect(result).toBe(true);
+    });
+
+    it('should reject email without @', () => {
+      const result = isValidEmail('userexample.com');
+      expect(result).toBe(false);
+    });
+
+    it('should reject email without domain', () => {
+      const result = isValidEmail('user@');
+      expect(result).toBe(false);
+    });
+
+    it('should reject email without username', () => {
+      const result = isValidEmail('@example.com');
+      expect(result).toBe(false);
+    });
+
+    it('should reject email without TLD', () => {
+      const result = isValidEmail('user@example');
+      expect(result).toBe(false);
+    });
+
+    it('should reject email with spaces', () => {
+      const result = isValidEmail('user @example.com');
+      expect(result).toBe(false);
+    });
+
+    it('should reject email with multiple @', () => {
+      const result = isValidEmail('user@@example.com');
+      expect(result).toBe(false);
+    });
+
+    it('should reject empty string', () => {
+      const result = isValidEmail('');
+      expect(result).toBe(false);
+    });
+
+    it('should reject email with only spaces', () => {
+      const result = isValidEmail('   ');
+      expect(result).toBe(false);
+    });
+
+    it('should reject email starting with dot', () => {
+      const result = isValidEmail('.user@example.com');
+      expect(result).toBe(false);
+    });
+
+    it('should reject email ending with dot before @', () => {
+      const result = isValidEmail('user.@example.com');
+      expect(result).toBe(false);
+    });
+
+    it('should reject plain text', () => {
+      const result = isValidEmail('not an email');
+      expect(result).toBe(false);
+    });
+
+    it('should reject email with special characters in domain', () => {
+      const result = isValidEmail('user@exam$ple.com');
+      expect(result).toBe(false);
+    });
+
+    it('should validate typical Brazilian email', () => {
+      const result = isValidEmail('joao.silva@empresa.com.br');
+      expect(result).toBe(true);
+    });
+  });
+
+  describe('isValidUrl', () => {
+    it('should validate a simple HTTP URL', () => {
+      const result = isValidUrl('http://example.com');
+      expect(result).toBe(true);
+    });
+
+    it('should validate a simple HTTPS URL', () => {
+      const result = isValidUrl('https://example.com');
+      expect(result).toBe(true);
+    });
+
+    it('should validate URL with path', () => {
+      const result = isValidUrl('https://example.com/path/to/page');
+      expect(result).toBe(true);
+    });
+
+    it('should validate URL with query parameters', () => {
+      const result = isValidUrl('https://example.com?param=value&other=123');
+      expect(result).toBe(true);
+    });
+
+    it('should validate URL with hash', () => {
+      const result = isValidUrl('https://example.com#section');
+      expect(result).toBe(true);
+    });
+
+    it('should validate URL with port', () => {
+      const result = isValidUrl('http://localhost:3000');
+      expect(result).toBe(true);
+    });
+
+    it('should validate URL with subdomain', () => {
+      const result = isValidUrl('https://api.example.com');
+      expect(result).toBe(true);
+    });
+
+    it('should validate URL with multiple subdomains', () => {
+      const result = isValidUrl('https://api.v2.example.com');
+      expect(result).toBe(true);
+    });
+
+    it('should validate URL with IP address', () => {
+      const result = isValidUrl('http://192.168.1.1');
+      expect(result).toBe(true);
+    });
+
+    it('should validate URL with port and path', () => {
+      const result = isValidUrl('http://localhost:8080/api/v1/users');
+      expect(result).toBe(true);
+    });
+
+    it('should validate FTP URL', () => {
+      const result = isValidUrl('ftp://files.example.com');
+      expect(result).toBe(true);
+    });
+
+    it('should validate URL with authentication', () => {
+      const result = isValidUrl('https://user:pass@example.com');
+      expect(result).toBe(true);
+    });
+
+    it('should validate complex URL with all parts', () => {
+      const result = isValidUrl('https://user:pass@api.example.com:8080/path?query=1#hash');
+      expect(result).toBe(true);
+    });
+
+    it('should reject URL without protocol', () => {
+      const result = isValidUrl('example.com');
+      expect(result).toBe(false);
+    });
+
+    it('should reject URL with invalid protocol', () => {
+      const result = isValidUrl('ht!tp://example.com');
+      expect(result).toBe(false);
+    });
+
+    it('should reject plain text', () => {
+      const result = isValidUrl('not a url');
+      expect(result).toBe(false);
+    });
+
+    it('should reject empty string', () => {
+      const result = isValidUrl('');
+      expect(result).toBe(false);
+    });
+
+    it('should reject URL with spaces', () => {
+      const result = isValidUrl('http://example .com');
+      expect(result).toBe(false);
+    });
+
+    it('should reject relative URL', () => {
+      const result = isValidUrl('/path/to/page');
+      expect(result).toBe(false);
+    });
+
+    it('should reject URL with only protocol', () => {
+      const result = isValidUrl('http://');
+      expect(result).toBe(false);
+    });
+
+    it('should reject malformed URL', () => {
+      const result = isValidUrl('http:/example.com');
+      expect(result).toBe(false);
+    });
+
+    it('should validate localhost URL', () => {
+      const result = isValidUrl('http://localhost');
+      expect(result).toBe(true);
+    });
+
+    it('should validate URL with encoded characters', () => {
+      const result = isValidUrl('https://example.com/path%20with%20spaces');
+      expect(result).toBe(true);
+    });
+
+    it('should validate YouTube URL', () => {
+      const result = isValidUrl('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+      expect(result).toBe(true);
     });
   });
 });
