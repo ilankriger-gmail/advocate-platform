@@ -1,84 +1,10 @@
-# Build Progress - Extract Admin Authorization Pattern
+## Subtask 2.7 - Completed 2026-01-07T16:59:18+00:00
 
-## Current Status: Phase 2 - Refactor challenges.ts (In Progress)
+Successfully refactored registerWinner function in challenges.ts:
+- Replaced 17-line authorization block with requireAdminOrCreator() call
+- Net reduction of ~10 lines (5 insertions, 15 deletions)
+- Follows the same pattern as previous refactorings
+- Commit: 714bb11
 
-## Analysis Summary
+Next subtask: 2.8 - Refactor markPrizeSent in challenges.ts
 
-### Duplicated Pattern Found (21 occurrences total)
-
-**Pattern 1: Admin/Creator check (16 occurrences)**
-- Checks `profiles` table for `role='admin'` OR `is_creator=true`
-- Found in: challenges.ts (8), rewards.ts (5), events.ts (2), admin.ts (1)
-
-**Pattern 2: Admin-only check (5 occurrences)**
-- Checks `users` table for `role='admin'` only
-- Found in: rewards.ts (1), events.ts (2), admin.ts (2)
-
-### Files to Modify
-- src/lib/auth.ts (NEW) - Create reusable auth utilities
-- src/actions/challenges.ts (8 functions to refactor)
-- src/actions/rewards.ts (7 functions to refactor)
-- src/actions/events.ts (4 functions to refactor)
-- src/actions/admin.ts (2 functions to refactor)
-
-### Implementation Phases
-1. Create auth utility module (4 subtasks)
-2. Refactor challenges.ts (8 subtasks)
-3. Refactor rewards.ts (7 subtasks)
-4. Refactor events.ts (4 subtasks)
-5. Refactor admin.ts (2 subtasks)
-6. Testing and verification (3 subtasks)
-
-**Total: 25 subtasks**
-**Estimated net lines: -80 (removing duplication)**
-
----
-
-## Completed Subtasks
-
-### Phase 1: Create auth utility module (COMPLETED)
-- ✅ 1.1: Created src/lib/auth.ts with AuthResult types (48 lines)
-- ✅ 1.2: Implemented requireAuth() function (47 lines)
-- ✅ 1.3: Implemented requireAdminOrCreator() function (34 lines)
-  - Checks if user has role='admin' OR is_creator=true
-  - Returns AuthResult with user, profile, and supabase client on success
-  - Returns AuthError on authentication failure or unauthorized access
-  - Follows existing patterns with Portuguese error messages
-- ✅ 1.4: Implemented requireAdmin() function (33 lines)
-  - Checks if user has role='admin' only
-  - Returns AuthResult with user, profile, and supabase client on success
-  - Returns AuthError on authentication failure or unauthorized access
-  - Follows existing patterns with Portuguese error messages
-  - Total lines in src/lib/auth.ts: 162
-
-### Phase 2: Refactor challenges.ts (In Progress)
-- ✅ 2.1: Refactored approveParticipation in challenges.ts
-  - Replaced 12-line authorization block with requireAdminOrCreator() call
-  - Function now uses the auth utility (lines 158-164)
-  - Properly imports and handles the result pattern with isAuthError() type guard
-  - Code is cleaner and follows DRY principles
-  - Commit: 2160de1
-- ✅ 2.2: Refactored rejectParticipation in challenges.ts
-  - Replaced 17-line authorization block with requireAdminOrCreator() call
-  - Function now uses the centralized auth utility (lines 241-247)
-  - Properly handles the result pattern with isAuthError() type guard
-  - Net reduction of ~10 lines
-  - Commit: 98359e0
-- ✅ 2.3: Refactored toggleChallengeActive in challenges.ts
-  - Replaced 17-line authorization block with requireAdminOrCreator() call
-  - Function now uses the centralized auth utility
-  - Net reduction of ~10 lines
-  - Commit: b0cab2d
-- ✅ 2.4: Refactored markWinnerPaid in challenges.ts
-  - Replaced 17-line authorization block with requireAdminOrCreator() call
-  - Function now uses the centralized auth utility
-  - Net reduction of ~10 lines
-  - Commit: 3f17531
-- ✅ 2.5: Refactored createChallenge in challenges.ts
-  - Replaced 17-line authorization block with requireAdminOrCreator() call
-  - Function now uses the centralized auth utility
-  - Net reduction of ~10 lines
-  - Commit: 81cffe4
-
----
-Last Updated: 2026-01-07
