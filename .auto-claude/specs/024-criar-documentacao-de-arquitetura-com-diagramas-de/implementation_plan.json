@@ -1,0 +1,280 @@
+{
+  "feature": "Criar documentacao de arquitetura com diagramas de fluxo de dados",
+  "description": "Criar documentacao visual e textual completa explicando a arquitetura da plataforma de Advocate Marketing, incluindo diagramas de fluxo de dados, relacionamento entre componentes e politicas de seguranca RLS.",
+  "created_at": "2026-01-07T14:25:34.647Z",
+  "updated_at": "2026-01-07T16:37:04.545Z",
+  "status": "in_progress",
+  "planStatus": "in_progress",
+  "estimated_hours": 6,
+  "phases": [
+    {
+      "id": "phase-1",
+      "name": "Documentacao de Visao Geral da Arquitetura",
+      "description": "Criar documento principal com visao geral da arquitetura, stack tecnologica e estrutura do projeto",
+      "order": 1,
+      "subtasks": [
+        {
+          "id": "1.1",
+          "title": "Criar documento principal ARCHITECTURE.md",
+          "description": "Documento raiz contendo visao geral da arquitetura, incluindo: stack tecnologica (Next.js 15, Supabase, Tailwind CSS, TypeScript), estrutura de diretorios explicada, e indice para demais documentos de arquitetura.",
+          "status": "completed",
+          "file_path": "docs/ARCHITECTURE.md",
+          "dependencies": [],
+          "estimated_minutes": 30,
+          "notes": "Documento ARCHITECTURE.md criado com sucesso contendo: visao geral da arquitetura, stack tecnologica (Next.js 14, Supabase, Tailwind CSS, TypeScript), estrutura de diretorios detalhada com explicacoes, principios arquiteturais, modulos principais, fluxo de dados geral com diagrama Mermaid, padroes de desenvolvimento, seguranca, e indices para demais documentos de arquitetura. Total de 361 linhas documentadas.",
+          "updated_at": "2026-01-07T14:35:14.760507+00:00"
+        },
+        {
+          "id": "1.2",
+          "title": "Criar diagrama geral da arquitetura do sistema",
+          "description": "Diagrama Mermaid mostrando visao de alto nivel: cliente (browser) -> Next.js (Server/Client Components) -> Server Actions -> Supabase (Auth + DB + RLS). Incluir no ARCHITECTURE.md.",
+          "status": "completed",
+          "file_path": "docs/ARCHITECTURE.md",
+          "dependencies": [
+            "1.1"
+          ],
+          "estimated_minutes": 25,
+          "notes": "Criados tres diagramas Mermaid abrangentes no ARCHITECTURE.md: (1) Diagrama de Alto Nivel mostrando fluxo Browser -> Next.js (Server/Client Components + Server Actions) -> Supabase (Auth + DB + RLS), (2) Fluxo de Dados Detalhado com diagrama de sequencia exemplificando criacao de post, (3) Camadas da Arquitetura mostrando separacao de responsabilidades. Diagramas incluem emojis, cores e documentacao clara. Commit: 5b88d2e",
+          "updated_at": "2026-01-07T14:37:14.295455+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-2",
+      "name": "Documentacao de Fluxo de Dados",
+      "description": "Documentar fluxos de dados para cada modulo principal da aplicacao",
+      "order": 2,
+      "subtasks": [
+        {
+          "id": "2.1",
+          "title": "Documentar fluxo de autenticacao",
+          "description": "Criar documento DATA_FLOW_AUTH.md com diagramas de: login OAuth (Google), callback, criacao de sessao, middleware de protecao de rotas, e contexto de autenticacao no cliente.",
+          "status": "completed",
+          "file_path": "docs/flows/DATA_FLOW_AUTH.md",
+          "dependencies": [
+            "1.1"
+          ],
+          "estimated_minutes": 35,
+          "notes": "Documento DATA_FLOW_AUTH.md criado com sucesso contendo: (1) Diagrama de login OAuth com Google incluindo sequencia completa e codigo, (2) Callback OAuth com diagrama de sequencia e fluxo de decisao, (3) Documentacao dos 3 tipos de clientes Supabase (browser, server, middleware) com ciclo de vida da sessao, (4) Middleware de protecao de rotas com flowchart de decisao e codigo completo, (5) Arquitetura do AuthContext com grafo de componentes e listeners, (6) Fluxo completo integrado do login ponta-a-ponta, (7) Diagrama de logout, (8) Timeline com tempos de execucao, (9) Mapa de responsabilidades e estrutura de arquivos. Total de 979 linhas com 10+ diagramas Mermaid. Commit: 27215ff",
+          "updated_at": "2026-01-07T14:42:02.284946+00:00"
+        },
+        {
+          "id": "2.2",
+          "title": "Documentar fluxo de posts e feed",
+          "description": "Criar documento DATA_FLOW_POSTS.md com diagramas de: criacao de post, moderacao (admin), exibicao no feed, sistema de likes/comments, e fluxo de dados entre Server Components, Server Actions e Supabase.",
+          "status": "completed",
+          "file_path": "docs/flows/DATA_FLOW_POSTS.md",
+          "dependencies": [
+            "1.1"
+          ],
+          "estimated_minutes": 35,
+          "notes": "Documento DATA_FLOW_POSTS.md criado com sucesso contendo: (1) Visão geral da arquitetura de posts com diagrama de estados e camadas, (2) Fluxo completo de criação de post: Client Component -> Server Action -> Supabase com 3 diagramas (sequência, decisão, código), (3) Fluxo de moderação admin: aprovação e rejeição de posts com diagramas de sequência e estrutura do painel, (4) Fluxo de exibição no feed: Server Components, queries otimizadas com JOINs, e renderização, (5) Sistema de likes com atualização otimista: 4 diagramas incluindo arquitetura, sequência e código completo, (6) Sistema de comentários com Server Actions e busca de threads, (7) Fluxo de deleção de posts com validação de ownership, (8) Diagrama completo do fluxo de dados entre todas as camadas (Client, Server Actions, Server Components, Supabase, DB), (9) Timeline do ciclo de vida completo de um post (criação -> moderação -> publicação -> interação), (10) Estrutura de arquivos, mapa de responsabilidades e tabelas do banco, (11) Políticas RLS documentadas para cada operação (create, read, update, delete, like, comment), (12) Métricas de performance e resumo dos fluxos principais. Total: 960+ linhas com 15+ diagramas Mermaid, código TypeScript completo, queries SQL e documentação detalhada em português. Commit: 941331f",
+          "updated_at": "2026-01-07T16:41:00.000000+00:00"
+        },
+        {
+          "id": "2.3",
+          "title": "Documentar fluxo de eventos",
+          "description": "Criar documento DATA_FLOW_EVENTS.md com diagramas de: listagem de eventos, registro de participacao, verificacao de nivel de advocate, e fluxo admin para criacao/gestao de eventos.",
+          "status": "pending",
+          "file_path": "docs/flows/DATA_FLOW_EVENTS.md",
+          "dependencies": [
+            "1.1"
+          ],
+          "estimated_minutes": 30
+        },
+        {
+          "id": "2.4",
+          "title": "Documentar fluxo de desafios",
+          "description": "Criar documento DATA_FLOW_CHALLENGES.md com diagramas de: listagem de desafios, participacao, submissao de evidencias, selecao de vencedores, e sistema de recompensas.",
+          "status": "pending",
+          "file_path": "docs/flows/DATA_FLOW_CHALLENGES.md",
+          "dependencies": [
+            "1.1"
+          ],
+          "estimated_minutes": 35
+        },
+        {
+          "id": "2.5",
+          "title": "Documentar fluxo de perfil e recompensas",
+          "description": "Criar documento DATA_FLOW_PROFILE_REWARDS.md com diagramas de: gestao de perfil, sistema de niveis de advocate, resgate de recompensas e historico de participacoes.",
+          "status": "pending",
+          "file_path": "docs/flows/DATA_FLOW_PROFILE_REWARDS.md",
+          "dependencies": [
+            "1.1"
+          ],
+          "estimated_minutes": 30
+        }
+      ]
+    },
+    {
+      "id": "phase-3",
+      "name": "Documentacao de Componentes e Camadas",
+      "description": "Documentar a estrutura de componentes React e as camadas da aplicacao",
+      "order": 3,
+      "subtasks": [
+        {
+          "id": "3.1",
+          "title": "Documentar padroes de Server vs Client Components",
+          "description": "Criar documento COMPONENTS.md explicando quando usar Server Components vs Client Components, com exemplos do codigo existente e diagrama de decisao.",
+          "status": "pending",
+          "file_path": "docs/COMPONENTS.md",
+          "dependencies": [
+            "1.1"
+          ],
+          "estimated_minutes": 30
+        },
+        {
+          "id": "3.2",
+          "title": "Documentar estrutura de Server Actions",
+          "description": "Criar documento SERVER_ACTIONS.md com lista de todas as Server Actions, seus parametros, retornos, e diagrama mostrando a relacao entre actions e queries do Supabase.",
+          "status": "pending",
+          "file_path": "docs/SERVER_ACTIONS.md",
+          "dependencies": [
+            "1.1"
+          ],
+          "estimated_minutes": 35
+        },
+        {
+          "id": "3.3",
+          "title": "Criar diagrama de dependencias entre modulos",
+          "description": "Diagrama Mermaid mostrando como os diferentes modulos (auth, posts, events, challenges, rewards) se relacionam e dependem uns dos outros.",
+          "status": "pending",
+          "file_path": "docs/MODULE_DEPENDENCIES.md",
+          "dependencies": [
+            "1.1"
+          ],
+          "estimated_minutes": 25
+        }
+      ]
+    },
+    {
+      "id": "phase-4",
+      "name": "Documentacao de Seguranca e RLS",
+      "description": "Documentar todas as politicas de seguranca e Row Level Security do Supabase",
+      "order": 4,
+      "subtasks": [
+        {
+          "id": "4.1",
+          "title": "Documentar politicas RLS por tabela",
+          "description": "Criar documento SECURITY_RLS.md com explicacao visual de cada politica RLS: quem pode ler/escrever/atualizar/deletar em cada tabela, com diagramas de fluxo de permissoes.",
+          "status": "pending",
+          "file_path": "docs/SECURITY_RLS.md",
+          "dependencies": [
+            "1.1"
+          ],
+          "estimated_minutes": 40
+        },
+        {
+          "id": "4.2",
+          "title": "Documentar fluxo de autorizacao admin vs advocate",
+          "description": "Diagrama e documentacao explicando as diferencas de acesso entre roles admin e advocate, quais funcionalidades cada um pode acessar.",
+          "status": "pending",
+          "file_path": "docs/AUTHORIZATION.md",
+          "dependencies": [
+            "4.1"
+          ],
+          "estimated_minutes": 25
+        }
+      ]
+    },
+    {
+      "id": "phase-5",
+      "name": "Documentacao do Modelo de Dados",
+      "description": "Criar documentacao visual do modelo de dados e relacionamentos",
+      "order": 5,
+      "subtasks": [
+        {
+          "id": "5.1",
+          "title": "Criar diagrama ERD do banco de dados",
+          "description": "Criar documento DATABASE.md com diagrama ERD (Entity Relationship Diagram) em Mermaid mostrando todas as tabelas, colunas principais e relacionamentos FK.",
+          "status": "pending",
+          "file_path": "docs/DATABASE.md",
+          "dependencies": [
+            "1.1"
+          ],
+          "estimated_minutes": 35
+        },
+        {
+          "id": "5.2",
+          "title": "Documentar tipos TypeScript e mapeamento",
+          "description": "Adicionar secao em DATABASE.md explicando como os tipos TypeScript (src/types) mapeiam para as tabelas do banco, com exemplos de codigo.",
+          "status": "pending",
+          "file_path": "docs/DATABASE.md",
+          "dependencies": [
+            "5.1"
+          ],
+          "estimated_minutes": 20
+        }
+      ]
+    },
+    {
+      "id": "phase-6",
+      "name": "Indice e Navegacao",
+      "description": "Criar indice navegavel e atualizar README principal",
+      "order": 6,
+      "subtasks": [
+        {
+          "id": "6.1",
+          "title": "Criar indice docs/README.md",
+          "description": "Criar README.md na pasta docs com indice navegavel para todos os documentos de arquitetura, organizado por categoria.",
+          "status": "pending",
+          "file_path": "docs/README.md",
+          "dependencies": [
+            "1.1",
+            "2.1",
+            "2.2",
+            "2.3",
+            "2.4",
+            "2.5",
+            "3.1",
+            "3.2",
+            "3.3",
+            "4.1",
+            "4.2",
+            "5.1",
+            "5.2"
+          ],
+          "estimated_minutes": 15
+        },
+        {
+          "id": "6.2",
+          "title": "Atualizar CLAUDE.md com referencia a documentacao",
+          "description": "Adicionar secao no CLAUDE.md referenciando a documentacao de arquitetura para facilitar onboarding de desenvolvedores.",
+          "status": "pending",
+          "file_path": "CLAUDE.md",
+          "dependencies": [
+            "6.1"
+          ],
+          "estimated_minutes": 10
+        }
+      ]
+    }
+  ],
+  "workflow_type": "documentation",
+  "services_involved": [
+    "next.js",
+    "supabase",
+    "typescript"
+  ],
+  "qa_checklist": [
+    "Todos os diagramas Mermaid renderizam corretamente",
+    "Todos os links internos entre documentos funcionam",
+    "A documentacao reflete com precisao o codigo atual",
+    "Fluxos de dados estao completos e compreensiveis",
+    "Politicas RLS estao documentadas para todas as tabelas",
+    "Indice navegavel esta funcional",
+    "Comentarios e documentacao estao em portugues"
+  ],
+  "final_acceptance": [
+    "Documentacao pode ser lida e compreendida por novo desenvolvedor",
+    "Diagramas visualizam corretamente a arquitetura",
+    "Nenhuma area critica da arquitetura ficou sem documentacao"
+  ],
+  "qa_signoff": {
+    "status": "pending",
+    "issues": "",
+    "tests_passed": ""
+  },
+  "spec_file": "spec.md",
+  "last_updated": "2026-01-07T16:41:00.000000+00:00"
+}
