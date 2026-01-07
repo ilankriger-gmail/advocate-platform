@@ -1,29 +1,8 @@
 {
-  "commits": [
-    {
-      "hash": "b529bd3a61958464eedf6da1e79c3c9981b9b78d",
-      "subtask_id": "1.1",
-      "timestamp": "2026-01-07T11:30:58.948146"
-    },
-    {
-      "hash": "e0086a39a92ae0c7ebb93911275bcb503d06fa05",
-      "subtask_id": "1.2",
-      "timestamp": "2026-01-07T11:32:30.120241"
-    },
-    {
-      "hash": "97a3c7059a1e09f39e289c0687859b5f462a8e7c",
-      "subtask_id": "2.1",
-      "timestamp": "2026-01-07T11:35:01.817551"
-    },
-    {
-      "hash": "e4f5d38bfb85c3d4f87c624464352fad7dc83b4c",
-      "subtask_id": "2.2",
-      "timestamp": "2026-01-07T11:36:29.842208"
-    }
-  ],
-  "last_good_commit": "e4f5d38bfb85c3d4f87c624464352fad7dc83b4c",
+  "commits": [],
+  "last_good_commit": null,
   "metadata": {
-    "created_at": "2026-01-07T11:25:42.358216",
-    "last_updated": "2026-01-07T11:36:29.842212"
+    "created_at": "2026-01-07T13:57:45.172228",
+    "last_updated": "2026-01-07T13:57:45.172229"
   }
 }
