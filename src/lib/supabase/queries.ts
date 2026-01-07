@@ -3,7 +3,7 @@
  */
 
 import { createClient } from './server';
-import type { PostWithAuthor, CreatorProfile, User, PostWithUsers } from './types';
+import type { PostWithAuthor, CreatorProfile, User, PostWithUsers, Reward } from './types';
 
 // ============ CRIADOR ============
 
@@ -396,7 +396,7 @@ export async function getRewards(filters?: RewardFilters): Promise<LegacyRewardW
 
   if (error) return [];
 
-  return (data || []).map((reward: any) => ({
+  return (data || []).map((reward: Reward) => ({
     ...reward,
     claims_count: 0,
     is_available: reward.stock === null || reward.stock > 0,
