@@ -194,50 +194,119 @@ advocate-platform/
 - Gestão de desafios, eventos e recompensas
 - Análise de métricas
 
-## Fluxo de Dados Geral
+## Visão Geral da Arquitetura
+
+### Diagrama de Alto Nível
 
 ```mermaid
-graph TB
-    subgraph Cliente
-        Browser[Navegador]
-        SC[Server Components]
-        CC[Client Components]
-    end
+graph LR
+    Browser[🌐 Cliente<br/>Browser]
 
-    subgraph "Next.js Server"
-        Router[App Router]
-        MW[Middleware]
-        SA[Server Actions]
+    subgraph Next.js
+        SC[⚛️ Server Components<br/>Renderização SSR]
+        CC[⚛️ Client Components<br/>Interatividade]
+        SA[🔧 Server Actions<br/>Lógica de Negócio]
     end
 
     subgraph Supabase
-        Auth[Supabase Auth]
-        DB[(PostgreSQL)]
-        RLS[Row Level Security]
-        Storage[Storage]
+        Auth[🔐 Supabase Auth<br/>Autenticação OAuth]
+        DB[(💾 PostgreSQL<br/>Database)]
+        RLS[🛡️ Row Level Security<br/>Políticas de Acesso]
     end
 
-    Browser --> Router
-    Router --> MW
-    MW --> SC
+    Browser --> SC
+    Browser --> CC
     SC --> SA
     CC --> SA
     SA --> Auth
     SA --> DB
-    DB --> RLS
-    SA --> Storage
+    DB -.aplica políticas.- RLS
+    Auth -.valida sessão.- RLS
 
-    style SA fill:#4ade80
-    style RLS fill:#ef4444
-    style SC fill:#3b82f6
-    style CC fill:#f59e0b
+    style Browser fill:#e0e7ff,stroke:#4f46e5,stroke-width:2px
+    style SC fill:#dbeafe,stroke:#2563eb,stroke-width:2px
+    style CC fill:#fed7aa,stroke:#ea580c,stroke-width:2px
+    style SA fill:#bbf7d0,stroke:#16a34a,stroke-width:2px
+    style Auth fill:#fce7f3,stroke:#db2777,stroke-width:2px
+    style DB fill:#e0e7ff,stroke:#6366f1,stroke-width:2px
+    style RLS fill:#fecaca,stroke:#dc2626,stroke-width:2px
+```
+
+### Fluxo de Dados Detalhado
+
+```mermaid
+sequenceDiagram
+    participant B as 🌐 Browser
+    participant SC as ⚛️ Server Component
+    participant CC as ⚛️ Client Component
+    participant SA as 🔧 Server Action
+    participant Auth as 🔐 Supabase Auth
+    participant DB as 💾 Database + RLS
+
+    Note over B,DB: Exemplo: Usuário criando um post
+
+    B->>SC: 1. Acessa página /perfil
+    SC->>Auth: 2. Verifica sessão
+    Auth-->>SC: 3. Retorna dados do usuário
+    SC->>DB: 4. Busca posts (com RLS)
+    DB-->>SC: 5. Retorna posts filtrados
+    SC-->>B: 6. Renderiza página HTML
+
+    B->>CC: 7. Interage com formulário
+    CC->>SA: 8. Chama createPost()
+    SA->>Auth: 9. Valida autenticação
+    Auth-->>SA: 10. Confirma usuário
+    SA->>DB: 11. Insere post (RLS valida)
+    DB-->>SA: 12. Post criado
+    SA-->>CC: 13. Retorna sucesso
+    CC-->>B: 14. Atualiza UI
+```
+
+### Camadas da Arquitetura
+
+```mermaid
+graph TD
+    subgraph "🎨 Camada de Apresentação"
+        UI[Componentes React<br/>Server + Client]
+    end
+
+    subgraph "🔧 Camada de Lógica"
+        Actions[Server Actions<br/>Validação + Negócio]
+    end
+
+    subgraph "🔐 Camada de Autenticação"
+        AuthLayer[Supabase Auth<br/>OAuth + Sessões]
+    end
+
+    subgraph "💾 Camada de Dados"
+        Database[PostgreSQL<br/>Row Level Security]
+    end
+
+    UI --> Actions
+    Actions --> AuthLayer
+    Actions --> Database
+    AuthLayer -.controla acesso.- Database
+
+    style UI fill:#dbeafe,stroke:#2563eb,stroke-width:2px
+    style Actions fill:#bbf7d0,stroke:#16a34a,stroke-width:2px
+    style AuthLayer fill:#fce7f3,stroke:#db2777,stroke-width:2px
+    style Database fill:#e0e7ff,stroke:#6366f1,stroke-width:2px
 ```
 
 ### Legenda:
-- 🟦 **Server Components** - Renderização no servidor
-- 🟧 **Client Components** - Interatividade no cliente
-- 🟩 **Server Actions** - Lógica de negócios
-- 🟥 **RLS** - Camada de segurança
+- 🌐 **Browser** - Cliente web (navegador do usuário)
+- ⚛️ **Server Components** - Componentes renderizados no servidor (SSR)
+- ⚛️ **Client Components** - Componentes interativos no cliente (CSR)
+- 🔧 **Server Actions** - Funções de lógica de negócio executadas no servidor
+- 🔐 **Supabase Auth** - Sistema de autenticação (OAuth Google)
+- 💾 **PostgreSQL** - Banco de dados relacional
+- 🛡️ **Row Level Security (RLS)** - Políticas de segurança a nível de linha
+
+### Princípios do Fluxo:
+1. **Cliente inicia requisição** - Usuário acessa uma página ou interage com UI
+2. **Next.js processa** - Server Components renderizam HTML, Client Components adicionam interatividade
+3. **Server Actions executam lógica** - Validam, processam e manipulam dados
+4. **Supabase gerencia dados** - Auth valida identidade, Database armazena dados, RLS garante segurança
 
 ## Padrões de Desenvolvimento
 
