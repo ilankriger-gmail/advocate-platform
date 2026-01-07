@@ -1334,6 +1334,644 @@ Para documentação completa de todas as políticas RLS, consulte: **[SECURITY_R
 
 ---
 
+## 🔷 Mapeamento de Tipos TypeScript
+
+### Visão Geral
+
+O projeto utiliza **type-safety completo** entre TypeScript e o banco de dados PostgreSQL através de tipos gerados automaticamente pelo Supabase. Todos os tipos são centralizados e reutilizados em toda a aplicação.
+
+### Estrutura de Tipos
+
+```
+src/
+├── lib/
+│   └── supabase/
+│       └── types.ts          # ⭐ Tipos base do banco (Database schema)
+└── types/
+    ├── index.ts              # Re-exports centralizados
+    ├── post.ts               # Tipos estendidos de Posts
+    └── profile.ts            # Tipos estendidos de Profile
+```
+
+### Database Schema Type
+
+O tipo `Database` é a fonte central de todos os tipos do banco de dados:
+
+```typescript
+// src/lib/supabase/types.ts
+
+export interface Database {
+  public: {
+    Tables: {
+      users: {
+        Row: { /* ... campos da tabela ... */ }
+        Insert: { /* ... campos para INSERT ... */ }
+        Update: { /* ... campos para UPDATE ... */ }
+      }
+      posts: {
+        Row: { /* ... */ }
+        Insert: { /* ... */ }
+        Update: { /* ... */ }
+      }
+      // ... outras tabelas
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      increment_likes: {
+        Args: { post_id: string }
+        Returns: void
+      }
+      // ... outras funções
+    }
+  }
+}
+```
+
+**Estrutura**:
+- ✅ `Row`: Tipo completo da linha ao fazer SELECT (todos os campos)
+- ✅ `Insert`: Tipo para INSERT (campos opcionais com defaults, PK opcional)
+- ✅ `Update`: Tipo para UPDATE (todos os campos opcionais)
+- ✅ `Functions`: Assinaturas de funções SQL customizadas
+
+---
+
+### Tipos Base (Row Types)
+
+#### Extraindo tipos de tabelas
+
+```typescript
+// ✅ Forma recomendada: usar o tipo Database
+export type User = Database['public']['Tables']['users']['Row'];
+export type Post = Database['public']['Tables']['posts']['Row'];
+export type PostLike = Database['public']['Tables']['post_likes']['Row'];
+export type PostComment = Database['public']['Tables']['post_comments']['Row'];
+
+// ❌ Forma incorreta: recriar os tipos manualmente
+// export interface User { ... } // NÃO FAÇA ISSO
+```
+
+#### Exemplo: Tipo `users` completo
+
+```typescript
+// Mapeamento: Tabela users -> TypeScript
+export type User = {
+  id: string                        // uuid (PK)
+  email: string                     // string (UK)
+  full_name: string | null          // string | null
+  avatar_url: string | null         // string | null
+  bio: string | null                // text | null
+  instagram_handle: string | null   // string | null
+  tiktok_handle: string | null      // string | null
+  youtube_handle: string | null     // string | null
+  twitter_handle: string | null     // string | null
+  website_url: string | null        // string | null
+  role: UserRole                    // 'creator' | 'fan'
+  is_creator: boolean               // boolean
+  created_at: string                // timestamp (ISO string)
+  updated_at: string                // timestamp (ISO string)
+}
+```
+
+**Mapeamentos de Tipos SQL → TypeScript**:
+
+| SQL | PostgreSQL | TypeScript |
+|-----|-----------|-----------|
+| `uuid` | UUID | `string` |
+| `varchar`, `text` | String | `string` |
+| `integer` | Integer | `number` |
+| `decimal`, `numeric` | Decimal | `number` |
+| `boolean` | Boolean | `boolean` |
+| `timestamp`, `timestamptz` | Timestamp | `string` (ISO 8601) |
+| `jsonb` | JSONB | `Json` (type-safe object) |
+| `varchar[]` | Array | `string[]` |
+
+---
+
+### Tipos de Operação (Insert/Update)
+
+#### Insert Types
+
+Usado ao criar novos registros (campos com DEFAULT são opcionais):
+
+```typescript
+export type PostInsert = Database['public']['Tables']['posts']['Insert'];
+
+// Exemplo de uso
+const newPost: PostInsert = {
+  user_id: 'uuid-aqui',      // ✅ Obrigatório
+  title: 'Meu Post',         // ✅ Obrigatório
+  content: 'Conteúdo...',    // ✅ Obrigatório (se NOT NULL)
+  // ❌ id: opcional (gerado automaticamente)
+  // ❌ created_at: opcional (DEFAULT now())
+  // ❌ status: opcional (DEFAULT 'pending')
+  // ❌ likes_count: opcional (DEFAULT 0)
+};
+
+// Inserir no banco
+const { data, error } = await supabase
+  .from('posts')
+  .insert(newPost)
+  .select();
+```
+
+#### Update Types
+
+Usado ao atualizar registros (todos os campos são opcionais):
+
+```typescript
+export type PostUpdate = Database['public']['Tables']['posts']['Update'];
+
+// Exemplo de uso
+const updates: PostUpdate = {
+  title: 'Novo Título',     // ✅ Apenas os campos que mudarão
+  status: 'approved',       // ✅ Opcional
+  // Outros campos são omitidos (não serão atualizados)
+};
+
+// Atualizar no banco
+const { data, error } = await supabase
+  .from('posts')
+  .update(updates)
+  .eq('id', postId);
+```
+
+---
+
+### Tipos Estendidos (com Relacionamentos)
+
+#### Posts com Autor
+
+```typescript
+// src/types/post.ts
+
+// Tipo base (apenas a tabela)
+export type Post = Database['public']['Tables']['posts']['Row'];
+
+// Tipo estendido (com relacionamento)
+export interface PostWithAuthor extends Post {
+  author: {
+    id: string;
+    full_name: string | null;
+    avatar_url: string | null;
+    is_creator: boolean;
+  } | null;
+}
+
+// Uso em Server Action
+export async function getFeedPosts(): Promise<PostWithAuthor[]> {
+  const { data } = await supabase
+    .from('posts')
+    .select(`
+      *,
+      author:users!user_id (
+        id,
+        full_name,
+        avatar_url,
+        is_creator
+      )
+    `)
+    .eq('status', 'approved')
+    .order('created_at', { ascending: false });
+
+  return data as PostWithAuthor[];
+}
+```
+
+#### Comentários com Autor
+
+```typescript
+// src/types/post.ts
+
+export interface CommentWithAuthor extends PostComment {
+  author: {
+    id: string;
+    full_name: string | null;
+    avatar_url: string | null;
+  } | null;
+}
+
+// Uso no componente
+interface CommentListProps {
+  comments: CommentWithAuthor[];
+}
+```
+
+#### Challenges com Estatísticas
+
+```typescript
+// src/lib/supabase/types.ts
+
+export interface ChallengeWithStats extends Challenge {
+  participants_count: number;          // Agregação
+  user_participation?: ChallengeParticipant | null;  // Participação do usuário atual
+}
+
+// Query com agregação
+const { data } = await supabase
+  .from('challenges')
+  .select(`
+    *,
+    participants_count:challenge_participants(count),
+    user_participation:challenge_participants!inner(*)
+  `)
+  .eq('user_participation.user_id', userId)
+  .single();
+```
+
+---
+
+### Tipos Enum (Constantes do Banco)
+
+#### Status e Tipos
+
+```typescript
+// Tipos derivados das constraints CHECK do banco
+
+export type UserRole = 'creator' | 'fan';
+export type PostType = 'creator' | 'community';
+export type PostStatus = 'pending' | 'approved' | 'rejected';
+export type ChallengeType = 'engajamento' | 'fisico';
+export type ChallengeStatus = 'active' | 'closed' | 'finished';
+export type ParticipationStatus = 'pending' | 'approved' | 'rejected';
+export type RewardClaimStatus = 'pending' | 'approved' | 'shipped' | 'delivered' | 'cancelled';
+export type CoinTransactionType = 'earned' | 'spent';
+export type EventStatus = 'registered' | 'confirmed' | 'attended' | 'cancelled';
+```
+
+**Garantia de Type-Safety**:
+
+```typescript
+// ✅ TypeScript detecta erro em tempo de compilação
+const invalidStatus: PostStatus = 'invalid';
+// ❌ Error: Type '"invalid"' is not assignable to type 'PostStatus'
+
+// ✅ Autocomplete funciona
+const status: PostStatus = 'approved'; // IDE sugere: 'pending' | 'approved' | 'rejected'
+```
+
+---
+
+### Tipos de Formulário (Input/Output)
+
+#### Dados de Criação (Formulários)
+
+```typescript
+// src/types/post.ts
+
+// Tipo simplificado para formulário de criação
+export interface CreatePostData {
+  title: string;
+  content?: string;
+  media_url?: string;
+  type: PostType;
+}
+
+// Uso no componente de formulário
+async function handleSubmit(formData: CreatePostData) {
+  const postInsert: PostInsert = {
+    ...formData,
+    user_id: session.user.id,  // Adiciona campos obrigatórios
+  };
+
+  await supabase.from('posts').insert(postInsert);
+}
+```
+
+#### Dados de Atualização (Formulários)
+
+```typescript
+// src/types/profile.ts
+
+// Tipo simplificado para formulário de edição de perfil
+export interface UpdateProfileData {
+  full_name?: string;
+  bio?: string;
+  avatar_url?: string;
+  instagram_handle?: string;
+  tiktok_handle?: string;
+  youtube_handle?: string;
+  twitter_handle?: string;
+  website_url?: string;
+}
+
+// Uso no Server Action
+export async function updateProfile(
+  userId: string,
+  data: UpdateProfileData
+): Promise<void> {
+  const updates: UserUpdate = data;  // ✅ Compatível
+
+  await supabase
+    .from('users')
+    .update(updates)
+    .eq('id', userId);
+}
+```
+
+---
+
+### Tipos com Múltiplos Joins
+
+#### Posts Completos (Author + Likes + Comments)
+
+```typescript
+// src/types/post.ts
+
+export interface PostWithDetails extends PostWithAuthor {
+  is_liked?: boolean;                   // Se usuário atual curtiu
+  comments?: CommentWithAuthor[];       // Lista de comentários
+}
+
+// Query complexa com múltiplos relacionamentos
+async function getPostDetails(postId: string, userId: string): Promise<PostWithDetails> {
+  const { data: post } = await supabase
+    .from('posts')
+    .select(`
+      *,
+      author:users!user_id (
+        id,
+        full_name,
+        avatar_url,
+        is_creator
+      ),
+      comments:post_comments (
+        *,
+        author:users!user_id (
+          id,
+          full_name,
+          avatar_url
+        )
+      )
+    `)
+    .eq('id', postId)
+    .single();
+
+  // Verifica se usuário curtiu
+  const { data: like } = await supabase
+    .from('post_likes')
+    .select('id')
+    .eq('post_id', postId)
+    .eq('user_id', userId)
+    .single();
+
+  return {
+    ...post,
+    is_liked: !!like,
+  } as PostWithDetails;
+}
+```
+
+---
+
+### Tipo Helper: Json
+
+Para campos JSONB no banco:
+
+```typescript
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+// Exemplo: campo ai_verdict em challenge_participants
+interface ChallengeParticipant {
+  // ...
+  ai_verdict: Json | null;  // JSONB do banco
+}
+
+// Uso com type assertion
+interface AIVerdict {
+  approved: boolean;
+  count: number;
+  confidence: number;
+  reasoning: string;
+}
+
+const participant: ChallengeParticipant = /* ... */;
+const verdict = participant.ai_verdict as AIVerdict;
+console.log(verdict.confidence); // ✅ Type-safe
+```
+
+---
+
+### Padrões de Uso
+
+#### 1. Server Actions (Leitura)
+
+```typescript
+// actions/posts.ts
+import type { PostWithAuthor } from '@/types';
+
+export async function getApprovedPosts(): Promise<PostWithAuthor[]> {
+  const { data, error } = await supabase
+    .from('posts')
+    .select(`
+      *,
+      author:users!user_id (id, full_name, avatar_url, is_creator)
+    `)
+    .eq('status', 'approved')
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data as PostWithAuthor[];
+}
+```
+
+#### 2. Server Actions (Escrita)
+
+```typescript
+// actions/posts.ts
+import type { PostInsert } from '@/types';
+
+export async function createPost(
+  userId: string,
+  data: CreatePostData
+): Promise<Post> {
+  const postData: PostInsert = {
+    user_id: userId,
+    title: data.title,
+    content: data.content,
+    media_url: data.media_url ? [data.media_url] : null,
+    type: data.type,
+  };
+
+  const { data: post, error } = await supabase
+    .from('posts')
+    .insert(postData)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return post;
+}
+```
+
+#### 3. Componentes React
+
+```typescript
+// components/PostCard.tsx
+import type { PostWithAuthor } from '@/types';
+
+interface PostCardProps {
+  post: PostWithAuthor;
+}
+
+export function PostCard({ post }: PostCardProps) {
+  return (
+    <div>
+      <h2>{post.title}</h2>
+      <p>Por: {post.author?.full_name}</p>
+      <p>{post.likes_count} curtidas</p>
+    </div>
+  );
+}
+```
+
+#### 4. Hooks Customizados
+
+```typescript
+// hooks/usePosts.ts
+import type { PostWithAuthor } from '@/types';
+
+export function usePosts() {
+  const [posts, setPosts] = useState<PostWithAuthor[]>([]);
+
+  useEffect(() => {
+    async function loadPosts() {
+      const data = await getApprovedPosts();
+      setPosts(data);
+    }
+    loadPosts();
+  }, []);
+
+  return { posts };
+}
+```
+
+---
+
+### Boas Práticas
+
+#### ✅ DO (Fazer)
+
+```typescript
+// ✅ Usar tipos do Database
+export type User = Database['public']['Tables']['users']['Row'];
+
+// ✅ Estender tipos base para relacionamentos
+export interface PostWithAuthor extends Post {
+  author: Pick<User, 'id' | 'full_name' | 'avatar_url' | 'is_creator'> | null;
+}
+
+// ✅ Criar tipos de formulário específicos
+export interface CreatePostData {
+  title: string;
+  content?: string;
+}
+
+// ✅ Usar enums para valores fixos
+export type PostStatus = 'pending' | 'approved' | 'rejected';
+```
+
+#### ❌ DON'T (Não Fazer)
+
+```typescript
+// ❌ Recriar tipos manualmente
+export interface User {
+  id: string;
+  email: string;
+  // ... duplicação desnecessária
+}
+
+// ❌ Usar 'any' para dados do banco
+const posts: any[] = await getPosts();
+
+// ❌ Não tipar relacionamentos
+const post = await getPost(id);
+console.log(post.author.name); // ❌ Sem type-safety
+
+// ❌ Usar strings literais sem tipo
+const status = 'aprovado'; // ❌ Deveria ser PostStatus
+```
+
+---
+
+### Sincronização com o Banco
+
+#### Gerando Tipos Automaticamente
+
+O Supabase CLI pode gerar tipos TypeScript a partir do schema do banco:
+
+```bash
+# Gerar tipos do banco de dados
+npx supabase gen types typescript --project-id <project-id> > src/lib/supabase/types.ts
+
+# Ou via arquivo local (se usando Supabase local)
+npx supabase gen types typescript --local > src/lib/supabase/types.ts
+```
+
+**Quando regenerar**:
+- ✅ Após adicionar novas tabelas
+- ✅ Após modificar colunas existentes
+- ✅ Após adicionar novas funções SQL
+- ✅ Periodicamente (manter sincronizado)
+
+---
+
+### Resumo do Fluxo de Tipos
+
+```
+┌─────────────────────────────────────────────────────┐
+│  PostgreSQL Database                                │
+│  ├── users (id, email, full_name, ...)             │
+│  ├── posts (id, user_id, title, ...)               │
+│  └── ...                                            │
+└──────────────────┬──────────────────────────────────┘
+                   │
+                   │ Supabase CLI
+                   │ (gen types)
+                   ↓
+┌─────────────────────────────────────────────────────┐
+│  src/lib/supabase/types.ts                          │
+│  ├── Database (schema completo)                     │
+│  ├── User = Database['public']['Tables']['users']  │
+│  └── Post = Database['public']['Tables']['posts']  │
+└──────────────────┬──────────────────────────────────┘
+                   │
+                   │ Extends & Composes
+                   ↓
+┌─────────────────────────────────────────────────────┐
+│  src/types/*.ts                                     │
+│  ├── PostWithAuthor extends Post                    │
+│  ├── PostWithDetails extends PostWithAuthor         │
+│  ├── CreatePostData (formulários)                   │
+│  └── UpdateProfileData (formulários)                │
+└──────────────────┬──────────────────────────────────┘
+                   │
+                   │ Import & Use
+                   ↓
+┌─────────────────────────────────────────────────────┐
+│  Application Code                                   │
+│  ├── actions/*.ts (Server Actions)                  │
+│  ├── components/*.tsx (React Components)            │
+│  └── hooks/*.ts (Custom Hooks)                      │
+└─────────────────────────────────────────────────────┘
+```
+
+**Garantias**:
+- ✅ **100% type-safety** entre banco e aplicação
+- ✅ **Autocomplete** completo na IDE
+- ✅ **Erros em tempo de compilação** (não em runtime)
+- ✅ **Refatoração segura** (rename, move, etc.)
+- ✅ **Documentação inline** (JSDoc nos tipos)
+
+---
+
 ## 📚 Documentos Relacionados
 
 - [ARCHITECTURE.md](./ARCHITECTURE.md) - Visão geral da arquitetura
@@ -1345,9 +1983,8 @@ Para documentação completa de todas as políticas RLS, consulte: **[SECURITY_R
 
 ## 🔄 Próximas Etapas
 
-1. ✅ **Subtask 5.2**: Documentar mapeamento de tipos TypeScript para tabelas do banco
-2. 📝 Criar índice navegável em `docs/README.md`
-3. 📝 Atualizar `CLAUDE.md` com referência à documentação
+1. 📝 Criar índice navegável em `docs/README.md`
+2. 📝 Atualizar `CLAUDE.md` com referência à documentação
 
 ---
 
