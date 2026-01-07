@@ -1,0 +1,140 @@
+{
+  "feature": "Criar hook useEvents para eventos",
+  "description": "Criar um hook useEvents seguindo o padrao de usePosts e useProfile, encapsulando as server actions de eventos (registerForEvent, cancelEventRegistration, checkInEvent, submitEventFeedback) com tratamento de estado de loading, erro e refresh automatico.",
+  "created_at": "2026-01-07T14:25:32.528Z",
+  "updated_at": "2026-01-07T14:27:28.941Z",
+  "status": "in_progress",
+  "planStatus": "in_progress",
+  "phases": [
+    {
+      "id": "phase-1",
+      "name": "Criar hook useEvents",
+      "description": "Criar o hook useEvents seguindo o padr\u00e3o estabelecido por usePosts e useProfile",
+      "subtasks": [
+        {
+          "id": "1.1",
+          "title": "Criar estrutura base do hook useEvents",
+          "description": "Criar o arquivo src/hooks/useEvents.ts com a estrutura base: 'use client', imports de useState, useCallback, useTransition, useRouter e as server actions de eventos",
+          "status": "completed",
+          "estimated_minutes": 5,
+          "files": [
+            "src/hooks/useEvents.ts"
+          ],
+          "notes": "Arquivo src/hooks/useEvents.ts criado com sucesso. Estrutura base implementada com 'use client', imports dos hooks React (useState, useCallback, useTransition), useRouter, e as 4 server actions de eventos (registerForEvent, cancelEventRegistration, checkInEvent, submitEventFeedback). Hook exporta isPending e error state.",
+          "updated_at": "2026-01-07T14:31:02.747083+00:00"
+        },
+        {
+          "id": "1.2",
+          "title": "Implementar handler para registerForEvent",
+          "description": "Implementar handleRegister que encapsula a server action registerForEvent com tratamento de erro e refresh autom\u00e1tico",
+          "status": "completed",
+          "estimated_minutes": 3,
+          "files": [
+            "src/hooks/useEvents.ts"
+          ],
+          "notes": "Implementado handleRegister com sucesso seguindo o padr\u00e3o de usePosts. O handler encapsula a server action registerForEvent com: tratamento de erro via setError, refresh autom\u00e1tico via startTransition + router.refresh(), retorno de { success, error } para feedback ao componente. Handler exportado como 'register' no retorno do hook. Commit: 65baf0c",
+          "updated_at": "2026-01-07T14:32:55.120869+00:00"
+        },
+        {
+          "id": "1.3",
+          "title": "Implementar handler para cancelEventRegistration",
+          "description": "Implementar handleCancelRegistration que encapsula a server action cancelEventRegistration com tratamento de erro e refresh autom\u00e1tico",
+          "status": "completed",
+          "estimated_minutes": 3,
+          "files": [
+            "src/hooks/useEvents.ts"
+          ],
+          "notes": "Implementado handleCancelRegistration com sucesso seguindo o padr\u00e3o de usePosts. O handler encapsula a server action cancelEventRegistration com: tratamento de erro via setError, refresh autom\u00e1tico via startTransition + router.refresh(), retorno de { success, error } para feedback ao componente. Handler exportado como 'cancelRegistration' no retorno do hook. Commit: b93f2f0",
+          "updated_at": "2026-01-07T14:34:22.170399+00:00"
+        },
+        {
+          "id": "1.4",
+          "title": "Implementar handler para checkInEvent",
+          "description": "Implementar handleCheckIn que encapsula a server action checkInEvent com tratamento de erro e refresh autom\u00e1tico",
+          "status": "completed",
+          "estimated_minutes": 3,
+          "files": [
+            "src/hooks/useEvents.ts"
+          ],
+          "notes": "Implementado handleCheckIn com sucesso seguindo o padr\u00e3o de usePosts. O handler encapsula a server action checkInEvent com: tratamento de erro via setError, refresh autom\u00e1tico via startTransition + router.refresh(), retorno de { success, error } para feedback ao componente. Handler exportado como 'checkIn' no retorno do hook. Commit: 231e4d3",
+          "updated_at": "2026-01-07T14:36:37.739900+00:00"
+        },
+        {
+          "id": "1.5",
+          "title": "Implementar handler para submitEventFeedback",
+          "description": "Implementar handleSubmitFeedback que encapsula a server action submitEventFeedback com tratamento de erro e refresh autom\u00e1tico",
+          "status": "pending",
+          "estimated_minutes": 3,
+          "files": [
+            "src/hooks/useEvents.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phase-2",
+      "name": "Integra\u00e7\u00e3o e exporta\u00e7\u00e3o",
+      "description": "Exportar o hook no barrel file de hooks para manter consist\u00eancia com os outros hooks",
+      "subtasks": [
+        {
+          "id": "2.1",
+          "title": "Adicionar export do useEvents no index.ts",
+          "description": "Adicionar a exporta\u00e7\u00e3o do useEvents no arquivo src/hooks/index.ts seguindo o padr\u00e3o existente",
+          "status": "pending",
+          "estimated_minutes": 2,
+          "files": [
+            "src/hooks/index.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phase-3",
+      "name": "Verifica\u00e7\u00e3o e QA",
+      "description": "Verificar se o c\u00f3digo compila corretamente e segue os padr\u00f5es do projeto",
+      "subtasks": [
+        {
+          "id": "3.1",
+          "title": "Verificar compila\u00e7\u00e3o TypeScript",
+          "description": "Rodar o TypeScript compiler para garantir que n\u00e3o h\u00e1 erros de tipo no hook criado",
+          "status": "pending",
+          "estimated_minutes": 3,
+          "files": []
+        },
+        {
+          "id": "3.2",
+          "title": "Verificar lint e formata\u00e7\u00e3o",
+          "description": "Executar lint e verificar se o c\u00f3digo segue os padr\u00f5es do projeto",
+          "status": "pending",
+          "estimated_minutes": 2,
+          "files": []
+        }
+      ]
+    }
+  ],
+  "workflow_type": "development",
+  "services_involved": [
+    "hooks",
+    "actions"
+  ],
+  "final_acceptance": [
+    "Hook useEvents criado em src/hooks/useEvents.ts",
+    "Quatro handlers implementados: register, cancelRegistration, checkIn, submitFeedback",
+    "Estado isPending e error gerenciados corretamente",
+    "Refresh autom\u00e1tico via router.refresh() ap\u00f3s cada a\u00e7\u00e3o",
+    "Hook exportado via src/hooks/index.ts",
+    "TypeScript compila sem erros"
+  ],
+  "spec_file": "spec.md",
+  "qa_signoff": {
+    "status": "pending",
+    "tests_passed": "",
+    "issues": ""
+  },
+  "summary": {
+    "total_subtasks": 7,
+    "completed_subtasks": 0,
+    "estimated_total_minutes": 24
+  },
+  "last_updated": "2026-01-07T14:36:37.739909+00:00"
+}

@@ -1,0 +1,13 @@
+{
+  "sourceType": "ideation",
+  "ideationType": "code_improvements",
+  "ideaId": "ci-001",
+  "rationale": "O padrao de hooks ja esta bem estabelecido em usePosts (6 actions) e useProfile. As server actions de eventos ja existem em actions/events.ts mas nao tem um hook correspondente. Isso facilita o uso em client components e mantem consistencia arquitetural.",
+  "category": "feature",
+  "estimatedEffort": "trivial",
+  "complexity": "trivial",
+  "affectedFiles": [
+    "src/hooks/useEvents.ts",
+    "src/hooks/index.ts"
+  ]
+}

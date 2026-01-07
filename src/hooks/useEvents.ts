@@ -62,11 +62,28 @@ export function useEvents() {
     return { success: true };
   }, [router]);
 
+  const handleSubmitFeedback = useCallback(async (eventId: string, feedback: string) => {
+    setError(null);
+    const result = await submitEventFeedback(eventId, feedback);
+
+    if (result.error) {
+      setError(result.error);
+      return { success: false, error: result.error };
+    }
+
+    startTransition(() => {
+      router.refresh();
+    });
+
+    return { success: true };
+  }, [router]);
+
   return {
     isPending,
     error,
     register: handleRegister,
     cancelRegistration: handleCancelRegistration,
     checkIn: handleCheckIn,
+    submitFeedback: handleSubmitFeedback,
   };
 }

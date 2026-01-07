@@ -1,0 +1,15 @@
+{
+  "discovered_files": {
+    "src/hooks/usePosts.ts": {
+      "description": "Padr\u00e3o de hooks estabelecido: usa 'use client', useTransition para isPending, useState para error, useCallback com router.refresh() ap\u00f3s cada action bem-sucedida. Retorna objeto com isPending, error e handlers nomeados.",
+      "category": "pattern",
+      "discovered_at": "2026-01-07T14:29:31.136327+00:00"
+    },
+    "src/actions/events.ts": {
+      "description": "Server actions de eventos dispon\u00edveis para usu\u00e1rios: registerForEvent(eventId), cancelEventRegistration(eventId), checkInEvent(eventId), submitEventFeedback(eventId, feedback). Todas retornam ActionResponse com error?, success?, data?",
+      "category": "api",
+      "discovered_at": "2026-01-07T14:29:31.153146+00:00"
+    }
+  },
+  "last_updated": "2026-01-07T14:29:31.153150+00:00"
+}

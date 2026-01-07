@@ -1,0 +1,64 @@
+## [$(date '+%Y-%m-%d %H:%M:%S')] Subtask 1.1 - COMPLETED
+
+Criado arquivo src/hooks/useEvents.ts com estrutura base:
+- Diretiva 'use client'
+- Imports React: useState, useCallback, useTransition
+- Import useRouter from next/navigation
+- Imports das 4 server actions: registerForEvent, cancelEventRegistration, checkInEvent, submitEventFeedback
+- Estrutura base do hook com router, isPending e error state
+- Hook exporta isPending e error
+
+Commit: f4f86ca
+
+Próximos passos: Implementar handlers individuais (1.2-1.5)
+
+## [2026-01-07 14:35:00] Subtask 1.2 - COMPLETED
+
+Implementado handleRegister que encapsula registerForEvent:
+- Usa useCallback com dependência [router]
+- Define error como null no início da execução
+- Chama server action registerForEvent(eventId)
+- Trata erros com setError e retorna { success: false, error }
+- Em caso de sucesso: executa router.refresh() via startTransition
+- Retorna { success: true } em caso de sucesso
+- Handler exportado como 'register' no retorno do hook
+
+Padrão seguido: usePosts.ts (handleApprove, handleLike, etc)
+
+Commit: 65baf0c
+
+Próximo passo: Implementar handleCancelRegistration (subtask 1.3)
+
+## [2026-01-07 14:50:00] Subtask 1.3 - COMPLETED
+
+Implementado handleCancelRegistration que encapsula cancelEventRegistration:
+- Usa useCallback com dependência [router]
+- Define error como null no início da execução
+- Chama server action cancelEventRegistration(eventId)
+- Trata erros com setError e retorna { success: false, error }
+- Em caso de sucesso: executa router.refresh() via startTransition
+- Retorna { success: true } em caso de sucesso
+- Handler exportado como 'cancelRegistration' no retorno do hook
+
+Padrão seguido: usePosts.ts e handleRegister
+
+Commit: b93f2f0
+
+Próximo passo: Implementar handleCheckIn (subtask 1.4)
+
+## [2026-01-07 15:05:00] Subtask 1.4 - COMPLETED
+
+Implementado handleCheckIn que encapsula checkInEvent:
+- Usa useCallback com dependência [router]
+- Define error como null no início da execução
+- Chama server action checkInEvent(eventId)
+- Trata erros com setError e retorna { success: false, error }
+- Em caso de sucesso: executa router.refresh() via startTransition
+- Retorna { success: true } em caso de sucesso
+- Handler exportado como 'checkIn' no retorno do hook
+
+Padrão seguido: usePosts.ts, handleRegister e handleCancelRegistration
+
+Commit: 231e4d3
+
+Próximo passo: Implementar handleSubmitFeedback (subtask 1.5)
