@@ -1,0 +1,13 @@
+{
+  "sourceType": "ideation",
+  "ideationType": "ui_ux_improvements",
+  "ideaId": "uiux-001",
+  "rationale": "The LoginForm uses custom inline Tailwind classes for inputs instead of the standardized Input component. This creates inconsistency and makes maintenance harder. The Input component already has proper accessibility attributes (aria-invalid, aria-describedby), error states, and consistent styling.",
+  "category": "ui_ux",
+  "uiuxCategory": "usability",
+  "affectedFiles": [
+    "src/components/auth/LoginForm.tsx",
+    "src/components/ui/Input.tsx"
+  ],
+  "problemSolved": "LoginForm uses raw <input> elements with inline Tailwind classes (appearance-none, block, w-full, px-3, py-2, etc.) without using the project's Input component. This results in different border-radius (rounded-md vs rounded-xl), missing icon support, and no integrated error display."
+}
