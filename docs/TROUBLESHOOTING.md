@@ -463,23 +463,710 @@ console.log('SUPABASE_URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
 
 ### 2. Erros de Autenticação
 
-> ⚠️ **Esta seção será expandida na próxima atualização**
-
 Erros relacionados ao sistema de autenticação do Supabase, incluindo login, registro, OAuth e gerenciamento de sessões.
 
-**Erros Comuns:**
-- Falha no login
-- OAuth Google não funciona
-- Sessão expirada
-- Email não confirmado
-- Problemas com RLS (Row Level Security)
+**Tipos de Autenticação Suportados:**
+- 📧 Email/Password (com confirmação de email)
+- 🔐 OAuth Google
+- 🔄 Refresh de sessão automático
+- 🚪 Logout
+
+**Fluxo de Autenticação:**
+1. Usuário faz login ou registro
+2. Supabase cria sessão e retorna tokens JWT
+3. Tokens são armazenados em cookies
+4. Middleware verifica autenticação em rotas protegidas
+5. Server Actions usam sessão para operações no banco
 
 **Ações Rápidas:**
-1. Verifique se o projeto Supabase está ativo
-2. Confirme que as URLs de callback do OAuth estão configuradas
+1. Verifique se o projeto Supabase está ativo no [Dashboard](https://app.supabase.com)
+2. Confirme que as URLs de callback do OAuth estão configuradas corretamente
 3. Verifique as políticas de RLS no Supabase Dashboard
+4. Limpe cookies e cache do navegador se houver problemas persistentes
 
-**Ver mais detalhes:** _(Esta seção será expandida com erros específicos e soluções detalhadas)_
+---
+
+#### 2.1. Erro: OAuth Google não configurado
+
+**Mensagem de Erro:**
+```
+OAuth provider 'google' is not configured for this project
+```
+
+**Causa:**
+O provedor OAuth Google não foi habilitado no projeto Supabase ou as credenciais OAuth não foram configuradas corretamente.
+
+**Impacto:**
+- ❌ Botão "Continuar com Google" não funciona
+- ❌ Usuários não conseguem fazer login via Google
+- ✅ Login com email/senha continua funcionando
+- ✅ Usuários existentes não são afetados
+
+**Solução:**
+
+1. **Criar credenciais OAuth no Google Cloud Console:**
+   - Acesse o [Google Cloud Console](https://console.cloud.google.com/)
+   - Crie um novo projeto ou selecione um existente
+   - Vá para **APIs & Services** > **Credentials**
+   - Clique em **Create Credentials** > **OAuth 2.0 Client ID**
+   - Tipo de aplicativo: **Web application**
+   - **Authorized JavaScript origins:**
+     ```
+     https://seu-projeto-id.supabase.co
+     ```
+   - **Authorized redirect URIs:**
+     ```
+     https://seu-projeto-id.supabase.co/auth/v1/callback
+     ```
+   - Clique em **Create** e copie o **Client ID** e **Client Secret**
+
+2. **Configurar OAuth no Supabase:**
+   - Acesse o [Supabase Dashboard](https://app.supabase.com)
+   - Selecione seu projeto
+   - Vá para **Authentication** > **Providers**
+   - Encontre **Google** e clique para configurar
+   - Habilite o provider
+   - Cole o **Client ID** e **Client Secret** do Google
+   - Clique em **Save**
+
+3. **Adicionar tela de consentimento OAuth (se necessário):**
+   - No Google Cloud Console, vá para **OAuth consent screen**
+   - Configure as informações básicas do aplicativo
+   - Adicione os escopos necessários: `email`, `profile`, `openid`
+   - Adicione seu domínio em **Authorized domains**
+
+4. **Testar a configuração:**
+   - Limpe cookies do navegador
+   - Acesse a página de login
+   - Clique em "Continuar com Google"
+   - Verifique se o popup de consentimento do Google aparece
+   - Complete o login
+
+**⚠️ Atenção:**
+- Para desenvolvimento local, adicione `http://localhost:3000` nos **Authorized JavaScript origins**
+- Para produção, use URLs HTTPS
+- Pode levar alguns minutos para as configurações propagarem
+- Se estiver testando em modo development do Google Cloud, adicione seu email como test user
+
+**🔍 Troubleshooting Adicional:**
+- Se aparecer "redirect_uri_mismatch", verifique se as URLs de callback estão idênticas no Google e Supabase
+- Se aparecer "access_denied", verifique a tela de consentimento OAuth
+- Verifique se a variável `NEXT_PUBLIC_SITE_URL` está configurada corretamente
+
+---
+
+#### 2.2. Erro: "Invalid login credentials"
+
+**Mensagem de Erro:**
+```
+Invalid login credentials
+```
+
+**Causas Possíveis:**
+- Email ou senha incorretos
+- Usuário não existe no sistema
+- Conta foi deletada
+- Email ainda não foi confirmado (se confirmação obrigatória)
+
+**Impacto:**
+- ❌ Usuário não consegue fazer login
+- ⚠️ Pode indicar tentativa de ataque se muitas tentativas falhas
+
+**Solução:**
+
+**Para Usuários:**
+
+1. **Verificar credenciais:**
+   - Confirme que o email está correto (sem espaços extras)
+   - Verifique se o Caps Lock não está ativado
+   - Tente redefinir a senha se não se lembrar
+
+2. **Verificar se a conta existe:**
+   - Tente fazer "Esqueci minha senha"
+   - Se receber email, a conta existe
+   - Se não receber, provavelmente precisa se registrar
+
+3. **Verificar email de confirmação:**
+   - Cheque sua caixa de entrada e spam
+   - Procure por email de confirmação do Supabase
+   - Clique no link de confirmação antes de fazer login
+
+**Para Desenvolvedores:**
+
+1. **Verificar no Supabase Dashboard:**
+   - Vá para **Authentication** > **Users**
+   - Busque pelo email do usuário
+   - Verifique o status da conta (confirmado, ativo, etc.)
+
+2. **Verificar políticas de senha:**
+   - Supabase por padrão requer senhas com mínimo 6 caracteres
+   - Verifique se há requisitos customizados em **Authentication** > **Policies**
+
+3. **Verificar logs de autenticação:**
+   - No Supabase Dashboard, vá para **Logs**
+   - Filtre por "auth" para ver tentativas de login
+   - Identifique o erro específico
+
+4. **Testar com conta admin:**
+   - Crie uma conta de teste no Dashboard manualmente
+   - Tente fazer login com ela
+   - Se funcionar, o problema é com a conta específica do usuário
+
+**🔐 Segurança:**
+```typescript
+// Implementar rate limiting para prevenir brute force
+// Exemplo em Server Action:
+'use server'
+
+import { ratelimit } from '@/lib/ratelimit'
+
+export async function login(email: string, password: string) {
+  // Rate limit por IP ou email
+  const { success } = await ratelimit.limit(email)
+
+  if (!success) {
+    throw new Error('Muitas tentativas. Tente novamente em alguns minutos.')
+  }
+
+  // Continuar com login...
+}
+```
+
+**⚠️ Atenção:**
+- NUNCA revele se o email existe ou não (segurança)
+- Mensagem genérica "Invalid credentials" é intencional
+- Implemente rate limiting para prevenir ataques de força bruta
+- Considere adicionar captcha após múltiplas tentativas falhas
+
+---
+
+#### 2.3. Erro: "Email not confirmed"
+
+**Mensagem de Erro:**
+```
+Email not confirmed
+You need to confirm your email address before signing in
+```
+
+**Causa:**
+O usuário tentou fazer login mas ainda não confirmou o endereço de email clicando no link enviado por email.
+
+**Impacto:**
+- ❌ Usuário não consegue fazer login
+- ✅ Conta foi criada e existe no sistema
+- ⚠️ Email pode estar em spam ou não ter sido recebido
+
+**Solução:**
+
+**Para Usuários:**
+
+1. **Verificar email de confirmação:**
+   - Cheque a caixa de entrada do email cadastrado
+   - Verifique a pasta de spam/lixo eletrônico
+   - Procure por email com assunto "Confirm Your Email" ou similar
+
+2. **Clicar no link de confirmação:**
+   - Abra o email de confirmação
+   - Clique no link de confirmação
+   - Você será redirecionado para a aplicação
+   - Tente fazer login novamente
+
+3. **Reenviar email de confirmação:**
+   - Na página de login, procure por "Reenviar email de confirmação"
+   - Digite seu email
+   - Verifique a caixa de entrada novamente
+
+**Para Desenvolvedores:**
+
+1. **Configurar emails no Supabase:**
+   - Acesse **Authentication** > **Email Templates**
+   - Customize o template de confirmação se necessário
+   - Verifique se o from address está configurado corretamente
+
+2. **Configurar SMTP customizado (recomendado para produção):**
+   - Vá para **Project Settings** > **Auth**
+   - Configure SMTP customizado (SendGrid, Postmark, etc.)
+   - Isso melhora a deliverability dos emails
+   - Configure SPF, DKIM e DMARC no DNS
+
+3. **Verificar URL de callback:**
+   - Em **Authentication** > **URL Configuration**
+   - Verifique se o **Site URL** está correto
+   - Adicione suas URLs de redirect em **Redirect URLs**
+
+4. **Implementar função de reenvio de email:**
+   ```typescript
+   // Server Action para reenviar email de confirmação
+   'use server'
+
+   import { createClient } from '@/lib/supabase/server'
+
+   export async function resendConfirmationEmail(email: string) {
+     const supabase = createClient()
+
+     const { error } = await supabase.auth.resend({
+       type: 'signup',
+       email: email,
+     })
+
+     if (error) {
+       throw new Error('Erro ao reenviar email de confirmação')
+     }
+
+     return { success: true }
+   }
+   ```
+
+5. **Desabilitar confirmação de email (apenas desenvolvimento):**
+   - ⚠️ **Apenas para desenvolvimento local!**
+   - Vá para **Authentication** > **Email Auth**
+   - Desabilite "Confirm email"
+   - **NUNCA faça isso em produção!**
+
+6. **Confirmar manualmente via Dashboard:**
+   - Vá para **Authentication** > **Users**
+   - Encontre o usuário
+   - Clique nos três pontos (...) > **Edit user**
+   - Marque "Email confirmed"
+   - Usuário pode fazer login imediatamente
+
+**🔍 Troubleshooting de Deliverability:**
+
+Se emails não estão chegando:
+
+1. **Verificar logs:**
+   ```bash
+   # Verifique logs do Supabase
+   # Dashboard > Logs > Auth logs
+   ```
+
+2. **Testar com diferentes provedores de email:**
+   - Gmail geralmente funciona bem
+   - Alguns domínios corporativos bloqueiam emails do Supabase
+   - Use SMTP customizado para melhor controle
+
+3. **Verificar rate limits:**
+   - Supabase limita envio de emails por hora
+   - Se exceder, emails não serão enviados
+
+**⚠️ Atenção:**
+- Em desenvolvimento, emails podem ir para spam
+- Configure SMTP customizado para produção
+- Considere implementar verificação por SMS como alternativa
+- Informe aos usuários para checarem spam
+
+---
+
+#### 2.4. Erro: "Session expired" / "Auth session missing"
+
+**Mensagem de Erro:**
+```
+Auth session missing!
+Your session has expired. Please sign in again.
+```
+
+**Causa:**
+A sessão do usuário expirou ou os tokens de autenticação foram invalidados. Isso pode acontecer por:
+- Token JWT expirou (padrão: 1 hora)
+- Refresh token expirou (padrão: 30 dias)
+- Usuário fez logout em outro dispositivo
+- Cookies foram limpos
+- Servidor de auth do Supabase ficou indisponível temporariamente
+
+**Impacto:**
+- ❌ Usuário é deslogado automaticamente
+- ❌ Requisições autenticadas falham
+- ⚠️ Dados não salvos podem ser perdidos
+- ✅ Segurança: previne sessões antigas de serem usadas
+
+**Solução:**
+
+**Para Usuários:**
+
+1. **Fazer login novamente:**
+   - Você será redirecionado automaticamente para a página de login
+   - Entre com suas credenciais
+   - Sua sessão será restaurada
+
+2. **Prevenir logout inesperado:**
+   - Mantenha a aba do navegador aberta
+   - Não limpe cookies durante o uso
+   - Verifique sua conexão com internet
+
+**Para Desenvolvedores:**
+
+1. **Implementar refresh automático de sessão:**
+   ```typescript
+   // lib/supabase/client.ts
+   import { createBrowserClient } from '@supabase/ssr'
+
+   export function createClient() {
+     return createBrowserClient(
+       process.env.NEXT_PUBLIC_SUPABASE_URL!,
+       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+       {
+         cookies: {
+           // Cookies já gerenciados automaticamente
+         },
+         auth: {
+           autoRefreshToken: true, // Refresh automático
+           persistSession: true,   // Persiste sessão
+           detectSessionInUrl: true, // Detecta sessão em callback URLs
+         },
+       }
+     )
+   }
+   ```
+
+2. **Implementar listener de mudanças de auth:**
+   ```typescript
+   // app/providers.tsx (Client Component)
+   'use client'
+
+   import { useEffect } from 'react'
+   import { createClient } from '@/lib/supabase/client'
+   import { useRouter } from 'next/navigation'
+
+   export function AuthProvider({ children }: { children: React.ReactNode }) {
+     const router = useRouter()
+     const supabase = createClient()
+
+     useEffect(() => {
+       const {
+         data: { subscription },
+       } = supabase.auth.onAuthStateChange((event, session) => {
+         if (event === 'SIGNED_OUT') {
+           router.push('/login')
+         }
+         if (event === 'TOKEN_REFRESHED') {
+           console.log('Token refreshed successfully')
+         }
+         if (event === 'SIGNED_IN') {
+           router.refresh()
+         }
+       })
+
+       return () => subscription.unsubscribe()
+     }, [supabase, router])
+
+     return <>{children}</>
+   }
+   ```
+
+3. **Ajustar tempo de expiração dos tokens:**
+   - Acesse **Authentication** > **Settings** no Supabase Dashboard
+   - Ajuste **JWT expiry limit** (padrão: 3600 segundos = 1 hora)
+   - Ajuste **Refresh token expiry** (padrão: 2592000 segundos = 30 dias)
+   - ⚠️ Tokens mais longos = menos segurança, mas melhor UX
+
+4. **Implementar middleware para verificar sessão:**
+   ```typescript
+   // middleware.ts
+   import { createServerClient } from '@supabase/ssr'
+   import { NextResponse, type NextRequest } from 'next/server'
+
+   export async function middleware(request: NextRequest) {
+     let response = NextResponse.next({
+       request: {
+         headers: request.headers,
+       },
+     })
+
+     const supabase = createServerClient(
+       process.env.NEXT_PUBLIC_SUPABASE_URL!,
+       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+       {
+         cookies: {
+           get(name: string) {
+             return request.cookies.get(name)?.value
+           },
+           set(name: string, value: string, options: any) {
+             response.cookies.set({ name, value, ...options })
+           },
+           remove(name: string, options: any) {
+             response.cookies.set({ name, value: '', ...options })
+           },
+         },
+       }
+     )
+
+     const {
+       data: { session },
+     } = await supabase.auth.getSession()
+
+     // Redirecionar para login se não autenticado
+     if (!session && request.nextUrl.pathname.startsWith('/dashboard')) {
+       const redirectUrl = request.nextUrl.clone()
+       redirectUrl.pathname = '/login'
+       redirectUrl.searchParams.set('redirectedFrom', request.nextUrl.pathname)
+       return NextResponse.redirect(redirectUrl)
+     }
+
+     return response
+   }
+
+   export const config = {
+     matcher: ['/dashboard/:path*', '/profile/:path*'],
+   }
+   ```
+
+5. **Salvar estado antes de sessão expirar:**
+   ```typescript
+   // Hook customizado para auto-save
+   'use client'
+
+   import { useEffect } from 'react'
+   import { useRouter } from 'next/navigation'
+
+   export function useAuthSessionCheck() {
+     const router = useRouter()
+
+     useEffect(() => {
+       const checkSession = async () => {
+         const response = await fetch('/api/auth/session')
+         if (!response.ok) {
+           // Salvar dados não salvos no localStorage
+           const unsavedData = document.querySelector('form')?.dataset
+           if (unsavedData) {
+             localStorage.setItem('unsaved-data', JSON.stringify(unsavedData))
+           }
+           router.push('/login?session=expired')
+         }
+       }
+
+       // Verificar a cada 5 minutos
+       const interval = setInterval(checkSession, 5 * 60 * 1000)
+       return () => clearInterval(interval)
+     }, [router])
+   }
+   ```
+
+**🔍 Debug:**
+```typescript
+// Verificar sessão atual
+const { data: { session } } = await supabase.auth.getSession()
+console.log('Session:', session)
+console.log('Expires at:', session?.expires_at)
+console.log('Expires in:', session?.expires_at ?
+  Math.floor((session.expires_at * 1000 - Date.now()) / 1000) + ' seconds' :
+  'No session')
+```
+
+**⚠️ Atenção:**
+- Tokens JWT expiram por padrão em 1 hora
+- Refresh token renova automaticamente se `autoRefreshToken: true`
+- Em produção, sempre use HTTPS para cookies serem seguros
+- Implemente save automático de formulários para prevenir perda de dados
+- Considere mostrar warning 5 minutos antes da sessão expirar
+
+---
+
+#### 2.5. Erro: "User not authorized" / Problemas com RLS
+
+**Mensagem de Erro:**
+```
+new row violates row-level security policy for table "table_name"
+permission denied for table "table_name"
+```
+
+**Causa:**
+As políticas de Row Level Security (RLS) do Supabase estão bloqueando a operação. Isso acontece quando:
+- Usuário tenta acessar dados de outro usuário
+- Política de RLS não foi criada para a operação (SELECT, INSERT, UPDATE, DELETE)
+- Política existe mas a condição não é satisfeita
+- RLS está habilitado mas sem políticas (bloqueia tudo)
+
+**Impacto:**
+- ❌ Operações no banco de dados falham
+- ❌ Usuário não consegue ver/criar/editar dados
+- ✅ Segurança: previne acesso não autorizado
+- ⚠️ Pode afetar funcionalidades críticas se mal configurado
+
+**Solução:**
+
+**Para Desenvolvedores:**
+
+1. **Verificar se RLS está habilitado:**
+   ```sql
+   -- No Supabase SQL Editor
+   SELECT tablename, rowsecurity
+   FROM pg_tables
+   WHERE schemaname = 'public';
+   ```
+
+2. **Verificar políticas existentes:**
+   ```sql
+   -- Ver todas as políticas de uma tabela
+   SELECT * FROM pg_policies WHERE tablename = 'nome_da_tabela';
+   ```
+
+3. **Criar políticas básicas de RLS:**
+   ```sql
+   -- Exemplo: Tabela de profiles
+   -- Usuários podem ver apenas seu próprio perfil
+
+   -- 1. Habilitar RLS
+   ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+
+   -- 2. Política para SELECT (ler)
+   CREATE POLICY "Users can view own profile"
+     ON profiles FOR SELECT
+     USING (auth.uid() = user_id);
+
+   -- 3. Política para INSERT (criar)
+   CREATE POLICY "Users can create own profile"
+     ON profiles FOR INSERT
+     WITH CHECK (auth.uid() = user_id);
+
+   -- 4. Política para UPDATE (atualizar)
+   CREATE POLICY "Users can update own profile"
+     ON profiles FOR UPDATE
+     USING (auth.uid() = user_id)
+     WITH CHECK (auth.uid() = user_id);
+
+   -- 5. Política para DELETE (deletar)
+   CREATE POLICY "Users can delete own profile"
+     ON profiles FOR DELETE
+     USING (auth.uid() = user_id);
+   ```
+
+4. **Exemplo: Políticas para tabela de challenges (desafios):**
+   ```sql
+   -- Qualquer usuário autenticado pode ver desafios ativos
+   CREATE POLICY "Anyone can view active challenges"
+     ON challenges FOR SELECT
+     USING (status = 'active');
+
+   -- Apenas admins podem criar desafios
+   CREATE POLICY "Only admins can create challenges"
+     ON challenges FOR INSERT
+     WITH CHECK (
+       auth.uid() IN (
+         SELECT user_id FROM profiles WHERE role = 'admin'
+       )
+     );
+
+   -- Admins podem atualizar qualquer desafio
+   CREATE POLICY "Admins can update challenges"
+     ON challenges FOR UPDATE
+     USING (
+       auth.uid() IN (
+         SELECT user_id FROM profiles WHERE role = 'admin'
+       )
+     );
+   ```
+
+5. **Exemplo: Políticas para tabela de submissions (submissões):**
+   ```sql
+   -- Usuários podem ver próprias submissões
+   CREATE POLICY "Users can view own submissions"
+     ON submissions FOR SELECT
+     USING (auth.uid() = user_id);
+
+   -- Admins podem ver todas as submissões
+   CREATE POLICY "Admins can view all submissions"
+     ON submissions FOR SELECT
+     USING (
+       auth.uid() IN (
+         SELECT user_id FROM profiles WHERE role = 'admin'
+       )
+     );
+
+   -- Usuários podem criar submissões para si mesmos
+   CREATE POLICY "Users can create own submissions"
+     ON submissions FOR INSERT
+     WITH CHECK (auth.uid() = user_id);
+   ```
+
+6. **Testar políticas no SQL Editor:**
+   ```sql
+   -- Simular como usuário específico
+   SET LOCAL role TO authenticated;
+   SET LOCAL request.jwt.claims TO '{"sub": "user-uuid-aqui"}';
+
+   -- Testar query
+   SELECT * FROM profiles WHERE user_id = 'user-uuid-aqui';
+   ```
+
+7. **Desabilitar RLS temporariamente (APENAS DESENVOLVIMENTO):**
+   ```sql
+   -- ⚠️ ATENÇÃO: NUNCA faça isso em produção!
+   ALTER TABLE nome_da_tabela DISABLE ROW LEVEL SECURITY;
+   ```
+
+8. **Usar Service Role para bypass RLS (quando necessário):**
+   ```typescript
+   // Server Action com service role
+   'use server'
+
+   import { createClient } from '@/lib/supabase/server'
+
+   export async function adminDeleteUser(userId: string) {
+     // Verificar se usuário atual é admin
+     const supabase = createClient()
+     const { data: { user } } = await supabase.auth.getUser()
+
+     const { data: profile } = await supabase
+       .from('profiles')
+       .select('role')
+       .eq('user_id', user?.id)
+       .single()
+
+     if (profile?.role !== 'admin') {
+       throw new Error('Unauthorized')
+     }
+
+     // Usar service role para deletar
+     const supabaseAdmin = createClient({ serviceRole: true })
+
+     const { error } = await supabaseAdmin
+       .from('profiles')
+       .delete()
+       .eq('user_id', userId)
+
+     if (error) throw error
+   }
+   ```
+
+**🔍 Debug de Políticas:**
+
+```typescript
+// Verificar qual usuário está autenticado
+const { data: { user } } = await supabase.auth.getUser()
+console.log('Current user:', user?.id)
+
+// Tentar operação e ver erro específico
+const { data, error } = await supabase
+  .from('profiles')
+  .select('*')
+  .eq('user_id', user?.id)
+
+console.log('Data:', data)
+console.log('Error:', error)
+
+// Se erro de RLS, verificar políticas no dashboard
+```
+
+**📋 Checklist de RLS:**
+- [ ] RLS está habilitado na tabela?
+- [ ] Políticas foram criadas para todas as operações (SELECT, INSERT, UPDATE, DELETE)?
+- [ ] A condição `USING` está correta?
+- [ ] A condição `WITH CHECK` está correta (para INSERT/UPDATE)?
+- [ ] O usuário está autenticado (`auth.uid()` não é null)?
+- [ ] A role/permissão do usuário é suficiente?
+
+**⚠️ Atenção:**
+- RLS é sua principal camada de segurança no Supabase
+- SEMPRE habilite RLS em tabelas com dados sensíveis
+- Teste políticas extensivamente antes de ir para produção
+- Use `auth.uid()` para identificar o usuário atual
+- Combine RLS com validação no backend (Server Actions)
+- Documente suas políticas para facilitar manutenção
+
+**Recursos:**
+- [Supabase RLS Documentation](https://supabase.com/docs/guides/auth/row-level-security)
+- [RLS Performance Guide](https://supabase.com/docs/guides/database/postgres/row-level-security#performance)
+- [Policy Examples](https://supabase.com/docs/guides/auth/row-level-security#policy-examples)
 
 ---
 
