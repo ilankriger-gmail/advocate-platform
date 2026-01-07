@@ -58,8 +58,8 @@
 - [x] 1.5 - Erros de APIs externas (6 subseções: 4.1-4.6)
 
 ### Fase 2: Guias de Configuração
-- [ ] 2.1 - Guia SETUP_SUPABASE.md
-- [ ] 2.2 - Atualizar .env.local.example
+- [x] 2.1 - Guia SETUP_SUPABASE.md ✅
+- [x] 2.2 - Atualizar .env.local.example ✅
 
 ### Fase 3: Mensagens de Erro Melhoradas
 - [ ] 3.1 - Constantes de erro (src/lib/errors.ts)
@@ -127,3 +127,75 @@ Expandida seção 4 (Erros de APIs Externas) do guia TROUBLESHOOTING.md:
 
 **Resultado:** Fase 1 (Documentação Principal) agora está 100% completa (5/5 subtasks).
 Próxima fase: Guias de Configuração Inicial (Fase 2)
+
+---
+
+### 2026-01-07 - Subtask 2.2: Atualizar .env.local.example ✅
+**Commit:** a234d21
+
+Arquivo `.env.local.example` completamente reformulado com comentários explicativos e documentação completa:
+
+**Melhorias implementadas:**
+
+1. **Cabeçalho Informativo**
+   - Introdução clara sobre o propósito do arquivo
+   - Avisos de segurança (não commitar .env.local, manter chaves seguras)
+   - Referências cruzadas para SETUP_SUPABASE.md e TROUBLESHOOTING.md
+
+2. **Seção Supabase (Linhas 16-43)**
+   - Link direto para Settings > API do Supabase
+   - Instruções passo-a-passo para obter chaves
+   - Comentários explicando cada variável:
+     - `NEXT_PUBLIC_SUPABASE_URL`: Formato, exemplo
+     - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Segurança RLS, uso no cliente
+     - `SUPABASE_SERVICE_ROLE_KEY`: Avisos de segurança críticos (⚠️)
+   - Referência ao guia SETUP_SUPABASE.md Seção 2
+
+3. **Seção Next.js (Linhas 45-53)**
+   - Comentários sobre ambientes (dev vs produção)
+   - Explicação de casos de uso: OAuth redirects, emails, webhooks
+
+4. **Seção Gemini AI (Linhas 55-67)** - NOVA ✨
+   - Variável `GEMINI_API_KEY` adicionada (estava faltando!)
+   - Link direto: https://aistudio.google.com/app/apikey
+   - Instruções de criação da API Key
+   - Avisos sobre cotas e custos
+
+5. **Seção Email (Linhas 69-88)**
+   - Provedores recomendados: SendGrid, Resend, Amazon SES
+   - Links para cada provedor
+   - Exemplo de configuração SendGrid
+   - Marcado como "IMPLEMENTAÇÃO FUTURA"
+
+6. **Seção Armazenamento (Linhas 90-96)**
+   - Integração com Supabase Storage
+   - Formato da URL
+   - Referência ao SETUP_SUPABASE.md Seção 6
+
+7. **Seção APIs Externas (Linhas 98-114)**
+   - Instagram Graph API com link
+   - TikTok for Developers com link
+   - YouTube Data API v3 com link (NOVA ✨)
+   - Todas marcadas como futuras integrações
+
+8. **Seção de Verificação (Linhas 116-124)**
+   - Instruções para validar configuração
+   - Referência ao futuro comando `npm run check-env`
+   - Link para TROUBLESHOOTING.md
+
+**Estatísticas:**
+- **Antes:** 20 linhas, comentários mínimos
+- **Depois:** 125 linhas, documentação completa
+- **Incremento:** 105 linhas (+525%)
+- **Variáveis adicionadas:** GEMINI_API_KEY, YOUTUBE_API_KEY
+- **Links adicionados:** 8 URLs de documentação oficial
+
+**Benefícios:**
+- Desenvolvedor consegue configurar ambiente sem consultar documentação externa
+- Avisos de segurança explícitos para variáveis sensíveis
+- Referências cruzadas com guias de setup
+- Formato esperado e exemplos claros
+- Diferenciação entre variáveis obrigatórias e opcionais/futuras
+
+**Resultado:** Fase 2 (Guias de Configuração) agora está 100% completa (2/2 subtasks).
+Próxima fase: Mensagens de Erro Melhoradas (Fase 3)
