@@ -93,3 +93,36 @@ export async function requireAuth(): Promise<AuthResponse> {
     supabase,
   };
 }
+
+/**
+ * Verifica se o usuario autenticado tem permissoes de admin OU creator
+ * Esta e a funcao de autorizacao mais comum usada em 16+ lugares
+ * Retorna o usuario autenticado com seus dados de perfil ou erro
+ *
+ * @returns AuthResult com usuario, perfil e cliente Supabase, ou AuthError
+ *
+ * @example
+ * const auth = await requireAdminOrCreator();
+ * if (isAuthError(auth)) {
+ *   return auth; // retorna o erro
+ * }
+ * // usuario e admin ou creator, pode prosseguir
+ * // usar auth.user, auth.profile, auth.supabase
+ */
+export async function requireAdminOrCreator(): Promise<AuthResponse> {
+  // Primeiro autentica o usuario
+  const auth = await requireAuth();
+
+  // Se houve erro na autenticacao, retorna o erro
+  if (isAuthError(auth)) {
+    return auth;
+  }
+
+  // Verifica se tem permissao de admin ou creator
+  if (auth.profile.role !== 'admin' && !auth.profile.is_creator) {
+    return { error: 'Acesso nao autorizado' };
+  }
+
+  // Usuario tem permissao, retorna os dados
+  return auth;
+}
