@@ -397,6 +397,18 @@ export async function createReward(data: {
 }
 
 /**
+ * Tipo para atualizações de recompensa
+ */
+type RewardUpdate = {
+  name?: string;
+  description?: string;
+  image_url?: string;
+  coins_required?: number;
+  quantity_available?: number;
+  is_active?: boolean;
+};
+
+/**
  * Atualizar recompensa (admin)
  */
 export async function updateReward(
@@ -429,7 +441,7 @@ export async function updateReward(
       return { error: 'Acesso nao autorizado' };
     }
 
-    const updateData: any = {};
+    const updateData: RewardUpdate = {};
     if (data.name !== undefined) updateData.name = data.name;
     if (data.description !== undefined) updateData.description = data.description;
     if (data.imageUrl !== undefined) updateData.image_url = data.imageUrl;
