@@ -351,7 +351,7 @@
           "id": "5.3",
           "title": "Test approveParticipation flow",
           "description": "Test challenge approval and coin reward logic",
-          "status": "pending",
+          "status": "completed",
           "acceptance_criteria": [
             "Test non-admin rejection",
             "Test participation status updated",
@@ -361,7 +361,9 @@
           "files_to_modify": [
             "src/__tests__/actions/challenges.test.ts"
           ],
-          "estimated_complexity": "high"
+          "estimated_complexity": "high",
+          "notes": "Implemented comprehensive tests for challenge approval and coin reward logic. Tests cover access validations (authentication, authorization), coin rewards (default/custom amounts, balance updates, transactions), and status updates. All tests follow AAA pattern and are well documented in Portuguese.",
+          "updated_at": "2026-01-07T18:18:28.576140+00:00"
         },
         {
           "id": "5.4",
@@ -477,5 +479,5 @@
     "tests_passed": null,
     "issues": null
   },
-  "last_updated": "2026-01-07T18:14:53.620922+00:00"
+  "last_updated": "2026-01-07T18:18:28.576150+00:00"
 }
