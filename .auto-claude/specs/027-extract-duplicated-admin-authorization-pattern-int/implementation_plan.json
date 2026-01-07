@@ -162,11 +162,13 @@
           "id": "2.8",
           "title": "Refactor markPrizeSent in challenges.ts",
           "description": "Replace the authorization block in markPrizeSent with requireAdminOrCreator() call.",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/actions/challenges.ts"
           ],
-          "estimated_lines": -8
+          "estimated_lines": -8,
+          "notes": "Successfully refactored markPrizeSent in challenges.ts. Replaced the 17-line authorization block (createClient, getUser, profile check) with requireAdminOrCreator() call. The function now uses the centralized auth utility, reducing code duplication and following the new pattern. Net reduction of ~10 lines. Commit: d9bb9e0",
+          "updated_at": "2026-01-07T17:01:04.682054+00:00"
         }
       ]
     },
@@ -180,21 +182,25 @@
           "id": "3.1",
           "title": "Refactor toggleRewardActive in rewards.ts",
           "description": "Replace the authorization block in toggleRewardActive with requireAdminOrCreator() call.",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/actions/rewards.ts"
           ],
-          "estimated_lines": -8
+          "estimated_lines": -8,
+          "notes": "Successfully refactored toggleRewardActive in rewards.ts. Replaced the 17-line authorization block (createClient, getUser, profile check) with requireAdminOrCreator() call. The function now uses the centralized auth utility, reducing code duplication and following the new pattern. Net reduction of ~10 lines. Commit: 9b15352",
+          "updated_at": "2026-01-07T17:04:20.869920+00:00"
         },
         {
           "id": "3.2",
           "title": "Refactor approveClaim in rewards.ts",
           "description": "Replace the authorization block in approveClaim with requireAdminOrCreator() call.",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/actions/rewards.ts"
           ],
-          "estimated_lines": -8
+          "estimated_lines": -8,
+          "notes": "Successfully refactored approveClaim in rewards.ts. Replaced the 17-line authorization block (createClient, getUser, profile check) with requireAdminOrCreator() call. The function now uses the centralized auth utility, reducing code duplication and following the new pattern. Net reduction of ~10 lines (5 insertions, 15 deletions). Commit: d0ef976",
+          "updated_at": "2026-01-07T17:06:48.186308+00:00"
         },
         {
           "id": "3.3",
@@ -403,5 +409,5 @@
     "issues": "",
     "tests_passed": ""
   },
-  "last_updated": "2026-01-07T16:59:04.579623+00:00"
+  "last_updated": "2026-01-07T17:06:48.186320+00:00"
 }

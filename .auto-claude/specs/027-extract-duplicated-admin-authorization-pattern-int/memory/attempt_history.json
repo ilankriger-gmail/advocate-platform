@@ -11,11 +11,47 @@
         }
       ],
       "status": "completed"
+    },
+    "2.8": {
+      "attempts": [
+        {
+          "session": 2,
+          "timestamp": "2026-01-07T14:01:48.171219",
+          "approach": "Implemented: Replace the authorization block in markPrizeSent with requireAdminOrCreator() call.",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "3.1": {
+      "attempts": [
+        {
+          "session": 3,
+          "timestamp": "2026-01-07T14:05:00.428791",
+          "approach": "Implemented: Replace the authorization block in toggleRewardActive with requireAdminOrCreator() call.",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "3.2": {
+      "attempts": [
+        {
+          "session": 4,
+          "timestamp": "2026-01-07T14:07:35.659228",
+          "approach": "Implemented: Replace the authorization block in approveClaim with requireAdminOrCreator() call.",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
     }
   },
   "stuck_subtasks": [],
   "metadata": {
     "created_at": "2026-01-07T13:57:53.489523",
-    "last_updated": "2026-01-07T13:59:29.246727"
+    "last_updated": "2026-01-07T14:07:35.659243"
   }
 }
