@@ -46,10 +46,27 @@ export function useEvents() {
     return { success: true };
   }, [router]);
 
+  const handleCheckIn = useCallback(async (eventId: string) => {
+    setError(null);
+    const result = await checkInEvent(eventId);
+
+    if (result.error) {
+      setError(result.error);
+      return { success: false, error: result.error };
+    }
+
+    startTransition(() => {
+      router.refresh();
+    });
+
+    return { success: true };
+  }, [router]);
+
   return {
     isPending,
     error,
     register: handleRegister,
     cancelRegistration: handleCancelRegistration,
+    checkIn: handleCheckIn,
   };
 }
