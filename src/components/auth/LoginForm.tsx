@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Input } from '@/components/ui/Input';
 import { login } from '@/actions/auth';
 import Link from 'next/link';
 
