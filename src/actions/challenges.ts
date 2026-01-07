@@ -93,6 +93,15 @@ export async function participateInChallenge(data: {
 }
 
 /**
+ * Tipo para atualizações de participação em desafio
+ */
+type ChallengeParticipantUpdate = {
+  result_value?: number;
+  video_proof_url?: string;
+  social_media_url?: string;
+};
+
+/**
  * Atualizar participacao em desafio
  */
 export async function updateParticipation(data: {
@@ -122,7 +131,7 @@ export async function updateParticipation(data: {
       return { error: 'Participacao nao encontrada ou ja foi avaliada' };
     }
 
-    const updateData: any = {};
+    const updateData: ChallengeParticipantUpdate = {};
     if (data.resultValue !== undefined) updateData.result_value = data.resultValue;
     if (data.videoProofUrl !== undefined) updateData.video_proof_url = data.videoProofUrl;
     if (data.socialMediaUrl !== undefined) updateData.social_media_url = data.socialMediaUrl;
