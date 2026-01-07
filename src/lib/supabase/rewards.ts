@@ -10,6 +10,7 @@ import type {
   CoinTransaction,
   RewardClaim,
   RewardClaimWithDetails,
+  ClaimWithReward,
 } from './types';
 
 /**
@@ -135,7 +136,7 @@ export async function getUserClaims(): Promise<RewardClaimWithDetails[]> {
 
   if (error || !data) return [];
 
-  return data.map((claim: any) => ({
+  return data.map((claim: ClaimWithReward) => ({
     ...claim,
     reward: claim.rewards,
     rewards: undefined,
