@@ -24,9 +24,9 @@ and recognition tiers (Bronze, Silver, Gold, Diamond).
 
 ### Phase 4: UI Components (In Progress)
 - [x] 4.1 Create TierBadge component
-- [ ] 4.2 Create LeaderboardEntry component
-- [ ] 4.3 Create LeaderboardList component
-- [ ] 4.4 Create UserRankCard component
+- [x] 4.2 Create LeaderboardEntry component
+- [x] 4.3 Create LeaderboardList component
+- [x] 4.4 Create UserRankCard component
 - [ ] 4.5 Create LeaderboardTabs component
 - [ ] 4.6 Create CategorySelector component
 - [ ] 4.7 Create index exports
@@ -116,3 +116,30 @@ and recognition tiers (Bronze, Silver, Gold, Diamond).
     - Includes getTierByScore() helper function
     - Follows existing Badge.tsx and Button.tsx patterns
     - Portuguese comments, proper TypeScript typing
+  - 4.2: Created LeaderboardEntry component in src/components/leaderboard/LeaderboardEntry.tsx (229 lines)
+    - Displays individual leaderboard entries with rank, avatar, name, score, and tier badge
+    - Top 3 positions show medal emojis (🥇🥈🥉)
+    - Current user's entry is highlighted with bg-primary-50 and border-l-4
+    - Score formatting with thousand separators (pt-BR)
+    - Last activity display with smart formatting (today, yesterday, days ago)
+    - Compact variant (LeaderboardEntry.Compact) for widgets/previews
+    - Follows all established patterns
+  - 4.3: Created LeaderboardList component in src/components/leaderboard/LeaderboardList.tsx (279 lines)
+    - Displays list of leaderboard entries with pagination support (top 10/25/50)
+    - Interactive button controls for selecting display limit
+    - Empty state with motivational message when no data
+    - Loading skeleton state with animated placeholders
+    - Responsive design for mobile/desktop
+    - Compact variant (LeaderboardList.Compact) for widgets showing top 5
+    - Shows count of displayed vs total participants
+    - Real-time ranking updates indicator
+  - 4.4: Created UserRankCard component in src/components/leaderboard/UserRankCard.tsx (387 lines)
+    - Shows user's current rank position even if not in top positions
+    - Displays user's score with proper formatting
+    - Calculates and shows points needed to reach next tier
+    - Visual progress bar showing advancement to next tier
+    - Motivational messages based on position (1st, top 10, top 25, top 50, etc.)
+    - Loading skeleton and not ranked states
+    - Compact variant (UserRankCard.Compact) for widgets
+    - Gradient background for visual distinction
+    - Tier progression: Bronze→Silver (100pts), Silver→Gold (500pts), Gold→Diamond (1000pts)
