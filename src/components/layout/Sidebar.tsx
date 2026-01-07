@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
@@ -69,9 +70,45 @@ const icons: Record<string, React.ReactNode> = {
 export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
   const pathname = usePathname();
   const { user } = useAuth();
+  const [isAdminAuth, setIsAdminAuth] = useState(false);
 
   // Verifica se e o criador da comunidade
   const isCreator = user?.user_metadata?.is_creator === true;
+
+  // Verificar autenticacao admin via localStorage (similar ao AdminAuthCheck)
+  useEffect(() => {
+    const checkAdminAuth = () => {
+      const isAuth = localStorage.getItem('admin_authenticated') === 'true';
+      const loginTime = localStorage.getItem('admin_login_time');
+
+      // Verificar se a sessao expirou (24 horas)
+      if (isAuth && loginTime) {
+        const loginDate = new Date(loginTime);
+        const now = new Date();
+        const hoursDiff = (now.getTime() - loginDate.getTime()) / (1000 * 60 * 60);
+
+        if (hoursDiff > 24) {
+          // Sessao expirada
+          localStorage.removeItem('admin_authenticated');
+          localStorage.removeItem('admin_login_time');
+          setIsAdminAuth(false);
+          return;
+        }
+        setIsAdminAuth(true);
+      } else {
+        setIsAdminAuth(false);
+      }
+    };
+
+    checkAdminAuth();
+
+    // Re-verificar quando o storage muda (em caso de login/logout em outra aba)
+    window.addEventListener('storage', checkAdminAuth);
+    return () => window.removeEventListener('storage', checkAdminAuth);
+  }, []);
+
+  // Mostrar menu admin se for criador OU se estiver autenticado via /admin/login
+  const showAdminMenu = isCreator || isAdminAuth;
 
   return (
     <>
@@ -129,12 +166,12 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
             })}
           </nav>
 
-          {/* Creator Navigation */}
-          {isCreator && (
+          {/* Creator Navigation - Mostra para criadores OU admins autenticados */}
+          {showAdminMenu && (
             <>
               <hr className="my-4 border-gray-200" />
               <p className="px-3 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Criador
+                Admin
               </p>
               <nav className="space-y-1">
                 {CREATOR_NAV.map((item) => {
