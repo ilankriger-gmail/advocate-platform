@@ -3,12 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { analyzeVideoChallenge, type AIVerdict } from '@/lib/gemini';
-
-type ActionResponse = {
-  error?: string;
-  success?: boolean;
-  data?: any;
-};
+import { ActionResponse } from '@/types';
 
 /**
  * Participar de um desafio fisico
