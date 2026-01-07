@@ -48,9 +48,10 @@
           "id": "1.4",
           "title": "Documentar Select",
           "description": "Adicionar JSDoc ao componente Select e interface SelectOption com descri\u00e7\u00f5es de todas as props (label, error, hint, options, placeholder). Incluir exemplos de uso.",
-          "status": "pending",
+          "status": "completed",
           "file": "src/components/ui/Select.tsx",
-          "notes": ""
+          "notes": "Adicionada documenta\u00e7\u00e3o JSDoc completa ao componente Select incluindo:\n- Documenta\u00e7\u00e3o da interface SelectOption (value, label, disabled)\n- Documenta\u00e7\u00e3o de todas as props (label, error, hint, options, placeholder)\n- 5 exemplos de uso cobrendo diferentes cen\u00e1rios (b\u00e1sico, placeholder, valida\u00e7\u00e3o, hint, op\u00e7\u00f5es desabilitadas)\n- Descri\u00e7\u00f5es detalhadas explicando o comportamento de cada prop\n- Tags @default para props com valores padr\u00e3o\n- Seguindo o mesmo padr\u00e3o de documenta\u00e7\u00e3o dos componentes Button, Input e Textarea",
+          "updated_at": "2026-01-07T14:41:29.679388+00:00"
         }
       ]
     },
@@ -166,5 +167,5 @@
     "Exemplos de uso inclu\u00eddos em cada componente",
     "Build TypeScript passa sem erros"
   ],
-  "last_updated": "2026-01-07T14:39:53.683671+00:00"
+  "last_updated": "2026-01-07T14:41:29.679397+00:00"
 }
