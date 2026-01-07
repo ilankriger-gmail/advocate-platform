@@ -27,7 +27,7 @@ and recognition tiers (Bronze, Silver, Gold, Diamond).
 - [x] 4.2 Create LeaderboardEntry component
 - [x] 4.3 Create LeaderboardList component
 - [x] 4.4 Create UserRankCard component
-- [ ] 4.5 Create LeaderboardTabs component
+- [x] 4.5 Create LeaderboardTabs component
 - [ ] 4.6 Create CategorySelector component
 - [ ] 4.7 Create index exports
 
@@ -143,3 +143,16 @@ and recognition tiers (Bronze, Silver, Gold, Diamond).
     - Compact variant (UserRankCard.Compact) for widgets
     - Gradient background for visual distinction
     - Tier progression: Bronze→Silver (100pts), Silver→Gold (500pts), Gold→Diamond (1000pts)
+  - 4.5: Created LeaderboardTabs component in src/components/leaderboard/LeaderboardTabs.tsx (242 lines)
+    - Tabbed interface for switching between weekly, monthly, and all-time views
+    - Weekly tab with "Últimos 7 dias" date range indicator
+    - Monthly tab with "Últimos 30 dias" indicator
+    - All-time tab with "Desde o início" indicator
+    - Active tab styling with primary-600 color and border-b-2
+    - Icons for each period (calendar for weekly/monthly, lightning for all-time)
+    - Informational text describing the active period below tabs
+    - Compact variant (LeaderboardTabs.Compact) for widgets with segmented control style
+    - Helper functions: getPeriodLabel(), getPeriodDescription(), getPeriodIcon()
+    - Proper accessibility attributes (role, aria-selected, aria-controls)
+    - Responsive design with smooth transitions
+    - TypeScript typed with TimePeriod from @/lib/supabase/types

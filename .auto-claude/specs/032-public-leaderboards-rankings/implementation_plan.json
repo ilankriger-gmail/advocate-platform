@@ -196,7 +196,7 @@
           "id": "4.5",
           "title": "Create LeaderboardTabs component",
           "description": "Create a tabbed interface for switching between weekly, monthly, and all-time views.",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/components/leaderboard/LeaderboardTabs.tsx"
           ],
@@ -206,7 +206,9 @@
             "All-time tab",
             "Active tab styling",
             "Callback for tab change"
-          ]
+          ],
+          "notes": "Created comprehensive LeaderboardTabs component with all acceptance criteria met:\n- Weekly tab with date range indicator (\"\u00daltimos 7 dias\")\n- Monthly tab with month indicator (\"\u00daltimos 30 dias\")\n- All-time tab (\"Desde o in\u00edcio\")\n- Active tab styling with primary-600 color and border-b-2\n- Callback for tab change (onPeriodChange prop)\n- Icons for each period (calendar for weekly/monthly, lightning for all-time)\n- Informational text describing the active period\n- Compact variant (LeaderboardTabs.Compact) for widgets/previews\n- Follows all established patterns from other leaderboard components\n- Portuguese comments following project guidelines\n- TypeScript typed with TimePeriod type from @/lib/supabase/types\n- Proper accessibility attributes (role, aria-selected, aria-controls)\n- Responsive design with flexbox layout\n- Hover and focus states with smooth transitions\n\nComponent structure:\n- Main LeaderboardTabs: Full-featured with icons, labels, descriptions, and informational text\n- LeaderboardTabs.Compact: Simplified version with segmented control style for dashboard widgets\n\nHelper functions:\n- getPeriodLabel(): Returns Portuguese label for each period\n- getPeriodDescription(): Returns date range description\n- getPeriodIcon(): Returns SVG icon for each period\n\nFile created: src/components/leaderboard/LeaderboardTabs.tsx (242 lines)",
+          "updated_at": "2026-01-07T18:49:23.363262+00:00"
         },
         {
           "id": "4.6",
@@ -371,5 +373,5 @@
     "Time periods: Weekly (last 7 days), Monthly (last 30 days), All-time",
     "User must be authenticated to see their own rank, but leaderboard is public"
   ],
-  "last_updated": "2026-01-07T18:46:12.944995+00:00"
+  "last_updated": "2026-01-07T18:49:23.363280+00:00"
 }
