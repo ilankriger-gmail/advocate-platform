@@ -13,9 +13,12 @@ export * from './profile';
 
 // Eventos
 export * from './events';
+export * from './events-admin';
 
 // Desafios
 export * from './challenges';
+export * from './challenges-admin';
 
 // Recompensas
 export * from './rewards';
+export * from './rewards-admin';
