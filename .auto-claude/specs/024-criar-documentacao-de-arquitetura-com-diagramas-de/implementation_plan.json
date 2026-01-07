@@ -148,12 +148,14 @@
           "id": "3.3",
           "title": "Criar diagrama de dependencias entre modulos",
           "description": "Diagrama Mermaid mostrando como os diferentes modulos (auth, posts, events, challenges, rewards) se relacionam e dependem uns dos outros.",
-          "status": "pending",
+          "status": "completed",
           "file_path": "docs/MODULE_DEPENDENCIES.md",
           "dependencies": [
             "1.1"
           ],
-          "estimated_minutes": 25
+          "estimated_minutes": 25,
+          "notes": "Documento MODULE_DEPENDENCIES.md criado com sucesso contendo documentação completa de dependências entre módulos incluindo: (1) Visão geral dos 6 módulos principais com tabela de dependencies (Auth, Profile, Posts, Events, Challenges, Rewards), (2) Diagrama de alto nível mostrando módulos Core (Auth, Profile) e Feature (Posts, Events, Challenges, Rewards) com dependências hard (linhas sólidas) e soft/feedback (linhas pontilhadas), (3) Grafo completo de dependências mostrando fluxo de dados entre módulos incluindo user_id, advocate_level, user_coins, e pontos, (4) Documentação detalhada de cada módulo: Auth (módulo fundacional sem dependências), Profile (depende de Auth, fornece níveis e moedas), Posts (depende de Auth e Profile, +10 pts), Events (depende de Auth e Profile, valida advocate_level, +20 pts), Challenges (depende de Auth, Profile e Rewards, +50 pts + moedas), Rewards (depende de Auth e Profile, sistema de moedas e marketplace), (5) Fluxo de dados entre módulos com diagrama consolidado mostrando dependências diretas (user_id, role, advocate_level, user_coins) e feedback loops (pontos e moedas), (6) Timeline gantt chart da jornada completa de um advocate desde registro até resgate de prêmios, (7) Diagrama de sequência integrado mostrando fluxo completo: Login → Profile → Challenges → Rewards (creditar moedas) → Profile (adicionar pontos) → Rewards (resgatar), (8) Entity Relationship Diagram (ERD) completo com 15 tabelas mostrando relacionamentos: auth.users, profiles, user_coins, coin_transactions, posts, post_likes, post_comments, events, event_registrations, challenges, challenge_participants, challenge_winners, rewards, reward_claims, (9) Matriz de relacionamentos tabela por tabela com módulo, foreign keys e quem atualiza, (10) Distinção Core vs Feature modules: Core (Auth, Profile) são fundacionais e obrigatórios, Feature (Posts, Events, Challenges, Rewards) implementam funcionalidades e dependem dos Core, (11) Ordem de inicialização para deploy com grafo mostrando: 1. Database, 2. Auth Setup, 3. Profile + Coins, 4. Features em paralelo (Posts, Events, Rewards), 5. Challenges (após Rewards), (12) Checklist completo de inicialização com 7 fases e 30+ itens para setup da plataforma, (13) Ordem de criação de tabelas SQL com comentários sobre dependências, (14) Fluxos de validação: Events valida advocate_level antes de inscrição, Rewards valida saldo de moedas antes de resgate, (15) Mapa mental resumo mostrando visão geral hierárquica dos módulos e funcionalidades. Total de 1154 linhas com 15+ diagramas Mermaid incluindo grafos de dependências, flowcharts, sequence diagrams, ERD, gantt charts, mind map. Commit: 78699c9",
+          "updated_at": "2026-01-07T18:37:04.545000+00:00"
         }
       ]
     },

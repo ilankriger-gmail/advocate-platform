@@ -359,3 +359,112 @@ Created comprehensive COMPONENTS.md documentation (1073 lines) covering Server v
 ### Next Steps:
 - Proceed to subtask 3.2: Documentar estrutura de Server Actions
 
+## 2026-01-07 - Subtask 3.3 Completed ✅
+
+**Subtask:** Criar diagrama de dependencias entre modulos mostrando como os diferentes modulos (auth, posts, events, challenges, rewards) se relacionam e dependem uns dos outros.
+
+**Status:** ✅ COMPLETED
+
+### Implementation Details
+
+Created comprehensive MODULE_DEPENDENCIES.md documentation (1154 lines) covering complete module dependencies and relationships:
+
+#### Key Sections Documented:
+
+1. **Visão Geral dos Módulos**
+   - Table of 6 main modules with descriptions, types (Core vs Feature), and dependencies
+   - Auth (Core, no dependencies)
+   - Profile (Core, depends on Auth)
+   - Posts (Feature, depends on Auth + Profile)
+   - Events (Feature, depends on Auth + Profile)
+   - Challenges (Feature, depends on Auth + Profile + Rewards)
+   - Rewards (Feature, depends on Auth + Profile)
+
+2. **Diagrama de Dependências**
+   - High-level dependency graph showing Core modules (Auth, Profile) and Feature modules
+   - Complete dependency graph with hard dependencies (solid lines) and soft/feedback dependencies (dotted lines)
+   - Color-coded visualization: purple for Core, green for Feature modules
+   - Shows data flow: user_id, role, advocate_level, user_coins, points
+
+3. **Dependências Detalhadas por Módulo**
+   - **Auth Module**: Foundational module, no dependencies, provides user_id and role to all modules
+   - **Profile Module**: Depends on Auth, provides advocate_level (1-5), advocate_points, user_coins
+   - **Posts Module**: Depends on Auth + Profile, adds +10 points on post approval
+   - **Events Module**: Depends on Auth + Profile, validates advocate_level, adds +20 points on completion
+   - **Challenges Module**: Depends on Auth + Profile + Rewards, adds +50 points + coins on approval
+   - **Rewards Module**: Depends on Auth + Profile, manages coins and marketplace
+   - Each module documented with: description, dependencies, dependents, what it provides, what it receives, Server Actions, tables, state machines
+
+4. **Fluxo de Dados Entre Módulos**
+   - Consolidated flowchart showing all layers of dependencies
+   - Timeline gantt chart of complete advocate journey from registration to prize redemption
+   - Integrated sequence diagram showing: Login → Profile → Challenges → Rewards (credit coins) → Profile (add points) → Rewards (claim)
+   - Shows feedback loops: Posts/Events/Challenges add points to Profile, Challenges credits coins to Rewards
+
+5. **Tabelas e Relacionamentos**
+   - Complete Entity Relationship Diagram (ERD) with 15 tables
+   - Tables: auth.users, profiles, user_coins, coin_transactions, posts, post_likes, post_comments, events, event_registrations, challenges, challenge_participants, challenge_winners, rewards, reward_claims
+   - All foreign key relationships visualized
+   - Table relationship matrix showing module, foreign keys, and who updates each table
+
+6. **Módulos Core vs Feature**
+   - **Core Modules**: Auth and Profile (foundational, required for platform to function)
+   - **Feature Modules**: Posts, Events, Challenges, Rewards (implement business functionality)
+   - Graph showing Core modules don't depend on Feature modules
+   - Feature modules depend on Core and can depend on each other (Challenges → Rewards)
+
+7. **Ordem de Inicialização**
+   - Deployment dependency graph showing initialization order
+   - Order: 1. Database → 2. Auth Setup → 3. Profile + Coins → 4. Features (parallel: Posts, Events, Rewards) → 5. Challenges (after Rewards)
+   - Complete initialization checklist with 7 phases and 30+ items
+   - SQL table creation order with comments about dependencies
+
+8. **Validation Flows**
+   - Events module validates advocate_level before registration (flowchart with decision points)
+   - Rewards module validates coin balance before claim (flowchart with rollback handling)
+   - Challenges validates participation before submission
+
+9. **Integration Details**
+   - Sequence diagrams showing how modules interact
+   - Example: Challenge approval triggers both Rewards (credit coins) and Profile (add points) updates
+   - Example: Event attendance adds points to Profile which can level up advocate_level
+
+10. **Mind Map Summary**
+    - Visual hierarchical overview of all modules and their functionalities
+    - Shows main features under each module
+    - Indicates point rewards (+10, +20, +50) and coin flows (+ coins, - coins)
+
+#### Technical Highlights:
+
+- **15+ Mermaid diagrams** including dependency graphs, flowcharts, sequence diagrams, ERD, gantt charts, mind map
+- **Complete module documentation** for all 6 modules (Auth, Profile, Posts, Events, Challenges, Rewards)
+- **Core vs Feature distinction** clearly explained with initialization implications
+- **Data flow visualization** showing hard dependencies and feedback loops
+- **Deployment guidance** with initialization order and checklist
+- **Integration patterns** documented with sequence diagrams
+- **Validation flows** explained with decision flowcharts
+
+#### Files Created/Modified:
+- ✅ docs/MODULE_DEPENDENCIES.md (1154 lines)
+
+#### Commit:
+- 78699c9: "auto-claude: 3.3 - Diagrama Mermaid mostrando como os diferentes modu"
+
+### Verification:
+
+✅ Document covers all required topics from spec:
+  - Diagrama Mermaid showing module relationships (multiple diagrams provided)
+  - How auth, posts, events, challenges, rewards relate to each other
+  - Dependencies between modules (hard and soft dependencies)
+  - Data flow between modules (points, coins, user_id, advocate_level)
+
+✅ Follows the same pattern and quality as other architecture docs
+✅ All diagrams render correctly in Markdown
+✅ Comprehensive documentation suitable for developer onboarding
+✅ Portuguese documentation (as per project requirements)
+✅ Shows both technical dependencies and business logic relationships
+✅ Includes deployment and initialization guidance
+
+### Next Steps:
+- Proceed to Phase 4: Documentacao de Seguranca e RLS
+
