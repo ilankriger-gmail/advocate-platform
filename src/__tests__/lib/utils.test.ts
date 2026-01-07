@@ -6,6 +6,9 @@ import {
   formatDate,
   formatDateTime,
   formatRelativeTime,
+  getInitials,
+  truncate,
+  slugify,
 } from '@/lib/utils';
 
 describe('Date Formatting Functions', () => {
@@ -243,6 +246,244 @@ describe('Date Formatting Functions', () => {
     it('formatRelativeTime should handle string date', () => {
       const dateString = new Date().toISOString();
       expect(() => formatRelativeTime(dateString)).not.toThrow();
+    });
+  });
+});
+
+describe('String Utility Functions', () => {
+  describe('getInitials', () => {
+    it('should return initials from a full name', () => {
+      const result = getInitials('João Silva');
+      expect(result).toBe('JS');
+    });
+
+    it('should return initials from a name with three words', () => {
+      const result = getInitials('João Pedro Silva');
+      expect(result).toBe('JP');
+    });
+
+    it('should return initials from a name with multiple words', () => {
+      const result = getInitials('Maria José Santos Oliveira');
+      expect(result).toBe('MJ');
+    });
+
+    it('should return only first 2 initials even for longer names', () => {
+      const result = getInitials('Ana Beatriz Carolina Diana');
+      expect(result).toBe('AB');
+    });
+
+    it('should return uppercase initials', () => {
+      const result = getInitials('joão silva');
+      expect(result).toBe('JS');
+    });
+
+    it('should handle single word names', () => {
+      const result = getInitials('João');
+      expect(result).toBe('J');
+    });
+
+    it('should return "?" for null', () => {
+      const result = getInitials(null);
+      expect(result).toBe('?');
+    });
+
+    it('should return "?" for undefined', () => {
+      const result = getInitials(undefined);
+      expect(result).toBe('?');
+    });
+
+    it('should return "?" for empty string', () => {
+      const result = getInitials('');
+      expect(result).toBe('?');
+    });
+
+    it('should handle names with extra spaces', () => {
+      const result = getInitials('João  Silva');
+      expect(result).toBe('JS');
+    });
+
+    it('should handle names with leading/trailing spaces', () => {
+      const result = getInitials('  João Silva  ');
+      expect(result).toBe('JS');
+    });
+
+    it('should handle names with special characters', () => {
+      const result = getInitials('José-Maria Silva');
+      expect(result).toBe('JS');
+    });
+
+    it('should handle accented characters', () => {
+      const result = getInitials('Ângela Mônica');
+      expect(result).toBe('ÂM');
+    });
+  });
+
+  describe('truncate', () => {
+    it('should not truncate text shorter than maxLength', () => {
+      const result = truncate('Hello', 10);
+      expect(result).toBe('Hello');
+    });
+
+    it('should not truncate text equal to maxLength', () => {
+      const result = truncate('Hello World', 11);
+      expect(result).toBe('Hello World');
+    });
+
+    it('should truncate text longer than maxLength', () => {
+      const result = truncate('This is a long text', 10);
+      expect(result).toBe('This is...');
+    });
+
+    it('should truncate and add ellipsis correctly', () => {
+      const result = truncate('Lorem ipsum dolor sit amet', 15);
+      expect(result).toBe('Lorem ipsum...');
+      expect(result.length).toBe(15);
+    });
+
+    it('should handle exact boundary case', () => {
+      const result = truncate('Hello', 5);
+      expect(result).toBe('Hello');
+    });
+
+    it('should handle maxLength of 3 (minimum for ellipsis)', () => {
+      const result = truncate('Hello', 3);
+      expect(result).toBe('...');
+    });
+
+    it('should handle maxLength of 4', () => {
+      const result = truncate('Hello World', 4);
+      expect(result).toBe('H...');
+    });
+
+    it('should handle empty string', () => {
+      const result = truncate('', 10);
+      expect(result).toBe('');
+    });
+
+    it('should handle single character', () => {
+      const result = truncate('A', 10);
+      expect(result).toBe('A');
+    });
+
+    it('should preserve text structure when not truncating', () => {
+      const result = truncate('Hello\nWorld', 20);
+      expect(result).toBe('Hello\nWorld');
+    });
+
+    it('should truncate text with special characters', () => {
+      const result = truncate('Olá! Como você está?', 10);
+      expect(result).toBe('Olá! Co...');
+    });
+
+    it('should handle very long text', () => {
+      const longText = 'A'.repeat(1000);
+      const result = truncate(longText, 50);
+      expect(result.length).toBe(50);
+      expect(result.endsWith('...')).toBe(true);
+    });
+  });
+
+  describe('slugify', () => {
+    it('should convert text to lowercase slug', () => {
+      const result = slugify('Hello World');
+      expect(result).toBe('hello-world');
+    });
+
+    it('should replace spaces with hyphens', () => {
+      const result = slugify('This is a test');
+      expect(result).toBe('this-is-a-test');
+    });
+
+    it('should remove accents from characters', () => {
+      const result = slugify('Café com Pão');
+      expect(result).toBe('cafe-com-pao');
+    });
+
+    it('should handle Portuguese characters', () => {
+      const result = slugify('Ação Notificação');
+      expect(result).toBe('acao-notificacao');
+    });
+
+    it('should remove special characters', () => {
+      const result = slugify('Hello! World?');
+      expect(result).toBe('hello-world');
+    });
+
+    it('should handle multiple special characters', () => {
+      const result = slugify('Hello@#$ %^&*() World');
+      expect(result).toBe('hello-world');
+    });
+
+    it('should remove leading hyphens', () => {
+      const result = slugify('---Hello World');
+      expect(result).toBe('hello-world');
+    });
+
+    it('should remove trailing hyphens', () => {
+      const result = slugify('Hello World---');
+      expect(result).toBe('hello-world');
+    });
+
+    it('should remove both leading and trailing hyphens', () => {
+      const result = slugify('---Hello World---');
+      expect(result).toBe('hello-world');
+    });
+
+    it('should collapse multiple hyphens into one', () => {
+      const result = slugify('Hello     World');
+      expect(result).toBe('hello-world');
+    });
+
+    it('should handle text with numbers', () => {
+      const result = slugify('Product 123');
+      expect(result).toBe('product-123');
+    });
+
+    it('should handle mixed case with numbers', () => {
+      const result = slugify('iPhone 15 Pro Max');
+      expect(result).toBe('iphone-15-pro-max');
+    });
+
+    it('should handle empty string', () => {
+      const result = slugify('');
+      expect(result).toBe('');
+    });
+
+    it('should handle only special characters', () => {
+      const result = slugify('!@#$%^&*()');
+      expect(result).toBe('');
+    });
+
+    it('should handle only spaces', () => {
+      const result = slugify('     ');
+      expect(result).toBe('');
+    });
+
+    it('should handle underscores', () => {
+      const result = slugify('Hello_World');
+      expect(result).toBe('hello-world');
+    });
+
+    it('should handle complex Portuguese text', () => {
+      const result = slugify('João é o melhor programador!');
+      expect(result).toBe('joao-e-o-melhor-programador');
+    });
+
+    it('should handle text with quotes', () => {
+      const result = slugify("It's a beautiful day");
+      expect(result).toBe('it-s-a-beautiful-day');
+    });
+
+    it('should handle text with periods', () => {
+      const result = slugify('Hello. World. Test.');
+      expect(result).toBe('hello-world-test');
+    });
+
+    it('should create valid URLs slugs', () => {
+      const result = slugify('Meu Artigo Sobre TypeScript');
+      expect(result).toBe('meu-artigo-sobre-typescript');
+      // Verifica se é um slug válido para URL
+      expect(result).toMatch(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
     });
   });
 });
