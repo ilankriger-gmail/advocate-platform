@@ -5,7 +5,7 @@ Display public leaderboards showing top fans by coins earned, challenges complet
 and event attendance. Include weekly, monthly, and all-time views with badges
 and recognition tiers (Bronze, Silver, Gold, Diamond).
 
-## Status: In Progress - TypeScript Types Complete
+## Status: In Progress - UI Components Phase Started
 
 ---
 
@@ -18,12 +18,12 @@ and recognition tiers (Bronze, Silver, Gold, Diamond).
 ### Phase 2: TypeScript Types ✅
 - [x] 2.1 Create leaderboard types
 
-### Phase 3: Backend Queries
-- [ ] 3.1 Create leaderboard queries file
-- [ ] 3.2 Create server actions for leaderboard
+### Phase 3: Backend Queries ✅
+- [x] 3.1 Create leaderboard queries file
+- [x] 3.2 Create server actions for leaderboard
 
-### Phase 4: UI Components
-- [ ] 4.1 Create TierBadge component
+### Phase 4: UI Components (In Progress)
+- [x] 4.1 Create TierBadge component
 - [ ] 4.2 Create LeaderboardEntry component
 - [ ] 4.3 Create LeaderboardList component
 - [ ] 4.4 Create UserRankCard component
@@ -87,3 +87,32 @@ and recognition tiers (Bronze, Silver, Gold, Diamond).
     - UserRanking: Interface for user's ranking position with metadata
     - All types follow existing codebase patterns with Portuguese comments
     - Types align perfectly with SQL views and functions from migration
+- 2026-01-07: Completed Phase 3 (Backend Queries)
+  - 3.1: Created src/lib/supabase/leaderboard.ts with all required query functions (435 lines)
+    - getCoinsLeaderboard(period, limit): Coins ranking with time filtering
+    - getChallengesLeaderboard(period, limit): Challenges completed ranking
+    - getEventsLeaderboard(period, limit): Events attended ranking
+    - getCombinedLeaderboard(period, limit): Overall ranking with weighted scoring
+    - getUserRank(userId, category, period): User's rank in any category
+    - Uses SQL views for all-time periods for optimal performance
+    - Client-side aggregation for weekly/monthly periods
+    - Updated src/lib/supabase/index.ts to export leaderboard module
+  - 3.2: Created src/actions/leaderboard.ts with comprehensive server actions (177 lines)
+    - fetchLeaderboard(category, period, limit): Generic action for any leaderboard
+    - fetchUserRank(category, period): Get current user's rank (requires auth)
+    - fetchCoinsLeaderboard, fetchChallengesLeaderboard, fetchEventsLeaderboard: Specific actions
+    - fetchCombinedLeaderboard: Overall ranking action
+    - All actions follow ActionResponse<T> pattern with proper error handling
+    - Portuguese error messages and comments
+    - Updated src/actions/index.ts to export leaderboard module
+- 2026-01-07: Started Phase 4 (UI Components)
+  - 4.1: Created TierBadge component in src/components/leaderboard/TierBadge.tsx (151 lines)
+    - Displays user recognition tiers (Bronze, Silver, Gold, Diamond) with colors and icons
+    - Bronze: amber/brown scheme with circle icon
+    - Silver: gray scheme with star icon
+    - Gold: yellow scheme with star icon
+    - Diamond: blue scheme with sparkle icon
+    - Supports 3 sizes (sm, md, lg) with optional label display
+    - Includes getTierByScore() helper function
+    - Follows existing Badge.tsx and Button.tsx patterns
+    - Portuguese comments, proper TypeScript typing
