@@ -3,7 +3,7 @@
  */
 
 import { createClient } from './server';
-import type { PostWithAuthor, CreatorProfile, User } from './types';
+import type { PostWithAuthor, CreatorProfile, User, PostWithUsers } from './types';
 
 // ============ CRIADOR ============
 
@@ -153,7 +153,7 @@ export async function getCommunityPosts(limit = 20, offset = 0): Promise<PostWit
     }));
   }
 
-  return (posts || []).map((post: any) => ({
+  return (posts || []).map((post: PostWithUsers) => ({
     ...post,
     author: post.users ? {
       id: post.users.id,

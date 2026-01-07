@@ -218,6 +218,19 @@ export interface CommentWithAuthor extends PostComment {
   } | null;
 }
 
+/**
+ * Tipo para post com dados do usuário associado (join com users)
+ * Usado em queries que fazem join com a tabela users retornando campos específicos
+ */
+export interface PostWithUsers extends Post {
+  users: {
+    id: string;
+    full_name: string | null;
+    avatar_url: string | null;
+    is_creator: boolean;
+  } | null;
+}
+
 // Tipo para o perfil do criador
 export interface CreatorProfile extends User {
   posts_count: number;
