@@ -1,0 +1,283 @@
+{
+  "feature": "Replace excessive any types with proper TypeScript types",
+  "description": "Found 17 instances of `any` type usage across the codebase that need to be replaced with proper TypeScript types to improve type safety and developer experience.",
+  "created_at": "2026-01-07T14:25:35.593Z",
+  "updated_at": "2026-01-07T16:36:49.098Z",
+  "status": "in_progress",
+  "planStatus": "in_progress",
+  "workflow_type": "development",
+  "services_involved": [
+    "TypeScript",
+    "Supabase"
+  ],
+  "spec_file": "spec.md",
+  "phases": [
+    {
+      "id": "phase-1",
+      "title": "Create centralized ActionResponse generic type",
+      "description": "Create a shared generic ActionResponse type that can accept specific data types for each action",
+      "subtasks": [
+        {
+          "id": "1.1",
+          "title": "Create shared ActionResponse type in types/action.ts",
+          "description": "Create a new file with a generic ActionResponse<T = void> type that can be parameterized with specific data types",
+          "status": "completed",
+          "files": [
+            "src/types/action.ts"
+          ],
+          "notes": "Created src/types/action.ts with generic ActionResponse<T = void> type that can be parameterized with specific data types. Updated src/types/index.ts to export the new type. Includes comprehensive TypeDoc comments with usage examples.",
+          "updated_at": "2026-01-07T14:31:33.337653+00:00"
+        },
+        {
+          "id": "1.2",
+          "title": "Update src/actions/events.ts to use typed ActionResponse",
+          "description": "Import and use the generic ActionResponse with proper return data types like Event",
+          "status": "completed",
+          "files": [
+            "src/actions/events.ts"
+          ],
+          "notes": "Successfully replaced the local ActionResponse type with the imported generic ActionResponse from @/types/action. Updated createEvent function to use ActionResponse<Event> for proper type safety. All other functions use ActionResponse (defaults to void). Imports added for ActionResponse and Event type.",
+          "updated_at": "2026-01-07T14:33:17.207220+00:00"
+        },
+        {
+          "id": "1.3",
+          "title": "Update src/actions/challenges.ts to use typed ActionResponse",
+          "description": "Import and use the generic ActionResponse with proper return data types like Challenge, ChallengeParticipant",
+          "status": "completed",
+          "files": [
+            "src/actions/challenges.ts"
+          ],
+          "notes": "Successfully replaced the local ActionResponse type with the imported generic ActionResponse from @/types/action. Updated function return types: participateInChallenge returns ActionResponse<ChallengeParticipant>, createChallenge returns ActionResponse<Challenge>, and registerWinner returns ActionResponse<ChallengeWinner>. All other functions use ActionResponse (defaults to void). Imports added for ActionResponse and Challenge, ChallengeParticipant, ChallengeWinner types.",
+          "updated_at": "2026-01-07T14:36:43.459720+00:00"
+        },
+        {
+          "id": "1.4",
+          "title": "Update src/actions/rewards.ts to use typed ActionResponse",
+          "description": "Import and use the generic ActionResponse with proper return data types like Reward, RewardClaim",
+          "status": "completed",
+          "files": [
+            "src/actions/rewards.ts"
+          ],
+          "notes": "Successfully replaced the local ActionResponse type with the imported generic ActionResponse from @/types/action. Updated function return types: claimReward returns ActionResponse<RewardClaim>, createReward returns ActionResponse<Reward>. All other functions use ActionResponse (defaults to void). Imports added for ActionResponse and Reward, RewardClaim types.",
+          "updated_at": "2026-01-07T14:38:59.443566+00:00"
+        },
+        {
+          "id": "1.5",
+          "title": "Update src/actions/posts.ts to use typed ActionResponse",
+          "description": "Import and use the generic ActionResponse with proper return data types like Post, PostComment",
+          "status": "completed",
+          "files": [
+            "src/actions/posts.ts"
+          ],
+          "notes": "Successfully replaced the local ActionResponse type with the imported generic ActionResponse from @/types/action. Updated function return types: createPost returns ActionResponse<Post>, commentPost returns ActionResponse<PostComment>. All other functions use ActionResponse (defaults to void). Imports added for ActionResponse and Post, PostComment types.",
+          "updated_at": "2026-01-07T14:41:54.066474+00:00"
+        },
+        {
+          "id": "1.6",
+          "title": "Update src/actions/profile.ts to use typed ActionResponse",
+          "description": "Import and use the generic ActionResponse with void type since profile actions don't return data",
+          "status": "completed",
+          "files": [
+            "src/actions/profile.ts"
+          ],
+          "notes": "Successfully replaced the local ActionResponse type with the imported generic ActionResponse from @/types/action. The updateProfile function uses Promise<ActionResponse> (defaults to ActionResponse<void>) since profile actions don't return data. Removed the local type definition that had data?: any. Phase 1 (centralized ActionResponse type) is now complete - all 6 action files have been updated.",
+          "updated_at": "2026-01-07T14:43:54.217894+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-2",
+      "title": "Fix update object types in actions",
+      "description": "Replace `any` typed update objects with proper partial types from Supabase schema",
+      "subtasks": [
+        {
+          "id": "2.1",
+          "title": "Create ChallengeParticipantUpdate type and fix updateParticipation",
+          "description": "Create a typed interface for challenge participant updates and replace the any-typed updateData object in src/actions/challenges.ts:129",
+          "status": "completed",
+          "files": [
+            "src/actions/challenges.ts"
+          ],
+          "notes": "Successfully created ChallengeParticipantUpdate type interface with result_value, video_proof_url, and social_media_url optional fields. Replaced the any-typed updateData object in updateParticipation function (line 134) with the properly typed interface. Includes TypeScript documentation comments following project patterns.",
+          "updated_at": "2026-01-07T16:37:38.666985+00:00"
+        },
+        {
+          "id": "2.2",
+          "title": "Create RewardUpdate type and fix updateReward",
+          "description": "Create a typed interface for reward updates and replace the any-typed updateData object in src/actions/rewards.ts:436",
+          "status": "pending",
+          "files": [
+            "src/actions/rewards.ts"
+          ],
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "phase-3",
+      "title": "Fix type assertions in joined Supabase data",
+      "description": "Create proper types for Supabase joined queries to eliminate `as any` assertions",
+      "subtasks": [
+        {
+          "id": "3.1",
+          "title": "Create ParticipationWithChallenge type for approveParticipation",
+          "description": "Create a type that includes the challenges join data to fix (participation as any).challenges?.coins_reward in src/actions/challenges.ts:186",
+          "status": "pending",
+          "files": [
+            "src/actions/challenges.ts",
+            "src/lib/supabase/types.ts"
+          ],
+          "notes": ""
+        },
+        {
+          "id": "3.2",
+          "title": "Create ClaimWithReward type for cancelClaim",
+          "description": "Create a type that includes the rewards join data to fix (claim as any).rewards?.name in src/actions/rewards.ts:168",
+          "status": "pending",
+          "files": [
+            "src/actions/rewards.ts",
+            "src/lib/supabase/types.ts"
+          ],
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "phase-4",
+      "title": "Fix map callbacks in query files",
+      "description": "Replace any-typed map callbacks with proper types for Supabase joined data",
+      "subtasks": [
+        {
+          "id": "4.1",
+          "title": "Fix getUserEvents in src/lib/supabase/events.ts",
+          "description": "Create EventRegistrationWithEvent type to replace (reg: any) at line 116",
+          "status": "pending",
+          "files": [
+            "src/lib/supabase/events.ts",
+            "src/lib/supabase/types.ts"
+          ],
+          "notes": ""
+        },
+        {
+          "id": "4.2",
+          "title": "Fix getChallengeRanking in src/lib/supabase/challenges.ts",
+          "description": "Create ParticipantWithUsers type to replace (participant: any) at line 166",
+          "status": "pending",
+          "files": [
+            "src/lib/supabase/challenges.ts",
+            "src/lib/supabase/types.ts"
+          ],
+          "notes": ""
+        },
+        {
+          "id": "4.3",
+          "title": "Fix getPendingParticipations in src/lib/supabase/challenges.ts",
+          "description": "Create ParticipantWithUsersAndChallenge type to replace (participant: any) at line 224",
+          "status": "pending",
+          "files": [
+            "src/lib/supabase/challenges.ts",
+            "src/lib/supabase/types.ts"
+          ],
+          "notes": ""
+        },
+        {
+          "id": "4.4",
+          "title": "Fix getUserClaims in src/lib/supabase/rewards.ts",
+          "description": "Create ClaimWithRewards type to replace (claim: any) at line 138",
+          "status": "pending",
+          "files": [
+            "src/lib/supabase/rewards.ts",
+            "src/lib/supabase/types.ts"
+          ],
+          "notes": ""
+        },
+        {
+          "id": "4.5",
+          "title": "Fix getPendingClaims return type and callback in src/lib/supabase/rewards.ts",
+          "description": "Create ClaimWithUserAndReward type to replace user: any at line 148 and (claim: any) at line 159",
+          "status": "pending",
+          "files": [
+            "src/lib/supabase/rewards.ts",
+            "src/lib/supabase/types.ts"
+          ],
+          "notes": ""
+        },
+        {
+          "id": "4.6",
+          "title": "Fix getCommunityPosts in src/lib/supabase/queries.ts",
+          "description": "Create PostWithUsers type to replace (post: any) at line 156",
+          "status": "pending",
+          "files": [
+            "src/lib/supabase/queries.ts",
+            "src/lib/supabase/types.ts"
+          ],
+          "notes": ""
+        },
+        {
+          "id": "4.7",
+          "title": "Fix getRewards in src/lib/supabase/queries.ts",
+          "description": "Replace (reward: any) at line 399 with proper Reward type",
+          "status": "pending",
+          "files": [
+            "src/lib/supabase/queries.ts",
+            "src/lib/supabase/types.ts"
+          ],
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "phase-5",
+      "title": "Fix component files",
+      "description": "Replace any-typed variables in React components",
+      "subtasks": [
+        {
+          "id": "5.1",
+          "title": "Fix eventos page pastRegistrations map callback",
+          "description": "Create EventRegistrationWithEvent type and replace (reg: any) at src/app/(dashboard)/eventos/page.tsx:116",
+          "status": "pending",
+          "files": [
+            "src/app/(dashboard)/eventos/page.tsx"
+          ],
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "phase-6",
+      "title": "Verification and cleanup",
+      "description": "Verify all any types are removed and TypeScript compiles without errors",
+      "subtasks": [
+        {
+          "id": "6.1",
+          "title": "Run TypeScript compilation check",
+          "description": "Run npm run build or tsc to verify all types are correct and no errors",
+          "status": "pending",
+          "files": [],
+          "notes": ""
+        },
+        {
+          "id": "6.2",
+          "title": "Verify no any types remain",
+          "description": "Run grep to confirm all any types have been replaced",
+          "status": "pending",
+          "files": [],
+          "notes": ""
+        }
+      ]
+    }
+  ],
+  "total_subtasks": 18,
+  "completed_subtasks": 7,
+  "qa_status": {
+    "status": "not_started",
+    "issues": "",
+    "tests_passed": ""
+  },
+  "final_acceptance": [
+    "All any types replaced with proper TypeScript types",
+    "TypeScript compilation passes without errors",
+    "grep -r ': any' returns no results in src/ directory"
+  ],
+  "last_updated": "2026-01-07T16:37:38.666991+00:00"
+}
