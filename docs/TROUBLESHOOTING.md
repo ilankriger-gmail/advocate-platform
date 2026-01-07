@@ -2296,9 +2296,16 @@ Problemas ao executar migrações SQL. Causas comuns:
 
 ### 4. Erros de APIs Externas
 
-> ⚠️ **Esta seção será expandida na próxima atualização**
+Erros relacionados à integração com APIs externas, especialmente Google Gemini AI para verificação automática de vídeos de desafios.
 
-Erros relacionados à integração com APIs externas, especialmente Google Gemini AI.
+**APIs Externas Integradas:**
+- ✅ **Google Gemini AI** - Verificação automática de vídeos (análise de conteúdo)
+- 🔜 **APIs de Email** (SendGrid, Resend) - Notificações e marketing
+- 🔜 **APIs de Pagamento** (Stripe) - Processamento de recompensas
+- 🔜 **APIs de Social Media** - Integração com redes sociais
+
+**Comportamento de Fallback:**
+A maioria das integrações de API tem fallback para operação manual quando indisponíveis. Isso garante que o sistema continue funcionando mesmo com APIs externas fora do ar.
 
 #### 4.1. Erro: "API Gemini não configurada"
 
@@ -2417,6 +2424,251 @@ A URL fornecida não corresponde aos padrões de plataformas de vídeo suportada
    - Abra uma issue no repositório
    - Inclua a URL (se não for privada)
    - O padrão pode precisar ser atualizado em `src/lib/gemini.ts`
+
+---
+
+#### 4.4. Rate Limit/Quota Excedida do Gemini
+
+**Mensagem de Erro:**
+```
+Error 429: Resource has been exhausted (e.g. check quota)
+Rate limit exceeded
+```
+
+**Causa:**
+O limite de requisições por minuto ou quota mensal da API Gemini foi atingido.
+
+**Impacto:**
+- ⚠️ Verificação automática de vídeos fica temporariamente indisponível
+- ⚠️ Sistema cai para verificação manual automaticamente
+- ✅ Outras funcionalidades continuam operando normalmente
+
+**Limites do Tier Gratuito (2024):**
+- 60 requisições por minuto (RPM)
+- 1.500 requisições por dia (RPD)
+- Verifique limites atualizados em: [ai.google.dev/pricing](https://ai.google.dev/pricing)
+
+**Solução:**
+
+1. **Aguardar reset do limite:**
+   ```typescript
+   // O sistema já implementa retry automático com backoff
+   // Verifique logs para ver quando a API estará disponível novamente
+   console.log('Rate limit exceeded, retrying in 60 seconds...');
+   ```
+
+2. **Verificar uso atual:**
+   - Acesse [Google Cloud Console](https://console.cloud.google.com/apis/api/generativelanguage.googleapis.com/quotas)
+   - Verifique métricas de uso da API
+   - Analise padrões de chamadas
+
+3. **Implementar cache (opcional):**
+   ```typescript
+   // Exemplo: cachear verificações de vídeos similares
+   // Em src/lib/gemini.ts ou como melhoria futura
+   const cachedVerification = await checkVideoCache(videoUrl);
+   if (cachedVerification) return cachedVerification;
+   ```
+
+4. **Upgrade para tier pago (se necessário):**
+   - Acesse [Google AI Studio](https://makersuite.google.com/app/apikey)
+   - Considere upgrade se o volume de vídeos for muito alto
+   - Tier pago oferece limites muito maiores
+
+**Workaround Temporário:**
+O sistema automaticamente volta para verificação manual quando rate limit é atingido. Administradores podem aprovar/rejeitar vídeos manualmente no painel.
+
+**💡 Dica de Otimização:**
+- Evite verificar o mesmo vídeo múltiplas vezes
+- Implemente debounce em submissões de vídeo
+- Cache resultados de verificações bem-sucedidas
+
+---
+
+#### 4.5. Resposta Inesperada da API Gemini
+
+**Mensagem de Erro:**
+```
+Gemini API returned unexpected response
+Failed to parse Gemini response
+```
+
+**Causa:**
+A API Gemini retornou uma resposta em formato inesperado ou com conteúdo que não pôde ser parseado corretamente.
+
+**Impacto:**
+- ⚠️ Verificação específica do vídeo falha
+- ✅ Sistema marca para verificação manual
+- ✅ Outros vídeos continuam sendo processados
+
+**Causas Comuns:**
+1. Mudança no formato de resposta da API (breaking change)
+2. Vídeo com conteúdo que o Gemini não consegue analisar
+3. Timeout na análise de vídeos muito longos
+4. Resposta truncada devido a limites de tokens
+
+**Solução:**
+
+1. **Verificar logs detalhados:**
+   ```typescript
+   // Em src/lib/gemini.ts, os erros já são logados
+   console.error('Gemini response:', response);
+   console.error('Expected format: { approved: boolean, reason: string }');
+   ```
+
+2. **Verificar se o vídeo é acessível:**
+   - Abra a URL do vídeo em um navegador
+   - Verifique se o vídeo é público
+   - Confirme que não requer login
+
+3. **Revisar prompt enviado ao Gemini:**
+   ```typescript
+   // Localização: src/lib/gemini.ts - função verifyVideoWithGemini
+   // O prompt deve estar claro e estruturado
+   const prompt = `
+     Analise este vídeo de desafio: ${videoUrl}
+     Retorne: { approved: boolean, reason: string }
+   `;
+   ```
+
+4. **Verificar versão da API:**
+   - Confirme que está usando a versão correta: `v1beta`
+   - Verifique changelog do Gemini para breaking changes
+   - [Gemini API Updates](https://ai.google.dev/docs/gemini_api_overview)
+
+**Para Desenvolvedores:**
+
+Se o erro persistir, pode ser necessário atualizar o código de integração:
+
+```typescript
+// Exemplo de handling robusto em src/lib/gemini.ts
+try {
+  const response = await fetch(geminiApiUrl);
+  const data = await response.json();
+
+  // Validar estrutura da resposta
+  if (!data || typeof data.approved !== 'boolean') {
+    throw new Error('Invalid response structure');
+  }
+
+  return data;
+} catch (error) {
+  console.error('Gemini parsing error:', error);
+  // Fallback para verificação manual
+  return { approved: null, reason: 'Verificação manual necessária' };
+}
+```
+
+**⚠️ Atenção:**
+Este erro pode indicar que a API do Gemini mudou. Verifique a documentação oficial e considere atualizar a integração.
+
+---
+
+#### 4.6. Preparando para Futuras Integrações de APIs
+
+Esta seção documenta boas práticas para adicionar novas integrações de APIs externas no futuro.
+
+**Princípios de Integração:**
+
+1. **Sempre implemente fallback/degradação graciosa:**
+   ```typescript
+   // Exemplo de pattern recomendado
+   async function sendEmailWithFallback(to: string, content: string) {
+     try {
+       // Tenta API primária (ex: SendGrid)
+       await sendWithPrimaryAPI(to, content);
+     } catch (error) {
+       console.error('Primary API failed, trying fallback');
+       try {
+         // Fallback para API secundária (ex: Resend)
+         await sendWithFallbackAPI(to, content);
+       } catch (fallbackError) {
+         // Log para processamento manual
+         await logFailedEmail(to, content);
+         throw new Error('Email delivery failed, logged for manual processing');
+       }
+     }
+   }
+   ```
+
+2. **Centralize configurações de API:**
+   ```typescript
+   // Em src/lib/config.ts (criar se não existir)
+   export const API_CONFIG = {
+     gemini: {
+       apiKey: process.env.GEMINI_API_KEY,
+       baseUrl: 'https://generativelanguage.googleapis.com/v1beta',
+       timeout: 30000, // 30 segundos
+       retryAttempts: 3,
+     },
+     // Futuras APIs aqui
+     sendgrid: {
+       apiKey: process.env.SENDGRID_API_KEY,
+       // ...
+     },
+   };
+   ```
+
+3. **Implemente retry com backoff exponencial:**
+   ```typescript
+   async function retryWithBackoff<T>(
+     fn: () => Promise<T>,
+     maxAttempts: number = 3,
+     baseDelay: number = 1000
+   ): Promise<T> {
+     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+       try {
+         return await fn();
+       } catch (error) {
+         if (attempt === maxAttempts) throw error;
+         const delay = baseDelay * Math.pow(2, attempt - 1);
+         await new Promise(resolve => setTimeout(resolve, delay));
+       }
+     }
+     throw new Error('Max retry attempts reached');
+   }
+   ```
+
+4. **Monitore e logue falhas de API:**
+   ```typescript
+   // Exemplo de helper de logging
+   function logAPIError(apiName: string, error: any, context?: any) {
+     console.error(`[${apiName} API Error]`, {
+       message: error.message,
+       timestamp: new Date().toISOString(),
+       context,
+     });
+     // TODO: Enviar para serviço de monitoring (Sentry, etc.)
+   }
+   ```
+
+**Checklist para Nova Integração:**
+
+- [ ] Variável de ambiente documentada em `.env.local.example`
+- [ ] Verificação da variável em `scripts/check-env.ts`
+- [ ] Implementado fallback para quando API estiver indisponível
+- [ ] Retry com backoff para erros temporários
+- [ ] Timeout configurado (evitar requisições penduradas)
+- [ ] Logging de erros estruturado
+- [ ] Testes de integração (opcional mas recomendado)
+- [ ] Documentação de troubleshooting neste arquivo
+- [ ] Rate limiting considerado (se aplicável)
+- [ ] Custo da API avaliado e documentado
+
+**APIs Planejadas para Futuras Integrações:**
+
+| API | Propósito | Prioridade | Status |
+|-----|-----------|------------|--------|
+| SendGrid/Resend | Emails transacionais e marketing | Média | Planejada |
+| Stripe | Pagamentos e recompensas | Alta | Planejada |
+| Twilio | Notificações SMS | Baixa | Considerando |
+| Social Media APIs | Compartilhamento e analytics | Média | Pesquisa |
+| Analytics | Tracking de eventos | Média | Planejada |
+
+**Referências para Implementação:**
+- Padrão atual: `src/lib/gemini.ts`
+- Server Actions: `src/app/actions/`
+- Documentação de APIs: `docs/API_INTEGRATIONS.md` _(futuro)_
 
 ---
 
