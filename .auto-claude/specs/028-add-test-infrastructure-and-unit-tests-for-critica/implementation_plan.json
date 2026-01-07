@@ -1,0 +1,398 @@
+{
+  "feature": "Add test infrastructure and unit tests for critical business logic",
+  "description": "Set up Jest testing infrastructure with TypeScript support and create unit tests for critical business logic including coin transactions, reward claims, and challenge participation.",
+  "created_at": "2026-01-07T14:25:35.296Z",
+  "updated_at": "2026-01-07T14:30:31.602Z",
+  "status": "in_progress",
+  "planStatus": "in_progress",
+  "workflow_type": "development",
+  "services_involved": ["jest", "ts-jest", "@testing-library"],
+  "spec_file": "spec.md",
+  "phases": [
+    {
+      "id": "phase-1",
+      "name": "Test Infrastructure Setup",
+      "description": "Install and configure Jest with TypeScript support for Next.js environment",
+      "subtasks": [
+        {
+          "id": "1.1",
+          "title": "Install Jest and testing dependencies",
+          "description": "Install jest, ts-jest, @types/jest, jest-environment-jsdom, and @testing-library packages",
+          "status": "pending",
+          "acceptance_criteria": [
+            "Jest and ts-jest installed",
+            "@types/jest installed for TypeScript support",
+            "jest-environment-jsdom for DOM testing",
+            "@testing-library/react for component testing"
+          ],
+          "files_to_modify": ["package.json"],
+          "estimated_complexity": "low"
+        },
+        {
+          "id": "1.2",
+          "title": "Create Jest configuration",
+          "description": "Configure Jest for Next.js with TypeScript path aliases and proper module resolution",
+          "status": "pending",
+          "acceptance_criteria": [
+            "jest.config.js created with proper settings",
+            "Path aliases (@/*) configured correctly",
+            "TypeScript transformation enabled",
+            "Test file patterns defined"
+          ],
+          "files_to_modify": ["jest.config.js"],
+          "estimated_complexity": "medium"
+        },
+        {
+          "id": "1.3",
+          "title": "Create Jest setup file",
+          "description": "Create setup file for global test configuration and mocks",
+          "status": "pending",
+          "acceptance_criteria": [
+            "jest.setup.ts created",
+            "Global mocks configured",
+            "Test environment properly initialized"
+          ],
+          "files_to_modify": ["jest.setup.ts"],
+          "estimated_complexity": "low"
+        },
+        {
+          "id": "1.4",
+          "title": "Add test scripts to package.json",
+          "description": "Add npm scripts for running tests, test coverage, and watch mode",
+          "status": "pending",
+          "acceptance_criteria": [
+            "test script added",
+            "test:watch script added",
+            "test:coverage script added"
+          ],
+          "files_to_modify": ["package.json"],
+          "estimated_complexity": "low"
+        }
+      ]
+    },
+    {
+      "id": "phase-2",
+      "name": "Test Mocks and Utilities",
+      "description": "Create reusable mock utilities for Supabase client and authentication",
+      "subtasks": [
+        {
+          "id": "2.1",
+          "title": "Create Supabase client mock",
+          "description": "Create a comprehensive mock for the Supabase client that simulates database operations",
+          "status": "pending",
+          "acceptance_criteria": [
+            "Mock createClient function created",
+            "Mock for auth.getUser() implemented",
+            "Mock for from().select().eq().single() chain",
+            "Mock for from().insert().select().single() chain",
+            "Mock for from().update().eq() chain",
+            "Mock for from().delete().eq() chain",
+            "Mock for rpc() function"
+          ],
+          "files_to_modify": ["src/__tests__/mocks/supabase.ts"],
+          "estimated_complexity": "high"
+        },
+        {
+          "id": "2.2",
+          "title": "Create test data factories",
+          "description": "Create factory functions to generate test data for users, rewards, challenges, etc.",
+          "status": "pending",
+          "acceptance_criteria": [
+            "createMockUser factory created",
+            "createMockReward factory created",
+            "createMockChallenge factory created",
+            "createMockUserCoins factory created",
+            "createMockParticipation factory created"
+          ],
+          "files_to_modify": ["src/__tests__/factories/index.ts"],
+          "estimated_complexity": "medium"
+        },
+        {
+          "id": "2.3",
+          "title": "Create test helpers",
+          "description": "Create helper functions for common test scenarios",
+          "status": "pending",
+          "acceptance_criteria": [
+            "setupAuthenticatedUser helper created",
+            "setupAdminUser helper created",
+            "resetMocks helper created"
+          ],
+          "files_to_modify": ["src/__tests__/helpers/index.ts"],
+          "estimated_complexity": "low"
+        }
+      ]
+    },
+    {
+      "id": "phase-3",
+      "name": "Utility Function Tests",
+      "description": "Test pure utility functions that have no external dependencies",
+      "subtasks": [
+        {
+          "id": "3.1",
+          "title": "Test date formatting functions",
+          "description": "Write tests for formatDate, formatDateTime, and formatRelativeTime",
+          "status": "pending",
+          "acceptance_criteria": [
+            "formatDate tests with various date inputs",
+            "formatDateTime tests",
+            "formatRelativeTime tests for all time ranges"
+          ],
+          "files_to_modify": ["src/__tests__/lib/utils.test.ts"],
+          "estimated_complexity": "low"
+        },
+        {
+          "id": "3.2",
+          "title": "Test string manipulation functions",
+          "description": "Write tests for getInitials, truncate, slugify",
+          "status": "pending",
+          "acceptance_criteria": [
+            "getInitials tests with various names",
+            "truncate tests with different lengths",
+            "slugify tests with special characters"
+          ],
+          "files_to_modify": ["src/__tests__/lib/utils.test.ts"],
+          "estimated_complexity": "low"
+        },
+        {
+          "id": "3.3",
+          "title": "Test validation functions",
+          "description": "Write tests for isValidEmail, isValidUrl",
+          "status": "pending",
+          "acceptance_criteria": [
+            "isValidEmail tests with valid/invalid emails",
+            "isValidUrl tests with valid/invalid URLs"
+          ],
+          "files_to_modify": ["src/__tests__/lib/utils.test.ts"],
+          "estimated_complexity": "low"
+        },
+        {
+          "id": "3.4",
+          "title": "Test number formatting functions",
+          "description": "Write tests for formatPoints, formatCompactNumber",
+          "status": "pending",
+          "acceptance_criteria": [
+            "formatPoints tests with various numbers",
+            "formatCompactNumber tests for K and M suffixes"
+          ],
+          "files_to_modify": ["src/__tests__/lib/utils.test.ts"],
+          "estimated_complexity": "low"
+        }
+      ]
+    },
+    {
+      "id": "phase-4",
+      "name": "Rewards System Tests",
+      "description": "Test the critical reward claim and coin transaction logic",
+      "subtasks": [
+        {
+          "id": "4.1",
+          "title": "Test claimReward validation",
+          "description": "Test all validation scenarios for reward claiming",
+          "status": "pending",
+          "acceptance_criteria": [
+            "Test unauthenticated user rejection",
+            "Test reward not found error",
+            "Test out of stock error",
+            "Test insufficient balance error"
+          ],
+          "files_to_modify": ["src/__tests__/actions/rewards.test.ts"],
+          "estimated_complexity": "medium"
+        },
+        {
+          "id": "4.2",
+          "title": "Test claimReward success flow",
+          "description": "Test successful reward claim with coin deduction",
+          "status": "pending",
+          "acceptance_criteria": [
+            "Test claim record created",
+            "Test coins deducted from balance",
+            "Test transaction recorded",
+            "Test stock decremented"
+          ],
+          "files_to_modify": ["src/__tests__/actions/rewards.test.ts"],
+          "estimated_complexity": "high"
+        },
+        {
+          "id": "4.3",
+          "title": "Test cancelClaim functionality",
+          "description": "Test claim cancellation and coin refund logic",
+          "status": "pending",
+          "acceptance_criteria": [
+            "Test cancellation only for pending claims",
+            "Test coins refunded to user",
+            "Test refund transaction recorded",
+            "Test stock restored"
+          ],
+          "files_to_modify": ["src/__tests__/actions/rewards.test.ts"],
+          "estimated_complexity": "medium"
+        },
+        {
+          "id": "4.4",
+          "title": "Test addCoinsToUser admin function",
+          "description": "Test admin coin management functionality",
+          "status": "pending",
+          "acceptance_criteria": [
+            "Test non-admin rejection",
+            "Test invalid amount rejection",
+            "Test coins added to existing user",
+            "Test coins added to new user (no balance record)",
+            "Test transaction recorded"
+          ],
+          "files_to_modify": ["src/__tests__/actions/rewards.test.ts"],
+          "estimated_complexity": "medium"
+        }
+      ]
+    },
+    {
+      "id": "phase-5",
+      "name": "Challenges System Tests",
+      "description": "Test challenge participation and approval logic",
+      "subtasks": [
+        {
+          "id": "5.1",
+          "title": "Test participateInChallenge validation",
+          "description": "Test all validation scenarios for challenge participation",
+          "status": "pending",
+          "acceptance_criteria": [
+            "Test unauthenticated user rejection",
+            "Test challenge not found error",
+            "Test non-physical challenge rejection",
+            "Test duplicate participation rejection"
+          ],
+          "files_to_modify": ["src/__tests__/actions/challenges.test.ts"],
+          "estimated_complexity": "medium"
+        },
+        {
+          "id": "5.2",
+          "title": "Test participateInChallenge success",
+          "description": "Test successful challenge participation creation",
+          "status": "pending",
+          "acceptance_criteria": [
+            "Test participation created with pending status",
+            "Test result value recorded",
+            "Test video proof URL stored"
+          ],
+          "files_to_modify": ["src/__tests__/actions/challenges.test.ts"],
+          "estimated_complexity": "medium"
+        },
+        {
+          "id": "5.3",
+          "title": "Test approveParticipation flow",
+          "description": "Test challenge approval and coin reward logic",
+          "status": "pending",
+          "acceptance_criteria": [
+            "Test non-admin rejection",
+            "Test participation status updated",
+            "Test coins awarded to participant",
+            "Test transaction recorded"
+          ],
+          "files_to_modify": ["src/__tests__/actions/challenges.test.ts"],
+          "estimated_complexity": "high"
+        },
+        {
+          "id": "5.4",
+          "title": "Test rejectParticipation flow",
+          "description": "Test challenge rejection functionality",
+          "status": "pending",
+          "acceptance_criteria": [
+            "Test non-admin rejection",
+            "Test participation status updated to rejected",
+            "Test no coins awarded"
+          ],
+          "files_to_modify": ["src/__tests__/actions/challenges.test.ts"],
+          "estimated_complexity": "low"
+        }
+      ]
+    },
+    {
+      "id": "phase-6",
+      "name": "Reward Query Tests",
+      "description": "Test reward and coin query functions",
+      "subtasks": [
+        {
+          "id": "6.1",
+          "title": "Test canClaimReward function",
+          "description": "Test the validation function for reward claiming eligibility",
+          "status": "pending",
+          "acceptance_criteria": [
+            "Test unauthenticated user",
+            "Test reward not found",
+            "Test inactive reward",
+            "Test out of stock",
+            "Test insufficient balance",
+            "Test successful claim eligibility"
+          ],
+          "files_to_modify": ["src/__tests__/lib/supabase/rewards.test.ts"],
+          "estimated_complexity": "medium"
+        },
+        {
+          "id": "6.2",
+          "title": "Test getRewardsStats function",
+          "description": "Test the statistics calculation for rewards",
+          "status": "pending",
+          "acceptance_criteria": [
+            "Test total earned calculation",
+            "Test total spent calculation",
+            "Test pending claims count",
+            "Test delivered claims count"
+          ],
+          "files_to_modify": ["src/__tests__/lib/supabase/rewards.test.ts"],
+          "estimated_complexity": "medium"
+        }
+      ]
+    },
+    {
+      "id": "phase-7",
+      "name": "Test Validation and CI Setup",
+      "description": "Verify all tests pass and set up continuous integration",
+      "subtasks": [
+        {
+          "id": "7.1",
+          "title": "Run full test suite",
+          "description": "Execute all tests and ensure they pass",
+          "status": "pending",
+          "acceptance_criteria": [
+            "All utility tests pass",
+            "All reward action tests pass",
+            "All challenge action tests pass",
+            "All query tests pass"
+          ],
+          "files_to_modify": [],
+          "estimated_complexity": "low"
+        },
+        {
+          "id": "7.2",
+          "title": "Generate coverage report",
+          "description": "Run tests with coverage and document coverage levels",
+          "status": "pending",
+          "acceptance_criteria": [
+            "Coverage report generated",
+            "Critical files have >80% coverage",
+            "Coverage thresholds configured"
+          ],
+          "files_to_modify": ["jest.config.js"],
+          "estimated_complexity": "low"
+        }
+      ]
+    }
+  ],
+  "final_acceptance": [
+    "Jest test infrastructure is fully configured and working",
+    "All utility functions have comprehensive test coverage",
+    "Critical business logic (claimReward, cancelClaim, participateInChallenge, approveParticipation) is tested",
+    "Test suite runs successfully with npm test",
+    "Coverage report shows >80% coverage for critical files"
+  ],
+  "notes": [
+    "Server Actions use 'use server' directive and need special handling for mocking",
+    "Supabase client needs comprehensive mocking for chained query methods",
+    "revalidatePath from Next.js needs to be mocked",
+    "Focus on business logic tests, not integration tests",
+    "All tests should be isolated and not require database connection"
+  ],
+  "qa_signoff": {
+    "status": "pending",
+    "tests_passed": null,
+    "issues": null
+  }
+}

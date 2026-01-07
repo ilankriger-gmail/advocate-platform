@@ -1,0 +1,34 @@
+{
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true
+  },
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "Read(./**)",
+      "Write(./**)",
+      "Edit(./**)",
+      "Glob(./**)",
+      "Grep(./**)",
+      "Read(/Users/macbookair/advocate-platform/.worktrees/028-add-test-infrastructure-and-unit-tests-for-critica/**)",
+      "Write(/Users/macbookair/advocate-platform/.worktrees/028-add-test-infrastructure-and-unit-tests-for-critica/**)",
+      "Edit(/Users/macbookair/advocate-platform/.worktrees/028-add-test-infrastructure-and-unit-tests-for-critica/**)",
+      "Glob(/Users/macbookair/advocate-platform/.worktrees/028-add-test-infrastructure-and-unit-tests-for-critica/**)",
+      "Grep(/Users/macbookair/advocate-platform/.worktrees/028-add-test-infrastructure-and-unit-tests-for-critica/**)",
+      "Read(/Users/macbookair/advocate-platform/.worktrees/028-add-test-infrastructure-and-unit-tests-for-critica/.auto-claude/specs/028-add-test-infrastructure-and-unit-tests-for-critica/**)",
+      "Write(/Users/macbookair/advocate-platform/.worktrees/028-add-test-infrastructure-and-unit-tests-for-critica/.auto-claude/specs/028-add-test-infrastructure-and-unit-tests-for-critica/**)",
+      "Edit(/Users/macbookair/advocate-platform/.worktrees/028-add-test-infrastructure-and-unit-tests-for-critica/.auto-claude/specs/028-add-test-infrastructure-and-unit-tests-for-critica/**)",
+      "Bash(*)",
+      "WebFetch(*)",
+      "WebSearch(*)",
+      "mcp__context7__resolve-library-id(*)",
+      "mcp__context7__get-library-docs(*)",
+      "mcp__graphiti-memory__search_nodes(*)",
+      "mcp__graphiti-memory__search_facts(*)",
+      "mcp__graphiti-memory__add_episode(*)",
+      "mcp__graphiti-memory__get_episodes(*)",
+      "mcp__graphiti-memory__get_entity_edge(*)"
+    ]
+  }
+}
