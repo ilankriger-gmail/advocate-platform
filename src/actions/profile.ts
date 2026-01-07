@@ -3,12 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import type { UpdateProfileData } from '@/types/profile';
-
-type ActionResponse = {
-  error?: string;
-  success?: boolean;
-  data?: any;
-};
+import { ActionResponse } from '@/types';
 
 /**
  * Atualizar perfil do usuario
