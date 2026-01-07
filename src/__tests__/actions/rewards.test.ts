@@ -2,13 +2,14 @@
  * Testes para actions de recompensas
  */
 
-import { claimReward } from '@/actions/rewards';
+import { claimReward, cancelClaim } from '@/actions/rewards';
 import {
   resetMocks,
   setupAuthenticatedUser,
 } from '../helpers';
 import {
   createMockReward,
+  createMockRewardClaim,
 } from '../factories';
 import { setMockData, getMockData } from '../mocks/supabase';
 
@@ -240,6 +241,420 @@ describe('claimReward', () => {
       const rewards = getMockData('rewards');
       expect(rewards).toHaveLength(1);
       expect(rewards[0].quantity_available).toBe(initialStock - 1);
+    });
+  });
+});
+
+describe('cancelClaim', () => {
+  beforeEach(() => {
+    resetMocks();
+  });
+
+  describe('Validações', () => {
+    it('deve rejeitar usuário não autenticado', async () => {
+      // Arrange: Sem autenticação (nenhum usuário configurado)
+      const claim = createMockRewardClaim();
+      setMockData('reward_claims', [claim]);
+
+      // Act
+      const result = await cancelClaim(claim.id);
+
+      // Assert
+      expect(result.error).toBe('Usuario nao autenticado');
+      expect(result.success).toBeUndefined();
+    });
+
+    it('deve rejeitar quando resgate não existe', async () => {
+      // Arrange: Usuário autenticado mas resgate não existe
+      setupAuthenticatedUser({ coinBalance: 500 });
+      const nonExistentClaimId = 'non-existent-claim-id';
+
+      // Act
+      const result = await cancelClaim(nonExistentClaimId);
+
+      // Assert
+      expect(result.error).toBe('Resgate nao encontrado ou nao pode ser cancelado');
+      expect(result.success).toBeUndefined();
+    });
+
+    it('deve rejeitar quando resgate pertence a outro usuário', async () => {
+      // Arrange: Usuário autenticado e resgate de outro usuário
+      const user = setupAuthenticatedUser({ coinBalance: 500 });
+      const otherUserId = 'other-user-id';
+
+      const reward = createMockReward({ coins_required: 100 });
+      const claim = createMockRewardClaim({
+        user_id: otherUserId,
+        reward_id: reward.id,
+        coins_spent: 100,
+        status: 'pending',
+      });
+
+      setMockData('rewards', [reward]);
+      setMockData('reward_claims', [claim]);
+
+      // Act
+      const result = await cancelClaim(claim.id);
+
+      // Assert
+      expect(result.error).toBe('Resgate nao encontrado ou nao pode ser cancelado');
+      expect(result.success).toBeUndefined();
+    });
+
+    it('deve rejeitar quando resgate já foi aprovado', async () => {
+      // Arrange: Resgate em status 'approved'
+      const user = setupAuthenticatedUser({ coinBalance: 500 });
+      const reward = createMockReward({ coins_required: 100 });
+      const approvedClaim = createMockRewardClaim({
+        user_id: user.id,
+        reward_id: reward.id,
+        coins_spent: 100,
+        status: 'approved',
+      });
+
+      setMockData('rewards', [reward]);
+      setMockData('reward_claims', [approvedClaim]);
+
+      // Act
+      const result = await cancelClaim(approvedClaim.id);
+
+      // Assert
+      expect(result.error).toBe('Resgate nao encontrado ou nao pode ser cancelado');
+      expect(result.success).toBeUndefined();
+    });
+
+    it('deve rejeitar quando resgate já foi enviado', async () => {
+      // Arrange: Resgate em status 'shipped'
+      const user = setupAuthenticatedUser({ coinBalance: 500 });
+      const reward = createMockReward({ coins_required: 100 });
+      const shippedClaim = createMockRewardClaim({
+        user_id: user.id,
+        reward_id: reward.id,
+        coins_spent: 100,
+        status: 'shipped',
+      });
+
+      setMockData('rewards', [reward]);
+      setMockData('reward_claims', [shippedClaim]);
+
+      // Act
+      const result = await cancelClaim(shippedClaim.id);
+
+      // Assert
+      expect(result.error).toBe('Resgate nao encontrado ou nao pode ser cancelado');
+      expect(result.success).toBeUndefined();
+    });
+
+    it('deve rejeitar quando resgate já foi entregue', async () => {
+      // Arrange: Resgate em status 'delivered'
+      const user = setupAuthenticatedUser({ coinBalance: 500 });
+      const reward = createMockReward({ coins_required: 100 });
+      const deliveredClaim = createMockRewardClaim({
+        user_id: user.id,
+        reward_id: reward.id,
+        coins_spent: 100,
+        status: 'delivered',
+      });
+
+      setMockData('rewards', [reward]);
+      setMockData('reward_claims', [deliveredClaim]);
+
+      // Act
+      const result = await cancelClaim(deliveredClaim.id);
+
+      // Assert
+      expect(result.error).toBe('Resgate nao encontrado ou nao pode ser cancelado');
+      expect(result.success).toBeUndefined();
+    });
+
+    it('deve rejeitar quando resgate já foi cancelado', async () => {
+      // Arrange: Resgate já em status 'cancelled'
+      const user = setupAuthenticatedUser({ coinBalance: 500 });
+      const reward = createMockReward({ coins_required: 100 });
+      const cancelledClaim = createMockRewardClaim({
+        user_id: user.id,
+        reward_id: reward.id,
+        coins_spent: 100,
+        status: 'cancelled',
+      });
+
+      setMockData('rewards', [reward]);
+      setMockData('reward_claims', [cancelledClaim]);
+
+      // Act
+      const result = await cancelClaim(cancelledClaim.id);
+
+      // Assert
+      expect(result.error).toBe('Resgate nao encontrado ou nao pode ser cancelado');
+      expect(result.success).toBeUndefined();
+    });
+  });
+
+  describe('Operações de Cancelamento e Estorno', () => {
+    it('deve cancelar resgate e reembolsar moedas corretamente', async () => {
+      // Arrange: Usuário com resgate pendente
+      const initialBalance = 200;
+      const coinsSpent = 150;
+
+      const user = setupAuthenticatedUser({ coinBalance: initialBalance });
+      const reward = createMockReward({
+        name: 'Premium Badge',
+        coins_required: coinsSpent,
+      });
+      const claim = createMockRewardClaim({
+        user_id: user.id,
+        reward_id: reward.id,
+        coins_spent: coinsSpent,
+        status: 'pending',
+      });
+
+      setMockData('rewards', [reward]);
+      setMockData('reward_claims', [claim]);
+
+      // Mock RPC function for stock increment
+      const mockIncrementStock = jest.fn();
+      require('../mocks/supabase').setMockRpcFunction('increment_reward_stock', mockIncrementStock);
+
+      // Act
+      const result = await cancelClaim(claim.id);
+
+      // Assert: Operação bem-sucedida
+      expect(result.success).toBe(true);
+      expect(result.error).toBeUndefined();
+
+      // Assert: Status do resgate atualizado para 'cancelled'
+      const claims = getMockData('reward_claims');
+      expect(claims).toHaveLength(1);
+      expect(claims[0].status).toBe('cancelled');
+      expect(claims[0].id).toBe(claim.id);
+
+      // Assert: Saldo foi reembolsado corretamente
+      const userCoins = getMockData('user_coins');
+      expect(userCoins).toHaveLength(1);
+      expect(userCoins[0].balance).toBe(initialBalance + coinsSpent);
+      expect(userCoins[0].user_id).toBe(user.id);
+
+      // Assert: Transação de estorno registrada
+      const transactions = getMockData('coin_transactions');
+      expect(transactions).toHaveLength(1);
+      expect(transactions[0]).toMatchObject({
+        user_id: user.id,
+        amount: coinsSpent, // Valor positivo (estorno)
+        type: 'earned',
+        reference_id: claim.id,
+      });
+      expect(transactions[0].description).toContain('Estorno');
+      expect(transactions[0].description).toContain(reward.name);
+
+      // Assert: RPC de incremento de estoque foi chamado
+      expect(mockIncrementStock).toHaveBeenCalledWith({ reward_id: reward.id });
+    });
+
+    it('deve calcular estorno corretamente com valores diferentes', async () => {
+      // Arrange: Diferentes valores de moedas
+      const initialBalance = 1000;
+      const coinsSpent = 500;
+
+      const user = setupAuthenticatedUser({ coinBalance: initialBalance });
+      const reward = createMockReward({
+        name: 'Gold Package',
+        coins_required: coinsSpent,
+      });
+      const claim = createMockRewardClaim({
+        user_id: user.id,
+        reward_id: reward.id,
+        coins_spent: coinsSpent,
+        status: 'pending',
+      });
+
+      setMockData('rewards', [reward]);
+      setMockData('reward_claims', [claim]);
+
+      // Act
+      const result = await cancelClaim(claim.id);
+
+      // Assert
+      expect(result.success).toBe(true);
+
+      const userCoins = getMockData('user_coins');
+      expect(userCoins[0].balance).toBe(initialBalance + coinsSpent);
+
+      const transactions = getMockData('coin_transactions');
+      expect(transactions[0].amount).toBe(coinsSpent);
+    });
+
+    it('deve cancelar quando saldo atual é menor que moedas gastas', async () => {
+      // Arrange: Usuário gastou tudo e agora tem saldo baixo
+      const currentBalance = 50; // Saldo atual baixo
+      const coinsSpent = 200; // Mas tinha gasto 200 no resgate
+
+      const user = setupAuthenticatedUser({ coinBalance: currentBalance });
+      const reward = createMockReward({
+        name: 'Expensive Item',
+        coins_required: coinsSpent,
+      });
+      const claim = createMockRewardClaim({
+        user_id: user.id,
+        reward_id: reward.id,
+        coins_spent: coinsSpent,
+        status: 'pending',
+      });
+
+      setMockData('rewards', [reward]);
+      setMockData('reward_claims', [claim]);
+
+      // Act
+      const result = await cancelClaim(claim.id);
+
+      // Assert: Deve funcionar normalmente
+      expect(result.success).toBe(true);
+
+      // Assert: Saldo deve ser incrementado corretamente
+      const userCoins = getMockData('user_coins');
+      expect(userCoins[0].balance).toBe(currentBalance + coinsSpent); // 50 + 200 = 250
+    });
+
+    it('deve cancelar quando usuário tem saldo zero', async () => {
+      // Arrange: Edge case - saldo zero
+      const currentBalance = 0;
+      const coinsSpent = 100;
+
+      const user = setupAuthenticatedUser({ coinBalance: currentBalance });
+      const reward = createMockReward({ coins_required: coinsSpent });
+      const claim = createMockRewardClaim({
+        user_id: user.id,
+        reward_id: reward.id,
+        coins_spent: coinsSpent,
+        status: 'pending',
+      });
+
+      setMockData('rewards', [reward]);
+      setMockData('reward_claims', [claim]);
+
+      // Act
+      const result = await cancelClaim(claim.id);
+
+      // Assert
+      expect(result.success).toBe(true);
+
+      const userCoins = getMockData('user_coins');
+      expect(userCoins[0].balance).toBe(coinsSpent); // 0 + 100 = 100
+    });
+
+    it('deve criar descrição de estorno sem nome da recompensa se não disponível', async () => {
+      // Arrange: Claim sem dados da recompensa aninhada
+      const user = setupAuthenticatedUser({ coinBalance: 200 });
+      const reward = createMockReward({ name: 'Test Reward' });
+      const claim = createMockRewardClaim({
+        user_id: user.id,
+        reward_id: reward.id,
+        coins_spent: 100,
+        status: 'pending',
+      });
+
+      // Não incluir reward em rewards para simular cenário sem nested data
+      setMockData('reward_claims', [claim]);
+
+      // Act
+      const result = await cancelClaim(claim.id);
+
+      // Assert
+      expect(result.success).toBe(true);
+
+      const transactions = getMockData('coin_transactions');
+      expect(transactions[0].description).toContain('Estorno');
+      // Deve ter descrição genérica quando reward não está disponível
+      expect(transactions[0].description).toContain('Resgate cancelado');
+    });
+
+    it('deve restaurar estoque via RPC com ID correto', async () => {
+      // Arrange
+      const user = setupAuthenticatedUser({ coinBalance: 500 });
+      const reward = createMockReward({
+        id: 'specific-reward-id',
+        coins_required: 100,
+      });
+      const claim = createMockRewardClaim({
+        user_id: user.id,
+        reward_id: reward.id,
+        coins_spent: 100,
+        status: 'pending',
+      });
+
+      setMockData('rewards', [reward]);
+      setMockData('reward_claims', [claim]);
+
+      const mockIncrementStock = jest.fn();
+      require('../mocks/supabase').setMockRpcFunction('increment_reward_stock', mockIncrementStock);
+
+      // Act
+      const result = await cancelClaim(claim.id);
+
+      // Assert
+      expect(result.success).toBe(true);
+      expect(mockIncrementStock).toHaveBeenCalledTimes(1);
+      expect(mockIncrementStock).toHaveBeenCalledWith({
+        reward_id: 'specific-reward-id'
+      });
+    });
+
+    it('deve processar múltiplos cancelamentos de forma independente', async () => {
+      // Arrange: Dois resgates diferentes do mesmo usuário
+      const user = setupAuthenticatedUser({ coinBalance: 100 });
+      const reward1 = createMockReward({
+        name: 'Reward A',
+        coins_required: 50,
+      });
+      const reward2 = createMockReward({
+        name: 'Reward B',
+        coins_required: 75,
+      });
+
+      const claim1 = createMockRewardClaim({
+        id: 'claim-1',
+        user_id: user.id,
+        reward_id: reward1.id,
+        coins_spent: 50,
+        status: 'pending',
+      });
+      const claim2 = createMockRewardClaim({
+        id: 'claim-2',
+        user_id: user.id,
+        reward_id: reward2.id,
+        coins_spent: 75,
+        status: 'pending',
+      });
+
+      setMockData('rewards', [reward1, reward2]);
+      setMockData('reward_claims', [claim1, claim2]);
+
+      // Act: Cancelar primeiro resgate
+      const result1 = await cancelClaim(claim1.id);
+
+      // Assert: Primeiro cancelamento
+      expect(result1.success).toBe(true);
+      let userCoins = getMockData('user_coins');
+      expect(userCoins[0].balance).toBe(150); // 100 + 50
+
+      let transactions = getMockData('coin_transactions');
+      expect(transactions).toHaveLength(1);
+      expect(transactions[0].amount).toBe(50);
+
+      // Act: Cancelar segundo resgate
+      const result2 = await cancelClaim(claim2.id);
+
+      // Assert: Segundo cancelamento
+      expect(result2.success).toBe(true);
+      userCoins = getMockData('user_coins');
+      expect(userCoins[0].balance).toBe(225); // 150 + 75
+
+      transactions = getMockData('coin_transactions');
+      expect(transactions).toHaveLength(2);
+      expect(transactions[1].amount).toBe(75);
+
+      // Assert: Ambos resgates cancelados
+      const claims = getMockData('reward_claims');
+      expect(claims.filter(c => c.status === 'cancelled')).toHaveLength(2);
     });
   });
 });
