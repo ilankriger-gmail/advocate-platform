@@ -1,6 +1,6 @@
 === Build Progress for: Replace excessive any types with proper TypeScript ===
 
-Last Updated: 2026-01-07T16:37:38+00:00
+Last Updated: 2026-01-07T16:41:00+00:00
 
 ## Completed Subtasks
 
@@ -19,10 +19,17 @@ Last Updated: 2026-01-07T16:37:38+00:00
   - Fields: result_value, video_proof_url, social_media_url (all optional)
   - Location: src/actions/challenges.ts:134
 
-## Current Status: In Progress (7/18 subtasks completed)
+- [✓] 2.2: Create RewardUpdate type and fix updateReward
+  - Created RewardUpdate type interface
+  - Replaced any-typed updateData with properly typed interface
+  - Fields: name, description, image_url, coins_required, quantity_available, is_active (all optional)
+  - Location: src/actions/rewards.ts:444
+
+## Current Status: In Progress (8/18 subtasks completed)
 
 ## Next Steps
-- 2.2: Create RewardUpdate type and fix updateReward in src/actions/rewards.ts
+- Phase 2 complete! Moving to Phase 3: Fix type assertions in joined Supabase data
+- 3.1: Create ParticipationWithChallenge type for approveParticipation
 
 ## Notes
 - Following project patterns: comments in Portuguese, variable names in English
