@@ -349,6 +349,18 @@ export interface ParticipationWithChallenge extends ChallengeParticipant {
   } | null;
 }
 
+/**
+ * Tipo para participação com dados do usuário associado (join com users)
+ * Usado em queries que fazem join com a tabela users retornando campos específicos
+ */
+export interface ParticipantWithUsers extends ChallengeParticipant {
+  users: {
+    id: string;
+    full_name: string | null;
+    avatar_url: string | null;
+  } | null;
+}
+
 // ============ RECOMPENSAS E MOEDAS ============
 
 export type RewardClaimStatus = 'pending' | 'approved' | 'shipped' | 'delivered' | 'cancelled';
