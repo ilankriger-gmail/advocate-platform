@@ -81,7 +81,7 @@
           "id": "3.1",
           "title": "Create leaderboard queries file",
           "description": "Create src/lib/supabase/leaderboard.ts with functions for fetching leaderboard data by category and time period.",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/lib/supabase/leaderboard.ts",
             "src/lib/supabase/index.ts"
@@ -92,7 +92,9 @@
             "getEventsLeaderboard(period, limit) function",
             "getUserRank(userId, category, period) function",
             "getCombinedLeaderboard(period, limit) function"
-          ]
+          ],
+          "notes": "Created src/lib/supabase/leaderboard.ts with all required functions:\n- getCoinsLeaderboard(period, limit): Fetches coins leaderboard with support for weekly/monthly/all-time periods\n- getChallengesLeaderboard(period, limit): Fetches challenges completed leaderboard with time filtering\n- getEventsLeaderboard(period, limit): Fetches events attended leaderboard with time filtering\n- getCombinedLeaderboard(period, limit): Fetches overall ranking combining all activities with weighted scoring (coins + challenges*50 + events*30)\n- getUserRank(userId, category, period): Gets user's rank in any category using SQL functions from migration\n\nAll functions follow established patterns from challenges.ts and events.ts:\n- Proper error handling with empty array returns\n- Portuguese comments as per project guidelines\n- TypeScript typing with imported types\n- Optimized queries using SQL views for all-time periods\n- Client-side aggregation for weekly/monthly periods\n\nAlso updated src/lib/supabase/index.ts to export leaderboard module.\n\nFiles created/modified:\n- src/lib/supabase/leaderboard.ts (435 lines, new file)\n- src/lib/supabase/index.ts (added export for leaderboard)",
+          "updated_at": "2026-01-07T18:33:10.855183+00:00"
         },
         {
           "id": "3.2",
@@ -359,5 +361,5 @@
     "Time periods: Weekly (last 7 days), Monthly (last 30 days), All-time",
     "User must be authenticated to see their own rank, but leaderboard is public"
   ],
-  "last_updated": "2026-01-07T18:29:48.064151+00:00"
+  "last_updated": "2026-01-07T18:33:10.855191+00:00"
 }

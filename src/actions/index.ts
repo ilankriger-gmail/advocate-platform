@@ -19,3 +19,6 @@ export * from './challenges';
 
 // Recompensas
 export * from './rewards';
+
+// Leaderboard
+export * from './leaderboard';

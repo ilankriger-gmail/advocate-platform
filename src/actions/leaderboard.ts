@@ -1,0 +1,169 @@
+'use server';
+
+import {
+  getCoinsLeaderboard,
+  getChallengesLeaderboard,
+  getEventsLeaderboard,
+  getCombinedLeaderboard,
+  getUserRank,
+} from '@/lib/supabase/leaderboard';
+import { createClient } from '@/lib/supabase/server';
+import type {
+  LeaderboardEntry,
+  UserRanking,
+  TimePeriod,
+  LeaderboardCategory,
+} from '@/lib/supabase/types';
+
+type ActionResponse<T = any> = {
+  error?: string;
+  success?: boolean;
+  data?: T;
+};
+
+/**
+ * Buscar dados do leaderboard por categoria
+ * @param category - Categoria: 'coins', 'challenges', 'events', 'combined'
+ * @param period - Período: 'weekly', 'monthly', 'all_time'
+ * @param limit - Número de resultados (padrão: 10)
+ */
+export async function fetchLeaderboard(
+  category: LeaderboardCategory,
+  period: TimePeriod = 'all_time',
+  limit = 10
+): Promise<ActionResponse<LeaderboardEntry[]>> {
+  try {
+    let data: LeaderboardEntry[] = [];
+
+    switch (category) {
+      case 'coins':
+        data = await getCoinsLeaderboard(period, limit);
+        break;
+      case 'challenges':
+        data = await getChallengesLeaderboard(period, limit);
+        break;
+      case 'events':
+        data = await getEventsLeaderboard(period, limit);
+        break;
+      case 'combined':
+        data = await getCombinedLeaderboard(period, limit);
+        break;
+      default:
+        return { error: 'Categoria inválida' };
+    }
+
+    return { success: true, data };
+  } catch (error) {
+    console.error('Error fetching leaderboard:', error);
+    return { error: 'Erro ao buscar ranking' };
+  }
+}
+
+/**
+ * Buscar ranking do usuário atual
+ * @param category - Categoria: 'coins', 'challenges', 'events', 'combined'
+ * @param period - Período: 'weekly', 'monthly', 'all_time'
+ */
+export async function fetchUserRank(
+  category: LeaderboardCategory = 'combined',
+  period: TimePeriod = 'all_time'
+): Promise<ActionResponse<UserRanking>> {
+  try {
+    const supabase = await createClient();
+
+    // Obter usuário autenticado
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { error: 'Usuário não autenticado' };
+    }
+
+    // Buscar ranking do usuário
+    const ranking = await getUserRank(user.id, category, period);
+
+    if (!ranking) {
+      return {
+        error: 'Não foi possível obter seu ranking',
+      };
+    }
+
+    return { success: true, data: ranking };
+  } catch (error) {
+    console.error('Error fetching user rank:', error);
+    return { error: 'Erro ao buscar seu ranking' };
+  }
+}
+
+/**
+ * Buscar leaderboard de moedas
+ * @param period - Período: 'weekly', 'monthly', 'all_time'
+ * @param limit - Número de resultados (padrão: 10)
+ */
+export async function fetchCoinsLeaderboard(
+  period: TimePeriod = 'all_time',
+  limit = 10
+): Promise<ActionResponse<LeaderboardEntry[]>> {
+  try {
+    const data = await getCoinsLeaderboard(period, limit);
+    return { success: true, data };
+  } catch (error) {
+    console.error('Error fetching coins leaderboard:', error);
+    return { error: 'Erro ao buscar ranking de moedas' };
+  }
+}
+
+/**
+ * Buscar leaderboard de desafios
+ * @param period - Período: 'weekly', 'monthly', 'all_time'
+ * @param limit - Número de resultados (padrão: 10)
+ */
+export async function fetchChallengesLeaderboard(
+  period: TimePeriod = 'all_time',
+  limit = 10
+): Promise<ActionResponse<LeaderboardEntry[]>> {
+  try {
+    const data = await getChallengesLeaderboard(period, limit);
+    return { success: true, data };
+  } catch (error) {
+    console.error('Error fetching challenges leaderboard:', error);
+    return { error: 'Erro ao buscar ranking de desafios' };
+  }
+}
+
+/**
+ * Buscar leaderboard de eventos
+ * @param period - Período: 'weekly', 'monthly', 'all_time'
+ * @param limit - Número de resultados (padrão: 10)
+ */
+export async function fetchEventsLeaderboard(
+  period: TimePeriod = 'all_time',
+  limit = 10
+): Promise<ActionResponse<LeaderboardEntry[]>> {
+  try {
+    const data = await getEventsLeaderboard(period, limit);
+    return { success: true, data };
+  } catch (error) {
+    console.error('Error fetching events leaderboard:', error);
+    return { error: 'Erro ao buscar ranking de eventos' };
+  }
+}
+
+/**
+ * Buscar leaderboard combinado (ranking geral)
+ * @param period - Período: 'weekly', 'monthly', 'all_time'
+ * @param limit - Número de resultados (padrão: 10)
+ */
+export async function fetchCombinedLeaderboard(
+  period: TimePeriod = 'all_time',
+  limit = 10
+): Promise<ActionResponse<LeaderboardEntry[]>> {
+  try {
+    const data = await getCombinedLeaderboard(period, limit);
+    return { success: true, data };
+  } catch (error) {
+    console.error('Error fetching combined leaderboard:', error);
+    return { error: 'Erro ao buscar ranking geral' };
+  }
+}
