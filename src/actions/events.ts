@@ -2,12 +2,8 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
-
-type ActionResponse = {
-  error?: string;
-  success?: boolean;
-  data?: any;
-};
+import { ActionResponse } from '@/types/action';
+import type { Event } from '@/lib/supabase/types';
 
 /**
  * Inscrever-se em um evento
@@ -219,7 +215,7 @@ export async function createEvent(data: {
   max_participants?: number | null;
   meeting_url?: string | null;
   image_url?: string | null;
-}): Promise<ActionResponse> {
+}): Promise<ActionResponse<Event>> {
   try {
     const supabase = await createClient();
 
