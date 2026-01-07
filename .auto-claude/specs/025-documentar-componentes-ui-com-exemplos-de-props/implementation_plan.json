@@ -1,0 +1,170 @@
+{
+  "feature": "Documentar componentes UI com exemplos de props",
+  "description": "Os componentes UI em src/components/ui/ (Button, Input, Card, Modal, etc.) possuem interfaces TypeScript mas nao tem documentacao JSDoc explicando o proposito de cada prop, valores possiveis, ou exemplos de uso.",
+  "created_at": "2026-01-07T14:25:34.813Z",
+  "updated_at": "2026-01-07T14:30:33.213Z",
+  "status": "in_progress",
+  "planStatus": "planned",
+  "workflow_type": "development",
+  "services_involved": [
+    "src/components/ui"
+  ],
+  "spec_file": "spec.md",
+  "phases": [
+    {
+      "id": "phase-1",
+      "name": "Componentes de Formul\u00e1rio B\u00e1sicos",
+      "description": "Documentar componentes de entrada de dados: Button, Input, Textarea, Select",
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": "1.1",
+          "title": "Documentar Button",
+          "description": "Adicionar JSDoc ao componente Button com descri\u00e7\u00f5es de ButtonVariant, ButtonSize e todas as props (variant, size, isLoading, leftIcon, rightIcon, fullWidth). Incluir exemplos de uso.",
+          "status": "completed",
+          "file": "src/components/ui/Button.tsx",
+          "notes": "Adicionada documenta\u00e7\u00e3o JSDoc completa ao componente Button incluindo:\n- Descri\u00e7\u00f5es detalhadas de ButtonVariant (5 variantes)\n- Descri\u00e7\u00f5es detalhadas de ButtonSize (3 tamanhos)\n- Documenta\u00e7\u00e3o de todas as props (variant, size, isLoading, leftIcon, rightIcon, fullWidth)\n- 5 exemplos de uso cobrindo diferentes cen\u00e1rios\n- Tags @default para props com valores padr\u00e3o",
+          "updated_at": "2026-01-07T14:34:58.793480+00:00"
+        },
+        {
+          "id": "1.2",
+          "title": "Documentar Input",
+          "description": "Adicionar JSDoc ao componente Input com descri\u00e7\u00f5es de todas as props (label, error, hint, leftIcon, rightIcon). Incluir exemplos de uso com valida\u00e7\u00e3o e \u00edcones.",
+          "status": "completed",
+          "file": "src/components/ui/Input.tsx",
+          "notes": "Adicionada documenta\u00e7\u00e3o JSDoc completa ao componente Input incluindo:\n- Documenta\u00e7\u00e3o de todas as props (label, error, hint, leftIcon, rightIcon)\n- 6 exemplos de uso cobrindo diferentes cen\u00e1rios (b\u00e1sico, valida\u00e7\u00e3o, hint, \u00edcones)\n- Descri\u00e7\u00f5es detalhadas explicando o comportamento de cada prop\n- Seguindo o mesmo padr\u00e3o de documenta\u00e7\u00e3o do componente Button",
+          "updated_at": "2026-01-07T14:37:54.111301+00:00"
+        },
+        {
+          "id": "1.3",
+          "title": "Documentar Textarea",
+          "description": "Adicionar JSDoc ao componente Textarea com descri\u00e7\u00f5es de todas as props (label, error, hint). Incluir exemplos de uso.",
+          "status": "completed",
+          "file": "src/components/ui/Textarea.tsx",
+          "notes": "Adicionada documenta\u00e7\u00e3o JSDoc completa ao componente Textarea incluindo:\n- Documenta\u00e7\u00e3o de todas as props (label, error, hint)\n- 5 exemplos de uso cobrindo diferentes cen\u00e1rios (b\u00e1sico, valida\u00e7\u00e3o, hint, rows customizado)\n- Descri\u00e7\u00f5es detalhadas explicando o comportamento de cada prop\n- Seguindo o mesmo padr\u00e3o de documenta\u00e7\u00e3o dos componentes Button e Input",
+          "updated_at": "2026-01-07T14:39:53.683664+00:00"
+        },
+        {
+          "id": "1.4",
+          "title": "Documentar Select",
+          "description": "Adicionar JSDoc ao componente Select e interface SelectOption com descri\u00e7\u00f5es de todas as props (label, error, hint, options, placeholder). Incluir exemplos de uso.",
+          "status": "pending",
+          "file": "src/components/ui/Select.tsx",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "phase-2",
+      "name": "Componentes de Layout",
+      "description": "Documentar componentes de estrutura visual: Card, Modal, Tabs",
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": "2.1",
+          "title": "Documentar Card",
+          "description": "Adicionar JSDoc ao componente Card e subcomponentes (CardHeader, CardContent, CardFooter) com descri\u00e7\u00f5es de CardPadding e todas as props. Incluir exemplos de composi\u00e7\u00e3o.",
+          "status": "pending",
+          "file": "src/components/ui/Card.tsx",
+          "notes": ""
+        },
+        {
+          "id": "2.2",
+          "title": "Documentar Modal",
+          "description": "Adicionar JSDoc ao componente Modal e ModalFooter com descri\u00e7\u00f5es de todas as props (isOpen, onClose, title, description, size). Incluir exemplos de uso com actions.",
+          "status": "pending",
+          "file": "src/components/ui/Modal.tsx",
+          "notes": ""
+        },
+        {
+          "id": "2.3",
+          "title": "Documentar Tabs",
+          "description": "Adicionar JSDoc aos componentes Tabs, TabsList, TabsTrigger e TabsContent com descri\u00e7\u00f5es de todas as props. Incluir exemplos de uso completo.",
+          "status": "pending",
+          "file": "src/components/ui/Tabs.tsx",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "phase-3",
+      "name": "Componentes de Exibi\u00e7\u00e3o",
+      "description": "Documentar componentes de visualiza\u00e7\u00e3o: Avatar, Badge, EmptyState, Skeleton",
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": "3.1",
+          "title": "Documentar Avatar",
+          "description": "Adicionar JSDoc ao componente Avatar e AvatarGroup com descri\u00e7\u00f5es de AvatarSize, status e todas as props. Incluir exemplos com imagem, fallback e grupo.",
+          "status": "pending",
+          "file": "src/components/ui/Avatar.tsx",
+          "notes": ""
+        },
+        {
+          "id": "3.2",
+          "title": "Documentar Badge",
+          "description": "Adicionar JSDoc aos componentes Badge e StatusBadge com descri\u00e7\u00f5es de variantes e todas as props. Incluir exemplos de cada variante.",
+          "status": "pending",
+          "file": "src/components/ui/Badge.tsx",
+          "notes": ""
+        },
+        {
+          "id": "3.3",
+          "title": "Documentar EmptyState",
+          "description": "Adicionar JSDoc aos componentes EmptyState e EmptyStateIcon com descri\u00e7\u00f5es de todas as props. Incluir exemplos de uso com \u00edcones pr\u00e9-definidos.",
+          "status": "pending",
+          "file": "src/components/ui/EmptyState.tsx",
+          "notes": ""
+        },
+        {
+          "id": "3.4",
+          "title": "Documentar Skeleton",
+          "description": "Adicionar JSDoc aos componentes Skeleton, SkeletonText, SkeletonAvatar, SkeletonCard, SkeletonPost e SkeletonTable com descri\u00e7\u00f5es de todas as props. Incluir exemplos de uso.",
+          "status": "pending",
+          "file": "src/components/ui/Skeleton.tsx",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "phase-4",
+      "name": "Componentes de Feedback",
+      "description": "Documentar componente de notifica\u00e7\u00f5es: Toast",
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": "4.1",
+          "title": "Documentar Toast",
+          "description": "Adicionar JSDoc ao sistema de Toast incluindo interface Toast, ToastProvider, useToast e useToastHelpers com descri\u00e7\u00f5es de todas as props e exemplos de uso.",
+          "status": "pending",
+          "file": "src/components/ui/Toast.tsx",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "phase-5",
+      "name": "Verifica\u00e7\u00e3o Final",
+      "description": "Verificar consist\u00eancia da documenta\u00e7\u00e3o e testar build",
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": "5.1",
+          "title": "Verificar consist\u00eancia e build",
+          "description": "Revisar todos os arquivos documentados para garantir padr\u00e3o consistente de JSDoc, formata\u00e7\u00e3o e exemplos. Verificar se o TypeScript compila corretamente.",
+          "status": "pending",
+          "file": "src/components/ui/",
+          "notes": ""
+        }
+      ]
+    }
+  ],
+  "final_acceptance": [
+    "Todos os 12 componentes UI documentados com JSDoc",
+    "Cada prop possui descri\u00e7\u00e3o clara do prop\u00f3sito",
+    "Valores poss\u00edveis documentados para tipos enumerados",
+    "Exemplos de uso inclu\u00eddos em cada componente",
+    "Build TypeScript passa sem erros"
+  ],
+  "last_updated": "2026-01-07T14:39:53.683671+00:00"
+}

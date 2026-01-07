@@ -3,17 +3,134 @@
 import { forwardRef, SelectHTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
 
+/**
+ * Opção individual para o componente Select
+ *
+ * @interface SelectOption
+ *
+ * @example
+ * const option: SelectOption = {
+ *   value: 'br',
+ *   label: 'Brasil'
+ * }
+ *
+ * @example
+ * // Opção desabilitada
+ * const disabledOption: SelectOption = {
+ *   value: 'unavailable',
+ *   label: 'Indisponível',
+ *   disabled: true
+ * }
+ */
 export interface SelectOption {
+  /**
+   * Valor único que será submetido quando a opção for selecionada.
+   * Usado como valor do atributo value do <option>.
+   */
   value: string;
+
+  /**
+   * Texto exibido ao usuário para esta opção.
+   */
   label: string;
+
+  /**
+   * Se true, a opção não pode ser selecionada pelo usuário.
+   * Útil para opções temporariamente indisponíveis.
+   * @default false
+   */
   disabled?: boolean;
 }
 
+/**
+ * Propriedades do componente Select
+ *
+ * @interface SelectProps
+ * @extends {SelectHTMLAttributes<HTMLSelectElement>}
+ *
+ * @example
+ * // Select básico com label
+ * <Select
+ *   label="País"
+ *   options={[
+ *     { value: 'br', label: 'Brasil' },
+ *     { value: 'us', label: 'Estados Unidos' },
+ *     { value: 'pt', label: 'Portugal' }
+ *   ]}
+ * />
+ *
+ * @example
+ * // Select com placeholder
+ * <Select
+ *   label="Estado"
+ *   placeholder="Selecione um estado"
+ *   options={estados}
+ * />
+ *
+ * @example
+ * // Select com mensagem de erro (validação)
+ * <Select
+ *   label="Categoria"
+ *   error="Categoria é obrigatória"
+ *   options={categorias}
+ *   value={selectedCategory}
+ * />
+ *
+ * @example
+ * // Select com texto de ajuda
+ * <Select
+ *   label="Nível de experiência"
+ *   hint="Escolha o nível que melhor descreve sua experiência"
+ *   options={[
+ *     { value: 'iniciante', label: 'Iniciante' },
+ *     { value: 'intermediario', label: 'Intermediário' },
+ *     { value: 'avancado', label: 'Avançado' }
+ *   ]}
+ * />
+ *
+ * @example
+ * // Select com opções desabilitadas
+ * <Select
+ *   label="Plano"
+ *   options={[
+ *     { value: 'free', label: 'Gratuito' },
+ *     { value: 'pro', label: 'Pro' },
+ *     { value: 'enterprise', label: 'Enterprise', disabled: true }
+ *   ]}
+ * />
+ */
 export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
+  /**
+   * Texto do label exibido acima do campo de select.
+   * Quando fornecido, cria um elemento <label> acessível associado ao select.
+   */
   label?: string;
+
+  /**
+   * Mensagem de erro exibida abaixo do select.
+   * Quando presente, o select é estilizado com borda vermelha e a mensagem
+   * aparece em vermelho. Sobrepõe o hint se ambos estiverem presentes.
+   */
   error?: string;
+
+  /**
+   * Texto de ajuda exibido abaixo do select.
+   * Fornece orientações adicionais ao usuário. Ocultado quando há um erro.
+   */
   hint?: string;
+
+  /**
+   * Array de opções disponíveis no select.
+   * Cada opção deve ter um value único e um label para exibição.
+   * Opções podem ser marcadas como disabled.
+   */
   options: SelectOption[];
+
+  /**
+   * Texto exibido como primeira opção quando nenhum valor está selecionado.
+   * A opção de placeholder é sempre desabilitada e tem value vazio.
+   * Útil para forçar o usuário a fazer uma seleção explícita.
+   */
   placeholder?: string;
 }
 

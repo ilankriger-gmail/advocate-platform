@@ -8,7 +8,7 @@ Adicionar documentação JSDoc completa para 12 componentes UI em src/components
 
 ## Componentes a Documentar
 - [x] Button.tsx - 6 props (variant, size, isLoading, leftIcon, rightIcon, fullWidth)
-- [ ] Input.tsx - 5 props (label, error, hint, leftIcon, rightIcon)
+- [x] Input.tsx - 5 props (label, error, hint, leftIcon, rightIcon)
 - [ ] Textarea.tsx - 3 props (label, error, hint)
 - [ ] Select.tsx - 5 props (label, error, hint, options, placeholder)
 - [ ] Card.tsx - 4 componentes (Card, CardHeader, CardContent, CardFooter)
@@ -28,8 +28,9 @@ Adicionar documentação JSDoc completa para 12 componentes UI em src/components
 5. Fase 5 - Verificação Final (1 subtask)
 
 ## Próximos Passos
-- Documentar Input.tsx (subtask 1.2)
+- Documentar Textarea.tsx (subtask 1.3)
 
 ## Log de Atividades
 - [2025-01-07] Plano de implementação criado com 5 fases e 13 subtasks
 - [2025-01-07] Subtask 1.1 concluída: Documentação JSDoc completa do Button.tsx com descrições de tipos, props e 5 exemplos de uso
+- [2025-01-07] Subtask 1.2 concluída: Documentação JSDoc completa do Input.tsx com descrições de todas as props e 6 exemplos de uso (básico, validação, hint, ícones)
