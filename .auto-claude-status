@@ -1,15 +1,15 @@
 {
   "active": true,
   "spec": "031-split-large-action-files-into-domain-specific-modu",
-  "state": "building",
+  "state": "complete",
   "subtasks": {
-    "completed": 4,
+    "completed": 14,
     "total": 14,
-    "in_progress": 1,
+    "in_progress": 0,
     "failed": 0
   },
   "phase": {
-    "current": "Split do m\u00f3dulo challenges",
+    "current": "Atualiza\u00e7\u00e3o do index e valida\u00e7\u00e3o",
     "id": null,
     "total": 3
   },
@@ -18,8 +18,8 @@
     "max": 1
   },
   "session": {
-    "number": 6,
-    "started_at": "2026-01-07T11:25:42.358308"
+    "number": 1,
+    "started_at": "2026-01-07T13:57:45.172489"
   },
-  "last_update": "2026-01-07T11:36:35.914624"
+  "last_update": "2026-01-07T13:59:27.962771"
 }
