@@ -2,8 +2,25 @@
 
 import { useState, useCallback } from 'react';
 
+/**
+ * Tipo de notificação toast
+ *
+ * Valores possíveis:
+ * - 'success': Notificação de sucesso (verde)
+ * - 'error': Notificação de erro (vermelho)
+ * - 'warning': Notificação de aviso (amarelo)
+ * - 'info': Notificação informativa (azul)
+ */
 export type ToastType = 'success' | 'error' | 'warning' | 'info';
 
+/**
+ * Interface que representa uma notificação toast
+ *
+ * @property {string} id - Identificador único da notificação
+ * @property {string} message - Mensagem a ser exibida
+ * @property {ToastType} type - Tipo da notificação (success, error, warning, info)
+ * @property {number} [duration] - Duração em milissegundos antes de auto-fechar (opcional, padrão: 5000ms)
+ */
 export interface Toast {
   id: string;
   message: string;
