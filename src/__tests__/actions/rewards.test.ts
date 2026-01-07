@@ -2,14 +2,16 @@
  * Testes para actions de recompensas
  */
 
-import { claimReward, cancelClaim } from '@/actions/rewards';
+import { claimReward, cancelClaim, addCoinsToUser } from '@/actions/rewards';
 import {
   resetMocks,
   setupAuthenticatedUser,
+  setupAdminUser,
 } from '../helpers';
 import {
   createMockReward,
   createMockRewardClaim,
+  createMockUser,
 } from '../factories';
 import { setMockData, getMockData } from '../mocks/supabase';
 
@@ -655,6 +657,379 @@ describe('cancelClaim', () => {
       // Assert: Ambos resgates cancelados
       const claims = getMockData('reward_claims');
       expect(claims.filter(c => c.status === 'cancelled')).toHaveLength(2);
+    });
+  });
+});
+
+describe('addCoinsToUser', () => {
+  beforeEach(() => {
+    resetMocks();
+  });
+
+  describe('Validações', () => {
+    it('deve rejeitar usuário não autenticado', async () => {
+      // Arrange: Sem autenticação (nenhum usuário configurado)
+      const targetUser = createMockUser();
+      const amount = 100;
+      const description = 'Bonus de boas-vindas';
+
+      // Act
+      const result = await addCoinsToUser(targetUser.id, amount, description);
+
+      // Assert
+      expect(result.error).toBe('Usuario nao autenticado');
+      expect(result.success).toBeUndefined();
+    });
+
+    it('deve rejeitar quando usuário não é admin', async () => {
+      // Arrange: Usuário autenticado mas não é admin
+      setupAuthenticatedUser({ coinBalance: 100 });
+      const targetUser = createMockUser();
+      const amount = 100;
+      const description = 'Bonus de boas-vindas';
+
+      // Act
+      const result = await addCoinsToUser(targetUser.id, amount, description);
+
+      // Assert
+      expect(result.error).toBe('Acesso nao autorizado');
+      expect(result.success).toBeUndefined();
+    });
+
+    it('deve rejeitar quando usuário não é creator', async () => {
+      // Arrange: Usuário autenticado mas role não é creator nem admin
+      const user = setupAuthenticatedUser({ coinBalance: 100 });
+      // Modificar profile para role diferente
+      const profiles = getMockData('profiles');
+      profiles[0].role = 'user';
+      profiles[0].is_creator = false;
+      setMockData('profiles', profiles);
+
+      const targetUser = createMockUser();
+      const amount = 100;
+      const description = 'Bonus de boas-vindas';
+
+      // Act
+      const result = await addCoinsToUser(targetUser.id, amount, description);
+
+      // Assert
+      expect(result.error).toBe('Acesso nao autorizado');
+      expect(result.success).toBeUndefined();
+    });
+
+    it('deve rejeitar quando quantidade é zero', async () => {
+      // Arrange: Admin com amount zero
+      setupAdminUser({ coinBalance: 100 });
+      const targetUser = createMockUser();
+      const amount = 0;
+      const description = 'Teste';
+
+      // Act
+      const result = await addCoinsToUser(targetUser.id, amount, description);
+
+      // Assert
+      expect(result.error).toBe('Quantidade deve ser maior que zero');
+      expect(result.success).toBeUndefined();
+    });
+
+    it('deve rejeitar quando quantidade é negativa', async () => {
+      // Arrange: Admin com amount negativo
+      setupAdminUser({ coinBalance: 100 });
+      const targetUser = createMockUser();
+      const amount = -50;
+      const description = 'Teste';
+
+      // Act
+      const result = await addCoinsToUser(targetUser.id, amount, description);
+
+      // Assert
+      expect(result.error).toBe('Quantidade deve ser maior que zero');
+      expect(result.success).toBeUndefined();
+    });
+
+    it('deve rejeitar múltiplas validações em ordem de prioridade', async () => {
+      // Arrange: Sem autenticação e amount zero
+      // A primeira validação (autenticação) deve ser verificada primeiro
+      const targetUser = createMockUser();
+      const amount = 0;
+      const description = 'Teste';
+
+      // Act
+      const result = await addCoinsToUser(targetUser.id, amount, description);
+
+      // Assert: Deve falhar na autenticação, não no amount
+      expect(result.error).toBe('Usuario nao autenticado');
+    });
+
+    it('deve validar permissões antes de amount', async () => {
+      // Arrange: Usuário autenticado mas não admin, com amount zero
+      setupAuthenticatedUser({ coinBalance: 100 });
+      const targetUser = createMockUser();
+      const amount = 0;
+      const description = 'Teste';
+
+      // Act
+      const result = await addCoinsToUser(targetUser.id, amount, description);
+
+      // Assert: Deve falhar na autorização antes de validar amount
+      expect(result.error).toBe('Acesso nao autorizado');
+    });
+  });
+
+  describe('Operações de Sucesso', () => {
+    it('deve adicionar moedas a usuário com saldo existente', async () => {
+      // Arrange: Admin adicionando moedas a usuário com saldo
+      setupAdminUser({ coinBalance: 500 });
+      const targetUser = createMockUser();
+      const initialBalance = 200;
+      const amountToAdd = 100;
+      const description = 'Bonus de participação';
+
+      // Configurar saldo inicial do usuário alvo
+      setMockData('user_coins', [
+        {
+          user_id: targetUser.id,
+          balance: initialBalance,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }
+      ]);
+
+      // Act
+      const result = await addCoinsToUser(targetUser.id, amountToAdd, description);
+
+      // Assert: Operação bem-sucedida
+      expect(result.success).toBe(true);
+      expect(result.error).toBeUndefined();
+
+      // Assert: Saldo foi atualizado corretamente
+      const userCoins = getMockData('user_coins');
+      expect(userCoins).toHaveLength(1);
+      expect(userCoins[0].balance).toBe(initialBalance + amountToAdd);
+      expect(userCoins[0].user_id).toBe(targetUser.id);
+
+      // Assert: Transação registrada
+      const transactions = getMockData('coin_transactions');
+      expect(transactions).toHaveLength(1);
+      expect(transactions[0]).toMatchObject({
+        user_id: targetUser.id,
+        amount: amountToAdd,
+        type: 'earned',
+        description: description,
+      });
+    });
+
+    it('deve adicionar moedas a usuário sem saldo existente', async () => {
+      // Arrange: Admin adicionando moedas a usuário novo (sem registro user_coins)
+      setupAdminUser({ coinBalance: 500 });
+      const targetUser = createMockUser();
+      const amountToAdd = 150;
+      const description = 'Bonus de boas-vindas';
+
+      // Garantir que não há registro de saldo para o usuário alvo
+      setMockData('user_coins', []);
+
+      // Act
+      const result = await addCoinsToUser(targetUser.id, amountToAdd, description);
+
+      // Assert: Operação bem-sucedida
+      expect(result.success).toBe(true);
+      expect(result.error).toBeUndefined();
+
+      // Assert: Novo registro de saldo criado
+      const userCoins = getMockData('user_coins');
+      expect(userCoins).toHaveLength(1);
+      expect(userCoins[0]).toMatchObject({
+        user_id: targetUser.id,
+        balance: amountToAdd,
+      });
+
+      // Assert: Transação registrada
+      const transactions = getMockData('coin_transactions');
+      expect(transactions).toHaveLength(1);
+      expect(transactions[0]).toMatchObject({
+        user_id: targetUser.id,
+        amount: amountToAdd,
+        type: 'earned',
+        description: description,
+      });
+    });
+
+    it('deve permitir creator adicionar moedas', async () => {
+      // Arrange: Creator (não admin) adicionando moedas
+      const creator = setupAuthenticatedUser({ coinBalance: 500 });
+      // Modificar para creator
+      const profiles = getMockData('profiles');
+      profiles[0].role = 'creator';
+      profiles[0].is_creator = true;
+      setMockData('profiles', profiles);
+
+      const targetUser = createMockUser();
+      const amountToAdd = 75;
+      const description = 'Recompensa especial';
+
+      setMockData('user_coins', []);
+
+      // Act
+      const result = await addCoinsToUser(targetUser.id, amountToAdd, description);
+
+      // Assert: Deve funcionar normalmente
+      expect(result.success).toBe(true);
+
+      const userCoins = getMockData('user_coins');
+      expect(userCoins[0].balance).toBe(amountToAdd);
+    });
+
+    it('deve calcular saldo corretamente com valores grandes', async () => {
+      // Arrange: Valores grandes
+      setupAdminUser({ coinBalance: 1000 });
+      const targetUser = createMockUser();
+      const initialBalance = 5000;
+      const amountToAdd = 2500;
+      const description = 'Bonus mega';
+
+      setMockData('user_coins', [
+        {
+          user_id: targetUser.id,
+          balance: initialBalance,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }
+      ]);
+
+      // Act
+      const result = await addCoinsToUser(targetUser.id, amountToAdd, description);
+
+      // Assert
+      expect(result.success).toBe(true);
+
+      const userCoins = getMockData('user_coins');
+      expect(userCoins[0].balance).toBe(7500); // 5000 + 2500
+    });
+
+    it('deve adicionar moedas a usuário com saldo zero', async () => {
+      // Arrange: Edge case - saldo zero
+      setupAdminUser({ coinBalance: 500 });
+      const targetUser = createMockUser();
+      const initialBalance = 0;
+      const amountToAdd = 50;
+      const description = 'Primeiro bonus';
+
+      setMockData('user_coins', [
+        {
+          user_id: targetUser.id,
+          balance: initialBalance,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }
+      ]);
+
+      // Act
+      const result = await addCoinsToUser(targetUser.id, amountToAdd, description);
+
+      // Assert
+      expect(result.success).toBe(true);
+
+      const userCoins = getMockData('user_coins');
+      expect(userCoins[0].balance).toBe(amountToAdd);
+    });
+
+    it('deve registrar transação com descrição correta', async () => {
+      // Arrange: Verificar que a descrição é armazenada corretamente
+      setupAdminUser({ coinBalance: 500 });
+      const targetUser = createMockUser();
+      const amountToAdd = 100;
+      const description = 'Recompensa por completar desafio X';
+
+      setMockData('user_coins', []);
+
+      // Act
+      const result = await addCoinsToUser(targetUser.id, amountToAdd, description);
+
+      // Assert
+      expect(result.success).toBe(true);
+
+      const transactions = getMockData('coin_transactions');
+      expect(transactions).toHaveLength(1);
+      expect(transactions[0].description).toBe(description);
+      expect(transactions[0].type).toBe('earned');
+    });
+
+    it('deve processar múltiplas adições de moedas de forma independente', async () => {
+      // Arrange: Admin adicionando moedas para diferentes usuários
+      setupAdminUser({ coinBalance: 1000 });
+      const user1 = createMockUser();
+      const user2 = createMockUser();
+
+      setMockData('user_coins', []);
+
+      // Act: Primeira adição
+      const result1 = await addCoinsToUser(user1.id, 100, 'Bonus user 1');
+
+      // Assert: Primeira adição
+      expect(result1.success).toBe(true);
+      let userCoins = getMockData('user_coins');
+      expect(userCoins).toHaveLength(1);
+      expect(userCoins[0].user_id).toBe(user1.id);
+      expect(userCoins[0].balance).toBe(100);
+
+      // Act: Segunda adição
+      const result2 = await addCoinsToUser(user2.id, 200, 'Bonus user 2');
+
+      // Assert: Segunda adição
+      expect(result2.success).toBe(true);
+      userCoins = getMockData('user_coins');
+      expect(userCoins).toHaveLength(2);
+
+      const user2Coins = userCoins.find(uc => uc.user_id === user2.id);
+      expect(user2Coins).toBeDefined();
+      expect(user2Coins!.balance).toBe(200);
+
+      // Assert: Ambas transações registradas
+      const transactions = getMockData('coin_transactions');
+      expect(transactions).toHaveLength(2);
+      expect(transactions[0].user_id).toBe(user1.id);
+      expect(transactions[1].user_id).toBe(user2.id);
+    });
+
+    it('deve adicionar moedas múltiplas vezes ao mesmo usuário', async () => {
+      // Arrange: Admin adicionando moedas ao mesmo usuário em diferentes momentos
+      setupAdminUser({ coinBalance: 1000 });
+      const targetUser = createMockUser();
+
+      setMockData('user_coins', []);
+
+      // Act: Primeira adição
+      const result1 = await addCoinsToUser(targetUser.id, 100, 'Primeira recompensa');
+
+      // Assert: Primeira adição
+      expect(result1.success).toBe(true);
+      let userCoins = getMockData('user_coins');
+      expect(userCoins[0].balance).toBe(100);
+
+      // Act: Segunda adição
+      const result2 = await addCoinsToUser(targetUser.id, 50, 'Segunda recompensa');
+
+      // Assert: Segunda adição
+      expect(result2.success).toBe(true);
+      userCoins = getMockData('user_coins');
+      expect(userCoins).toHaveLength(1); // Ainda apenas 1 registro
+      expect(userCoins[0].balance).toBe(150); // 100 + 50
+
+      // Act: Terceira adição
+      const result3 = await addCoinsToUser(targetUser.id, 25, 'Terceira recompensa');
+
+      // Assert: Terceira adição
+      expect(result3.success).toBe(true);
+      userCoins = getMockData('user_coins');
+      expect(userCoins[0].balance).toBe(175); // 150 + 25
+
+      // Assert: Todas as transações registradas
+      const transactions = getMockData('coin_transactions');
+      expect(transactions).toHaveLength(3);
+      expect(transactions[0].amount).toBe(100);
+      expect(transactions[1].amount).toBe(50);
+      expect(transactions[2].amount).toBe(25);
     });
   });
 });
