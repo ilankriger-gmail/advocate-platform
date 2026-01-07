@@ -1,0 +1,35 @@
+# Build Progress - Documentar Componentes UI com Exemplos de Props
+
+## Status: EM PROGRESSO
+Data: 2025-01-07
+
+## Resumo
+Adicionar documentação JSDoc completa para 12 componentes UI em src/components/ui/
+
+## Componentes a Documentar
+- [x] Button.tsx - 6 props (variant, size, isLoading, leftIcon, rightIcon, fullWidth)
+- [ ] Input.tsx - 5 props (label, error, hint, leftIcon, rightIcon)
+- [ ] Textarea.tsx - 3 props (label, error, hint)
+- [ ] Select.tsx - 5 props (label, error, hint, options, placeholder)
+- [ ] Card.tsx - 4 componentes (Card, CardHeader, CardContent, CardFooter)
+- [ ] Modal.tsx - 2 componentes (Modal, ModalFooter)
+- [ ] Tabs.tsx - 4 componentes (Tabs, TabsList, TabsTrigger, TabsContent)
+- [ ] Avatar.tsx - 2 componentes (Avatar, AvatarGroup)
+- [ ] Badge.tsx - 2 componentes (Badge, StatusBadge)
+- [ ] EmptyState.tsx - 2 componentes (EmptyState, EmptyStateIcon)
+- [ ] Skeleton.tsx - 6 componentes (Skeleton, SkeletonText, SkeletonAvatar, SkeletonCard, SkeletonPost, SkeletonTable)
+- [ ] Toast.tsx - 4 exports (Toast interface, ToastProvider, useToast, useToastHelpers)
+
+## Fases do Plano
+1. Fase 1 - Componentes de Formulário Básicos (4 subtasks)
+2. Fase 2 - Componentes de Layout (3 subtasks)
+3. Fase 3 - Componentes de Exibição (4 subtasks)
+4. Fase 4 - Componentes de Feedback (1 subtask)
+5. Fase 5 - Verificação Final (1 subtask)
+
+## Próximos Passos
+- Documentar Input.tsx (subtask 1.2)
+
+## Log de Atividades
+- [2025-01-07] Plano de implementação criado com 5 fases e 13 subtasks
+- [2025-01-07] Subtask 1.1 concluída: Documentação JSDoc completa do Button.tsx com descrições de tipos, props e 5 exemplos de uso
