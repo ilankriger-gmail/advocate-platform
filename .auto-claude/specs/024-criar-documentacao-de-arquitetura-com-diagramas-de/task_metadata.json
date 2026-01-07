@@ -1,0 +1,8 @@
+{
+  "sourceType": "ideation",
+  "ideationType": "documentation_gaps",
+  "ideaId": "doc-003",
+  "rationale": "Sem documentacao de arquitetura, novos desenvolvedores precisam ler todo o codigo para entender o fluxo de dados. Isso aumenta drasticamente o tempo de onboarding e risco de bugs arquiteturais.",
+  "category": "documentation",
+  "priority": "medium"
+}

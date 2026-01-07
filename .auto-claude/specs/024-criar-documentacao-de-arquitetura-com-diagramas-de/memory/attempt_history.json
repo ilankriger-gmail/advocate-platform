@@ -1,0 +1,112 @@
+{
+  "subtasks": {
+    "2.2": {
+      "attempts": [
+        {
+          "session": 1,
+          "timestamp": "2026-01-07T13:43:24.430976",
+          "approach": "Implemented: Criar documento DATA_FLOW_POSTS.md com diagramas de: criacao de post, moderacao (admin), exibicao no",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "2.3": {
+      "attempts": [
+        {
+          "session": 2,
+          "timestamp": "2026-01-07T13:58:46.869988",
+          "approach": "Implemented: Criar documento DATA_FLOW_EVENTS.md com diagramas de: listagem de eventos, registro de participacao,",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "2.4": {
+      "attempts": [
+        {
+          "session": 3,
+          "timestamp": "2026-01-07T14:08:54.479526",
+          "approach": "Implemented: Criar documento DATA_FLOW_CHALLENGES.md com diagramas de: listagem de desafios, participacao, submis",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "2.5": {
+      "attempts": [
+        {
+          "session": 4,
+          "timestamp": "2026-01-07T14:46:04.102465",
+          "approach": "Session ended without progress",
+          "success": false,
+          "error": "Subtask status is pending"
+        },
+        {
+          "session": 5,
+          "timestamp": "2026-01-07T15:09:08.797948",
+          "approach": "Implemented: Criar documento DATA_FLOW_PROFILE_REWARDS.md com diagramas de: gestao de perfil, sistema de niveis d",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "3.1": {
+      "attempts": [
+        {
+          "session": 6,
+          "timestamp": "2026-01-07T15:14:41.073801",
+          "approach": "Implemented: Criar documento COMPONENTS.md explicando quando usar Server Components vs Client Components, com exe",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "3.2": {
+      "attempts": [
+        {
+          "session": 7,
+          "timestamp": "2026-01-07T15:26:29.913624",
+          "approach": "Implemented: Criar documento SERVER_ACTIONS.md com lista de todas as Server Actions, seus parametros, retornos, e",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "3.3": {
+      "attempts": [
+        {
+          "session": 8,
+          "timestamp": "2026-01-07T15:34:44.774799",
+          "approach": "Implemented: Diagrama Mermaid mostrando como os diferentes modulos (auth, posts, events, challenges, rewards) se ",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "4.1": {
+      "attempts": [
+        {
+          "session": 9,
+          "timestamp": "2026-01-07T15:43:19.430096",
+          "approach": "Implemented: Criar documento SECURITY_RLS.md com explicacao visual de cada politica RLS: quem pode ler/escrever/a",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    }
+  },
+  "stuck_subtasks": [],
+  "metadata": {
+    "created_at": "2026-01-07T13:37:05.514510",
+    "last_updated": "2026-01-07T15:43:19.430116"
+  }
+}

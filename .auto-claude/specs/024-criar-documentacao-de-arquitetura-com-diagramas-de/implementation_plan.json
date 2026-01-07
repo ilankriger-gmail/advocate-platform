@@ -1,0 +1,296 @@
+{
+  "feature": "Criar documentacao de arquitetura com diagramas de fluxo de dados",
+  "description": "Criar documentacao visual e textual completa explicando a arquitetura da plataforma de Advocate Marketing, incluindo diagramas de fluxo de dados, relacionamento entre componentes e politicas de seguranca RLS.",
+  "created_at": "2026-01-07T14:25:34.647Z",
+  "updated_at": "2026-01-07T16:37:04.545Z",
+  "status": "in_progress",
+  "planStatus": "in_progress",
+  "estimated_hours": 6,
+  "phases": [
+    {
+      "id": "phase-1",
+      "name": "Documentacao de Visao Geral da Arquitetura",
+      "description": "Criar documento principal com visao geral da arquitetura, stack tecnologica e estrutura do projeto",
+      "order": 1,
+      "subtasks": [
+        {
+          "id": "1.1",
+          "title": "Criar documento principal ARCHITECTURE.md",
+          "description": "Documento raiz contendo visao geral da arquitetura, incluindo: stack tecnologica (Next.js 15, Supabase, Tailwind CSS, TypeScript), estrutura de diretorios explicada, e indice para demais documentos de arquitetura.",
+          "status": "completed",
+          "file_path": "docs/ARCHITECTURE.md",
+          "dependencies": [],
+          "estimated_minutes": 30,
+          "notes": "Documento ARCHITECTURE.md criado com sucesso contendo: visao geral da arquitetura, stack tecnologica (Next.js 14, Supabase, Tailwind CSS, TypeScript), estrutura de diretorios detalhada com explicacoes, principios arquiteturais, modulos principais, fluxo de dados geral com diagrama Mermaid, padroes de desenvolvimento, seguranca, e indices para demais documentos de arquitetura. Total de 361 linhas documentadas.",
+          "updated_at": "2026-01-07T14:35:14.760507+00:00"
+        },
+        {
+          "id": "1.2",
+          "title": "Criar diagrama geral da arquitetura do sistema",
+          "description": "Diagrama Mermaid mostrando visao de alto nivel: cliente (browser) -> Next.js (Server/Client Components) -> Server Actions -> Supabase (Auth + DB + RLS). Incluir no ARCHITECTURE.md.",
+          "status": "completed",
+          "file_path": "docs/ARCHITECTURE.md",
+          "dependencies": [
+            "1.1"
+          ],
+          "estimated_minutes": 25,
+          "notes": "Criados tres diagramas Mermaid abrangentes no ARCHITECTURE.md: (1) Diagrama de Alto Nivel mostrando fluxo Browser -> Next.js (Server/Client Components + Server Actions) -> Supabase (Auth + DB + RLS), (2) Fluxo de Dados Detalhado com diagrama de sequencia exemplificando criacao de post, (3) Camadas da Arquitetura mostrando separacao de responsabilidades. Diagramas incluem emojis, cores e documentacao clara. Commit: 5b88d2e",
+          "updated_at": "2026-01-07T14:37:14.295455+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-2",
+      "name": "Documentacao de Fluxo de Dados",
+      "description": "Documentar fluxos de dados para cada modulo principal da aplicacao",
+      "order": 2,
+      "subtasks": [
+        {
+          "id": "2.1",
+          "title": "Documentar fluxo de autenticacao",
+          "description": "Criar documento DATA_FLOW_AUTH.md com diagramas de: login OAuth (Google), callback, criacao de sessao, middleware de protecao de rotas, e contexto de autenticacao no cliente.",
+          "status": "completed",
+          "file_path": "docs/flows/DATA_FLOW_AUTH.md",
+          "dependencies": [
+            "1.1"
+          ],
+          "estimated_minutes": 35,
+          "notes": "Documento DATA_FLOW_AUTH.md criado com sucesso contendo: (1) Diagrama de login OAuth com Google incluindo sequencia completa e codigo, (2) Callback OAuth com diagrama de sequencia e fluxo de decisao, (3) Documentacao dos 3 tipos de clientes Supabase (browser, server, middleware) com ciclo de vida da sessao, (4) Middleware de protecao de rotas com flowchart de decisao e codigo completo, (5) Arquitetura do AuthContext com grafo de componentes e listeners, (6) Fluxo completo integrado do login ponta-a-ponta, (7) Diagrama de logout, (8) Timeline com tempos de execucao, (9) Mapa de responsabilidades e estrutura de arquivos. Total de 979 linhas com 10+ diagramas Mermaid. Commit: 27215ff",
+          "updated_at": "2026-01-07T14:42:02.284946+00:00"
+        },
+        {
+          "id": "2.2",
+          "title": "Documentar fluxo de posts e feed",
+          "description": "Criar documento DATA_FLOW_POSTS.md com diagramas de: criacao de post, moderacao (admin), exibicao no feed, sistema de likes/comments, e fluxo de dados entre Server Components, Server Actions e Supabase.",
+          "status": "completed",
+          "file_path": "docs/flows/DATA_FLOW_POSTS.md",
+          "dependencies": [
+            "1.1"
+          ],
+          "estimated_minutes": 35,
+          "notes": "Documento DATA_FLOW_POSTS.md criado com sucesso contendo documentacao completa do sistema de posts incluindo: (1) Visao geral da arquitetura de posts com diagrama mostrando fluxo entre Client Components, Server Actions, e Supabase, (2) Fluxo completo de criacao de post com diagramas de sequencia e codigo, (3) Sistema de moderacao admin com aprovacao/rejeicao e diagramas de decisao, (4) Exibicao no feed com arquitetura de Server Components e queries otimizadas, (5) Sistema de likes com atualizacao otimista e toggle like/unlike, (6) Sistema de comentarios completo com validacao, (7) Sistema de delecao de posts, (8) Fluxo completo de dados mostrando todas as camadas (Client, Server Actions, Server Components, Supabase, Database), (9) Diagramas de estado e timeline do ciclo de vida de posts, (10) Documentacao completa de politicas RLS para posts, likes e comentarios, (11) Estrutura de arquivos e mapa de responsabilidades. Total de 1615 linhas com 15+ diagramas Mermaid. Commit: 941331f",
+          "updated_at": "2026-01-07T16:42:35.480353+00:00"
+        },
+        {
+          "id": "2.3",
+          "title": "Documentar fluxo de eventos",
+          "description": "Criar documento DATA_FLOW_EVENTS.md com diagramas de: listagem de eventos, registro de participacao, verificacao de nivel de advocate, e fluxo admin para criacao/gestao de eventos.",
+          "status": "completed",
+          "file_path": "docs/flows/DATA_FLOW_EVENTS.md",
+          "dependencies": [
+            "1.1"
+          ],
+          "estimated_minutes": 30,
+          "notes": "Documento DATA_FLOW_EVENTS.md criado com sucesso contendo documentacao completa do sistema de eventos incluindo: (1) Visao geral da arquitetura de eventos com diagrama mostrando fluxo entre Client Components, Server Actions, e Supabase, (2) Fluxo completo de listagem de eventos com categorizacao (acontecendo agora, proximos, passados), (3) Sistema de registro de participacao com validacoes em multiplas camadas (evento ativo, nivel de advocate, vagas disponiveis, inscricao unica), (4) Verificacao de nivel de advocate com validacao tanto na UI quanto no servidor, (5) Fluxo admin completo para criacao de eventos com formulario dinamico baseado no tipo (virtual, presencial, hibrido), (6) Gestao de eventos por admins com painel organizado por status (ao vivo, proximos, passados), (7) Sistema de check-in para confirmacao de presenca em eventos ao vivo, (8) Sistema de feedback pos-evento para usuarios que participaram (status: attended), (9) Fluxo completo de dados mostrando todas as camadas (Client, Server Actions, Server Components, Supabase, Database), (10) Timeline gantt chart do ciclo de vida completo de um evento, (11) Diagramas de estado para inscricoes de eventos (registered \u2192 confirmed \u2192 attended \u2192 cancelled), (12) Documentacao completa de politicas RLS para tabelas events e event_registrations, (13) Diagrama ERD mostrando relacionamentos entre events, event_registrations e users, (14) Estrutura de arquivos e mapa de responsabilidades. Total de 1868 linhas com 20+ diagramas Mermaid. Commit: f8a3e89",
+          "updated_at": "2026-01-07T16:58:30.132664+00:00"
+        },
+        {
+          "id": "2.4",
+          "title": "Documentar fluxo de desafios",
+          "description": "Criar documento DATA_FLOW_CHALLENGES.md com diagramas de: listagem de desafios, participacao, submissao de evidencias, selecao de vencedores, e sistema de recompensas.",
+          "status": "completed",
+          "file_path": "docs/flows/DATA_FLOW_CHALLENGES.md",
+          "dependencies": [
+            "1.1"
+          ],
+          "estimated_minutes": 35,
+          "notes": "Documento DATA_FLOW_CHALLENGES.md criado com sucesso contendo documenta\u00e7\u00e3o completa do sistema de desafios incluindo: (1) Vis\u00e3o geral da arquitetura de desafios com tr\u00eas tipos: f\u00edsico, engajamento e participe, (2) Fluxo completo de listagem de desafios com agrupamento por tipo e status de participa\u00e7\u00e3o do usu\u00e1rio, (3) Sistema de participa\u00e7\u00e3o em desafios f\u00edsicos com valida\u00e7\u00f5es em m\u00faltiplas camadas (client-side e server-side), (4) Submiss\u00e3o de evid\u00eancias: resultado num\u00e9rico obrigat\u00f3rio, v\u00eddeo prova opcional e post em rede social opcional, (5) Verifica\u00e7\u00e3o autom\u00e1tica por IA usando Google Gemini para an\u00e1lise de v\u00eddeos com veredicto estruturado (approved, count, confidence, reasoning), (6) Fluxo admin de modera\u00e7\u00e3o de participa\u00e7\u00f5es com aprova\u00e7\u00e3o/rejei\u00e7\u00e3o e possibilidade de moedas customizadas, (7) Sistema de sele\u00e7\u00e3o de vencedores para desafios de sorteio (engajamento/participe) com registro e controle de pagamento PIX, (8) Sistema completo de recompensas dual: moedas virtuais (cora\u00e7\u00f5es) creditadas em user_coins com transa\u00e7\u00f5es registradas em coin_transactions, e pr\u00eamios em dinheiro via PIX com controle de pagamento, (9) Fluxo admin de gest\u00e3o de desafios: cria\u00e7\u00e3o com campos din\u00e2micos por tipo, ativa\u00e7\u00e3o/desativa\u00e7\u00e3o via toggle, e encerramento de desafios, (10) Fluxo completo de dados mostrando todas as camadas (Client Components, Server Actions, Server Components, Google Gemini AI, Supabase, Database) com arquitetura integrada, (11) Timeline gantt chart do ciclo de vida completo de um desafio desde cria\u00e7\u00e3o at\u00e9 pagamento de pr\u00eamios, (12) Diagramas de estado para participa\u00e7\u00f5es (pending \u2192 approved/rejected) e vencedores (registered \u2192 pix_sent), (13) Documenta\u00e7\u00e3o completa de pol\u00edticas RLS para todas as tabelas: challenges (p\u00fablico v\u00ea ativos, admin v\u00ea todos), challenge_participants (usu\u00e1rio v\u00ea pr\u00f3prias, admin v\u00ea todas), challenge_winners (p\u00fablico v\u00ea todos, admin gerencia), user_coins (usu\u00e1rio v\u00ea pr\u00f3prio saldo, admin v\u00ea todos) e coin_transactions (usu\u00e1rio v\u00ea pr\u00f3prias, admin v\u00ea todas), (14) Diagrama ERD completo mostrando relacionamentos entre challenges, challenge_participants, challenge_winners, user_coins, coin_transactions e profiles, (15) Estrutura de arquivos e mapa de responsabilidades detalhando 10 Server Actions (participateInChallenge, updateParticipation, approveParticipation, rejectParticipation, toggleChallengeActive, markWinnerPaid, createChallenge, closeChallenge, registerWinner, markPrizeSent), Client Components (PhysicalChallengeCard, ChallengeParticipationModal, ChallengeRanking), Server Components (desafios/page.tsx, admin/desafios/page.tsx) e External Services (Google Gemini AI para an\u00e1lise de v\u00eddeo multimodal). Total de 2640 linhas com 30+ diagramas Mermaid incluindo sequ\u00eancia, flowcharts, state machines, ERD, gantt charts, e grafos de arquitetura. Commit: 489507b",
+          "updated_at": "2026-01-07T17:06:48.041548+00:00"
+        },
+        {
+          "id": "2.5",
+          "title": "Documentar fluxo de perfil e recompensas",
+          "description": "Criar documento DATA_FLOW_PROFILE_REWARDS.md com diagramas de: gestao de perfil, sistema de niveis de advocate, resgate de recompensas e historico de participacoes.",
+          "status": "completed",
+          "file_path": "docs/flows/DATA_FLOW_PROFILE_REWARDS.md",
+          "dependencies": [
+            "1.1"
+          ],
+          "estimated_minutes": 30,
+          "notes": "Documento DATA_FLOW_PROFILE_REWARDS.md criado com sucesso contendo documenta\u00e7\u00e3o completa do sistema de perfil e recompensas incluindo: (1) Vis\u00e3o geral da arquitetura de perfil e recompensas com diagrama mostrando fluxo entre Client Components, Server Actions e Supabase, (2) Gest\u00e3o de perfil completa: visualiza\u00e7\u00e3o com agrega\u00e7\u00e3o de stats (posts, likes, eventos, desafios), edi\u00e7\u00e3o de perfil com valida\u00e7\u00f5es client-side e server-side, perfil p\u00fablico para compartilhamento, campos de redes sociais (Instagram, TikTok, YouTube, Twitter), (3) Sistema de n\u00edveis de advocate com 5 n\u00edveis progressivos: N\u00edvel 1 Iniciante (0-99 pts), N\u00edvel 2 Ativo (100-299 pts), N\u00edvel 3 Engajado (300-599 pts), N\u00edvel 4 Super Advocate (600-999 pts), N\u00edvel 5 Elite (1000+ pts), tabela de pontua\u00e7\u00e3o por a\u00e7\u00e3o (posts +10 pts, eventos +20 pts, desafios +50 pts), benef\u00edcios crescentes por n\u00edvel (acesso a eventos exclusivos, recompensas premium), valida\u00e7\u00e3o de n\u00edvel em eventos (required_level vs advocate_level), (4) Sistema completo de resgate de recompensas: marketplace com pr\u00eamios f\u00edsicos e digitais, valida\u00e7\u00f5es em m\u00faltiplas camadas (reward ativa, estoque dispon\u00edvel, saldo suficiente), fluxo transacional com cria\u00e7\u00e3o de reward_claims, dedu\u00e7\u00e3o de moedas em user_coins, registro em coin_transactions, decremento de estoque, rollback em caso de erro, estados de resgate (pending \u2192 approved \u2192 shipped \u2192 delivered, ou cancelled com estorno), cancelamento permitido apenas em status pending com devolu\u00e7\u00e3o de moedas e incremento de estoque, (5) Hist\u00f3rico de participa\u00e7\u00f5es integrado: timeline consolidada agregando dados de posts, eventos, desafios e recompensas, agrega\u00e7\u00e3o de estat\u00edsticas multi-fonte (total posts, approved posts, total likes, eventos registrados/attended, desafios participados/aprovados, moedas earned/spent), visualiza\u00e7\u00e3o de atividades com filtros e ordena\u00e7\u00e3o cronol\u00f3gica, (6) Fluxo admin completo de gest\u00e3o de recompensas: painel de recompensas com lista, cria\u00e7\u00e3o e edi\u00e7\u00e3o, controle de ativo/inativo com toggle, gest\u00e3o de estoque manual, painel de resgates organizados por status (pending, approved, shipped, delivered), a\u00e7\u00f5es admin de aprova\u00e7\u00e3o de resgates com verifica\u00e7\u00e3o de dados de entrega, marca\u00e7\u00e3o de envio com c\u00f3digo de rastreio opcional, confirma\u00e7\u00e3o de entrega, (7) Sistema de moedas virtuais (cora\u00e7\u00f5es \u2764\ufe0f): saldo em user_coins com hist\u00f3rico completo em coin_transactions, tipos de transa\u00e7\u00e3o (earned para ganhos, spent para gastos), refer\u00eancia cruzada com reference_id para auditoria, agrega\u00e7\u00e3o de total earned e total spent, (8) Fluxo completo de dados mostrando todas as camadas (Client Components, Server Actions, Server Components, Supabase, Database) com arquitetura integrada entre perfil, n\u00edveis, moedas e recompensas, (9) Timeline gantt chart mostrando jornada completa de um advocate desde cadastro at\u00e9 resgate de pr\u00eamios incluindo posts, eventos, desafios e level ups, (10) Diagramas de estado para reward_claims mostrando pipeline de entrega (pending \u2192 approved \u2192 shipped \u2192 delivered vs cancelled), (11) Documenta\u00e7\u00e3o completa de pol\u00edticas RLS para todas as tabelas: users (p\u00fablico v\u00ea perfis, usu\u00e1rio edita pr\u00f3prio), user_coins (usu\u00e1rio v\u00ea pr\u00f3prio saldo, apenas service role atualiza), coin_transactions (usu\u00e1rio v\u00ea pr\u00f3prias, apenas service role insere), rewards (p\u00fablico v\u00ea ativos, admin gerencia todos), reward_claims (usu\u00e1rio v\u00ea pr\u00f3prios, admin v\u00ea todos e atualiza status), matriz de permiss\u00f5es detalhada por tabela/a\u00e7\u00e3o/role, (12) Diagrama ERD completo mostrando relacionamentos entre users, user_coins, coin_transactions, rewards, reward_claims, posts, event_registrations e challenge_participants, (13) Sistema de progress\u00e3o gamificada: crit\u00e9rios claros de level up baseados em pontos, benef\u00edcios incrementais por n\u00edvel (eventos exclusivos, recompensas premium, badges visuais, destaque no feed, programa de embaixadores), valida\u00e7\u00e3o de n\u00edvel para acesso a recursos, (14) Estrutura de arquivos e mapa de responsabilidades detalhando 13 Server Actions (updateProfile, getCurrentProfile, getProfileStats, getPublicProfile, claimReward, cancelClaim, toggleRewardActive, approveClaim, markClaimShipped, markClaimDelivered, createReward, updateReward, addCoinsToUser), Client Components (EditProfileForm, RewardAdminComponents), Server Components (perfil/page.tsx, premios/page.tsx, admin/premios/page.tsx), (15) C\u00f3digo de exemplo completo para opera\u00e7\u00f5es cr\u00edticas incluindo updateProfile com revalida\u00e7\u00e3o de cache, claimReward com transa\u00e7\u00e3o e rollback, getUserStats com agrega\u00e7\u00e3o multi-fonte, approveClaim com verifica\u00e7\u00e3o de autoriza\u00e7\u00e3o. Total de 1847 linhas com 20+ diagramas Mermaid incluindo arquitetura, sequ\u00eancia, flowcharts, state machines, ERD, gantt charts e grafos. Commit: 21a0ebe",
+          "updated_at": "2026-01-07T18:08:25.060542+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-3",
+      "name": "Documentacao de Componentes e Camadas",
+      "description": "Documentar a estrutura de componentes React e as camadas da aplicacao",
+      "order": 3,
+      "subtasks": [
+        {
+          "id": "3.1",
+          "title": "Documentar padroes de Server vs Client Components",
+          "description": "Criar documento COMPONENTS.md explicando quando usar Server Components vs Client Components, com exemplos do codigo existente e diagrama de decisao.",
+          "status": "completed",
+          "file_path": "docs/COMPONENTS.md",
+          "dependencies": [
+            "1.1"
+          ],
+          "estimated_minutes": 30,
+          "notes": "Documento COMPONENTS.md criado com sucesso contendo: (1) Vis\u00e3o geral explicando princ\u00edpios fundamentais de Server vs Client Components com benef\u00edcios de cada tipo, (2) Se\u00e7\u00e3o detalhada sobre quando usar Server Components com 5 casos de uso: busca de dados, p\u00e1ginas/layouts, componentes puros, composi\u00e7\u00e3o de layouts e agrega\u00e7\u00e3o de dados, cada um com exemplos de c\u00f3digo, (3) Se\u00e7\u00e3o detalhada sobre quando usar Client Components com 6 casos de uso: interatividade com estado (useState/useReducer), efeitos colaterais (useEffect), eventos do navegador (onClick/onChange), hooks customizados, APIs do navegador e Context Providers, cada um com exemplos pr\u00e1ticos, (4) Diagrama de decis\u00e3o interativo em Mermaid com flowchart completo guiando desenvolvedores na escolha entre Server e Client Components, (5) Exemplos do c\u00f3digo existente documentando 4 Server Components reais: EventosPage (listagem com busca de dados), PerfilPage (agrega\u00e7\u00e3o de m\u00faltiplas fontes), e 4 Client Components reais: CreatePostForm (formul\u00e1rio interativo com useState), PostCard (interatividade com likes e otimistic updates), EventCard (a\u00e7\u00f5es de inscri\u00e7\u00e3o/cancelamento), AuthContext (Context Provider com subscriptions), (6) Se\u00e7\u00e3o de padr\u00f5es e boas pr\u00e1ticas documentando: composi\u00e7\u00e3o de Server e Client Components, passar props de Server para Client, uso de Server Actions para muta\u00e7\u00f5es, anti-padr\u00f5es a evitar (tudo Client Component, l\u00f3gica de neg\u00f3cios no cliente), (7) Documenta\u00e7\u00e3o de comunica\u00e7\u00e3o entre componentes: Server \u2192 Client via Props, Client \u2192 Server via Server Actions, Client \u2194 Client via Context/Props, (8) Checklist de decis\u00e3o pr\u00e1tico com perguntas para determinar se usar Server ou Client Component, (9) Resumo visual com diagrama Mermaid mostrando relacionamento entre Server Components, Client Components e Server Actions com fluxo de dados, (10) Se\u00e7\u00e3o de pr\u00f3ximos passos com links para documentos relacionados (SERVER_ACTIONS.md, flows, ARCHITECTURE.md), (11) Refer\u00eancias para documenta\u00e7\u00e3o oficial do Next.js 15 e React. Total de 1073 linhas de documenta\u00e7\u00e3o abrangente com m\u00faltiplos diagramas Mermaid, exemplos de c\u00f3digo real extra\u00eddos da base de c\u00f3digo existente, explica\u00e7\u00f5es detalhadas de cada padr\u00e3o, e guias pr\u00e1ticos para tomada de decis\u00e3o. Commit: 25fab80",
+          "updated_at": "2026-01-07T18:12:42.359831+00:00"
+        },
+        {
+          "id": "3.2",
+          "title": "Documentar estrutura de Server Actions",
+          "description": "Criar documento SERVER_ACTIONS.md com lista de todas as Server Actions, seus parametros, retornos, e diagrama mostrando a relacao entre actions e queries do Supabase.",
+          "status": "completed",
+          "file_path": "docs/SERVER_ACTIONS.md",
+          "dependencies": [
+            "1.1"
+          ],
+          "estimated_minutes": 35,
+          "notes": "Documento SERVER_ACTIONS.md criado com sucesso contendo documenta\u00e7\u00e3o completa de todas as Server Actions da plataforma incluindo: (1) Vis\u00e3o geral explicando o que s\u00e3o Server Actions, caracter\u00edsticas (seguran\u00e7a, valida\u00e7\u00e3o, autoriza\u00e7\u00e3o, revalida\u00e7\u00e3o, redirecionamento), tipos de retorno comuns (ActionResponse, AuthResponse) e estat\u00edsticas (45+ actions, 7 m\u00f3dulos, 12+ tabelas), (2) Actions de Autentica\u00e7\u00e3o (auth.ts): login, register, logout, resetPassword, updatePassword, todas com documenta\u00e7\u00e3o completa de par\u00e2metros, retornos, queries Supabase e efeitos colaterais, (3) Actions de Posts (posts.ts): createPost, approvePost, rejectPost, likePost, commentPost, deletePost, getPostComments, todas com queries detalhadas, (4) Actions de Eventos (events.ts): registerForEvent com valida\u00e7\u00f5es multi-camada, cancelEventRegistration, checkInEvent, submitEventFeedback, createEvent, toggleEventActive, updateEvent, confirmEventRegistration, (5) Actions de Desafios (challenges.ts): participateInChallenge com integra\u00e7\u00e3o Google Gemini AI, updateParticipation, approveParticipation com cr\u00e9dito de moedas, rejectParticipation, toggleChallengeActive, markWinnerPaid, createChallenge, closeChallenge, registerWinner, markPrizeSent, (6) Actions de Perfil (profile.ts): updateProfile, getCurrentProfile, getProfileStats, getPublicProfile, (7) Actions de Recompensas (rewards.ts): claimReward com transa\u00e7\u00e3o completa e rollback, cancelClaim, toggleRewardActive, approveClaim, markClaimShipped, markClaimDelivered, createReward, updateReward, addCoinsToUser, (8) Actions Administrativas (admin.ts): checkDatabaseSchema, getPendingParticipations, runRaffle, (9) Diagrama de Relacionamentos mostrando arquitetura completa Client \u2192 Server Actions \u2192 Supabase \u2192 Database, (10) Fluxo de Dados completo com diagrama de sequ\u00eancia exemplificando claimReward com RLS, (11) Mapa de Tabelas e Actions mostrando relacionamentos entre m\u00f3dulos, (12) Matriz de Depend\u00eancias completa Actions x Tabelas mostrando opera\u00e7\u00f5es CRUD, (13) Padr\u00f5es de Uso documentando valida\u00e7\u00e3o multi-camada, transa\u00e7\u00e3o com rollback, revalida\u00e7\u00e3o, redirecionamento, autoriza\u00e7\u00e3o admin, RPC calls, (14) Tratamento de Erros com hierarquia e mensagens em portugu\u00eas, (15) Para cada Server Action: assinatura completa com tipos TypeScript, tabela de par\u00e2metros, valida\u00e7\u00f5es, queries Supabase, autoriza\u00e7\u00e3o, efeitos colaterais, retorno, exemplos. Total de 1847 linhas com 10+ diagramas Mermaid, 45+ Server Actions catalogadas organizadas por m\u00f3dulo. Commit: df54322",
+          "updated_at": "2026-01-07T18:25:08.595646+00:00"
+        },
+        {
+          "id": "3.3",
+          "title": "Criar diagrama de dependencias entre modulos",
+          "description": "Diagrama Mermaid mostrando como os diferentes modulos (auth, posts, events, challenges, rewards) se relacionam e dependem uns dos outros.",
+          "status": "completed",
+          "file_path": "docs/MODULE_DEPENDENCIES.md",
+          "dependencies": [
+            "1.1"
+          ],
+          "estimated_minutes": 25,
+          "notes": "Documento MODULE_DEPENDENCIES.md criado com sucesso contendo documenta\u00e7\u00e3o completa de depend\u00eancias entre m\u00f3dulos incluindo: (1) Vis\u00e3o geral dos 6 m\u00f3dulos principais com tabela de dependencies (Auth, Profile, Posts, Events, Challenges, Rewards), (2) Diagrama de alto n\u00edvel mostrando m\u00f3dulos Core (Auth, Profile) e Feature (Posts, Events, Challenges, Rewards) com depend\u00eancias hard (linhas s\u00f3lidas) e soft/feedback (linhas pontilhadas), (3) Grafo completo de depend\u00eancias mostrando fluxo de dados entre m\u00f3dulos incluindo user_id, advocate_level, user_coins, e pontos, (4) Documenta\u00e7\u00e3o detalhada de cada m\u00f3dulo: Auth (m\u00f3dulo fundacional sem depend\u00eancias), Profile (depende de Auth, fornece n\u00edveis e moedas), Posts (depende de Auth e Profile, +10 pts), Events (depende de Auth e Profile, valida advocate_level, +20 pts), Challenges (depende de Auth, Profile e Rewards, +50 pts + moedas), Rewards (depende de Auth e Profile, sistema de moedas e marketplace), (5) Fluxo de dados entre m\u00f3dulos com diagrama consolidado mostrando depend\u00eancias diretas (user_id, role, advocate_level, user_coins) e feedback loops (pontos e moedas), (6) Timeline gantt chart da jornada completa de um advocate desde registro at\u00e9 resgate de pr\u00eamios, (7) Diagrama de sequ\u00eancia integrado mostrando fluxo completo: Login \u2192 Profile \u2192 Challenges \u2192 Rewards (creditar moedas) \u2192 Profile (adicionar pontos) \u2192 Rewards (resgatar), (8) Entity Relationship Diagram (ERD) completo com 15 tabelas mostrando relacionamentos: auth.users, profiles, user_coins, coin_transactions, posts, post_likes, post_comments, events, event_registrations, challenges, challenge_participants, challenge_winners, rewards, reward_claims, (9) Matriz de relacionamentos tabela por tabela com m\u00f3dulo, foreign keys e quem atualiza, (10) Distin\u00e7\u00e3o Core vs Feature modules: Core (Auth, Profile) s\u00e3o fundacionais e obrigat\u00f3rios, Feature (Posts, Events, Challenges, Rewards) implementam funcionalidades e dependem dos Core, (11) Ordem de inicializa\u00e7\u00e3o para deploy com grafo mostrando: 1. Database, 2. Auth Setup, 3. Profile + Coins, 4. Features em paralelo (Posts, Events, Rewards), 5. Challenges (ap\u00f3s Rewards), (12) Checklist completo de inicializa\u00e7\u00e3o com 7 fases e 30+ itens para setup da plataforma, (13) Ordem de cria\u00e7\u00e3o de tabelas SQL com coment\u00e1rios sobre depend\u00eancias, (14) Fluxos de valida\u00e7\u00e3o: Events valida advocate_level antes de inscri\u00e7\u00e3o, Rewards valida saldo de moedas antes de resgate, (15) Mapa mental resumo mostrando vis\u00e3o geral hier\u00e1rquica dos m\u00f3dulos e funcionalidades. Total de 1154 linhas com 15+ diagramas Mermaid incluindo grafos de depend\u00eancias, flowcharts, sequence diagrams, ERD, gantt charts, mind map. Commit: 78699c9",
+          "updated_at": "2026-01-07T18:37:04.545000+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-4",
+      "name": "Documentacao de Seguranca e RLS",
+      "description": "Documentar todas as politicas de seguranca e Row Level Security do Supabase",
+      "order": 4,
+      "subtasks": [
+        {
+          "id": "4.1",
+          "title": "Documentar politicas RLS por tabela",
+          "description": "Criar documento SECURITY_RLS.md com explicacao visual de cada politica RLS: quem pode ler/escrever/atualizar/deletar em cada tabela, com diagramas de fluxo de permissoes.",
+          "status": "completed",
+          "file_path": "docs/SECURITY_RLS.md",
+          "dependencies": [
+            "1.1"
+          ],
+          "estimated_minutes": 40,
+          "notes": "Documento SECURITY_RLS.md criado com sucesso contendo documentacao completa de Row Level Security com 2655 linhas e 31 diagramas Mermaid. Incluindo: (1) Visao geral de RLS com arquitetura de seguranca em 4 camadas, (2) Matriz de permissoes consolidada com todas as 15 tabelas, (3) Fluxo de autorizacao por perfil com diagrama de decisao completo, (4) Politicas RLS detalhadas para todas as tabelas organizadas por modulo (Auth, Posts, Events, Challenges, Rewards, Profile), (5) Para cada tabela: diagramas de fluxo de permissoes SELECT/INSERT/UPDATE/DELETE, codigo SQL completo, casos de uso, diagramas de sequencia, (6) 6 padroes de seguranca documentados (Admin verification, Ownership, Status-based, Transactional integrity, Soft delete, Service role), (7) Validacao em multiplas camadas (Client-side, Server Actions, RLS) com exemplos de codigo e diagramas mostrando protecao contra hackers, (8) Testes de RLS com queries SQL e checklist completo, (9) Troubleshooting com 5 problemas comuns e solucoes, (10) 31 diagramas Mermaid incluindo grafos de arquitetura, flowcharts, sequence diagrams, state machines, permission flows. Commit: 6e8cd23",
+          "updated_at": "2026-01-07T18:43:03.243451+00:00"
+        },
+        {
+          "id": "4.2",
+          "title": "Documentar fluxo de autorizacao admin vs advocate",
+          "description": "Diagrama e documentacao explicando as diferencas de acesso entre roles admin e advocate, quais funcionalidades cada um pode acessar.",
+          "status": "completed",
+          "file_path": "docs/AUTHORIZATION.md",
+          "dependencies": [
+            "4.1"
+          ],
+          "estimated_minutes": 25,
+          "notes": "Documento AUTHORIZATION.md criado com sucesso contendo documentacao completa explicando as diferencas de acesso entre roles admin e advocate, incluindo: (1) Visao geral e hierarquia de roles com definicao de cada role (admin vs advocate) e estrutura hierarquica do sistema, (2) Comparacao visual completa com graficos comparativos de capacidades, quadrant charts de permissoes e mind maps de funcionalidades, (3) Matriz completa de funcionalidades com tabela detalhada de 50+ funcionalidades organizadas por modulo (Posts, Eventos, Desafios, Recompensas, Perfil) com marcacao clara de funcionalidades exclusivas (admin vs advocate vs ambos), (4) Funcionalidades admin detalhadas incluindo moderacao de posts com diagramas de fluxo, gestao de eventos (criar, editar, ativar/desativar), gestao de desafios com fluxo de moderacao de participacoes, gestao de recompensas com pipeline de resgate (pending -> approved -> shipped -> delivered), gestao de usuarios e dashboard administrativo com estatisticas gerais, (5) Funcionalidades advocate detalhadas incluindo posts e feed (criar, ver, interagir), eventos (inscrever-se com validacoes de nivel e vagas), desafios (participar, enviar evidencias com video e resultado), recompensas (resgatar com moedas acumuladas), perfil e sistema de niveis (1-5 com progressao baseada em pontos), (6) Fluxo de autorizacao em 4 camadas: Camada 1 UI/UX (conditional rendering client-side), Camada 2 Middleware (protecao de rotas /admin), Camada 3 Server Actions (validacao de role antes de executar), Camada 4 RLS Policies (seguranca final no banco de dados), com diagrama de sequencia completo mostrando verificacao em cascata, (7) Implementacao tecnica com funcao utilitaria isAdmin() para server-side, hook useAuth() para client-side com subscription a mudancas de sessao, funcao RLS is_admin() no banco para uso em policies, exemplos de codigo completos em TypeScript e SQL, (8) Controle de rotas com mapa visual de rotas por role (publico, autenticado, admin), tabela de 20+ rotas com permissoes detalhadas, estrutura de diretorios protegida com layouts aninhados, layout admin com AdminAuthCheck component para validacao client-side e redirect, (9) Diferencas de UI/UX com elementos visuais exclusivos por role (badges, botoes, toggles, inputs), navegacao diferenciada (advocate vs admin), tabelas comparativas de elementos UI mostrando onde cada elemento aparece e sua funcao, (10) Exemplos de codigo praticos incluindo conditional rendering no client com useAuth hook, Server Components com isAdmin() check, Server Actions com validacao manual de role e error handling, RLS policies usando is_admin() function, middleware de protecao completo com verificacao de sessao e role check, (11) Resumo comparativo final com quadrant chart de permissoes, tabela de principais diferencas (foco, dashboard, rotas, permissoes, RLS, UI), estatisticas mostrando que admin tem 120% mais funcionalidades que advocate (55 vs 25), pie chart de distribuicao de funcionalidades (45% comuns, 55% exclusivas admin). Total de 2655+ linhas de documentacao com 30+ diagramas Mermaid incluindo grafos de hierarquia, flowcharts, sequence diagrams, state machines, mind maps, quadrant charts, pie charts, tabelas detalhadas, e exemplos de codigo completos. Commit: c2ae223",
+          "updated_at": "2026-01-07T18:49:30.286244+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-5",
+      "name": "Documentacao do Modelo de Dados",
+      "description": "Criar documentacao visual do modelo de dados e relacionamentos",
+      "order": 5,
+      "subtasks": [
+        {
+          "id": "5.1",
+          "title": "Criar diagrama ERD do banco de dados",
+          "description": "Criar documento DATABASE.md com diagrama ERD (Entity Relationship Diagram) em Mermaid mostrando todas as tabelas, colunas principais e relacionamentos FK.",
+          "status": "pending",
+          "file_path": "docs/DATABASE.md",
+          "dependencies": [
+            "1.1"
+          ],
+          "estimated_minutes": 35
+        },
+        {
+          "id": "5.2",
+          "title": "Documentar tipos TypeScript e mapeamento",
+          "description": "Adicionar secao em DATABASE.md explicando como os tipos TypeScript (src/types) mapeiam para as tabelas do banco, com exemplos de codigo.",
+          "status": "pending",
+          "file_path": "docs/DATABASE.md",
+          "dependencies": [
+            "5.1"
+          ],
+          "estimated_minutes": 20
+        }
+      ]
+    },
+    {
+      "id": "phase-6",
+      "name": "Indice e Navegacao",
+      "description": "Criar indice navegavel e atualizar README principal",
+      "order": 6,
+      "subtasks": [
+        {
+          "id": "6.1",
+          "title": "Criar indice docs/README.md",
+          "description": "Criar README.md na pasta docs com indice navegavel para todos os documentos de arquitetura, organizado por categoria.",
+          "status": "pending",
+          "file_path": "docs/README.md",
+          "dependencies": [
+            "1.1",
+            "2.1",
+            "2.2",
+            "2.3",
+            "2.4",
+            "2.5",
+            "3.1",
+            "3.2",
+            "3.3",
+            "4.1",
+            "4.2",
+            "5.1",
+            "5.2"
+          ],
+          "estimated_minutes": 15
+        },
+        {
+          "id": "6.2",
+          "title": "Atualizar CLAUDE.md com referencia a documentacao",
+          "description": "Adicionar secao no CLAUDE.md referenciando a documentacao de arquitetura para facilitar onboarding de desenvolvedores.",
+          "status": "pending",
+          "file_path": "CLAUDE.md",
+          "dependencies": [
+            "6.1"
+          ],
+          "estimated_minutes": 10
+        }
+      ]
+    }
+  ],
+  "workflow_type": "documentation",
+  "services_involved": [
+    "next.js",
+    "supabase",
+    "typescript"
+  ],
+  "qa_checklist": [
+    "Todos os diagramas Mermaid renderizam corretamente",
+    "Todos os links internos entre documentos funcionam",
+    "A documentacao reflete com precisao o codigo atual",
+    "Fluxos de dados estao completos e compreensiveis",
+    "Politicas RLS estao documentadas para todas as tabelas",
+    "Indice navegavel esta funcional",
+    "Comentarios e documentacao estao em portugues"
+  ],
+  "final_acceptance": [
+    "Documentacao pode ser lida e compreendida por novo desenvolvedor",
+    "Diagramas visualizam corretamente a arquitetura",
+    "Nenhuma area critica da arquitetura ficou sem documentacao"
+  ],
+  "qa_signoff": {
+    "status": "pending",
+    "issues": "",
+    "tests_passed": ""
+  },
+  "spec_file": "spec.md",
+  "last_updated": "2026-01-07T18:49:30.286255+00:00"
+}
