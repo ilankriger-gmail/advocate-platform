@@ -182,12 +182,14 @@
           "id": "4.2",
           "title": "Documentar fluxo de autorizacao admin vs advocate",
           "description": "Diagrama e documentacao explicando as diferencas de acesso entre roles admin e advocate, quais funcionalidades cada um pode acessar.",
-          "status": "pending",
+          "status": "completed",
           "file_path": "docs/AUTHORIZATION.md",
           "dependencies": [
             "4.1"
           ],
-          "estimated_minutes": 25
+          "estimated_minutes": 25,
+          "notes": "Documento AUTHORIZATION.md criado com sucesso contendo documentacao completa explicando as diferencas de acesso entre roles admin e advocate, incluindo: (1) Visao geral e hierarquia de roles com definicao de cada role (admin vs advocate) e estrutura hierarquica do sistema, (2) Comparacao visual completa com graficos comparativos de capacidades, quadrant charts de permissoes e mind maps de funcionalidades, (3) Matriz completa de funcionalidades com tabela detalhada de 50+ funcionalidades organizadas por modulo (Posts, Eventos, Desafios, Recompensas, Perfil) com marcacao clara de funcionalidades exclusivas (admin vs advocate vs ambos), (4) Funcionalidades admin detalhadas incluindo moderacao de posts com diagramas de fluxo, gestao de eventos (criar, editar, ativar/desativar), gestao de desafios com fluxo de moderacao de participacoes, gestao de recompensas com pipeline de resgate (pending -> approved -> shipped -> delivered), gestao de usuarios e dashboard administrativo com estatisticas gerais, (5) Funcionalidades advocate detalhadas incluindo posts e feed (criar, ver, interagir), eventos (inscrever-se com validacoes de nivel e vagas), desafios (participar, enviar evidencias com video e resultado), recompensas (resgatar com moedas acumuladas), perfil e sistema de niveis (1-5 com progressao baseada em pontos), (6) Fluxo de autorizacao em 4 camadas: Camada 1 UI/UX (conditional rendering client-side), Camada 2 Middleware (protecao de rotas /admin), Camada 3 Server Actions (validacao de role antes de executar), Camada 4 RLS Policies (seguranca final no banco de dados), com diagrama de sequencia completo mostrando verificacao em cascata, (7) Implementacao tecnica com funcao utilitaria isAdmin() para server-side, hook useAuth() para client-side com subscription a mudancas de sessao, funcao RLS is_admin() no banco para uso em policies, exemplos de codigo completos em TypeScript e SQL, (8) Controle de rotas com mapa visual de rotas por role (publico, autenticado, admin), tabela de 20+ rotas com permissoes detalhadas, estrutura de diretorios protegida com layouts aninhados, layout admin com AdminAuthCheck component para validacao client-side e redirect, (9) Diferencas de UI/UX com elementos visuais exclusivos por role (badges, botoes, toggles, inputs), navegacao diferenciada (advocate vs admin), tabelas comparativas de elementos UI mostrando onde cada elemento aparece e sua funcao, (10) Exemplos de codigo praticos incluindo conditional rendering no client com useAuth hook, Server Components com isAdmin() check, Server Actions com validacao manual de role e error handling, RLS policies usando is_admin() function, middleware de protecao completo com verificacao de sessao e role check, (11) Resumo comparativo final com quadrant chart de permissoes, tabela de principais diferencas (foco, dashboard, rotas, permissoes, RLS, UI), estatisticas mostrando que admin tem 120% mais funcionalidades que advocate (55 vs 25), pie chart de distribuicao de funcionalidades (45% comuns, 55% exclusivas admin). Total de 2655+ linhas de documentacao com 30+ diagramas Mermaid incluindo grafos de hierarquia, flowcharts, sequence diagrams, state machines, mind maps, quadrant charts, pie charts, tabelas detalhadas, e exemplos de codigo completos. Commit: c2ae223",
+          "updated_at": "2026-01-07T18:49:30.286244+00:00"
         }
       ]
     },
@@ -290,5 +292,5 @@
     "tests_passed": ""
   },
   "spec_file": "spec.md",
-  "last_updated": "2026-01-07T18:43:03.243457+00:00"
+  "last_updated": "2026-01-07T18:49:30.286255+00:00"
 }
