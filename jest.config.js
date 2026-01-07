@@ -34,6 +34,53 @@ const config = {
     '!src/**/__mocks__/**',
   ],
 
+  // Coverage thresholds - ensures critical business logic has adequate test coverage
+  coverageThresholds: {
+    global: {
+      branches: 70,
+      functions: 70,
+      lines: 70,
+      statements: 70,
+    },
+    // Critical business logic files require higher coverage (>80%)
+    './src/actions/rewards.ts': {
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80,
+    },
+    './src/actions/challenges.ts': {
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80,
+    },
+    './src/lib/supabase/rewards.ts': {
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80,
+    },
+    './src/lib/utils.ts': {
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80,
+    },
+  },
+
+  // Coverage reporters - generate multiple formats for better visibility
+  coverageReporters: [
+    'text',           // Console output with summary
+    'text-summary',   // Brief summary
+    'html',           // Detailed HTML report in coverage/ directory
+    'lcov',           // For CI/CD integration
+    'json-summary',   // Machine-readable summary
+  ],
+
+  // Coverage directory
+  coverageDirectory: 'coverage',
+
   // Transform files with ts-jest
   transform: {
     '^.+\\.(ts|tsx)$': ['ts-jest', {
