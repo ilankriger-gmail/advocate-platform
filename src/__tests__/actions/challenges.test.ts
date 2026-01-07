@@ -320,4 +320,132 @@ describe('participateInChallenge', () => {
       expect(result.success).toBe(true);
     });
   });
+
+  describe('Criação de Participação', () => {
+    it('deve criar participação com status pending e dados corretos', async () => {
+      // Arrange: Usuário autenticado e desafio válido
+      const user = setupAuthenticatedUser({ coinBalance: 500 });
+      const challenge = createMockChallenge({
+        type: 'fisico',
+        is_active: true,
+        status: 'active',
+      });
+      setMockData('challenges', [challenge]);
+      setMockData('challenge_participants', []);
+
+      // Act
+      const result = await participateInChallenge({
+        challengeId: challenge.id,
+        resultValue: 15,
+        videoProofUrl: 'https://example.com/video.mp4',
+        socialMediaUrl: 'https://instagram.com/p/abc123',
+      });
+
+      // Assert: Resposta de sucesso
+      expect(result.success).toBe(true);
+      expect(result.error).toBeUndefined();
+      expect(result.data).toBeDefined();
+
+      // Assert: Participação criada no banco de dados
+      const participations = getMockData('challenge_participants');
+      expect(participations).toHaveLength(1);
+
+      // Assert: Dados da participação estão corretos
+      const participation = participations[0];
+      expect(participation.user_id).toBe(user.id);
+      expect(participation.challenge_id).toBe(challenge.id);
+      expect(participation.status).toBe('pending');
+      expect(participation.result_value).toBe(15);
+      expect(participation.video_proof_url).toBe('https://example.com/video.mp4');
+      expect(participation.social_media_url).toBe('https://instagram.com/p/abc123');
+      expect(participation.coins_earned).toBe(0);
+      expect(participation.created_at).toBeDefined();
+    });
+
+    it('deve criar participação sem URLs opcionais', async () => {
+      // Arrange: Usuário autenticado e desafio válido
+      const user = setupAuthenticatedUser({ coinBalance: 500 });
+      const challenge = createMockChallenge({
+        type: 'fisico',
+        is_active: true,
+        status: 'active',
+      });
+      setMockData('challenges', [challenge]);
+      setMockData('challenge_participants', []);
+
+      // Act: Participar sem video_proof_url nem social_media_url
+      const result = await participateInChallenge({
+        challengeId: challenge.id,
+        resultValue: 25,
+      });
+
+      // Assert: Resposta de sucesso
+      expect(result.success).toBe(true);
+      expect(result.error).toBeUndefined();
+
+      // Assert: Participação criada com URLs como null
+      const participations = getMockData('challenge_participants');
+      expect(participations).toHaveLength(1);
+      const participation = participations[0];
+      expect(participation.user_id).toBe(user.id);
+      expect(participation.result_value).toBe(25);
+      expect(participation.video_proof_url).toBeNull();
+      expect(participation.social_media_url).toBeNull();
+      expect(participation.status).toBe('pending');
+    });
+
+    it('deve registrar diferentes valores de resultado', async () => {
+      // Arrange: Usuário autenticado e desafio válido
+      const user = setupAuthenticatedUser({ coinBalance: 500 });
+      const challenge = createMockChallenge({
+        type: 'fisico',
+        is_active: true,
+        status: 'active',
+        goal_type: 'repetitions',
+        goal_value: 50,
+      });
+      setMockData('challenges', [challenge]);
+      setMockData('challenge_participants', []);
+
+      // Act: Participar com resultado de 100 repetições
+      const result = await participateInChallenge({
+        challengeId: challenge.id,
+        resultValue: 100,
+      });
+
+      // Assert: Valor do resultado registrado corretamente
+      expect(result.success).toBe(true);
+      const participations = getMockData('challenge_participants');
+      expect(participations[0].result_value).toBe(100);
+    });
+
+    it('deve incluir veredicto da IA quando video é fornecido', async () => {
+      // Arrange: Usuário autenticado e desafio válido
+      const user = setupAuthenticatedUser({ coinBalance: 500 });
+      const challenge = createMockChallenge({
+        type: 'fisico',
+        is_active: true,
+        status: 'active',
+      });
+      setMockData('challenges', [challenge]);
+      setMockData('challenge_participants', []);
+
+      // Act: Participar com URL de vídeo (AI será invocada)
+      const result = await participateInChallenge({
+        challengeId: challenge.id,
+        resultValue: 30,
+        videoProofUrl: 'https://example.com/proof.mp4',
+      });
+
+      // Assert: Veredicto da IA incluído na participação
+      expect(result.success).toBe(true);
+      const participations = getMockData('challenge_participants');
+      const participation = participations[0];
+      expect(participation.ai_verdict).toBeDefined();
+      expect(participation.ai_verdict.isValid).toBe(true);
+      expect(participation.ai_verdict.achievedValue).toBe(10);
+      expect(participation.ai_verdict.confidence).toBe(0.95);
+      expect(participation.ai_verdict.reasoning).toBe('Test AI analysis');
+    });
+  });
 });
