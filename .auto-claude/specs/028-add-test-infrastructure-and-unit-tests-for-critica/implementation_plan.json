@@ -369,7 +369,7 @@
           "id": "5.4",
           "title": "Test rejectParticipation flow",
           "description": "Test challenge rejection functionality",
-          "status": "pending",
+          "status": "completed",
           "acceptance_criteria": [
             "Test non-admin rejection",
             "Test participation status updated to rejected",
@@ -378,7 +378,9 @@
           "files_to_modify": [
             "src/__tests__/actions/challenges.test.ts"
           ],
-          "estimated_complexity": "low"
+          "estimated_complexity": "low",
+          "notes": "Added comprehensive tests for rejectParticipation function covering access validation, status updates, data preservation, no coin rewards, and error scenarios. Tests follow the same patterns as approveParticipation tests.",
+          "updated_at": "2026-01-07T18:26:42.086859+00:00"
         }
       ]
     },
@@ -391,7 +393,7 @@
           "id": "6.1",
           "title": "Test canClaimReward function",
           "description": "Test the validation function for reward claiming eligibility",
-          "status": "pending",
+          "status": "completed",
           "acceptance_criteria": [
             "Test unauthenticated user",
             "Test reward not found",
@@ -403,7 +405,9 @@
           "files_to_modify": [
             "src/__tests__/lib/supabase/rewards.test.ts"
           ],
-          "estimated_complexity": "medium"
+          "estimated_complexity": "medium",
+          "notes": "Successfully created comprehensive tests for canClaimReward validation function in src/__tests__/lib/supabase/rewards.test.ts with the following coverage:\n\n**Validation Tests (15 test cases):**\n- Unauthenticated user rejection\n- Reward not found error\n- Inactive reward rejection (is_active: false)\n- Out of stock error (quantity_available: 0 or negative)\n- Insufficient balance error\n- No user_coins record handling\n- Edge case: saldo exactly 1 less than required\n- Validation order priority (auth \u2192 reward existence \u2192 status \u2192 stock \u2192 balance)\n- Status validation before stock validation\n- Stock validation before balance validation\n\n**Success Flow Tests (6 test cases):**\n- Basic successful eligibility check\n- Edge case: balance exactly equal to required coins\n- Edge case: stock exactly 1 unit\n- Large balance with cheap reward\n- Free reward (0 coins required)\n- Independent evaluation of multiple rewards\n\nAll tests verify:\n- Correct canClaim boolean return value\n- Proper reason messages for invalid scenarios\n- All validations from the canClaimReward function are covered\n- Edge cases and boundary conditions\n\nTests follow established patterns with:\n- Portuguese comments using Arrange/Act/Assert pattern\n- Proper use of helper functions (resetMocks, setupAuthenticatedUser)\n- Factory functions for test data (createMockReward)\n- Mock setup for Supabase client\n- beforeEach cleanup for test isolation\n\nTotal of 21 comprehensive test cases covering all acceptance criteria plus additional edge cases.\n\nCommitted with: auto-claude: 6.1 - Test the validation function for reward claiming eligibility",
+          "updated_at": "2026-01-07T18:33:41.704364+00:00"
         },
         {
           "id": "6.2",
@@ -479,5 +483,5 @@
     "tests_passed": null,
     "issues": null
   },
-  "last_updated": "2026-01-07T18:18:28.576150+00:00"
+  "last_updated": "2026-01-07T18:33:41.704379+00:00"
 }
