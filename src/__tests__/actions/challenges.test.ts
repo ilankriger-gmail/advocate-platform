@@ -2,10 +2,11 @@
  * Testes para actions de desafios
  */
 
-import { participateInChallenge } from '@/actions/challenges';
+import { participateInChallenge, approveParticipation } from '@/actions/challenges';
 import {
   resetMocks,
   setupAuthenticatedUser,
+  setupAdminUser,
 } from '../helpers';
 import {
   createMockChallenge,
@@ -446,6 +447,358 @@ describe('participateInChallenge', () => {
       expect(participation.ai_verdict.achievedValue).toBe(10);
       expect(participation.ai_verdict.confidence).toBe(0.95);
       expect(participation.ai_verdict.reasoning).toBe('Test AI analysis');
+    });
+  });
+});
+
+describe('approveParticipation', () => {
+  beforeEach(() => {
+    resetMocks();
+  });
+
+  describe('Validações de Acesso', () => {
+    it('deve rejeitar usuário não autenticado', async () => {
+      // Arrange: Sem autenticação
+      const participation = createMockParticipation();
+      setMockData('challenge_participants', [participation]);
+
+      // Act
+      const result = await approveParticipation(participation.id);
+
+      // Assert
+      expect(result.error).toBe('Usuario nao autenticado');
+      expect(result.success).toBeUndefined();
+    });
+
+    it('deve rejeitar usuário não-admin', async () => {
+      // Arrange: Usuário comum autenticado
+      setupAuthenticatedUser({ role: 'fan', is_creator: false });
+      const participation = createMockParticipation();
+      setMockData('challenge_participants', [participation]);
+
+      // Act
+      const result = await approveParticipation(participation.id);
+
+      // Assert
+      expect(result.error).toBe('Acesso nao autorizado');
+      expect(result.success).toBeUndefined();
+    });
+
+    it('deve permitir admin aprovar participação', async () => {
+      // Arrange: Admin autenticado
+      const admin = setupAdminUser();
+      const user = setupAuthenticatedUser();
+      const challenge = createMockChallenge({ coins_reward: 100 });
+      const participation = createMockParticipation({
+        user_id: user.id,
+        challenge_id: challenge.id,
+        status: 'pending',
+      });
+
+      setMockData('challenges', [challenge]);
+      setMockData('challenge_participants', [participation]);
+      setMockData('coin_transactions', []);
+
+      // Resetar e configurar admin novamente
+      resetMocks();
+      setupAdminUser({ id: admin.id });
+      setMockData('challenges', [challenge]);
+      setMockData('challenge_participants', [participation]);
+      setMockData('coin_transactions', []);
+
+      // Act
+      const result = await approveParticipation(participation.id);
+
+      // Assert
+      expect(result.success).toBe(true);
+      expect(result.error).toBeUndefined();
+    });
+
+    it('deve rejeitar se participação não existe', async () => {
+      // Arrange: Admin autenticado mas participação não existe
+      setupAdminUser();
+      const nonExistentParticipationId = 'non-existent-participation-id';
+
+      // Act
+      const result = await approveParticipation(nonExistentParticipationId);
+
+      // Assert
+      expect(result.error).toBe('Participacao nao encontrada');
+      expect(result.success).toBeUndefined();
+    });
+  });
+
+  describe('Recompensa de Moedas', () => {
+    it('deve aprovar com recompensa padrão do desafio', async () => {
+      // Arrange: Admin autenticado, participação pendente
+      const admin = setupAdminUser();
+      const user = setupAuthenticatedUser({ coinBalance: 200 });
+      const challenge = createMockChallenge({ coins_reward: 150 });
+      const participation = createMockParticipation({
+        user_id: user.id,
+        challenge_id: challenge.id,
+        status: 'pending',
+      });
+
+      setMockData('challenges', [challenge]);
+      setMockData('challenge_participants', [participation]);
+      setMockData('coin_transactions', []);
+
+      // Resetar e configurar admin novamente
+      resetMocks();
+      setupAdminUser({ id: admin.id });
+      setMockData('challenges', [challenge]);
+      setMockData('challenge_participants', [participation]);
+      setMockData('coin_transactions', []);
+
+      // Act
+      const result = await approveParticipation(participation.id);
+
+      // Assert: Participação aprovada com moedas do desafio
+      expect(result.success).toBe(true);
+      const updatedParticipations = getMockData('challenge_participants');
+      const updatedParticipation = updatedParticipations.find(
+        (p: any) => p.id === participation.id
+      );
+      expect(updatedParticipation.status).toBe('approved');
+      expect(updatedParticipation.coins_earned).toBe(150);
+      expect(updatedParticipation.approved_by).toBe(admin.id);
+      expect(updatedParticipation.approved_at).toBeDefined();
+    });
+
+    it('deve aprovar com valor customizado de moedas', async () => {
+      // Arrange: Admin autenticado, participação pendente
+      const admin = setupAdminUser();
+      const user = setupAuthenticatedUser({ coinBalance: 200 });
+      const challenge = createMockChallenge({ coins_reward: 100 });
+      const participation = createMockParticipation({
+        user_id: user.id,
+        challenge_id: challenge.id,
+        status: 'pending',
+      });
+
+      setMockData('challenges', [challenge]);
+      setMockData('challenge_participants', [participation]);
+      setMockData('coin_transactions', []);
+
+      // Resetar e configurar admin novamente
+      resetMocks();
+      setupAdminUser({ id: admin.id });
+      setMockData('challenges', [challenge]);
+      setMockData('challenge_participants', [participation]);
+      setMockData('coin_transactions', []);
+
+      // Act: Aprovar com 200 moedas customizadas
+      const result = await approveParticipation(participation.id, 200);
+
+      // Assert: Participação aprovada com moedas customizadas
+      expect(result.success).toBe(true);
+      const updatedParticipations = getMockData('challenge_participants');
+      const updatedParticipation = updatedParticipations.find(
+        (p: any) => p.id === participation.id
+      );
+      expect(updatedParticipation.coins_earned).toBe(200);
+      expect(updatedParticipation.status).toBe('approved');
+    });
+
+    it('deve adicionar moedas ao saldo do usuário', async () => {
+      // Arrange: Admin autenticado, participação pendente
+      const admin = setupAdminUser();
+      const user = setupAuthenticatedUser({ coinBalance: 200 });
+      const challenge = createMockChallenge({ coins_reward: 150 });
+      const participation = createMockParticipation({
+        user_id: user.id,
+        challenge_id: challenge.id,
+        status: 'pending',
+      });
+
+      const userCoins = getMockData('user_coins').find(
+        (uc: any) => uc.user_id === user.id
+      );
+      const initialBalance = userCoins.balance;
+
+      setMockData('challenges', [challenge]);
+      setMockData('challenge_participants', [participation]);
+      setMockData('coin_transactions', []);
+
+      // Resetar e configurar admin novamente
+      resetMocks();
+      setupAdminUser({ id: admin.id });
+      const userCoinsAfterReset = {
+        id: 'user-coins-1',
+        user_id: user.id,
+        balance: initialBalance,
+        updated_at: new Date().toISOString(),
+      };
+      setMockData('user_coins', [userCoinsAfterReset]);
+      setMockData('challenges', [challenge]);
+      setMockData('challenge_participants', [participation]);
+      setMockData('coin_transactions', []);
+
+      // Act
+      const result = await approveParticipation(participation.id);
+
+      // Assert: Moedas adicionadas ao saldo
+      expect(result.success).toBe(true);
+      const updatedUserCoins = getMockData('user_coins').find(
+        (uc: any) => uc.user_id === user.id
+      );
+      expect(updatedUserCoins.balance).toBe(initialBalance + 150);
+    });
+
+    it('deve criar transação de moedas ao aprovar', async () => {
+      // Arrange: Admin autenticado, participação pendente
+      const admin = setupAdminUser();
+      const user = setupAuthenticatedUser({ coinBalance: 200 });
+      const challenge = createMockChallenge({ coins_reward: 150 });
+      const participation = createMockParticipation({
+        user_id: user.id,
+        challenge_id: challenge.id,
+        status: 'pending',
+      });
+
+      setMockData('challenges', [challenge]);
+      setMockData('challenge_participants', [participation]);
+      setMockData('coin_transactions', []);
+
+      // Resetar e configurar admin novamente
+      resetMocks();
+      setupAdminUser({ id: admin.id });
+      setMockData('challenges', [challenge]);
+      setMockData('challenge_participants', [participation]);
+      setMockData('coin_transactions', []);
+
+      // Act
+      const result = await approveParticipation(participation.id);
+
+      // Assert: Transação criada
+      expect(result.success).toBe(true);
+      const transactions = getMockData('coin_transactions');
+      expect(transactions).toHaveLength(1);
+
+      const transaction = transactions[0];
+      expect(transaction.user_id).toBe(user.id);
+      expect(transaction.amount).toBe(150);
+      expect(transaction.type).toBe('earned');
+      expect(transaction.description).toBe('Desafio concluido');
+      expect(transaction.reference_id).toBe(participation.id);
+    });
+
+    it('não deve criar transação quando recompensa é zero', async () => {
+      // Arrange: Admin autenticado, desafio com recompensa zero
+      const admin = setupAdminUser();
+      const user = setupAuthenticatedUser({ coinBalance: 200 });
+      const challenge = createMockChallenge({ coins_reward: 0 });
+      const participation = createMockParticipation({
+        user_id: user.id,
+        challenge_id: challenge.id,
+        status: 'pending',
+      });
+
+      setMockData('challenges', [challenge]);
+      setMockData('challenge_participants', [participation]);
+      setMockData('coin_transactions', []);
+
+      // Resetar e configurar admin novamente
+      resetMocks();
+      setupAdminUser({ id: admin.id });
+      setMockData('challenges', [challenge]);
+      setMockData('challenge_participants', [participation]);
+      setMockData('coin_transactions', []);
+
+      // Act
+      const result = await approveParticipation(participation.id);
+
+      // Assert: Sem transação criada
+      expect(result.success).toBe(true);
+      const transactions = getMockData('coin_transactions');
+      expect(transactions).toHaveLength(0);
+    });
+  });
+
+  describe('Atualização de Status', () => {
+    it('deve atualizar todos os campos de aprovação', async () => {
+      // Arrange: Admin autenticado, participação pendente
+      const admin = setupAdminUser();
+      const user = setupAuthenticatedUser({ coinBalance: 200 });
+      const challenge = createMockChallenge({ coins_reward: 100 });
+      const participation = createMockParticipation({
+        user_id: user.id,
+        challenge_id: challenge.id,
+        status: 'pending',
+        approved_by: null,
+        approved_at: null,
+        coins_earned: 0,
+      });
+
+      setMockData('challenges', [challenge]);
+      setMockData('challenge_participants', [participation]);
+      setMockData('coin_transactions', []);
+
+      // Resetar e configurar admin novamente
+      resetMocks();
+      setupAdminUser({ id: admin.id });
+      setMockData('challenges', [challenge]);
+      setMockData('challenge_participants', [participation]);
+      setMockData('coin_transactions', []);
+
+      // Act
+      const result = await approveParticipation(participation.id);
+
+      // Assert: Todos os campos atualizados
+      expect(result.success).toBe(true);
+      const updatedParticipations = getMockData('challenge_participants');
+      const updatedParticipation = updatedParticipations.find(
+        (p: any) => p.id === participation.id
+      );
+
+      expect(updatedParticipation.status).toBe('approved');
+      expect(updatedParticipation.approved_by).toBe(admin.id);
+      expect(updatedParticipation.approved_at).toBeDefined();
+      expect(updatedParticipation.approved_at).not.toBeNull();
+      expect(updatedParticipation.coins_earned).toBe(100);
+    });
+
+    it('deve manter outros dados da participação inalterados', async () => {
+      // Arrange: Admin autenticado, participação com dados específicos
+      const admin = setupAdminUser();
+      const user = setupAuthenticatedUser({ coinBalance: 200 });
+      const challenge = createMockChallenge({ coins_reward: 100 });
+      const participation = createMockParticipation({
+        user_id: user.id,
+        challenge_id: challenge.id,
+        status: 'pending',
+        result_value: 25,
+        video_proof_url: 'https://example.com/video.mp4',
+        social_media_url: 'https://instagram.com/p/abc123',
+      });
+
+      setMockData('challenges', [challenge]);
+      setMockData('challenge_participants', [participation]);
+      setMockData('coin_transactions', []);
+
+      // Resetar e configurar admin novamente
+      resetMocks();
+      setupAdminUser({ id: admin.id });
+      setMockData('challenges', [challenge]);
+      setMockData('challenge_participants', [participation]);
+      setMockData('coin_transactions', []);
+
+      // Act
+      const result = await approveParticipation(participation.id);
+
+      // Assert: Dados originais preservados
+      expect(result.success).toBe(true);
+      const updatedParticipations = getMockData('challenge_participants');
+      const updatedParticipation = updatedParticipations.find(
+        (p: any) => p.id === participation.id
+      );
+
+      expect(updatedParticipation.result_value).toBe(25);
+      expect(updatedParticipation.video_proof_url).toBe('https://example.com/video.mp4');
+      expect(updatedParticipation.social_media_url).toBe('https://instagram.com/p/abc123');
+      expect(updatedParticipation.user_id).toBe(user.id);
+      expect(updatedParticipation.challenge_id).toBe(challenge.id);
     });
   });
 });

@@ -3,13 +3,13 @@
   "spec": "028-add-test-infrastructure-and-unit-tests-for-critica",
   "state": "building",
   "subtasks": {
-    "completed": 14,
+    "completed": 17,
     "total": 23,
     "in_progress": 1,
     "failed": 0
   },
   "phase": {
-    "current": "Rewards System Tests",
+    "current": "Challenges System Tests",
     "id": null,
     "total": 4
   },
@@ -18,8 +18,8 @@
     "max": 1
   },
   "session": {
-    "number": 7,
+    "number": 10,
     "started_at": "2026-01-07T13:57:50.865990"
   },
-  "last_update": "2026-01-07T15:05:31.222825"
+  "last_update": "2026-01-07T15:15:11.395829"
 }
