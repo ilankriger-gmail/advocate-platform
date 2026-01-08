@@ -43,6 +43,8 @@ export default async function AdminDashboardPage() {
     { count: totalUsers },
     { count: pendingClaims },
     { count: activeRewards },
+    { count: pendingLeads },
+    { count: totalLeads },
   ] = await Promise.all([
     supabase.from('posts').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
     supabase.from('challenges').select('*', { count: 'exact', head: true }).eq('is_active', true),
@@ -52,6 +54,8 @@ export default async function AdminDashboardPage() {
     supabase.from('profiles').select('*', { count: 'exact', head: true }),
     supabase.from('reward_claims').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
     supabase.from('rewards').select('*', { count: 'exact', head: true }).eq('is_active', true),
+    supabase.from('nps_leads').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+    supabase.from('nps_leads').select('*', { count: 'exact', head: true }),
   ]);
 
   const stats = [
@@ -95,6 +99,14 @@ export default async function AdminDashboardPage() {
       color: 'border-l-pink-500',
       description: 'Total de usuarios',
     },
+    {
+      title: 'Leads NPS',
+      value: totalLeads || 0,
+      icon: '📊',
+      href: '/admin/leads',
+      color: 'border-l-orange-500',
+      description: `${pendingLeads || 0} pendentes de aprovacao`,
+    },
   ];
 
   return (
@@ -137,6 +149,13 @@ export default async function AdminDashboardPage() {
           >
             <span className="text-2xl">🎁</span>
             <span className="text-sm text-purple-700 font-medium text-center">Gerenciar Premios</span>
+          </Link>
+          <Link
+            href="/admin/leads"
+            className="flex flex-col items-center gap-2 p-4 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors"
+          >
+            <span className="text-2xl">📊</span>
+            <span className="text-sm text-orange-700 font-medium text-center">Leads NPS</span>
           </Link>
           <Link
             href="/admin/setup"
