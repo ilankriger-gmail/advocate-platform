@@ -90,6 +90,7 @@ export interface Database {
           status: PostStatus
           likes_count: number
           comments_count: number
+          vote_score: number
           is_featured: boolean
           created_at: string
           updated_at: string
@@ -110,6 +111,7 @@ export interface Database {
           status?: PostStatus
           likes_count?: number
           comments_count?: number
+          vote_score?: number
           is_featured?: boolean
           created_at?: string
           updated_at?: string
@@ -130,6 +132,7 @@ export interface Database {
           status?: PostStatus
           likes_count?: number
           comments_count?: number
+          vote_score?: number
           is_featured?: boolean
           created_at?: string
           updated_at?: string
@@ -531,4 +534,47 @@ export interface NpsLeadWithApprover extends NpsLead {
     id: string;
     full_name: string | null;
   } | null;
+}
+
+// ============ LEADERBOARD ============
+
+/**
+ * Tiers de reconhecimento do sistema de leaderboard
+ */
+export type LeaderboardTier = 'bronze' | 'silver' | 'gold' | 'diamond';
+
+/**
+ * Períodos de tempo para filtrar rankings
+ */
+export type TimePeriod = 'weekly' | 'monthly' | 'all_time';
+
+/**
+ * Categorias de leaderboard disponíveis
+ */
+export type LeaderboardCategory = 'coins' | 'challenges' | 'events' | 'combined';
+
+/**
+ * Entrada individual no leaderboard
+ */
+export interface LeaderboardEntry {
+  user_id: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  score: number;
+  tier: LeaderboardTier;
+  rank: number;
+  last_activity?: string | null;
+}
+
+/**
+ * Ranking individual do usuário
+ */
+export interface UserRanking {
+  user_id: string;
+  rank: number;
+  score: number;
+  tier: LeaderboardTier;
+  total_participants: number;
+  category: LeaderboardCategory;
+  period: TimePeriod;
 }

@@ -166,7 +166,7 @@ export async function getSavedPosts(limit = 20, cursor?: string): Promise<{
 
   // Extrair posts do resultado
   const posts = (data || [])
-    .map((item) => item.post)
+    .map((item) => (item.post as unknown) as PostWithAuthor | null)
     .filter((post): post is PostWithAuthor => post !== null);
 
   const hasMore = posts.length === limit;

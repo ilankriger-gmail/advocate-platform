@@ -130,8 +130,8 @@ export default function RankingPage() {
           Escolha uma categoria
         </h2>
         <CategorySelector
-          selected={category}
-          onChange={setCategory}
+          activeCategory={category}
+          onCategoryChange={setCategory}
         />
       </div>
 
@@ -141,7 +141,7 @@ export default function RankingPage() {
           Período
         </h2>
         <LeaderboardTabs
-          selected={period}
+          activePeriod={period}
           onPeriodChange={setPeriod}
         />
       </div>
@@ -187,9 +187,8 @@ export default function RankingPage() {
         <LeaderboardList
           entries={leaderboardData}
           currentUserId={userId}
-          loading={loadingLeaderboard}
-          limit={limit}
-          onLimitChange={setLimit}
+          isLoading={loadingLeaderboard}
+          defaultLimit={limit as 10 | 25 | 50}
         />
       </div>
 

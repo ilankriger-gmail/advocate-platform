@@ -6,6 +6,17 @@ import type { PostWithAuthor } from '@/types/post';
 export type FeedSortType = 'new' | 'top' | 'hot';
 export type FeedType = 'creator' | 'community' | 'all';
 
+/**
+ * Calcula hot score usando algoritmo Reddit-like
+ * Posts com mais votos E mais recentes aparecem primeiro
+ * O score decai exponencialmente com o tempo
+ */
+function calculateHotScore(voteScore: number, createdAt: string): number {
+  const ageInHours = (Date.now() - new Date(createdAt).getTime()) / 3600000;
+  const gravity = 1.8; // Fator de decay temporal
+  return voteScore / Math.pow(ageInHours + 2, gravity);
+}
+
 interface GetFeedParams {
   type: FeedType;
   sort?: FeedSortType;
@@ -53,13 +64,13 @@ export async function getFeedPosts({
   // Aplicar ordenação
   switch (sort) {
     case 'top':
-      query = query.order('vote_score', { ascending: false });
+      query = query.order('likes_count', { ascending: false });
       break;
     case 'hot':
-      // Hot usa vote_score com decay temporal
-      // Por ora, usa vote_score + created_at como fallback
+      // Hot usa likes_count com decay temporal
+      // Por ora, usa likes_count + created_at como fallback
       query = query
-        .order('vote_score', { ascending: false })
+        .order('likes_count', { ascending: false })
         .order('created_at', { ascending: false });
       break;
     case 'new':
@@ -91,7 +102,19 @@ export async function getFeedPosts({
     return { posts: [], nextCursor: null, hasMore: false };
   }
 
-  const posts = (data || []) as PostWithAuthor[];
+  let posts = (data || []) as PostWithAuthor[];
+
+  // Para ordenação 'hot', calcular score e reordenar no client
+  if (sort === 'hot' && posts.length > 0) {
+    posts = posts
+      .map((post) => ({
+        ...post,
+        _hotScore: calculateHotScore(post.likes_count || 0, post.created_at),
+      }))
+      .sort((a, b) => (b._hotScore || 0) - (a._hotScore || 0))
+      .map(({ _hotScore, ...post }) => post as PostWithAuthor);
+  }
+
   const hasMore = posts.length === limit;
 
   // Calcular próximo cursor

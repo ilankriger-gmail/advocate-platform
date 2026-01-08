@@ -56,7 +56,7 @@ type CardPadding = 'none' | 'sm' | 'md' | 'lg';
  *     action={<Button size="sm">Editar</Button>}
  *   />
  *   <Card.Content>
- *     {/* Conteúdo */}
+ *     Conteúdo aqui
  *   </Card.Content>
  * </Card>
  *

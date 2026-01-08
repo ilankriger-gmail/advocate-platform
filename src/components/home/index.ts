@@ -6,3 +6,4 @@ export { FeedTabs } from './FeedTabs';
 export { InstagramCard } from './InstagramCard';
 export { InfiniteFeed } from './InfiniteFeed';
 export { SortSelector } from './SortSelector';
+export { NewPostsIndicator } from './NewPostsIndicator';

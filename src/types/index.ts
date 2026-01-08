@@ -11,9 +11,6 @@ export * from './post';
 // Tipos de Perfil
 export * from './profile';
 
-// Tipos de Actions
-export * from './actions';
-
 // Tipos de Analytics
 export * from './analytics';
 

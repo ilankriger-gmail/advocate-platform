@@ -1,8 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { InfiniteFeed } from './InfiniteFeed';
 import { SortSelector } from './SortSelector';
+import { NewPostsIndicator } from './NewPostsIndicator';
+import { useRealtimeFeed } from '@/hooks/useRealtimeFeed';
 import type { FeedSortType } from '@/actions/feed';
 import type { PostWithAuthor } from '@/types/post';
 
@@ -14,15 +17,42 @@ interface FeedTabsProps {
 export function FeedTabs({ initialCreatorPosts, initialCommunityPosts }: FeedTabsProps) {
   const [activeTab, setActiveTab] = useState<'novidades' | 'comunidade'>('novidades');
   const [sort, setSort] = useState<FeedSortType>('new');
+  const queryClient = useQueryClient();
+
+  // Realtime para novos posts
+  const feedType = activeTab === 'novidades' ? 'creator' : 'community';
+  const { newPostsCount, resetCount } = useRealtimeFeed({
+    type: feedType,
+    enabled: sort === 'new', // Só mostrar indicador na ordenação "Novos"
+  });
+
+  // Handler para quando clicar no indicador de novos posts
+  const handleNewPostsClick = useCallback(() => {
+    // Invalidar cache e refetch
+    queryClient.invalidateQueries({ queryKey: ['feed', feedType, sort] });
+    resetCount();
+
+    // Scroll para o topo
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [queryClient, feedType, sort, resetCount]);
+
+  // Handler para trocar de tab
+  const handleTabChange = (tab: 'novidades' | 'comunidade') => {
+    setActiveTab(tab);
+    resetCount(); // Resetar contador ao trocar de tab
+  };
 
   return (
     <div>
+      {/* Indicador de novos posts */}
+      <NewPostsIndicator count={newPostsCount} onClick={handleNewPostsClick} />
+
       {/* Tabs + Sort Selector */}
       <div className="sticky top-0 bg-white z-10 pb-2">
         {/* Tabs */}
         <div className="flex border-b border-gray-200">
           <button
-            onClick={() => setActiveTab('novidades')}
+            onClick={() => handleTabChange('novidades')}
             className={`flex-1 py-3 text-center font-semibold text-sm transition-colors ${
               activeTab === 'novidades'
                 ? 'text-purple-600 border-b-2 border-purple-600'
@@ -32,7 +62,7 @@ export function FeedTabs({ initialCreatorPosts, initialCommunityPosts }: FeedTab
             Novidades
           </button>
           <button
-            onClick={() => setActiveTab('comunidade')}
+            onClick={() => handleTabChange('comunidade')}
             className={`flex-1 py-3 text-center font-semibold text-sm transition-colors ${
               activeTab === 'comunidade'
                 ? 'text-purple-600 border-b-2 border-purple-600'

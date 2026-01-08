@@ -39,7 +39,7 @@ type ModalSize = 'sm' | 'md' | 'lg' | 'xl';
  *   title="Formulário extenso"
  *   size="xl"
  * >
- *   <form>{/* campos do formulário */}</form>
+ *   <form>campos do formulário</form>
  * </Modal>
  *
  * @example

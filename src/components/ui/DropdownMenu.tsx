@@ -18,7 +18,7 @@ interface DropdownMenuContextValue {
   triggerRef: React.RefObject<HTMLButtonElement>;
   menuRef: React.RefObject<HTMLDivElement>;
   focusedIndex: number;
-  setFocusedIndex: (index: number) => void;
+  setFocusedIndex: React.Dispatch<React.SetStateAction<number>>;
   itemsCount: number;
   registerItem: () => number;
   unregisterItem: (index: number) => void;
