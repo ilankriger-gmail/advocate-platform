@@ -1,0 +1,9 @@
+{
+  "sourceType": "ideation",
+  "ideationType": "code_quality",
+  "ideaId": "cq-003",
+  "rationale": "Type duplication creates inconsistency risk and maintenance burden. The `data?: any` typing also loses type safety - callers don't know what data structure to expect.",
+  "category": "refactoring",
+  "codeQualitySeverity": "minor",
+  "priority": "medium"
+}

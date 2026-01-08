@@ -11,6 +11,9 @@ export * from './post';
 // Tipos de Perfil
 export * from './profile';
 
+// Tipos de Actions
+export * from './actions';
+
 // Re-export tipos do Supabase
 export type {
   // Database

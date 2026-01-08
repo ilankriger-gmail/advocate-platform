@@ -1,25 +1,46 @@
 {
   "active": true,
+<<<<<<< HEAD
   "spec": "026-criar-guia-de-troubleshooting-para-erros-comuns",
   "state": "building",
   "subtasks": {
     "completed": 3,
     "total": 11,
+=======
+  "spec": "029-consolidate-duplicated-actionresponse-type-into-sh",
+  "state": "building",
+  "subtasks": {
+    "completed": 7,
+    "total": 9,
+>>>>>>> auto-claude/029-consolidate-duplicated-actionresponse-type-into-sh
     "in_progress": 1,
     "failed": 0
   },
   "phase": {
+<<<<<<< HEAD
     "current": "Documenta\u00e7\u00e3o Principal de Troubleshooting",
     "id": null,
     "total": 5
+=======
+    "current": "Verification",
+    "id": null,
+    "total": 2
+>>>>>>> auto-claude/029-consolidate-duplicated-actionresponse-type-into-sh
   },
   "workers": {
     "active": 0,
     "max": 1
   },
   "session": {
+<<<<<<< HEAD
     "number": 5,
     "started_at": "2026-01-07T11:30:34.381577"
   },
   "last_update": "2026-01-07T11:41:13.444768"
+=======
+    "number": 9,
+    "started_at": "2026-01-07T11:25:43.776454"
+  },
+  "last_update": "2026-01-07T11:38:26.693916"
+>>>>>>> auto-claude/029-consolidate-duplicated-actionresponse-type-into-sh
 }

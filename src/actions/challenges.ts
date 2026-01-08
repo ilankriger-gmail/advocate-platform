@@ -3,8 +3,12 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { analyzeVideoChallenge, type AIVerdict } from '@/lib/gemini';
+<<<<<<< HEAD
 import type { ActionResponse } from './types';
 import type { Challenge, ChallengeParticipant, ChallengeWinner, ParticipationWithChallenge } from '@/lib/supabase/types';
+=======
+import { ActionResponse } from '@/types';
+>>>>>>> auto-claude/029-consolidate-duplicated-actionresponse-type-into-sh
 
 /**
  * Participar de um desafio fisico

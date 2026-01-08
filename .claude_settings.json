@@ -11,6 +11,7 @@
       "Edit(./**)",
       "Glob(./**)",
       "Grep(./**)",
+<<<<<<< HEAD
       "Read(/Users/macbookair/advocate-platform/.worktrees/026-criar-guia-de-troubleshooting-para-erros-comuns/**)",
       "Write(/Users/macbookair/advocate-platform/.worktrees/026-criar-guia-de-troubleshooting-para-erros-comuns/**)",
       "Edit(/Users/macbookair/advocate-platform/.worktrees/026-criar-guia-de-troubleshooting-para-erros-comuns/**)",
@@ -19,6 +20,16 @@
       "Read(/Users/macbookair/advocate-platform/.worktrees/026-criar-guia-de-troubleshooting-para-erros-comuns/.auto-claude/specs/026-criar-guia-de-troubleshooting-para-erros-comuns/**)",
       "Write(/Users/macbookair/advocate-platform/.worktrees/026-criar-guia-de-troubleshooting-para-erros-comuns/.auto-claude/specs/026-criar-guia-de-troubleshooting-para-erros-comuns/**)",
       "Edit(/Users/macbookair/advocate-platform/.worktrees/026-criar-guia-de-troubleshooting-para-erros-comuns/.auto-claude/specs/026-criar-guia-de-troubleshooting-para-erros-comuns/**)",
+=======
+      "Read(/Users/macbookair/advocate-platform/.worktrees/029-consolidate-duplicated-actionresponse-type-into-sh/**)",
+      "Write(/Users/macbookair/advocate-platform/.worktrees/029-consolidate-duplicated-actionresponse-type-into-sh/**)",
+      "Edit(/Users/macbookair/advocate-platform/.worktrees/029-consolidate-duplicated-actionresponse-type-into-sh/**)",
+      "Glob(/Users/macbookair/advocate-platform/.worktrees/029-consolidate-duplicated-actionresponse-type-into-sh/**)",
+      "Grep(/Users/macbookair/advocate-platform/.worktrees/029-consolidate-duplicated-actionresponse-type-into-sh/**)",
+      "Read(/Users/macbookair/advocate-platform/.worktrees/029-consolidate-duplicated-actionresponse-type-into-sh/.auto-claude/specs/029-consolidate-duplicated-actionresponse-type-into-sh/**)",
+      "Write(/Users/macbookair/advocate-platform/.worktrees/029-consolidate-duplicated-actionresponse-type-into-sh/.auto-claude/specs/029-consolidate-duplicated-actionresponse-type-into-sh/**)",
+      "Edit(/Users/macbookair/advocate-platform/.worktrees/029-consolidate-duplicated-actionresponse-type-into-sh/.auto-claude/specs/029-consolidate-duplicated-actionresponse-type-into-sh/**)",
+>>>>>>> auto-claude/029-consolidate-duplicated-actionresponse-type-into-sh
       "Bash(*)",
       "WebFetch(*)",
       "WebSearch(*)",

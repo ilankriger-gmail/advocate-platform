@@ -2,8 +2,12 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+<<<<<<< HEAD
 import { ActionResponse } from '@/types/action';
 import type { Event } from '@/lib/supabase/types';
+=======
+import { ActionResponse } from '@/types';
+>>>>>>> auto-claude/029-consolidate-duplicated-actionresponse-type-into-sh
 
 /**
  * Inscrever-se em um evento
