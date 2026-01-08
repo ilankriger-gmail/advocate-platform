@@ -256,11 +256,15 @@ export async function sendLeadEmailNotification(leadId: string): Promise<ActionR
       return { error: 'Email ja foi enviado para este lead' };
     }
 
+    // Gerar link de cadastro com email pre-preenchido
+    const registrationUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://nextlovers.com'}/registro?email=${encodeURIComponent(lead.email)}`;
+
     // Enviar email (import dinamico para evitar erro se nao configurado)
     const { sendApprovalEmail } = await import('@/lib/notifications/email');
     const result = await sendApprovalEmail({
       to: lead.email,
       name: lead.name,
+      loginUrl: registrationUrl,
     });
 
     if (!result.success) {
@@ -320,6 +324,7 @@ export async function sendLeadWhatsAppNotification(leadId: string): Promise<Acti
     const result = await sendApprovalWhatsApp({
       to: lead.phone,
       name: lead.name,
+      email: lead.email,
     });
 
     if (!result.success) {
@@ -339,6 +344,170 @@ export async function sendLeadWhatsAppNotification(leadId: string): Promise<Acti
     return { success: true };
   } catch {
     return { error: 'Erro interno do servidor' };
+  }
+}
+
+/**
+ * Aprovar multiplos leads em massa
+ */
+export async function bulkApproveLeads(leadIds: string[]): Promise<ActionResponse<{
+  approved: number;
+  failed: number;
+}>> {
+  try {
+    const supabase = await createClient();
+
+    const auth = await verifyAdmin(supabase);
+    if ('error' in auth) {
+      return { error: auth.error };
+    }
+
+    if (!leadIds || leadIds.length === 0) {
+      return { error: 'Nenhum lead selecionado' };
+    }
+
+    // Atualizar todos os leads selecionados
+    const { data, error } = await supabase
+      .from('nps_leads')
+      .update({
+        status: 'approved',
+        approved_by: auth.user.id,
+        approved_at: new Date().toISOString(),
+      })
+      .in('id', leadIds)
+      .eq('status', 'pending')
+      .select('id');
+
+    if (error) {
+      return { error: 'Erro ao aprovar leads' };
+    }
+
+    const approved = data?.length || 0;
+    const failed = leadIds.length - approved;
+
+    revalidatePath('/admin/leads');
+    return { success: true, data: { approved, failed } };
+  } catch {
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+/**
+ * Aprovar multiplos leads em massa e enviar notificacoes
+ */
+export async function bulkApproveAndNotify(leadIds: string[]): Promise<ActionResponse<{
+  approved: number;
+  emailsSent: number;
+  whatsappsSent: number;
+}>> {
+  try {
+    const supabase = await createClient();
+
+    const auth = await verifyAdmin(supabase);
+    if ('error' in auth) {
+      return { error: auth.error };
+    }
+
+    if (!leadIds || leadIds.length === 0) {
+      return { error: 'Nenhum lead selecionado' };
+    }
+
+    // Primeiro aprovar todos
+    const { data: approvedLeads, error: approveError } = await supabase
+      .from('nps_leads')
+      .update({
+        status: 'approved',
+        approved_by: auth.user.id,
+        approved_at: new Date().toISOString(),
+      })
+      .in('id', leadIds)
+      .eq('status', 'pending')
+      .select('*');
+
+    if (approveError) {
+      return { error: 'Erro ao aprovar leads' };
+    }
+
+    const approved = approvedLeads?.length || 0;
+    let emailsSent = 0;
+    let whatsappsSent = 0;
+
+    // Importar servicos de notificacao
+    const { sendApprovalEmail } = await import('@/lib/notifications/email');
+    const { sendApprovalWhatsApp } = await import('@/lib/notifications/whatsapp');
+
+    // Enviar notificacoes para cada lead aprovado
+    for (const lead of approvedLeads || []) {
+      // Enviar email
+      const emailResult = await sendApprovalEmail({
+        to: lead.email,
+        name: lead.name,
+        loginUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://nextlovers.com'}/registro?email=${encodeURIComponent(lead.email)}`,
+      });
+
+      if (emailResult.success) {
+        emailsSent++;
+        await supabase
+          .from('nps_leads')
+          .update({
+            email_sent: true,
+            email_sent_at: new Date().toISOString(),
+          })
+          .eq('id', lead.id);
+      }
+
+      // Enviar WhatsApp se tiver telefone
+      if (lead.phone) {
+        const whatsappResult = await sendApprovalWhatsApp({
+          to: lead.phone,
+          name: lead.name,
+          email: lead.email,
+        });
+
+        if (whatsappResult.success) {
+          whatsappsSent++;
+          await supabase
+            .from('nps_leads')
+            .update({
+              whatsapp_sent: true,
+              whatsapp_sent_at: new Date().toISOString(),
+            })
+            .eq('id', lead.id);
+        }
+      }
+    }
+
+    revalidatePath('/admin/leads');
+    return { success: true, data: { approved, emailsSent, whatsappsSent } };
+  } catch {
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+/**
+ * Verificar se um email foi aprovado como lead
+ */
+export async function checkEmailApproved(email: string): Promise<ActionResponse<{
+  approved: boolean;
+  leadName?: string;
+}>> {
+  try {
+    const supabase = await createClient();
+
+    const { data: lead } = await supabase
+      .from('nps_leads')
+      .select('id, name, status')
+      .eq('email', email.toLowerCase())
+      .eq('status', 'approved')
+      .single();
+
+    if (lead) {
+      return { success: true, data: { approved: true, leadName: lead.name } };
+    }
+
+    return { success: true, data: { approved: false } };
+  } catch {
+    return { error: 'Erro ao verificar email' };
   }
 }
 
@@ -374,12 +543,16 @@ export async function sendAllNotifications(leadId: string): Promise<ActionRespon
       whatsapp: false,
     };
 
+    // Gerar link de cadastro com email pre-preenchido
+    const registrationUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://nextlovers.com'}/registro?email=${encodeURIComponent(lead.email)}`;
+
     // Enviar email se ainda nao foi enviado
     if (!lead.email_sent) {
       const { sendApprovalEmail } = await import('@/lib/notifications/email');
       const emailResult = await sendApprovalEmail({
         to: lead.email,
         name: lead.name,
+        loginUrl: registrationUrl,
       });
       results.email = emailResult.success;
 
@@ -402,6 +575,7 @@ export async function sendAllNotifications(leadId: string): Promise<ActionRespon
       const whatsappResult = await sendApprovalWhatsApp({
         to: lead.phone,
         name: lead.name,
+        email: lead.email,
       });
       results.whatsapp = whatsappResult.success;
 

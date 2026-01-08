@@ -46,6 +46,7 @@ export async function login(formData: FormData): Promise<AuthResponse> {
 
 /**
  * Server Action para registro de novo usuário
+ * Apenas emails aprovados no NPS podem se registrar
  */
 export async function register(formData: FormData): Promise<AuthResponse> {
   const supabase = await createClient();
@@ -66,6 +67,20 @@ export async function register(formData: FormData): Promise<AuthResponse> {
 
   if (password.length < 6) {
     return { error: 'A senha deve ter pelo menos 6 caracteres' };
+  }
+
+  // Verificar se o email foi aprovado no NPS
+  const { data: approvedLead } = await supabase
+    .from('nps_leads')
+    .select('id, name, status')
+    .eq('email', email.toLowerCase())
+    .eq('status', 'approved')
+    .single();
+
+  if (!approvedLead) {
+    return {
+      error: 'Este email não está autorizado para cadastro. Por favor, preencha o formulário "Seja um NextLOVER" primeiro e aguarde aprovação.'
+    };
   }
 
   const { error } = await supabase.auth.signUp({

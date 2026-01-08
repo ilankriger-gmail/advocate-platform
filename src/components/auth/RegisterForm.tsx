@@ -1,16 +1,26 @@
 'use client';
 
 import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { register } from '@/actions/auth';
 import Link from 'next/link';
 
+interface RegisterFormProps {
+  prefilledEmail?: string;
+}
+
 /**
  * Formulário de registro com Client Component para interatividade
+ * Aceita email pre-preenchido via query string ou prop
  */
-export default function RegisterForm() {
+export default function RegisterForm({ prefilledEmail }: RegisterFormProps) {
+  const searchParams = useSearchParams();
+  const emailFromUrl = searchParams.get('email') || prefilledEmail || '';
+
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState(emailFromUrl);
 
   async function handleSubmit(formData: FormData) {
     setLoading(true);
@@ -80,10 +90,18 @@ export default function RegisterForm() {
             type="email"
             autoComplete="email"
             required
-            className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            readOnly={!!emailFromUrl}
+            className={`appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${emailFromUrl ? 'bg-gray-50 cursor-not-allowed' : ''}`}
             placeholder="seu@email.com"
           />
         </div>
+        {emailFromUrl && (
+          <p className="mt-1 text-xs text-gray-500">
+            Este email foi aprovado para cadastro e nao pode ser alterado.
+          </p>
+        )}
       </div>
 
       <div>

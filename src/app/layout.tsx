@@ -4,13 +4,18 @@ import './globals.css';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { QueryProvider } from '@/providers/QueryProvider';
 import { Header } from '@/components/layout/Header';
+import { getSiteSettings } from '@/lib/config/site';
 
 const inter = Inter({ subsets: ['latin'] });
 
-export const metadata: Metadata = {
-  title: 'NextLOVERS - Comunidade O Moco do Te Amo',
-  description: 'Comunidade oficial de O Moco do Te Amo | NextlevelDJ',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings(['meta_title', 'meta_description']);
+
+  return {
+    title: settings.meta_title,
+    description: settings.meta_description,
+  };
+}
 
 export default function RootLayout({
   children,

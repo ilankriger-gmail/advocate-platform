@@ -10,12 +10,13 @@ interface HeaderProps {
   onMenuClick?: () => void;
   showMenuButton?: boolean;
   className?: string;
+  siteName?: string;
 }
 
 // Rotas onde o Header nao deve aparecer
 const HIDDEN_HEADER_ROUTES = ['/seja-nextlover', '/login', '/registro'];
 
-export function Header({ onMenuClick, showMenuButton = false, className }: HeaderProps) {
+export function Header({ onMenuClick, showMenuButton = false, className, siteName = 'NextLOVERS' }: HeaderProps) {
   const { user, signOut } = useAuth();
   const pathname = usePathname();
 
@@ -54,7 +55,7 @@ export function Header({ onMenuClick, showMenuButton = false, className }: Heade
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2">
               <span className="text-lg font-bold text-indigo-600">
-                NextLOVERS
+                {siteName}
               </span>
             </Link>
           </div>

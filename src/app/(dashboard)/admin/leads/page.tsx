@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import { LeadCard } from './LeadCard';
+import { LeadsList } from './LeadsList';
 import { LeadFilters } from './LeadFilters';
 import type { NpsLead, LeadStatus } from '@/lib/supabase/types';
 
@@ -93,32 +93,8 @@ export default async function AdminLeadsPage({ searchParams }: PageProps) {
       {/* Filtros */}
       <LeadFilters stats={stats} />
 
-      {/* Lista de leads */}
-      {leads && leads.length > 0 ? (
-        <div className="grid gap-4 md:grid-cols-2">
-          {leads.map((lead: NpsLead) => (
-            <LeadCard key={lead.id} lead={lead} />
-          ))}
-        </div>
-      ) : (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-            </svg>
-          </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-1">Nenhum lead encontrado</h3>
-          <p className="text-gray-500">
-            {status === 'pending'
-              ? 'Nao ha leads pendentes no momento.'
-              : status === 'approved'
-              ? 'Nenhum lead foi aprovado ainda.'
-              : status === 'rejected'
-              ? 'Nenhum lead foi reprovado.'
-              : 'Nao ha leads cadastrados.'}
-          </p>
-        </div>
-      )}
+      {/* Lista de leads com selecao em massa */}
+      <LeadsList leads={leads || []} currentStatus={status} />
     </div>
   );
 }

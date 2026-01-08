@@ -1,6 +1,9 @@
 import Link from 'next/link';
+import { getSiteSettings } from '@/lib/config/site';
 
-export default function ObrigadoPage() {
+export default async function ObrigadoPage() {
+  const settings = await getSiteSettings(['site_name', 'footer_text']);
+
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-4 py-8">
       {/* Icone de sucesso */}
@@ -30,7 +33,7 @@ export default function ObrigadoPage() {
         </p>
         <p className="text-gray-500 mb-8">
           Nossa equipe ira analisar sua solicitacao e em breve entraremos em contato
-          para informar se voce foi aprovado para a comunidade NextLOVERS.
+          para informar se voce foi aprovado para a comunidade {settings.site_name}.
         </p>
 
         {/* Icones de contato */}
@@ -63,7 +66,7 @@ export default function ObrigadoPage() {
 
       {/* Footer */}
       <p className="mt-12 text-sm text-gray-400">
-        O Moço do Te Amo - Comunidade NextLOVERS
+        {settings.footer_text}
       </p>
     </main>
   );

@@ -1,5 +1,6 @@
 import twilio from 'twilio';
 import type { Twilio } from 'twilio';
+import { getSiteSettings } from '@/lib/config/site';
 
 // Cliente Twilio inicializado lazily
 let twilioClient: Twilio | null = null;
@@ -21,6 +22,7 @@ function getTwilioClient(): Twilio | null {
 interface SendApprovalWhatsAppParams {
   to: string;
   name: string;
+  email?: string;
   loginUrl?: string;
 }
 
@@ -51,7 +53,8 @@ function formatPhoneNumber(phone: string): string {
 export async function sendApprovalWhatsApp({
   to,
   name,
-  loginUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://nextlovers.com',
+  email,
+  loginUrl,
 }: SendApprovalWhatsAppParams): Promise<{ success: boolean; error?: string }> {
   try {
     const client = getTwilioClient();
@@ -62,22 +65,32 @@ export async function sendApprovalWhatsApp({
       return { success: false, error: 'Servico de WhatsApp nao configurado' };
     }
 
+    // Buscar configuracoes do site
+    const settings = await getSiteSettings(['site_name']);
+    const siteName = settings.site_name;
+
+    // Gerar link de cadastro com email pre-preenchido
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://nextlovers.com';
+    const registrationUrl = loginUrl || (email
+      ? `${baseUrl}/registro?email=${encodeURIComponent(email)}`
+      : `${baseUrl}/registro`);
+
     const formattedNumber = formatPhoneNumber(to);
 
     const message = await client.messages.create({
       body: `Oi ${name}! 🎉
 
-Temos uma noticia incrivel: sua solicitacao para o NextLOVERS foi *APROVADA*!
+Temos uma noticia incrivel: sua solicitacao para o ${siteName} foi *APROVADA*!
 
-Agora voce pode acessar a comunidade e participar de:
+Agora voce pode criar sua conta e participar de:
 ✨ Desafios exclusivos
 🎁 Premios incriveis
 🎉 Eventos especiais
 
-Acesse agora: ${loginUrl}
+Clique aqui para criar sua conta: ${registrationUrl}
 
 Bem-vindo a comunidade! 💜
-Equipe NextLOVERS`,
+Equipe ${siteName}`,
       from: twilioWhatsAppNumber.startsWith('whatsapp:')
         ? twilioWhatsAppNumber
         : `whatsapp:${twilioWhatsAppNumber}`,

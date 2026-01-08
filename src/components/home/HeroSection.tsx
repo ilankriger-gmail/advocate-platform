@@ -2,9 +2,17 @@ import Link from 'next/link';
 
 interface HeroSectionProps {
   isLoggedIn: boolean;
+  title?: string;
+  subtitle?: string;
+  siteName?: string;
 }
 
-export function HeroSection({ isLoggedIn }: HeroSectionProps) {
+export function HeroSection({
+  isLoggedIn,
+  title = 'Comunidade NextLOVERS',
+  subtitle = 'Comunidade oficial de O Moço do Te Amo | NextlevelDJ',
+  siteName = 'NextLOVERS',
+}: HeroSectionProps) {
   return (
     <section className="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 text-white overflow-hidden">
       {/* Background pattern */}
@@ -16,17 +24,17 @@ export function HeroSection({ isLoggedIn }: HeroSectionProps) {
 
       <div className="relative max-w-7xl mx-auto px-4 py-12 md:py-16 text-center">
         <h1 className="text-3xl md:text-5xl font-bold mb-4">
-          Comunidade NextLOVERS
+          {title}
         </h1>
         <p className="text-lg md:text-xl text-white/80 mb-6 max-w-2xl mx-auto">
-          Comunidade oficial de O Moço do Te Amo | NextlevelDJ
+          {subtitle}
         </p>
         {!isLoggedIn && (
           <Link
             href="/login"
             className="inline-flex items-center px-6 py-3 bg-white text-indigo-600 font-semibold rounded-full hover:bg-gray-100 transition-colors shadow-lg"
           >
-            Entrar na NextLOVERS
+            Entrar na {siteName}
           </Link>
         )}
       </div>

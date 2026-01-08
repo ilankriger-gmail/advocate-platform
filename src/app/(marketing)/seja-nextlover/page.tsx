@@ -1,15 +1,22 @@
+import { getSiteSettings } from '@/lib/config/site';
 import { NPSForm } from './NPSForm';
 
-export default function SejaNextloverPage() {
+export default async function SejaNextloverPage() {
+  const settings = await getSiteSettings([
+    'site_name',
+    'creator_name',
+    'footer_text',
+  ]);
+
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-4 py-8">
       {/* Logo/Header */}
       <div className="text-center mb-8">
         <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
-          Seja um NextLOVER
+          Seja um {settings.site_name.replace('LOVERS', 'LOVER')}
         </h1>
         <p className="mt-3 text-gray-600 max-w-md leading-relaxed">
-          Ganhe produtos, dinheiro e participe de experiências exclusivas para os maiores fãs do O Moço do Te Amo
+          Ganhe produtos, dinheiro e participe de experiencias exclusivas para os maiores fas do {settings.creator_name}
         </p>
       </div>
 
@@ -20,7 +27,7 @@ export default function SejaNextloverPage() {
 
       {/* Footer */}
       <p className="mt-8 text-sm text-gray-400">
-        O Moço do Te Amo - Comunidade NextLOVERS
+        {settings.footer_text}
       </p>
     </main>
   );

@@ -1,5 +1,7 @@
 import { Metadata } from 'next';
+import { Suspense } from 'react';
 import RegisterForm from '@/components/auth/RegisterForm';
+import { Skeleton } from '@/components/ui';
 
 export const metadata: Metadata = {
   title: 'Criar Conta | Advocate Platform',
@@ -7,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 /**
- * Página de registro - Server Component que renderiza o formulário
+ * Pagina de registro - Server Component que renderiza o formulario
  */
 export default function RegisterPage() {
   return (
@@ -20,7 +22,9 @@ export default function RegisterPage() {
           Comece a conectar sua marca com advocates engajados
         </p>
       </div>
-      <RegisterForm />
+      <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+        <RegisterForm />
+      </Suspense>
     </>
   );
 }
