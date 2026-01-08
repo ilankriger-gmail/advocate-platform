@@ -2,6 +2,8 @@
 export { PostCard } from './PostCard';
 export { VoteButtons } from './VoteButtons';
 export { CommentsSection } from './CommentsSection';
+export { SaveButton } from './SaveButton';
+export { ShareButton } from './ShareButton';
 
 // Default exports re-exported as named
 export { default as MediaUploader } from './MediaUploader';

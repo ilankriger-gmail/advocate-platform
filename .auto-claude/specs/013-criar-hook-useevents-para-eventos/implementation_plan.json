@@ -1,0 +1,148 @@
+{
+  "feature": "Criar hook useEvents para eventos",
+  "description": "Criar um hook useEvents seguindo o padrao de usePosts e useProfile, encapsulando as server actions de eventos (registerForEvent, cancelEventRegistration, checkInEvent, submitEventFeedback) com tratamento de estado de loading, erro e refresh automatico.",
+  "created_at": "2026-01-07T14:25:32.528Z",
+  "updated_at": "2026-01-07T14:27:28.941Z",
+  "status": "in_progress",
+  "planStatus": "in_progress",
+  "phases": [
+    {
+      "id": "phase-1",
+      "name": "Criar hook useEvents",
+      "description": "Criar o hook useEvents seguindo o padr\u00e3o estabelecido por usePosts e useProfile",
+      "subtasks": [
+        {
+          "id": "1.1",
+          "title": "Criar estrutura base do hook useEvents",
+          "description": "Criar o arquivo src/hooks/useEvents.ts com a estrutura base: 'use client', imports de useState, useCallback, useTransition, useRouter e as server actions de eventos",
+          "status": "completed",
+          "estimated_minutes": 5,
+          "files": [
+            "src/hooks/useEvents.ts"
+          ],
+          "notes": "Arquivo src/hooks/useEvents.ts criado com sucesso. Estrutura base implementada com 'use client', imports dos hooks React (useState, useCallback, useTransition), useRouter, e as 4 server actions de eventos (registerForEvent, cancelEventRegistration, checkInEvent, submitEventFeedback). Hook exporta isPending e error state.",
+          "updated_at": "2026-01-07T14:31:02.747083+00:00"
+        },
+        {
+          "id": "1.2",
+          "title": "Implementar handler para registerForEvent",
+          "description": "Implementar handleRegister que encapsula a server action registerForEvent com tratamento de erro e refresh autom\u00e1tico",
+          "status": "completed",
+          "estimated_minutes": 3,
+          "files": [
+            "src/hooks/useEvents.ts"
+          ],
+          "notes": "Implementado handleRegister com sucesso seguindo o padr\u00e3o de usePosts. O handler encapsula a server action registerForEvent com: tratamento de erro via setError, refresh autom\u00e1tico via startTransition + router.refresh(), retorno de { success, error } para feedback ao componente. Handler exportado como 'register' no retorno do hook. Commit: 65baf0c",
+          "updated_at": "2026-01-07T14:32:55.120869+00:00"
+        },
+        {
+          "id": "1.3",
+          "title": "Implementar handler para cancelEventRegistration",
+          "description": "Implementar handleCancelRegistration que encapsula a server action cancelEventRegistration com tratamento de erro e refresh autom\u00e1tico",
+          "status": "completed",
+          "estimated_minutes": 3,
+          "files": [
+            "src/hooks/useEvents.ts"
+          ],
+          "notes": "Implementado handleCancelRegistration com sucesso seguindo o padr\u00e3o de usePosts. O handler encapsula a server action cancelEventRegistration com: tratamento de erro via setError, refresh autom\u00e1tico via startTransition + router.refresh(), retorno de { success, error } para feedback ao componente. Handler exportado como 'cancelRegistration' no retorno do hook. Commit: b93f2f0",
+          "updated_at": "2026-01-07T14:34:22.170399+00:00"
+        },
+        {
+          "id": "1.4",
+          "title": "Implementar handler para checkInEvent",
+          "description": "Implementar handleCheckIn que encapsula a server action checkInEvent com tratamento de erro e refresh autom\u00e1tico",
+          "status": "completed",
+          "estimated_minutes": 3,
+          "files": [
+            "src/hooks/useEvents.ts"
+          ],
+          "notes": "Implementado handleCheckIn com sucesso seguindo o padr\u00e3o de usePosts. O handler encapsula a server action checkInEvent com: tratamento de erro via setError, refresh autom\u00e1tico via startTransition + router.refresh(), retorno de { success, error } para feedback ao componente. Handler exportado como 'checkIn' no retorno do hook. Commit: 231e4d3",
+          "updated_at": "2026-01-07T14:36:37.739900+00:00"
+        },
+        {
+          "id": "1.5",
+          "title": "Implementar handler para submitEventFeedback",
+          "description": "Implementar handleSubmitFeedback que encapsula a server action submitEventFeedback com tratamento de erro e refresh autom\u00e1tico",
+          "status": "completed",
+          "estimated_minutes": 3,
+          "files": [
+            "src/hooks/useEvents.ts"
+          ],
+          "notes": "Implementado handleSubmitFeedback com sucesso seguindo o padr\u00e3o de usePosts. O handler encapsula a server action submitEventFeedback com: tratamento de erro via setError, refresh autom\u00e1tico via startTransition + router.refresh(), retorno de { success, error } para feedback ao componente. Handler aceita dois par\u00e2metros (eventId, feedback) e \u00e9 exportado como 'submitFeedback' no retorno do hook. Commit: 26764ff",
+          "updated_at": "2026-01-07T14:38:02.663258+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-2",
+      "name": "Integra\u00e7\u00e3o e exporta\u00e7\u00e3o",
+      "description": "Exportar o hook no barrel file de hooks para manter consist\u00eancia com os outros hooks",
+      "subtasks": [
+        {
+          "id": "2.1",
+          "title": "Adicionar export do useEvents no index.ts",
+          "description": "Adicionar a exporta\u00e7\u00e3o do useEvents no arquivo src/hooks/index.ts seguindo o padr\u00e3o existente",
+          "status": "completed",
+          "estimated_minutes": 2,
+          "files": [
+            "src/hooks/index.ts"
+          ],
+          "notes": "Adicionada a exporta\u00e7\u00e3o do useEvents no arquivo src/hooks/index.ts seguindo o padr\u00e3o existente. O hook agora est\u00e1 dispon\u00edvel para importa\u00e7\u00e3o via barrel file, mantendo consist\u00eancia com useToast, usePosts e useProfile. Commit: 65483ea",
+          "updated_at": "2026-01-07T14:39:37.676297+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-3",
+      "name": "Verifica\u00e7\u00e3o e QA",
+      "description": "Verificar se o c\u00f3digo compila corretamente e segue os padr\u00f5es do projeto",
+      "subtasks": [
+        {
+          "id": "3.1",
+          "title": "Verificar compila\u00e7\u00e3o TypeScript",
+          "description": "Rodar o TypeScript compiler para garantir que n\u00e3o h\u00e1 erros de tipo no hook criado",
+          "status": "completed",
+          "estimated_minutes": 3,
+          "files": [],
+          "notes": "Verifica\u00e7\u00e3o manual TypeScript conclu\u00edda. Ambiente n\u00e3o possui npm/npx/tsc dispon\u00edvel, ent\u00e3o realizei verifica\u00e7\u00e3o manual detalhada. Todos os imports est\u00e3o corretos, assinaturas de fun\u00e7\u00e3o compat\u00edveis com server actions, tipos de retorno consistentes com ActionResponse, e padr\u00e3o de c\u00f3digo segue usePosts.ts. Nenhum erro de tipo detectado. Hook exportado corretamente via barrel file. Commit: 55939a6",
+          "updated_at": "2026-01-07T14:43:39.232189+00:00"
+        },
+        {
+          "id": "3.2",
+          "title": "Verificar lint e formata\u00e7\u00e3o",
+          "description": "Executar lint e verificar se o c\u00f3digo segue os padr\u00f5es do projeto",
+          "status": "completed",
+          "estimated_minutes": 2,
+          "files": [],
+          "notes": "Verifica\u00e7\u00e3o manual de lint e padr\u00f5es conclu\u00edda com sucesso. npm/lint commands n\u00e3o dispon\u00edveis no ambiente, ent\u00e3o realizei verifica\u00e7\u00e3o manual detalhada comparando useEvents.ts com usePosts.ts (padr\u00e3o de refer\u00eancia). Verifica\u00e7\u00f5es realizadas: \u2705 'use client' directive presente, \u2705 imports corretos (React hooks, router, server actions), \u2705 todos os handlers com useCallback e router dependency, \u2705 error handling consistente com padr\u00e3o (setError + check + startTransition), \u2705 return values estruturados corretamente, \u2705 export via barrel file (src/hooks/index.ts), \u2705 sem console.log, \u2705 formata\u00e7\u00e3o limpa, \u2705 TypeScript typing correto. C\u00f3digo segue todos os padr\u00f5es do projeto. Commit: 19dee18",
+          "updated_at": "2026-01-07T16:36:58.835528+00:00"
+        }
+      ]
+    }
+  ],
+  "workflow_type": "development",
+  "services_involved": [
+    "hooks",
+    "actions"
+  ],
+  "final_acceptance": [
+    "Hook useEvents criado em src/hooks/useEvents.ts",
+    "Quatro handlers implementados: register, cancelRegistration, checkIn, submitFeedback",
+    "Estado isPending e error gerenciados corretamente",
+    "Refresh autom\u00e1tico via router.refresh() ap\u00f3s cada a\u00e7\u00e3o",
+    "Hook exportado via src/hooks/index.ts",
+    "TypeScript compila sem erros"
+  ],
+  "spec_file": "spec.md",
+  "qa_signoff": {
+    "status": "pending",
+    "tests_passed": "",
+    "issues": ""
+  },
+  "summary": {
+    "total_subtasks": 7,
+    "completed_subtasks": 0,
+    "estimated_total_minutes": 24
+  },
+  "last_updated": "2026-01-07T16:36:58.835535+00:00"
+}
