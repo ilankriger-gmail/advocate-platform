@@ -11,14 +11,11 @@ export * from './posts';
 // Perfil
 export * from './profile';
 
-// Eventos
+// Eventos (exportando apenas do arquivo principal para evitar conflitos)
 export * from './events';
-export * from './events-admin';
 
-// Desafios
+// Desafios (exportando apenas do arquivo principal para evitar conflitos)
 export * from './challenges';
-export * from './challenges-admin';
 
-// Recompensas
+// Recompensas (exportando apenas do arquivo principal para evitar conflitos)
 export * from './rewards';
-export * from './rewards-admin';

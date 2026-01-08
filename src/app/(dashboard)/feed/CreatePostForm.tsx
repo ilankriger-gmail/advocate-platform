@@ -20,7 +20,7 @@ export function CreatePostForm() {
     const result = await create({
       title: formData.title,
       content: formData.content,
-      media_url: formData.media_url || undefined,
+      media_url: formData.media_url ? [formData.media_url] : undefined,
       type: formData.type,
     });
 

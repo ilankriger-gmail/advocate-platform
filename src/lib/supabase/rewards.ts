@@ -161,13 +161,15 @@ export async function getPendingClaims(): Promise<(RewardClaim & {
 
   if (error || !data) return [];
 
-  return data.map((claim: ClaimWithUserAndReward) => ({
-    ...claim,
-    reward: claim.rewards,
-    user: claim.users,
-    rewards: undefined,
-    users: undefined,
-  }));
+  return data
+    .filter((claim: ClaimWithUserAndReward) => claim.rewards && claim.users)
+    .map((claim: ClaimWithUserAndReward) => ({
+      ...claim,
+      reward: claim.rewards!,
+      user: claim.users!,
+      rewards: undefined,
+      users: undefined,
+    }));
 }
 
 /**

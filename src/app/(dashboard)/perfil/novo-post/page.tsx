@@ -1,0 +1,307 @@
+'use client';
+
+import { useState, useTransition, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import dynamic from 'next/dynamic';
+import { createPost } from '@/actions/posts';
+import { getCurrentProfile } from '@/actions/profile';
+import MediaUploader from '@/components/posts/MediaUploader';
+import YouTubeInput from '@/components/posts/YouTubeInput';
+import InstagramInput from '@/components/posts/InstagramInput';
+import type { MediaType, PostType } from '@/types/post';
+
+// Carregar editor dinamicamente para evitar problemas de SSR
+const RichTextEditor = dynamic(
+  () => import('@/components/editor/RichTextEditor'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[180px] bg-gray-100 rounded-lg animate-pulse" />
+    ),
+  }
+);
+
+type MediaTab = 'none' | 'images' | 'youtube' | 'instagram';
+
+export default function NovoPostPage() {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  // Estado do formulário
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [postType, setPostType] = useState<PostType>('community');
+  const [mediaTab, setMediaTab] = useState<MediaTab>('none');
+  const [images, setImages] = useState<string[]>([]);
+  const [youtubeUrl, setYoutubeUrl] = useState('');
+  const [instagramUrl, setInstagramUrl] = useState('');
+  const [error, setError] = useState<string | null>(null);
+
+  // Buscar status de criador do servidor
+  const [isCreator, setIsCreator] = useState(false);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+
+  useEffect(() => {
+    async function checkCreatorStatus() {
+      const profile = await getCurrentProfile();
+      if (profile) {
+        setIsCreator(profile.is_creator);
+      }
+      setIsLoadingProfile(false);
+    }
+    checkCreatorStatus();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    // Título e conteúdo são opcionais para posts com YouTube ou Instagram
+    const hasEmbed = mediaTab === 'youtube' || mediaTab === 'instagram';
+
+    if (!hasEmbed) {
+      if (!title.trim()) {
+        setError('Título é obrigatório');
+        return;
+      }
+
+      if (!content.trim() || content === '<p></p>') {
+        setError('Conteúdo é obrigatório');
+        return;
+      }
+    }
+
+    startTransition(async () => {
+      let mediaType: MediaType = 'none';
+      let mediaUrl: string[] | undefined;
+      let youtubeUrlFinal: string | undefined;
+      let instagramUrlFinal: string | undefined;
+
+      switch (mediaTab) {
+        case 'images':
+          if (images.length === 1) {
+            mediaType = 'image';
+          } else if (images.length > 1) {
+            mediaType = 'carousel';
+          }
+          mediaUrl = images.length > 0 ? images : undefined;
+          break;
+        case 'youtube':
+          if (youtubeUrl) {
+            mediaType = 'youtube';
+            youtubeUrlFinal = youtubeUrl;
+          }
+          break;
+        case 'instagram':
+          if (instagramUrl) {
+            mediaType = 'instagram';
+            instagramUrlFinal = instagramUrl;
+          }
+          break;
+      }
+
+      const result = await createPost({
+        title: title.trim(),
+        content,
+        type: postType,
+        media_type: mediaType,
+        media_url: mediaUrl,
+        youtube_url: youtubeUrlFinal,
+        instagram_url: instagramUrlFinal,
+      });
+
+      if (result.error) {
+        setError(result.error);
+      } else {
+        router.push('/perfil');
+        router.refresh();
+      }
+    });
+  };
+
+  const mediaTabs: { id: MediaTab; label: string; icon: string; creatorOnly?: boolean }[] = [
+    { id: 'none', label: 'Sem mídia', icon: '📝' },
+    { id: 'images', label: 'Imagens', icon: '🖼️' },
+    { id: 'youtube', label: 'YouTube', icon: '▶️', creatorOnly: true },
+    { id: 'instagram', label: 'Instagram', icon: '📸', creatorOnly: true },
+  ];
+
+  const filteredTabs = mediaTabs.filter(tab => !tab.creatorOnly || isCreator);
+
+  return (
+    <div className="max-w-3xl mx-auto px-4 py-8">
+      {/* Header */}
+      <div className="flex items-center gap-4 mb-8">
+        <Link
+          href="/perfil"
+          className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </Link>
+        <h1 className="text-2xl font-bold text-gray-900">Criar Novo Post</h1>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Tipo de Post */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Tipo de Post
+          </label>
+          <div className="flex gap-4">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="postType"
+                value="community"
+                checked={postType === 'community'}
+                onChange={() => setPostType('community')}
+                className="w-4 h-4 text-purple-600"
+              />
+              <span className="text-gray-700">Comunidade</span>
+            </label>
+            {isCreator && (
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="postType"
+                  value="creator"
+                  checked={postType === 'creator'}
+                  onChange={() => setPostType('creator')}
+                  className="w-4 h-4 text-purple-600"
+                />
+                <span className="text-gray-700">Criador</span>
+              </label>
+            )}
+          </div>
+        </div>
+
+        {/* Título */}
+        <div>
+          <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+            Título *
+          </label>
+          <input
+            id="title"
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Digite o título do seu post"
+            maxLength={100}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+          />
+          <p className="text-xs text-gray-400 mt-1">{title.length}/100 caracteres</p>
+        </div>
+
+        {/* Conteúdo (Rich Text) */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Conteúdo *
+          </label>
+          <RichTextEditor
+            content={content}
+            onChange={setContent}
+            placeholder="Escreva o conteúdo do seu post..."
+            disableLinks={!isCreator}
+          />
+        </div>
+
+        {/* Seletor de Mídia */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Mídia
+          </label>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {filteredTabs.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setMediaTab(tab.id)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  mediaTab === tab.id
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {tab.icon} {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Conteúdo da aba selecionada */}
+          {mediaTab === 'images' && (
+            <MediaUploader
+              images={images}
+              onChange={setImages}
+              maxImages={5}
+            />
+          )}
+
+          {mediaTab === 'youtube' && (
+            <YouTubeInput
+              value={youtubeUrl}
+              onChange={setYoutubeUrl}
+            />
+          )}
+
+          {mediaTab === 'instagram' && (
+            <InstagramInput
+              value={instagramUrl}
+              onChange={setInstagramUrl}
+            />
+          )}
+        </div>
+
+        {/* Erro */}
+        {error && (
+          <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            {error}
+          </div>
+        )}
+
+        {/* Info de moderação */}
+        {!isLoadingProfile && (
+          <div className={`p-4 border rounded-lg text-sm ${
+            isCreator
+              ? 'bg-green-50 border-green-200 text-green-700'
+              : 'bg-blue-50 border-blue-200 text-blue-700'
+          }`}>
+            <p>
+              {isCreator ? (
+                <><strong>Criador:</strong> Seu post será publicado automaticamente.</>
+              ) : (
+                <><strong>Nota:</strong> Seu post será enviado para moderação antes de ser publicado.</>
+              )}
+            </p>
+          </div>
+        )}
+
+        {/* Botões */}
+        <div className="flex gap-4 justify-end">
+          <Link
+            href="/perfil"
+            className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            Cancelar
+          </Link>
+          <button
+            type="submit"
+            disabled={isPending}
+            className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {isPending ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Publicando...
+              </>
+            ) : (
+              'Publicar Post'
+            )}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}

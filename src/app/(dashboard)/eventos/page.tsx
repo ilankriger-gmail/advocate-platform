@@ -127,11 +127,11 @@ export default async function EventosPage() {
                       {reg.events?.title}
                     </h3>
                     <p className="text-sm text-gray-500">
-                      {new Date(reg.events?.start_time).toLocaleDateString('pt-BR', {
+                      {reg.events?.start_time ? new Date(reg.events.start_time).toLocaleDateString('pt-BR', {
                         day: '2-digit',
                         month: 'short',
                         year: 'numeric'
-                      })}
+                      }) : 'Data não disponível'}
                     </p>
                   </div>
                 </div>

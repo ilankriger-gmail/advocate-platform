@@ -20,6 +20,9 @@ export type PostType = 'creator' | 'community';
 // Status de post
 export type PostStatus = 'pending' | 'approved' | 'rejected';
 
+// Tipo de mídia do post
+export type MediaType = 'none' | 'image' | 'carousel' | 'youtube' | 'instagram';
+
 export interface Database {
   public: {
     Tables: {
@@ -80,6 +83,9 @@ export interface Database {
           title: string
           content: string | null
           media_url: string[] | null
+          media_type: MediaType
+          youtube_url: string | null
+          instagram_url: string | null
           type: PostType
           status: PostStatus
           likes_count: number
@@ -97,6 +103,9 @@ export interface Database {
           title: string
           content?: string | null
           media_url?: string[] | null
+          media_type?: MediaType
+          youtube_url?: string | null
+          instagram_url?: string | null
           type?: PostType
           status?: PostStatus
           likes_count?: number
@@ -114,6 +123,9 @@ export interface Database {
           title?: string
           content?: string | null
           media_url?: string[] | null
+          media_type?: MediaType
+          youtube_url?: string | null
+          instagram_url?: string | null
           type?: PostType
           status?: PostStatus
           likes_count?: number
@@ -480,4 +492,43 @@ export interface ExternalSubmission {
   notes: string | null;
   created_at: string;
   updated_at: string;
+}
+
+// ============ LEADS NPS ============
+
+export type LeadStatus = 'pending' | 'approved' | 'rejected';
+
+export interface NpsLead {
+  id: string;
+  score: number;
+  reason: string;
+  reason_length: number;
+  name: string;
+  email: string;
+  phone: string | null;
+  status: LeadStatus;
+  approved_by: string | null;
+  approved_at: string | null;
+  rejection_reason: string | null;
+  email_sent: boolean;
+  email_sent_at: string | null;
+  whatsapp_sent: boolean;
+  whatsapp_sent_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface NpsLeadInsert {
+  score: number;
+  reason: string;
+  name: string;
+  email: string;
+  phone?: string | null;
+}
+
+export interface NpsLeadWithApprover extends NpsLead {
+  approver?: {
+    id: string;
+    full_name: string | null;
+  } | null;
 }

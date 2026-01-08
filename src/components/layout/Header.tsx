@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar } from '@/components/ui';
 import { cn } from '@/lib/utils';
@@ -11,8 +12,17 @@ interface HeaderProps {
   className?: string;
 }
 
+// Rotas onde o Header nao deve aparecer
+const HIDDEN_HEADER_ROUTES = ['/seja-nextlover', '/login', '/registro'];
+
 export function Header({ onMenuClick, showMenuButton = false, className }: HeaderProps) {
   const { user, signOut } = useAuth();
+  const pathname = usePathname();
+
+  // Nao renderizar Header em certas paginas
+  if (HIDDEN_HEADER_ROUTES.some(route => pathname?.startsWith(route))) {
+    return null;
+  }
 
   const userName = user?.user_metadata?.full_name || 'Usuario';
   const userAvatar = user?.user_metadata?.avatar_url;

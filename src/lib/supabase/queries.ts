@@ -3,7 +3,7 @@
  */
 
 import { createClient } from './server';
-import type { PostWithAuthor, CreatorProfile, User, PostWithUsers, Reward } from './types';
+import type { PostWithAuthor, CreatorProfile, User } from './types';
 
 // ============ CRIADOR ============
 
@@ -48,39 +48,34 @@ export async function getCreatorProfile(): Promise<CreatorProfile | null> {
 
 /**
  * Buscar posts do criador (para o feed do criador)
+ * Filtra por type='creator' para mostrar posts do criador
  */
 export async function getCreatorPosts(limit = 5): Promise<PostWithAuthor[]> {
   const supabase = await createClient();
 
-  // Primeiro buscar o criador
-  const { data: creator } = await supabase
-    .from('users')
-    .select('id, full_name, avatar_url, is_creator')
-    .eq('is_creator', true)
-    .single();
-
-  if (!creator) return [];
-
-  // Buscar posts do criador
+  // Buscar posts do tipo 'creator'
   const { data: posts, error } = await supabase
     .from('posts')
     .select('*')
-    .eq('user_id', creator.id)
+    .eq('type', 'creator')
     .eq('status', 'approved')
     .order('created_at', { ascending: false })
     .limit(limit);
 
-  if (error) return [];
+  if (error || !posts || posts.length === 0) return [];
 
-  // Combinar posts com autor
-  return (posts || []).map(post => ({
+  // Buscar autores separadamente
+  const userIds = Array.from(new Set(posts.map(p => p.user_id)));
+  const { data: users } = await supabase
+    .from('users')
+    .select('id, full_name, avatar_url, is_creator')
+    .in('id', userIds);
+
+  const usersMap = new Map((users || []).map(u => [u.id, u]));
+
+  return posts.map(post => ({
     ...post,
-    author: {
-      id: creator.id,
-      full_name: creator.full_name,
-      avatar_url: creator.avatar_url,
-      is_creator: true,
-    },
+    author: usersMap.get(post.user_id) || null,
   }));
 }
 
@@ -123,45 +118,35 @@ export async function getFeaturedCreatorPosts(limit = 3): Promise<PostWithAuthor
 // ============ COMUNIDADE ============
 
 /**
- * Buscar posts da comunidade (fãs)
+ * Buscar posts da comunidade
+ * Filtra por type='community' para mostrar posts da comunidade
  */
 export async function getCommunityPosts(limit = 20, offset = 0): Promise<PostWithAuthor[]> {
   const supabase = await createClient();
 
-  // Buscar posts de usuários que NÃO são criadores
+  // Buscar posts do tipo 'community'
   const { data: posts, error } = await supabase
     .from('posts')
-    .select('*, users!inner(id, full_name, avatar_url, is_creator)')
+    .select('*')
     .eq('status', 'approved')
-    .eq('users.is_creator', false)
+    .eq('type', 'community')
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);
 
-  if (error) {
-    // Fallback: buscar sem join se der erro de FK
-    const { data: fallbackPosts } = await supabase
-      .from('posts')
-      .select('*')
-      .eq('status', 'approved')
-      .eq('type', 'community')
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+  if (error || !posts || posts.length === 0) return [];
 
-    return (fallbackPosts || []).map(post => ({
-      ...post,
-      author: null,
-    }));
-  }
+  // Buscar autores separadamente
+  const userIds = Array.from(new Set(posts.map(p => p.user_id)));
+  const { data: users } = await supabase
+    .from('users')
+    .select('id, full_name, avatar_url, is_creator')
+    .in('id', userIds);
 
-  return (posts || []).map((post: PostWithUsers) => ({
+  const usersMap = new Map((users || []).map(u => [u.id, u]));
+
+  return posts.map(post => ({
     ...post,
-    author: post.users ? {
-      id: post.users.id,
-      full_name: post.users.full_name,
-      avatar_url: post.users.avatar_url,
-      is_creator: post.users.is_creator,
-    } : null,
-    users: undefined,
+    author: usersMap.get(post.user_id) || null,
   }));
 }
 
@@ -349,56 +334,4 @@ export async function getUserPosts(userId: string, limit = 10): Promise<PostWith
   }));
 }
 
-// ============ RECOMPENSAS (legado - use rewards.ts) ============
-
-export interface RewardFilters {
-  isActive?: boolean;
-  category?: string;
-  minPoints?: number;
-  maxPoints?: number;
-}
-
-// Interface legada mantida para compatibilidade
-interface LegacyRewardWithAvailability {
-  id: string;
-  title: string;
-  description: string;
-  image_url: string | null;
-  points_cost: number;
-  stock: number | null;
-  category: string;
-  is_active: boolean;
-  created_at: string;
-  claims_count: number;
-  is_available: boolean;
-}
-
-/**
- * @deprecated Use getActiveRewards from rewards.ts
- */
-export async function getRewards(filters?: RewardFilters): Promise<LegacyRewardWithAvailability[]> {
-  const supabase = await createClient();
-
-  let query = supabase
-    .from('rewards')
-    .select('*')
-    .order('points_cost', { ascending: true });
-
-  if (filters?.isActive !== undefined) {
-    query = query.eq('is_active', filters.isActive);
-  }
-
-  if (filters?.category) {
-    query = query.eq('category', filters.category);
-  }
-
-  const { data, error } = await query;
-
-  if (error) return [];
-
-  return (data || []).map((reward: Reward) => ({
-    ...reward,
-    claims_count: 0,
-    is_available: reward.stock === null || reward.stock > 0,
-  }));
-}
+// Seção de recompensas removida - use src/lib/supabase/rewards.ts

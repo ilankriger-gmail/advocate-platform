@@ -3,8 +3,18 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { ActionResponse } from '@/types/action';
-import type { CreatePostData } from '@/types/post';
+import type { CreatePostData, UpdatePostData } from '@/types/post';
 import type { Post, PostComment } from '@/lib/supabase/types';
+
+/**
+ * Remove links clicáveis do HTML, mantendo apenas o texto
+ * Usado para posts de usuários da comunidade (não-criadores)
+ */
+function stripLinks(html: string): string {
+  if (!html) return html;
+  // Substitui <a href="...">texto</a> por apenas "texto"
+  return html.replace(/<a\s+[^>]*>(.*?)<\/a>/gi, '$1');
+}
 
 /**
  * Criar novo post
@@ -18,26 +28,211 @@ export async function createPost(data: CreatePostData): Promise<ActionResponse<P
       return { error: 'Usuário não autenticado' };
     }
 
+    // Verificar se usuário existe na tabela users, senão criar
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('is_creator')
+      .eq('id', user.id)
+      .single();
+
+    // Se usuário não existe, criar registro na tabela users
+    if (userError && userError.code === 'PGRST116') {
+      const { error: insertError } = await supabase
+        .from('users')
+        .insert({
+          id: user.id,
+          email: user.email || '',
+          full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Usuário',
+          avatar_url: user.user_metadata?.avatar_url || null,
+          is_creator: false,
+        });
+
+      if (insertError) {
+        console.error('Erro ao criar usuário:', insertError);
+        return { error: 'Erro ao criar perfil do usuário' };
+      }
+    }
+
+    const isCreator = userData?.is_creator ?? false;
+    console.log('createPost - userId:', user.id, 'isCreator:', isCreator, 'userData:', userData);
+
+    // Só criadores podem usar YouTube e Instagram embeds
+    if (!isCreator && (data.youtube_url || data.instagram_url)) {
+      return { error: 'Apenas criadores podem adicionar embeds de YouTube e Instagram' };
+    }
+
+    // Criadores têm posts auto-aprovados
+    const postStatus = isCreator ? 'approved' : 'pending';
+    console.log('createPost - postStatus:', postStatus);
+
+    // Remover links do conteúdo se não for criador (segurança adicional)
+    const finalContent = isCreator
+      ? (data.content || null)
+      : stripLinks(data.content || '') || null;
+
     const { data: post, error } = await supabase
       .from('posts')
       .insert({
         user_id: user.id,
-        title: data.title,
-        content: data.content,
-        media_url: data.media_url ? [data.media_url] : null,
+        title: data.title || '',  // Título opcional para YouTube/Instagram
+        content: finalContent,
+        media_url: data.media_url || null,
+        media_type: data.media_type || 'none',
+        youtube_url: data.youtube_url || null,
+        instagram_url: data.instagram_url || null,
         type: data.type,
-        status: 'pending',
+        status: postStatus,
       })
       .select()
       .single();
 
     if (error) {
+      console.error('Erro ao criar post:', error);
       return { error: 'Erro ao criar post' };
     }
 
+    revalidatePath('/');
     revalidatePath('/feed');
     revalidatePath('/dashboard');
+    revalidatePath('/perfil');
     return { success: true, data: post };
+  } catch {
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+/**
+ * Atualizar post existente
+ */
+export async function updatePost(data: UpdatePostData): Promise<ActionResponse<Post>> {
+  try {
+    const supabase = await createClient();
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return { error: 'Usuário não autenticado' };
+    }
+
+    // Verificar se o post pertence ao usuário
+    const { data: existingPost } = await supabase
+      .from('posts')
+      .select('user_id')
+      .eq('id', data.id)
+      .single();
+
+    if (!existingPost || existingPost.user_id !== user.id) {
+      return { error: 'Você não tem permissão para editar este post' };
+    }
+
+    // Verificar se é criador para permitir embeds de YouTube/Instagram
+    const { data: userData } = await supabase
+      .from('users')
+      .select('is_creator')
+      .eq('id', user.id)
+      .single();
+
+    const isCreator = userData?.is_creator ?? false;
+
+    // Só criadores podem usar YouTube e Instagram embeds
+    if (!isCreator && (data.youtube_url || data.instagram_url)) {
+      return { error: 'Apenas criadores podem adicionar embeds de YouTube e Instagram' };
+    }
+
+    const updateData: Record<string, unknown> = {
+      updated_at: new Date().toISOString(),
+    };
+
+    if (data.title !== undefined) updateData.title = data.title;
+    // Remover links do conteúdo se não for criador
+    if (data.content !== undefined) {
+      updateData.content = isCreator ? data.content : stripLinks(data.content);
+    }
+    if (data.media_url !== undefined) updateData.media_url = data.media_url;
+    if (data.media_type !== undefined) updateData.media_type = data.media_type;
+    if (data.youtube_url !== undefined) updateData.youtube_url = data.youtube_url;
+    if (data.instagram_url !== undefined) updateData.instagram_url = data.instagram_url;
+
+    const { data: post, error } = await supabase
+      .from('posts')
+      .update(updateData)
+      .eq('id', data.id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Erro ao atualizar post:', error);
+      return { error: 'Erro ao atualizar post' };
+    }
+
+    revalidatePath('/feed');
+    revalidatePath('/perfil');
+    revalidatePath(`/perfil/posts/${data.id}`);
+    return { success: true, data: post };
+  } catch {
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+/**
+ * Upload de imagens para post
+ */
+export async function uploadPostImages(formData: FormData): Promise<ActionResponse<string[]>> {
+  try {
+    const supabase = await createClient();
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return { error: 'Usuário não autenticado' };
+    }
+
+    const files = formData.getAll('files') as File[];
+
+    if (files.length === 0) {
+      return { error: 'Nenhuma imagem selecionada' };
+    }
+
+    if (files.length > 5) {
+      return { error: 'Máximo de 5 imagens permitidas' };
+    }
+
+    const uploadedUrls: string[] = [];
+
+    for (const file of files) {
+      // Validar tipo de arquivo
+      if (!file.type.startsWith('image/')) {
+        return { error: 'Apenas imagens são permitidas' };
+      }
+
+      // Validar tamanho (máximo 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        return { error: 'Imagem muito grande. Máximo 5MB' };
+      }
+
+      // Gerar nome único para o arquivo
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('post-images')
+        .upload(fileName, file, {
+          contentType: file.type,
+          upsert: false,
+        });
+
+      if (uploadError) {
+        console.error('Erro no upload:', uploadError);
+        return { error: 'Erro ao fazer upload da imagem' };
+      }
+
+      // Obter URL pública
+      const { data: publicUrl } = supabase.storage
+        .from('post-images')
+        .getPublicUrl(fileName);
+
+      uploadedUrls.push(publicUrl.publicUrl);
+    }
+
+    return { success: true, data: uploadedUrls };
   } catch {
     return { error: 'Erro interno do servidor' };
   }
@@ -152,6 +347,80 @@ export async function likePost(postId: string): Promise<ActionResponse> {
 
     revalidatePath('/feed');
     return { success: true };
+  } catch {
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+/**
+ * Votar em post (upvote/downvote)
+ * @param voteType 1 = upvote, -1 = downvote, 0 = remover voto
+ */
+export async function votePost(postId: string, voteType: 1 | -1 | 0): Promise<ActionResponse<{ voteScore: number; userVote: number | null }>> {
+  try {
+    const supabase = await createClient();
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return { error: 'Usuário não autenticado' };
+    }
+
+    // Verificar voto existente
+    const { data: existingVote } = await supabase
+      .from('post_votes')
+      .select('id, vote_type')
+      .eq('post_id', postId)
+      .eq('user_id', user.id)
+      .single();
+
+    if (voteType === 0) {
+      // Remover voto
+      if (existingVote) {
+        await supabase
+          .from('post_votes')
+          .delete()
+          .eq('id', existingVote.id);
+      }
+    } else if (existingVote) {
+      if (existingVote.vote_type === voteType) {
+        // Mesmo voto = remover (toggle)
+        await supabase
+          .from('post_votes')
+          .delete()
+          .eq('id', existingVote.id);
+      } else {
+        // Voto diferente = atualizar
+        await supabase
+          .from('post_votes')
+          .update({ vote_type: voteType })
+          .eq('id', existingVote.id);
+      }
+    } else {
+      // Novo voto
+      await supabase
+        .from('post_votes')
+        .insert({
+          post_id: postId,
+          user_id: user.id,
+          vote_type: voteType,
+        });
+    }
+
+    // Buscar score atualizado e voto do usuário
+    const [postResult, voteResult] = await Promise.all([
+      supabase.from('posts').select('vote_score').eq('id', postId).single(),
+      supabase.from('post_votes').select('vote_type').eq('post_id', postId).eq('user_id', user.id).single(),
+    ]);
+
+    revalidatePath('/feed');
+    revalidatePath('/');
+    return {
+      success: true,
+      data: {
+        voteScore: postResult.data?.vote_score || 0,
+        userVote: voteResult.data?.vote_type || null,
+      },
+    };
   } catch {
     return { error: 'Erro interno do servidor' };
   }
