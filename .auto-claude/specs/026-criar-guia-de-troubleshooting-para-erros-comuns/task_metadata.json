@@ -1,0 +1,8 @@
+{
+  "sourceType": "ideation",
+  "ideationType": "documentation_gaps",
+  "ideaId": "doc-005",
+  "rationale": "Desenvolvedores frequentemente enfrentam erros de configuracao que consomem horas para resolver. Um guia de troubleshooting com erros comuns e solucoes economiza tempo significativo.",
+  "category": "documentation",
+  "priority": "medium"
+}

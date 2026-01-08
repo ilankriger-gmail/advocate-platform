@@ -1,0 +1,20 @@
+{
+  "discovered_files": {
+    "src/lib/gemini.ts": {
+      "description": "API Gemini retorna mensagem 'API Gemini nao configurada - verificacao manual necessaria' quando GEMINI_API_KEY est\u00e1 ausente ou \u00e9 placeholder",
+      "category": "error-handling",
+      "discovered_at": "2026-01-07T14:33:13.513115+00:00"
+    },
+    "src/lib/supabase/admin.ts": {
+      "description": "Fun\u00e7\u00e3o createAdminClient() lan\u00e7a Error 'Missing Supabase admin credentials' quando SUPABASE_SERVICE_ROLE_KEY n\u00e3o est\u00e1 definida",
+      "category": "error-handling",
+      "discovered_at": "2026-01-07T14:33:13.529429+00:00"
+    },
+    ".env.local.example": {
+      "description": "Template de vari\u00e1veis de ambiente inclui: SUPABASE_URL, SUPABASE_ANON_KEY, SITE_URL, EMAIL vars, STORAGE_URL, INSTAGRAM_API_KEY, TIKTOK_API_KEY - mas falta SUPABASE_SERVICE_ROLE_KEY e GEMINI_API_KEY",
+      "category": "configuration",
+      "discovered_at": "2026-01-07T14:33:13.544918+00:00"
+    }
+  },
+  "last_updated": "2026-01-07T14:33:13.544930+00:00"
+}

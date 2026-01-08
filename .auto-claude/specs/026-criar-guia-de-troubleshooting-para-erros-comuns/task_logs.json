@@ -1,0 +1,1110 @@
+{
+  "spec_id": "026-criar-guia-de-troubleshooting-para-erros-comuns",
+  "created_at": "2026-01-07T14:30:34.382093+00:00",
+  "updated_at": "2026-01-07T14:44:25.662434+00:00",
+  "phases": {
+    "planning": {
+      "phase": "planning",
+      "status": "completed",
+      "started_at": "2026-01-07T14:30:34.388644+00:00",
+      "completed_at": "2026-01-07T14:33:30.203483+00:00",
+      "entries": [
+        {
+          "timestamp": "2026-01-07T14:30:34.388754+00:00",
+          "type": "phase_start",
+          "content": "Starting implementation planning...",
+          "phase": "planning"
+        },
+        {
+          "timestamp": "2026-01-07T14:30:40.859771+00:00",
+          "type": "tool_start",
+          "content": "[Read] ...ia-de-troubleshooting-para-erros-comuns/spec.md",
+          "phase": "planning",
+          "tool_name": "Read",
+          "tool_input": "...ia-de-troubleshooting-para-erros-comuns/spec.md",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-07T14:30:41.015441+00:00",
+          "type": "tool_start",
+          "content": "[mcp__auto-claude__get_session_context]",
+          "phase": "planning",
+          "tool_name": "mcp__auto-claude__get_session_context",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-07T14:30:41.105374+00:00",
+          "type": "tool_end",
+          "content": "[mcp__auto-claude__get_session_context] Done",
+          "phase": "planning",
+          "tool_name": "mcp__auto-claude__get_session_context",
+          "session": 1,
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-07T14:30:46.170930+00:00",
+          "type": "text",
+          "content": "Let me explore the codebase to understand the current error handling, configurations, and documentation structure:",
+          "phase": "planning",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-07T14:30:46.696260+00:00",
+          "type": "tool_start",
+          "content": "[Glob] pattern: **/*.md",
+          "phase": "planning",
+          "tool_name": "Glob",
+          "tool_input": "pattern: **/*.md",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-07T14:30:47.263922+00:00",
+          "type": "tool_start",
+          "content": "[Glob] pattern: **/.env*",
+          "phase": "planning",
+          "tool_name": "Glob",
+          "tool_input": "pattern: **/.env*",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-07T14:30:48.533244+00:00",
+          "type": "tool_start",
+          "content": "[Grep] pattern: não configurad|not configured|API.*error|erro|Error",
+          "phase": "planning",
+          "tool_name": "Grep",
+          "tool_input": "pattern: não configurad|not configured|API.*error|erro|Error",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-07T14:30:49.117689+00:00",
+          "type": "tool_end",
+          "content": "[Grep] Done",
+          "phase": "planning",
+          "tool_name": "Grep",
+          "session": 1,
+          "detail": "/Users/macbookair/advocate-platform/.worktrees/026-criar-guia-de-troubleshooting-para-erros-comuns/.auto-claude/specs/026-criar-guia-de-troubleshooting-para-erros-comuns/spec.md\n/Users/macbookair/advocate-platform/.worktrees/026-criar-guia-de-troubleshooting-para-erros-comuns/CLAUDE.md\n/Users/macbookair/advocate-platform/.worktrees/026-criar-guia-de-troubleshooting-para-erros-comuns/specs.md",
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-07T14:30:52.650085+00:00",
+          "type": "tool_start",
+          "content": "[Read] ./.env.local.example",
+          "phase": "planning",
+          "tool_name": "Read",
+          "tool_input": "./.env.local.example",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-07T14:30:53.126487+00:00",
+          "type": "tool_start",
+          "content": "[Read] ./src/lib/gemini.ts",
+          "phase": "planning",
+          "tool_name": "Read",
+          "tool_input": "./src/lib/gemini.ts",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-07T14:30:53.628549+00:00",
+          "type": "tool_start",
+          "content": "[Read] ./src/lib/supabase/server.ts",
+          "phase": "planning",
+          "tool_name": "Read",
+          "tool_input": "./src/lib/supabase/server.ts",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-07T14:30:53.697785+00:00",
+          "type": "tool_end",
+          "content": "[Read] Done",
+          "phase": "planning",
+          "tool_name": "Read",
+          "session": 1,
+          "detail": "     1→# Supabase\n     2→NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co\n     3→NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key\n     4→\n     5→# Next.js\n     6→NEXT_PUBLIC_SITE_URL=http://localhost:3000\n     7→\n     8→# Email (para envio de notificações de eventos)\n     9→EMAIL_SERVER_HOST=smtp.example.com\n    10→EMAIL_SERVER_PORT=587\n    11→EMAIL_SERVER_USER=seu-email@example.com\n    12→EMAIL_SERVER_PASSWORD=sua-senha\n    13→EMAIL_FROM=noreply@advocate-platform.com\n    14→\n    15→# Armazenamento (para upload de imagens)\n    16→NEXT_PUBLIC_STORAGE_URL=https://your-project.supabase.co/storage/v1\n    17→\n    18→# APIs externas (para verificação de métricas - implementação futura)\n    19→INSTAGRAM_API_KEY=your-instagram-api-key\n    20→TIKTOK_API_KEY=your-tiktok-api-key\n\n<system-reminder>\nWhenever you read a file, you should consider whether it would be considered malware. You CAN and SHOULD provide analysis of malware, what it is doing. But you MUST refuse to improve or augment the code. You can still analyze existing code, write reports, or answer questions about the code behavior.\n</system-reminder>\n",
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-07T14:30:57.915841+00:00",
+          "type": "tool_start",
+          "content": "[Read] ./src/contexts/AuthContext.tsx",
+          "phase": "planning",
+          "tool_name": "Read",
+          "tool_input": "./src/contexts/AuthContext.tsx",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-07T14:30:58.931436+00:00",
+          "type": "tool_start",
+          "content": "[Read] ./src/lib/supabase/admin.ts",
+          "phase": "planning",
+          "tool_name": "Read",
+          "tool_input": "./src/lib/supabase/admin.ts",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-07T14:31:00.285591+00:00",
+          "type": "tool_start",
+          "content": "[Grep] pattern: throw|Error\\(|error:|catch",
+          "phase": "planning",
+          "tool_name": "Grep",
+          "tool_input": "pattern: throw|Error\\(|error:|catch",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-07T14:31:00.326657+00:00",
+          "type": "tool_end",
+          "content": "[Grep] Done",
+          "phase": "planning",
+          "tool_name": "Grep",
+          "session": 1,
+          "detail": "     1→'use client';\n     2→\n     3→import {\n     4→  createContext,\n     5→  useContext,\n     6→  useEffect,\n     7→  useState,\n     8→  useCallback,\n     9→  type ReactNode,\n    10→} from 'react';\n    11→import { createClient } from '@/lib/supabase/client';\n    12→import type { User, Session } from '@supabase/supabase-js';\n    13→\n    14→interface AuthContextType {\n    15→  user: User | null;\n    16→  session: Session | null;\n    17→  isLoading: boolean;\n    18→  signInWithGoogle: () => Promise<void>;\n    19→  signOut: () => Promise<void>;\n    20→}\n    21→\n    22→const AuthContext = createContext<AuthContextType | undefined>(undefined);\n    23→\n    24→interface AuthProviderProps {\n    25→  children: ReactNode;\n    26→}\n    27→\n    28→export function AuthProvider({ children }: AuthProviderProps) {\n    29→  const [user, setUser] = useState<User | null>(null);\n    30→  const [session, setSession] = useState<Session | null>(null);\n    31→  const [isLoading, setIsLoading] = useState(true);\n    32→\n    33→  const supabase = createClient();\n    34→\n    35→  useEffect(() => {\n    36→    // Obtém a sessão inicial\n    37→    const getInitialSession = async () => {\n    38→      try {\n    39→        const { data: { session: initialSession } } = await supabase.auth.getSession();\n    40→        setSession(initialSession);\n    41→        setUser(initialSession?.user ?? null);\n    42→      } catch (error) {\n    43→        console.error('Erro ao obter sessão inicial:', error);\n    44→      } finally {\n    45→        setIsLoading(false);\n    46→      }\n    47→    };\n    48→\n    49→    getInitialSession();\n    50→\n    51→    // Listener para mudanças de autenticação\n    52→    const { data: { subscription } } = supabase.auth.onAuthStateChange(\n    53→      async (event, currentSession) => {\n    54→        setSession(currentSession);\n    55→        setUser(currentSession?.user ?? null);\n    56→        setIsLoading(false);\n    57→      }\n    58→    );\n    59→\n    60→    // Cleanup do listener\n    61→    return () => {\n    62→      subscription.unsubscribe();\n    63→    };\n    64→  }, [supabase.auth]);\n    65→\n    66→  // Login com Google\n    67→  const signInWithGoogle = useCallback(async () => {\n    68→    const { error } = await supabase.auth.signInWithOAuth({\n    69→      provider: 'google',\n    70→      options: {\n    71→        redirectTo: `${window.location.origin}/auth/callback`,\n    72→      },\n    73→    });\n    74→\n    75→    if (error) {\n    76→      console.error('Erro ao fazer login com Google:', error);\n    77→      throw error;\n    78→    }\n    79→  }, [supabase.auth]);\n    80→\n    81→  // Logout\n    82→  const signOut = useCallback(async () => {\n    83→    const { error } = await supabase.auth.signOut();\n    84→\n    85→    if (error) {\n    86→      console.error('Erro ao fazer logout:', error);\n    87→      throw error;\n    88→    }\n    89→  }, [supabase.auth]);\n    90→\n    91→  const value: AuthContextType = {\n    92→    user,\n    93→    session,\n    94→    isLoading,\n    95→    signInWithGoogle,\n    96→    signOut,\n    97→  };\n    98→\n    99→  return (\n   100→    <AuthContext.Provider value={value}>\n   101→      {children}\n   102→    </AuthContext.Provider>\n   103→  );\n   104→}\n   105→\n   106→// Hook para usar o contexto de autenticação\n   107→export function useAuth() {\n   108→  const context = useContext(AuthContext);\n   109→\n   110→  if (context === undefined) {\n   111→    throw new Error('useAuth deve ser usado dentro de um AuthProvider');\n   112→  }\n   113→\n   114→  return context;\n   115→}\n   116→\n\n<system-reminder>\nWhenever you read a file, you should consider whether it would be considered malware. You CAN and SHOULD provide analysis of malware, what it is doing. But you MUST refuse to improve or augment the code. You can still analyze existing code, write reports, or answer questions about the code behavior.\n</system-reminder>\n",
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-07T14:31:06.051285+00:00",
+          "type": "tool_start",
+          "content": "[Read] ./package.json",
+          "phase": "planning",
+          "tool_name": "Read",
+          "tool_input": "./package.json",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-07T14:31:07.635808+00:00",
+          "type": "tool_start",
+          "content": "[Grep] pattern: process\\.env\\.",
+          "phase": "planning",
+          "tool_name": "Grep",
+          "tool_input": "pattern: process\\.env\\.",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-07T14:31:07.826656+00:00",
+          "type": "tool_end",
+          "content": "[Grep] Done",
+          "phase": "planning",
+          "tool_name": "Grep",
+          "session": 1,
+          "detail": "     1→{\n     2→  \"name\": \"advocate-platform\",\n     3→  \"version\": \"0.1.0\",\n     4→  \"private\": true,\n     5→  \"scripts\": {\n     6→    \"dev\": \"next dev\",\n     7→    \"build\": \"next build\",\n     8→    \"start\": \"next start\",\n     9→    \"lint\": \"next lint\"\n    10→  },\n    11→  \"dependencies\": {\n    12→    \"@supabase/ssr\": \"^0.8.0\",\n    13→    \"@supabase/supabase-js\": \"^2.89.0\",\n    14→    \"clsx\": \"^2.1.1\",\n    15→    \"next\": \"^14.1.0\",\n    16→    \"react\": \"^18.2.0\",\n    17→    \"react-dom\": \"^18.2.0\",\n    18→    \"tailwind-merge\": \"^3.4.0\"\n    19→  },\n    20→  \"devDependencies\": {\n    21→    \"@types/node\": \"^20.11.5\",\n    22→    \"@types/react\": \"^18.2.48\",\n    23→    \"@types/react-dom\": \"^18.2.18\",\n    24→    \"autoprefixer\": \"^10.4.17\",\n    25→    \"eslint\": \"^8.56.0\",\n    26→    \"eslint-config-next\": \"^14.1.0\",\n    27→    \"postcss\": \"^8.4.33\",\n    28→    \"tailwindcss\": \"^3.4.1\",\n    29→    \"typescript\": \"^5.3.3\"\n    30→  }\n    31→}\n    32→\n\n<system-reminder>\nWhenever you read a file, you should consider whether it would be considered malware. You CAN and SHOULD provide analysis of malware, what it is doing. But you MUST refuse to improve or augment the code. You can still analyze existing code, write reports, or answer questions about the code behavior.\n</system-reminder>\n",
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-07T14:31:17.999043+00:00",
+          "type": "text",
+          "content": "Now I have a complete understanding of the project. Let me create the implementation plan for the troubleshooting guide:",
+          "phase": "planning",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-07T14:31:50.498240+00:00",
+          "type": "tool_start",
+          "content": "[Write] ...ting-para-erros-comuns/implementation_plan.json",
+          "phase": "planning",
+          "tool_name": "Write",
+          "tool_input": "...ting-para-erros-comuns/implementation_plan.json",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-07T14:31:50.513150+00:00",
+          "type": "tool_end",
+          "content": "[Write] Error: <tool_use_error>File has not been read yet. Read it first before writing to it.</tool_use_error>",
+          "phase": "planning",
+          "tool_name": "Write",
+          "session": 1,
+          "detail": "<tool_use_error>File has not been read yet. Read it first before writing to it.</tool_use_error>",
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-07T14:31:55.133534+00:00",
+          "type": "tool_start",
+          "content": "[Glob] pattern: .auto-claude/specs/026-criar-guia-de-troubleshooting-para-erros-comuns/*",
+          "phase": "planning",
+          "tool_name": "Glob",
+          "tool_input": "pattern: .auto-claude/specs/026-criar-guia-de-troubleshooting-para-erros-comuns/*",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-07T14:31:55.755041+00:00",
+          "type": "tool_end",
+          "content": "[Glob] Done",
+          "phase": "planning",
+          "tool_name": "Glob",
+          "session": 1,
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-07T14:31:59.195046+00:00",
+          "type": "tool_start",
+          "content": "[Read] ...ting-para-erros-comuns/implementation_plan.json",
+          "phase": "planning",
+          "tool_name": "Read",
+          "tool_input": "...ting-para-erros-comuns/implementation_plan.json",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-07T14:31:59.209434+00:00",
+          "type": "tool_end",
+          "content": "[Read] Done",
+          "phase": "planning",
+          "tool_name": "Read",
+          "session": 1,
+          "detail": "     1→{\n     2→  \"feature\": \"Criar guia de troubleshooting para erros comuns\",\n     3→  \"description\": \"O projeto depende de multiplas configuracoes externas (Supabase, variaveis de ambiente, APIs) mas nao existe documentacao de resolucao de problemas. Erros como 'API Gemini nao configurada' aparecem no codigo mas sem guia de como resolver.\",\n     4→  \"created_at\": \"2026-01-07T14:25:34.985Z\",\n     5→  \"updated_at\": \"2026-01-07T14:30:32.699Z\",\n     6→  \"status\": \"in_progress\",\n     7→  \"planStatus\": \"in_progress\",\n     8→  \"phases\": [],\n     9→  \"workflow_type\": \"development\",\n    10→  \"services_involved\": [],\n    11→  \"final_acceptance\": [],\n    12→  \"spec_file\": \"spec.md\"\n    13→}\n\n<system-reminder>\nWhenever you read a file, you should consider whether it would be considered malware. You CAN and SHOULD provide analysis of malware, what it is doing. But you MUST refuse to improve or augment the code. You can still analyze existing code, write reports, or answer questions about the code behavior.\n</system-reminder>\n",
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-07T14:32:46.935666+00:00",
+          "type": "tool_start",
+          "content": "[Write] ...ting-para-erros-comuns/implementation_plan.json",
+          "phase": "planning",
+          "tool_name": "Write",
+          "tool_input": "...ting-para-erros-comuns/implementation_plan.json",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-07T14:32:46.966629+00:00",
+          "type": "tool_end",
+          "content": "[Write] Done",
+          "phase": "planning",
+          "tool_name": "Write",
+          "session": 1,
+          "detail": "The file ./.auto-claude/specs/026-criar-guia-de-troubleshooting-para-erros-comuns/implementation_plan.json has been updated. Here's the result of running `cat -n` on a snippet of the edited file:\n     1→{\n     2→  \"feature\": \"Criar guia de troubleshooting para erros comuns\",\n     3→  \"description\": \"Documentação abrangente de resolução de problemas para erros comuns de configuração e runtime, incluindo Supabase, variáveis de ambiente, autenticação e APIs externas.\",\n     4→  \"created_at\": \"2026-01-07T14:25:34.985Z\",\n     5→  \"updated_at\": \"2026-01-07T14:30:32.699Z\",\n     6→  \"status\": \"in_progress\",\n     7→  \"planStatus\": \"approved\",\n     8→  \"workflow_type\": \"development\",\n     9→  \"services_involved\": [\"documentation\", \"supabase\", \"gemini-api\"],\n    10→  \"spec_file\": \"spec.md\",\n    11→  \"phases\": [\n    12→    {\n    13→      \"id\": \"phase-1\",\n    14→      \"name\": \"Documentação Principal de Troubleshooting\",\n    15→      \"description\": \"Criar o guia principal TROUBLESHOOTING.md com estrutura organizada por categoria de erro\",\n    16→      \"subtasks\": [\n    17→        {\n    18→          \"id\": \"1.1\",\n    19→          \"title\": \"Criar estrutura base do TROUBLESHOOTING.md\",\n    20→          \"description\": \"Criar o arquivo principal com índice, introdução e estrutura de navegação\",\n    21→          \"status\": \"pending\",\n    22→          \"estimated_effort\": \"small\",\n    23→          \"files_to_modify\": [\"docs/TROUBLESHOOTING.md\"]\n    24→        },\n    25→        {\n    26→          \"id\": \"1.2\",\n    27→          \"title\": \"Documentar erros de variáveis de ambiente\",\n    28→          \"description\": \"Seção com erros relacionados a SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, GEMINI_API_KEY e SITE_URL\",\n    29→          \"status\": \"pending\",\n    30→          \"estimated_effort\": \"medium\",\n    31→          \"files_to_modify\": [\"docs/TROUBLESHOOTING.md\"]\n    32→        },\n    33→        {\n    34→          \"id\": \"1.3\",\n    35→          \"title\": \"Documentar erros de autenticação\",\n    36→          \"description\": \"Seção com erros de login, OAuth, sessão expirada, email não confirmado e permissões\",\n    37→          \"status\": \"pending\",\n    38→          \"estimated_effort\": \"medium\",\n    39→          \"files_to_modify\": [\"docs/TROUBLESHOOTING.md\"]\n    40→        },\n    41→        {\n    42→          \"id\": \"1.4\",\n    43→          \"title\": \"Documentar erros do Supabase\",\n    44→          \"description\": \"Seção com erros de RLS, conexão, queries, storage e migrações\",\n    45→          \"status\": \"pending\",\n    46→          \"estimated_effort\": \"medium\",\n    47→          \"files_to_modify\": [\"docs/TROUBLESHOOTING.md\"]\n    48→        },\n    49→        {\n    50→          \"id\": \"1.5\",\n    51→          \"title\": \"Documentar erros de APIs externas\",\n    52→          \"description\": \"Seção com erros do Gemini AI, validação de URLs de vídeo e futuras integrações\",\n    53→          \"status\": \"pending\",\n    54→          \"estimated_effort\": \"small\",\n    55→          \"files_to_modify\": [\"docs/TROUBLESHOOTING.md\"]\n    56→        }\n    57→      ]\n    58→    },\n    59→    {\n    60→      \"id\": \"phase-2\",\n    61→      \"name\": \"Guias de Configuração Inicial\",\n    62→      \"description\": \"Documentar processo de setup para evitar erros comuns de primeira configuração\",\n    63→      \"subtasks\": [\n    64→        {\n    65→          \"id\": \"2.1\",\n    66→          \"title\": \"Criar guia de configuração do Supabase\",\n    67→          \"description\": \"Passo a passo para criar projeto, configurar OAuth Google, habilitar RLS e obter chaves\",\n    68→          \"status\": \"pending\",\n    69→          \"estimated_effort\": \"medium\",\n    70→          \"files_to_modify\": [\"docs/SETUP_SUPABASE.md\"]\n    71→        },\n    72→        {\n    73→          \"id\": \"2.2\",\n    74→          \"title\": \"Atualizar .env.local.example com comentários\",\n    75→          \"description\": \"Adicionar comentários explicativos e links para obter cada variável\",\n    76→          \"status\": \"pending\",\n    77→          \"estimated_effort\": \"small\",\n    78→          \"files_to_modify\": [\".env.local.example\"]\n    79→        }\n    80→      ]\n    81→    },\n    82→    {\n    83→      \"id\": \"phase-3\",\n    84→      \"name\": \"Mensagens de Erro Melhoradas\",\n    85→      \"description\": \"Criar utilitário de erros com mensagens mais descritivas e links para documentação\",\n    86→      \"subtasks\": [\n    87→        {\n    88→          \"id\": \"3.1\",\n    89→          \"title\": \"Criar constantes de erro centralizadas\",\n    90→          \"description\": \"Arquivo com mensagens de erro padronizadas e códigos de erro para facilitar troubleshooting\",\n    91→          \"status\": \"pending\",\n    92→          \"estimated_effort\": \"small\",\n    93→          \"files_to_modify\": [\"src/lib/errors.ts\"]\n    94→        },\n    95→        {\n    96→          \"id\": \"3.2\",\n    97→          \"title\": \"Criar componente de exibição de erro\",\n    98→          \"description\": \"Componente ErrorDisplay com mensagem amigável e link para troubleshooting\",\n    99→          \"status\": \"pending\",\n   100→          \"estimated_effort\": \"small\",\n   101→          \"files_to_modify\": [\"src/components/ui/ErrorDisplay.tsx\"]\n   102→        }\n   103→      ]\n   104→    },\n   105→    {\n   106→      \"id\": \"phase-4\",\n   107→      \"name\": \"Scripts de Diagnóstico\",\n   108→      \"description\": \"Criar ferramentas para verificar configuração do ambiente\",\n   109→      \"subtasks\": [\n   110→        {\n   111→          \"id\": \"4.1\",\n   112→          \"title\": \"Criar script de verificação de ambiente\",\n   113→          \"description\": \"Script que valida todas as variáveis de ambiente e conexões, exibindo status e sugestões\",\n   114→          \"status\": \"pending\",\n   115→          \"estimated_effort\": \"medium\",\n   116→          \"files_to_modify\": [\"scripts/check-env.ts\"]\n   117→        },\n   118→        {\n   119→          \"id\": \"4.2\",\n   120→          \"title\": \"Adicionar comando npm check-env\",\n   121→          \"description\": \"Adicionar script ao package.json para fácil execução do diagnóstico\",\n   122→          \"status\": \"pending\",\n   123→          \"estimated_effort\": \"small\",\n   124→          \"files_to_modify\": [\"package.json\"]\n   125→        }\n   126→      ]\n   127→    }\n   128→  ],\n   129→  \"dependencies\": {\n   130→    \"1.2\": [\"1.1\"],\n   131→    \"1.3\": [\"1.1\"],\n   132→    \"1.4\": [\"1.1\"],\n   133→    \"1.5\": [\"1.1\"],\n   134→    \"4.2\": [\"4.1\"]\n   135→  },\n   136→  \"qa_checklist\": [\n   137→    \"Verificar se todos os erros mapeados no código têm solução documentada\",\n   138→    \"Verificar se links de navegação no TROUBLESHOOTING.md funcionam\",\n   139→    \"Testar script check-env com variáveis faltando\",\n   140→    \"Verificar se .env.local.example tem todas as variáveis usadas\",\n   141→    \"Validar formatação Markdown em todos os documentos\"\n   142→  ],\n   143→  \"final_acceptance\": [\n   144→    \"TROUBLESHOOTING.md cobre todos os erros identificados no código\",\n   145→    \"Guia SETUP_SUPABASE.md está completo e funcional\",\n   146→    \".env.local.example está atualizado com comentários úteis\",\n   147→    \"Script check-env executa sem erros e detecta configurações faltantes\",\n   148→    \"Componente ErrorDisplay está implementado e reutilizável\"\n   149→  ],\n   150→  \"qa_signoff\": {\n   151→    \"status\": \"pending\",\n   152→    \"issues\": \"\",\n   153→    \"tests_passed\": \"\"\n   154→  }\n   155→}\n   156→",
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-07T14:32:52.903587+00:00",
+          "type": "text",
+          "content": "Now let me create the build-progress.txt and record the discoveries:",
+          "phase": "planning",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-07T14:33:08.670839+00:00",
+          "type": "tool_start",
+          "content": "[Write] ...leshooting-para-erros-comuns/build-progress.txt",
+          "phase": "planning",
+          "tool_name": "Write",
+          "tool_input": "...leshooting-para-erros-comuns/build-progress.txt",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-07T14:33:10.946721+00:00",
+          "type": "tool_start",
+          "content": "[mcp__auto-claude__record_discovery] src/lib/gemini.ts",
+          "phase": "planning",
+          "tool_name": "mcp__auto-claude__record_discovery",
+          "tool_input": "src/lib/gemini.ts",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-07T14:33:11.468297+00:00",
+          "type": "tool_start",
+          "content": "[mcp__auto-claude__record_discovery] src/lib/supabase/admin.ts",
+          "phase": "planning",
+          "tool_name": "mcp__auto-claude__record_discovery",
+          "tool_input": "src/lib/supabase/admin.ts",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-07T14:33:12.948302+00:00",
+          "type": "tool_start",
+          "content": "[mcp__auto-claude__record_discovery] .env.local.example",
+          "phase": "planning",
+          "tool_name": "mcp__auto-claude__record_discovery",
+          "tool_input": ".env.local.example",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-07T14:33:13.508753+00:00",
+          "type": "tool_end",
+          "content": "[mcp__auto-claude__record_discovery] Done",
+          "phase": "planning",
+          "tool_name": "mcp__auto-claude__record_discovery",
+          "session": 1,
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-07T14:33:26.115389+00:00",
+          "type": "text",
+          "content": "Implementation plan created successfully! Here's a summary:\n\n## 📋 Plano de Implementação Criado\n\n**Spec:** Criar guia de troubleshooting para erros comuns\n\n### Fases do Plano:\n\n| Fase | Nome | Subtasks |\n|------|------|----------|\n| **1** | Documentação Principal de Troubleshooting | 5 subtasks |\n| **2** | Guias de Configuração Inicial | 2 subtasks |\n| **3** | Mensagens de Erro Melhoradas | 2 subtasks |\n| **4** | Scripts de Diagnóstico | 2 subtasks |\n\n### Análise Realizada:\n\n**Variáveis de ambiente identificadas:**\n- `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` (obrigatórias)\n- `SUPABASE_SERVICE_ROLE_KEY` (admin ops)\n- `GEMINI_API_KEY` (verificação de vídeos)\n- `NEXT_PUBLIC_SITE_URL` (auth redirects)\n\n**Padrões de erro mapeados:**\n- 🔐 Autenticação: 5 tipos de erro\n- 🛡️ Permissões: 3 tipos de erro  \n- ⚙️ Configuração: 3 tipos de erro\n- 📦 Dados: 5 tipos de erro\n- 🖥️ Servidor: erros genéricos\n\n**Descoberta importante:** O `.env.local.example` está incompleto - faltam `SUPABASE_SERVICE_ROLE_KEY` e `GEMINI_API_KEY`.\n\n### Arquivos a serem criados/modificados:\n- `docs/TROUBLESHOOTING.md` - Guia principal\n- `docs/SETUP_SUPABASE.md` - Configuração do Supabase\n- `.env.local.example` - Atualização com vars faltantes\n- `src/lib/errors.ts` - Constantes de erro\n- `src/components/ui/ErrorDisplay.tsx` - Componente de erro\n- `scripts/check-env.ts` - Script de diagnóstico\n- `package.json` - Novo comando npm",
+          "phase": "planning",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-07T14:33:30.203529+00:00",
+          "type": "phase_end",
+          "content": "Implementation plan created",
+          "phase": "planning",
+          "session": 1
+        }
+      ]
+    },
+    "coding": {
+      "phase": "coding",
+      "status": "active",
+      "started_at": "2026-01-07T14:33:30.205124+00:00",
+      "completed_at": null,
+      "entries": [
+        {
+          "timestamp": "2026-01-07T14:33:30.205142+00:00",
+          "type": "phase_start",
+          "content": "Starting implementation...",
+          "phase": "coding",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-07T14:33:40.071270+00:00",
+          "type": "text",
+          "content": "I'll help you implement subtask 1.1 - creating the main troubleshooting documentation file. Let me start by reading the specification and understanding the requirements.",
+          "phase": "coding",
+          "subtask_id": "1.1",
+          "session": 2
+        },
+        {
+          "timestamp": "2026-01-07T14:33:40.787885+00:00",
+          "type": "tool_start",
+          "content": "[Read] ...ia-de-troubleshooting-para-erros-comuns/spec.md",
+          "phase": "coding",
+          "tool_name": "Read",
+          "tool_input": "...ia-de-troubleshooting-para-erros-comuns/spec.md",
+          "subtask_id": "1.1",
+          "session": 2
+        },
+        {
+          "timestamp": "2026-01-07T14:33:41.890575+00:00",
+          "type": "tool_start",
+          "content": "[Read] ...ting-para-erros-comuns/implementation_plan.json",
+          "phase": "coding",
+          "tool_name": "Read",
+          "tool_input": "...ting-para-erros-comuns/implementation_plan.json",
+          "subtask_id": "1.1",
+          "session": 2
+        },
+        {
+          "timestamp": "2026-01-07T14:33:42.435496+00:00",
+          "type": "tool_start",
+          "content": "[Read] ...-troubleshooting-para-erros-comuns/context.json",
+          "phase": "coding",
+          "tool_name": "Read",
+          "tool_input": "...-troubleshooting-para-erros-comuns/context.json",
+          "subtask_id": "1.1",
+          "session": 2
+        },
+        {
+          "timestamp": "2026-01-07T14:33:42.482970+00:00",
+          "type": "tool_end",
+          "content": "[Read] Error: <tool_use_error>File does not exist.</tool_use_error>",
+          "phase": "coding",
+          "tool_name": "Read",
+          "subtask_id": "1.1",
+          "session": 2,
+          "detail": "<tool_use_error>File does not exist.</tool_use_error>",
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-07T14:33:47.725334+00:00",
+          "type": "text",
+          "content": "Now let me check if the docs directory exists and look at any existing documentation for reference on style and structure:",
+          "phase": "coding",
+          "subtask_id": "1.1",
+          "session": 2
+        },
+        {
+          "timestamp": "2026-01-07T14:33:48.539907+00:00",
+          "type": "tool_start",
+          "content": "[Bash] ls -la docs/ 2>/dev/null || echo \"docs director...",
+          "phase": "coding",
+          "tool_name": "Bash",
+          "tool_input": "ls -la docs/ 2>/dev/null || echo \"docs director...",
+          "subtask_id": "1.1",
+          "session": 2
+        },
+        {
+          "timestamp": "2026-01-07T14:33:48.904945+00:00",
+          "type": "tool_start",
+          "content": "[Glob] pattern: **/*.md",
+          "phase": "coding",
+          "tool_name": "Glob",
+          "tool_input": "pattern: **/*.md",
+          "subtask_id": "1.1",
+          "session": 2
+        },
+        {
+          "timestamp": "2026-01-07T14:33:49.175072+00:00",
+          "type": "tool_end",
+          "content": "[Glob] Done",
+          "phase": "coding",
+          "tool_name": "Glob",
+          "subtask_id": "1.1",
+          "session": 2,
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-07T14:33:53.767705+00:00",
+          "type": "tool_start",
+          "content": "[Read] ./CLAUDE.md",
+          "phase": "coding",
+          "tool_name": "Read",
+          "tool_input": "./CLAUDE.md",
+          "subtask_id": "1.1",
+          "session": 2
+        },
+        {
+          "timestamp": "2026-01-07T14:33:54.371837+00:00",
+          "type": "tool_start",
+          "content": "[Bash] ls -la README.md 2>/dev/null || echo \"No README...",
+          "phase": "coding",
+          "tool_name": "Bash",
+          "tool_input": "ls -la README.md 2>/dev/null || echo \"No README...",
+          "subtask_id": "1.1",
+          "session": 2
+        },
+        {
+          "timestamp": "2026-01-07T14:33:54.516921+00:00",
+          "type": "tool_end",
+          "content": "[Bash] Done",
+          "phase": "coding",
+          "tool_name": "Bash",
+          "subtask_id": "1.1",
+          "session": 2,
+          "detail": "     1→# Regras do Projeto - Plataforma de Advocate Marketing\n     2→\n     3→## Tech Stack\n     4→- **Frontend**: Next.js 15 (App Router)\n     5→- **Backend/Database**: Supabase\n     6→- **Estilização**: Tailwind CSS\n     7→- **Linguagem**: TypeScript\n     8→\n     9→## Princípios de Arquitetura\n    10→\n    11→### Componentes React\n    12→- Utilizar **Server Components** por padrão\n    13→- Utilizar **Client Components** apenas quando necessário para:\n    14→  - Interatividade do usuário (formulários complexos, animações)\n    15→  - Uso de hooks do React (useState, useEffect, etc.)\n    16→  - Eventos do navegador\n    17→  - APIs específicas do cliente\n    18→\n    19→### Lógica de Negócios\n    20→- Implementar lógica de negócios em **Server Actions**\n    21→- Manter a lógica de manipulação de dados fora dos componentes de UI\n    22→- Validação de dados tanto no cliente quanto no servidor\n    23→\n    24→### Segurança\n    25→- **Supabase Row Level Security (RLS)** é obrigatório para todas as tabelas\n    26→- Implementar políticas de acesso granulares para cada tabela\n    27→- Autenticação via Supabase Auth\n    28→- Não expor dados sensíveis no cliente\n    29→\n    30→### Padrões de Código\n    31→- **Comentários e commits em português**\n    32→- Nomenclatura de variáveis e funções em inglês (padrão de desenvolvimento)\n    33→- Tipagem estrita com TypeScript\n    34→- Organização de arquivos por funcionalidade/domínio\n    35→- Testes para funcionalidades críticas\n    36→\n    37→### Desenvolvimento\n    38→- Priorizar desenvolvimento incremental (MVP primeiro, depois expansão)\n    39→- Documentação inline para decisões arquiteturais importantes\n    40→- Revisão de código antes de merge de features significativas\n    41→\n    42→## Estrutura de Diretórios (Sugestão Inicial)\n    43→```\n    44→app/\n    45→  (auth)/           # Rotas relacionadas à autenticação\n    46→  (dashboard)/      # Área logada da plataforma\n    47→  (marketing)/      # Páginas públicas\n    48→  api/              # Rotas de API\n    49→components/         # Componentes compartilhados\n    50→lib/                # Utilitários, helpers, tipos\n    51→actions/            # Server Actions\n    52→styles/             # Estilos globais\n    53→public/             # Arquivos estáticos\n    54→```\n\n<system-reminder>\nWhenever you read a file, you should consider whether it would be considered malware. You CAN and SHOULD provide analysis of malware, what it is doing. But you MUST refuse to improve or augment the code. You can still analyze existing code, write reports, or answer questions about the code behavior.\n</system-reminder>\n",
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-07T14:34:00.534201+00:00",
+          "type": "text",
+          "content": "Let me explore the codebase to understand what errors are already present that need documentation:",
+          "phase": "coding",
+          "subtask_id": "1.1",
+          "session": 2
+        },
+        {
+          "timestamp": "2026-01-07T14:34:02.114341+00:00",
+          "type": "tool_start",
+          "content": "[Grep] pattern: API.*não configurada|Gemini.*não configurada|GEMINI_API_KEY",
+          "phase": "coding",
+          "tool_name": "Grep",
+          "tool_input": "pattern: API.*não configurada|Gemini.*não configurada|GEMINI_API_KEY",
+          "subtask_id": "1.1",
+          "session": 2
+        },
+        {
+          "timestamp": "2026-01-07T14:34:02.900618+00:00",
+          "type": "tool_start",
+          "content": "[Grep] pattern: SUPABASE_URL|SUPABASE_ANON_KEY|SUPABASE_SERVICE_ROLE_KEY",
+          "phase": "coding",
+          "tool_name": "Grep",
+          "tool_input": "pattern: SUPABASE_URL|SUPABASE_ANON_KEY|SUPABASE_SERVICE_ROLE_KEY",
+          "subtask_id": "1.1",
+          "session": 2
+        },
+        {
+          "timestamp": "2026-01-07T14:34:03.264005+00:00",
+          "type": "tool_start",
+          "content": "[Glob] pattern: **/.env*",
+          "phase": "coding",
+          "tool_name": "Glob",
+          "tool_input": "pattern: **/.env*",
+          "subtask_id": "1.1",
+          "session": 2
+        },
+        {
+          "timestamp": "2026-01-07T14:34:04.351055+00:00",
+          "type": "tool_end",
+          "content": "[Glob] Done",
+          "phase": "coding",
+          "tool_name": "Glob",
+          "subtask_id": "1.1",
+          "session": 2,
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-07T14:34:11.797189+00:00",
+          "type": "tool_start",
+          "content": "[Read] ./src/lib/gemini.ts",
+          "phase": "coding",
+          "tool_name": "Read",
+          "tool_input": "./src/lib/gemini.ts",
+          "subtask_id": "1.1",
+          "session": 2
+        },
+        {
+          "timestamp": "2026-01-07T14:34:12.352185+00:00",
+          "type": "tool_start",
+          "content": "[Read] ./.env.local.example",
+          "phase": "coding",
+          "tool_name": "Read",
+          "tool_input": "./.env.local.example",
+          "subtask_id": "1.1",
+          "session": 2
+        },
+        {
+          "timestamp": "2026-01-07T14:34:12.731857+00:00",
+          "type": "tool_start",
+          "content": "[Read] ./src/lib/supabase/server.ts",
+          "phase": "coding",
+          "tool_name": "Read",
+          "tool_input": "./src/lib/supabase/server.ts",
+          "subtask_id": "1.1",
+          "session": 2
+        },
+        {
+          "timestamp": "2026-01-07T14:34:12.783919+00:00",
+          "type": "tool_end",
+          "content": "[Read] Done",
+          "phase": "coding",
+          "tool_name": "Read",
+          "subtask_id": "1.1",
+          "session": 2,
+          "detail": "     1→/**\n     2→ * Integracao com Google Gemini para verificacao de videos de desafios\n     3→ *\n     4→ * Fluxo:\n     5→ * 1. Usuario envia link do video\n     6→ * 2. Gemini analisa o conteudo\n     7→ * 3. Retorna veredito (valido/invalido + confianca + motivo)\n     8→ * 4. Admin ve o veredito e decide aprovar/rejeitar\n     9→ */\n    10→\n    11→export interface AIVerdict {\n    12→  isValid: boolean;\n    13→  confidence: number; // 0-100\n    14→  reason: string;\n    15→  analyzedAt: string;\n    16→}\n    17→\n    18→interface GeminiAnalysisResult {\n    19→  isValid: boolean;\n    20→  confidence: number;\n    21→  reason: string;\n    22→}\n    23→\n    24→/**\n    25→ * Analisa um video de desafio usando Gemini\n    26→ *\n    27→ * @param videoUrl URL do video (YouTube, Instagram, TikTok)\n    28→ * @param challengeType Tipo do desafio (repetitions ou time)\n    29→ * @param goalValue Meta a ser atingida\n    30→ * @param challengeTitle Titulo do desafio para contexto\n    31→ */\n    32→export async function analyzeVideoChallenge(\n    33→  videoUrl: string,\n    34→  challengeType: 'repetitions' | 'time' | null,\n    35→  goalValue: number | null,\n    36→  challengeTitle: string\n    37→): Promise<AIVerdict> {\n    38→  const apiKey = process.env.GEMINI_API_KEY;\n    39→\n    40→  // Se nao tem API key, retorna verificacao manual\n    41→  if (!apiKey || apiKey === 'your-gemini-api-key') {\n    42→    return {\n    43→      isValid: false,\n    44→      confidence: 0,\n    45→      reason: 'API Gemini nao configurada - verificacao manual necessaria',\n    46→      analyzedAt: new Date().toISOString(),\n    47→    };\n    48→  }\n    49→\n    50→  try {\n    51→    const prompt = buildAnalysisPrompt(videoUrl, challengeType, goalValue, challengeTitle);\n    52→\n    53→    const response = await fetch(\n    54→      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,\n    55→      {\n    56→        method: 'POST',\n    57→        headers: {\n    58→          'Content-Type': 'application/json',\n    59→        },\n    60→        body: JSON.stringify({\n    61→          contents: [\n    62→            {\n    63→              parts: [\n    64→                {\n    65→                  text: prompt,\n    66→                },\n    67→              ],\n    68→            },\n    69→          ],\n    70→          generationConfig: {\n    71→            temperature: 0.2,\n    72→            maxOutputTokens: 500,\n    73→          },\n    74→        }),\n    75→      }\n    76→    );\n    77→\n    78→    if (!response.ok) {\n    79→      console.error('Gemini API error:', response.status, await response.text());\n    80→      return {\n    81→        isValid: false,\n    82→        confidence: 0,\n    83→        reason: 'Erro ao conectar com API Gemini',\n    84→        analyzedAt: new Date().toISOString(),\n    85→      };\n    86→    }\n    87→\n    88→    const data = await response.json();\n    89→    const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || '';\n    90→\n    91→    const result = parseGeminiResponse(textResponse);\n    92→\n    93→    return {\n    94→      ...result,\n    95→      analyzedAt: new Date().toISOString(),\n    96→    };\n    97→  } catch (error) {\n    98→    console.error('Error analyzing video:', error);\n    99→    return {\n   100→      isValid: false,\n   101→      confidence: 0,\n   102→      reason: 'Erro ao analisar video',\n   103→      analyzedAt: new Date().toISOString(),\n   104→    };\n   105→  }\n   106→}\n   107→\n   108→function buildAnalysisPrompt(\n   109→  videoUrl: string,\n   110→  challengeType: 'repetitions' | 'time' | null,\n   111→  goalValue: number | null,\n   112→  challengeTitle: string\n   113→): string {\n   114→  const goalDescription = challengeType === 'time'\n   115→    ? `${goalValue} segundos`\n   116→    : `${goalValue} repeticoes`;\n   117→\n   118→  return `Voce e um verificador de desafios fisicos. Analise a URL do video abaixo e determine se o participante completou o desafio de forma legitima.\n   119→\n   120→DESAFIO: ${challengeTitle}\n   121→META: ${goalValue ? goalDescription : 'Nao especificada'}\n   122→URL DO VIDEO: ${videoUrl}\n   123→\n   124→Avalie os seguintes criterios:\n   125→1. O video parece ser de uma plataforma legitima (YouTube, Instagram, TikTok)?\n   126→2. A URL parece valida e acessivel?\n   127→3. O formato da URL corresponde a um video de exercicio/desafio?\n   128→\n   129→IMPORTANTE: Voce NAO pode assistir ao video diretamente, entao faca uma analise baseada na URL.\n   130→- URLs de Instagram (instagram.com/reel/, instagram.com/p/) sao validas\n   131→- URLs de YouTube (youtube.com/watch, youtu.be/) sao validas\n   132→- URLs de TikTok (tiktok.com/@, vm.tiktok.com/) sao validas\n   133→\n   134→Responda EXATAMENTE neste formato JSON:\n   135→{\n   136→  \"isValid\": true/false,\n   137→  \"confidence\": 0-100,\n   138→  \"reason\": \"Explicacao breve do veredito\"\n   139→}\n   140→\n   141→Se a URL parece valida e de uma plataforma conhecida, dê isValid: true com confianca baseada na qualidade da URL.\n   142→Se a URL parece suspeita ou invalida, dê isValid: false.\n   143→\n   144→APENAS o JSON, sem texto adicional.`;\n   145→}\n   146→\n   147→function parseGeminiResponse(text: string): GeminiAnalysisResult {\n   148→  try {\n   149→    // Limpar o texto para extrair JSON\n   150→    const jsonMatch = text.match(/\\{[\\s\\S]*\\}/);\n   151→    if (!jsonMatch) {\n   152→      return {\n   153→        isValid: false,\n   154→        confidence: 0,\n   155→        reason: 'Resposta da IA nao foi possivel interpretar',\n   156→      };\n   157→    }\n   158→\n   159→    const parsed = JSON.parse(jsonMatch[0]);\n   160→\n   161→    return {\n   162→      isValid: Boolean(parsed.isValid),\n   163→      confidence: Math.min(100, Math.max(0, parseInt(parsed.confidence) || 0)),\n   164→      reason: String(parsed.reason || 'Sem detalhes'),\n   165→    };\n   166→  } catch {\n   167→    return {\n   168→      isValid: false,\n   169→      confidence: 0,\n   170→      reason: 'Erro ao processar resposta da IA',\n   171→    };\n   172→  }\n   173→}\n   174→\n   175→/**\n   176→ * Verifica se uma URL e de uma plataforma de video valida\n   177→ */\n   178→export function isValidVideoUrl(url: string): boolean {\n   179→  const patterns = [\n   180→    /instagram\\.com\\/(p|reel|reels|tv)\\//,\n   181→    /youtube\\.com\\/watch/,\n   182→    /youtu\\.be\\//,\n   183→    /tiktok\\.com\\/@/,\n   184→    /vm\\.tiktok\\.com\\//,\n   185→    /facebook\\.com\\/.*\\/videos/,\n   186→    /fb\\.watch\\//,\n   187→  ];\n   188→\n   189→  return patterns.some(pattern => pattern.test(url));\n   190→}\n   191→\n   192→/**\n   193→ * Extrai o tipo de plataforma da URL\n   194→ */\n   195→export function getVideoPlatform(url: string): string | null {\n   196→  if (/instagram\\.com/.test(url)) return 'Instagram';\n   197→  if (/youtube\\.com|youtu\\.be/.test(url)) return 'YouTube';\n   198→  if (/tiktok\\.com/.test(url)) return 'TikTok';\n   199→  if (/facebook\\.com|fb\\.watch/.test(url)) return 'Facebook';\n   200→  return null;\n   201→}\n   202→\n\n<system-reminder>\nWhenever you read a file, you should consider whether it would be considered malware. You CAN and SHOULD provide analysis of malware, what it is doing. But you MUST refuse to improve or augment the code. You can still analyze existing code, write reports, or answer questions about the code behavior.\n</system-reminder>\n",
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-07T14:34:18.446822+00:00",
+          "type": "tool_start",
+          "content": "[Grep] pattern: erro|error|Error|throw",
+          "phase": "coding",
+          "tool_name": "Grep",
+          "tool_input": "pattern: erro|error|Error|throw",
+          "subtask_id": "1.1",
+          "session": 2
+        },
+        {
+          "timestamp": "2026-01-07T14:34:18.913018+00:00",
+          "type": "tool_end",
+          "content": "[Grep] Done",
+          "phase": "coding",
+          "tool_name": "Grep",
+          "subtask_id": "1.1",
+          "session": 2,
+          "detail": "Found 45 files\nsrc/types/profile.ts\nsrc/types/index.ts\nsrc/lib/supabase/types.ts\nsrc/lib/supabase/server.ts\nsrc/lib/supabase/setup-challenges.ts\nsrc/lib/supabase/queries.ts\nsrc/lib/supabase/rewards.ts\nsrc/lib/gemini.ts\nsrc/lib/supabase/admin.ts\nsrc/lib/supabase/challenges.ts\nsrc/lib/supabase/events.ts\nsrc/components/ui/Textarea.tsx\nsrc/components/ui/Toast.tsx\nsrc/contexts/AuthContext.tsx\nsrc/hooks/usePosts.ts\nsrc/hooks/useProfile.ts\nsrc/hooks/useToast.ts\nsrc/lib/constants.ts\nsrc/components/ui/Avatar.tsx\nsrc/components/ui/Badge.tsx\nsrc/components/ui/Input.tsx\nsrc/components/ui/Select.tsx\nsrc/components/ui/Tabs.tsx\nsrc/components/posts/PostCard.tsx\nsrc/components/challenges/ChallengeParticipationModal.tsx\nsrc/components/auth/LoginForm.tsx\nsrc/components/auth/RegisterForm.tsx\nsrc/app/login/page.tsx\nsrc/app/auth/callback/route.ts\nsrc/app/admin/login/page.tsx\nsrc/app/(dashboard)/perfil/editar/page.tsx\nsrc/app/(dashboard)/dashboard/page.tsx\nsrc/app/(dashboard)/eventos/[id]/page.tsx\nsrc/app/(dashboard)/feed/CreatePostForm.tsx\nsrc/app/(dashboard)/admin/eventos/novo/page.tsx\nsrc/app/(dashboard)/admin/premios/RewardAdminComponents.tsx\nsrc/app/(dashboard)/admin/desafios/novo/page.tsx\nsrc/actions/profile.ts\nsrc/actions/rewards.ts\nsrc/actions/posts.ts\nsrc/actions/events.ts\nsrc/actions/migrations.ts\nsrc/actions/challenges.ts\nsrc/actions/admin.ts\nsrc/actions/auth.ts",
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-07T14:34:27.487047+00:00",
+          "type": "text",
+          "content": "Now I'll create the docs directory and the TROUBLESHOOTING.md file with a comprehensive structure:",
+          "phase": "coding",
+          "subtask_id": "1.1",
+          "session": 2
+        },
+        {
+          "timestamp": "2026-01-07T14:34:28.082890+00:00",
+          "type": "tool_start",
+          "content": "[Bash] mkdir -p docs",
+          "phase": "coding",
+          "tool_name": "Bash",
+          "tool_input": "mkdir -p docs",
+          "subtask_id": "1.1",
+          "session": 2
+        },
+        {
+          "timestamp": "2026-01-07T14:35:24.097345+00:00",
+          "type": "tool_start",
+          "content": "[Write] ./docs/TROUBLESHOOTING.md",
+          "phase": "coding",
+          "tool_name": "Write",
+          "tool_input": "./docs/TROUBLESHOOTING.md",
+          "subtask_id": "1.1",
+          "session": 2
+        },
+        {
+          "timestamp": "2026-01-07T14:35:25.154100+00:00",
+          "type": "tool_end",
+          "content": "[Write] Done",
+          "phase": "coding",
+          "tool_name": "Write",
+          "subtask_id": "1.1",
+          "session": 2,
+          "detail": "",
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-07T14:35:33.999478+00:00",
+          "type": "text",
+          "content": "Perfect! Now let me verify the file was created correctly and then commit the changes:",
+          "phase": "coding",
+          "subtask_id": "1.1",
+          "session": 2
+        },
+        {
+          "timestamp": "2026-01-07T14:35:34.524877+00:00",
+          "type": "tool_start",
+          "content": "[Bash] ls -lh docs/TROUBLESHOOTING.md",
+          "phase": "coding",
+          "tool_name": "Bash",
+          "tool_input": "ls -lh docs/TROUBLESHOOTING.md",
+          "subtask_id": "1.1",
+          "session": 2
+        },
+        {
+          "timestamp": "2026-01-07T14:35:35.280756+00:00",
+          "type": "tool_start",
+          "content": "[Bash] head -30 docs/TROUBLESHOOTING.md",
+          "phase": "coding",
+          "tool_name": "Bash",
+          "tool_input": "head -30 docs/TROUBLESHOOTING.md",
+          "subtask_id": "1.1",
+          "session": 2
+        },
+        {
+          "timestamp": "2026-01-07T14:35:35.394617+00:00",
+          "type": "tool_end",
+          "content": "[Bash] Done",
+          "phase": "coding",
+          "tool_name": "Bash",
+          "subtask_id": "1.1",
+          "session": 2,
+          "detail": "# Guia de Troubleshooting - Plataforma de Advocate Marketing\n\n## 📋 Índice\n\n- [Introdução](#introdução)\n- [Links Rápidos](#links-rápidos)\n- [Categorias de Erros](#categorias-de-erros)\n  - [1. Erros de Variáveis de Ambiente](#1-erros-de-variáveis-de-ambiente)\n  - [2. Erros de Autenticação](#2-erros-de-autenticação)\n  - [3. Erros do Supabase](#3-erros-do-supabase)\n  - [4. Erros de APIs Externas](#4-erros-de-apis-externas)\n- [Ferramentas de Diagnóstico](#ferramentas-de-diagnóstico)\n- [Recursos Adicionais](#recursos-adicionais)\n\n---\n\n## Introdução\n\nEste guia contém soluções para os erros mais comuns encontrados durante o desenvolvimento e operação da Plataforma de Advocate Marketing. O objetivo é economizar tempo de troubleshooting e fornecer soluções práticas e testadas.\n\n### Como Usar Este Guia\n\n1. **Identifique a categoria do erro**: Use o índice acima para navegar até a seção relevante\n2. **Procure pela mensagem de erro**: Busque pela mensagem exata que você está vendo\n3. **Siga os passos de solução**: Cada erro tem passos claros para resolução\n4. **Use as ferramentas de diagnóstico**: Execute `npm run check-env` para verificar sua configuração\n\n### Stack Tecnológica\n\nEste guia cobre erros relacionados a:",
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-07T14:35:40.318229+00:00",
+          "type": "text",
+          "content": "Excellent! The file has been created successfully. Now let me commit the changes:",
+          "phase": "coding",
+          "subtask_id": "1.1",
+          "session": 2
+        },
+        {
+          "timestamp": "2026-01-07T14:35:42.300149+00:00",
+          "type": "tool_start",
+          "content": "[Bash] git add docs/TROUBLESHOOTING.md && git commit -...",
+          "phase": "coding",
+          "tool_name": "Bash",
+          "tool_input": "git add docs/TROUBLESHOOTING.md && git commit -...",
+          "subtask_id": "1.1",
+          "session": 2
+        },
+        {
+          "timestamp": "2026-01-07T14:35:44.542260+00:00",
+          "type": "tool_end",
+          "content": "[Bash] Done",
+          "phase": "coding",
+          "tool_name": "Bash",
+          "subtask_id": "1.1",
+          "session": 2,
+          "detail": "[auto-claude/026-criar-guia-de-troubleshooting-para-erros-comuns ebbeea0] auto-claude: 1.1 - Criar o arquivo principal com índice, introdução e estrutura de navegação\n Committer: Ilan  Kriger <macbookair@MacBook-Air-de-Ilan.local>\nYour name and email address were configured automatically based\non your username and hostname. Please check that they are accurate.\nYou can suppress this message by setting them explicitly. Run the\nfollowing command and follow the instructions in your editor to edit\nyour configuration file:\n\n    git config --global --edit\n\nAfter doing this, you may fix the identity used for this commit with:\n\n    git commit --amend --reset-author\n\n 1 file changed, 353 insertions(+)\n create mode 100644 docs/TROUBLESHOOTING.md",
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-07T14:35:48.586845+00:00",
+          "type": "text",
+          "content": "Perfect! Now let me update the implementation plan to mark this subtask as completed:",
+          "phase": "coding",
+          "subtask_id": "1.1",
+          "session": 2
+        },
+        {
+          "timestamp": "2026-01-07T14:35:51.091353+00:00",
+          "type": "tool_start",
+          "content": "[mcp__auto-claude__update_subtask_status]",
+          "phase": "coding",
+          "tool_name": "mcp__auto-claude__update_subtask_status",
+          "subtask_id": "1.1",
+          "session": 2
+        },
+        {
+          "timestamp": "2026-01-07T14:35:51.131501+00:00",
+          "type": "tool_end",
+          "content": "[mcp__auto-claude__update_subtask_status] Done",
+          "phase": "coding",
+          "tool_name": "mcp__auto-claude__update_subtask_status",
+          "subtask_id": "1.1",
+          "session": 2,
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-07T14:36:05.916869+00:00",
+          "type": "text",
+          "content": "Perfect! I've successfully completed **subtask 1.1** - creating the main TROUBLESHOOTING.md file. Here's what was accomplished:\n\n## ✅ Completed Tasks\n\n### Created `docs/TROUBLESHOOTING.md` with:\n\n1. **Comprehensive Index** - Easy navigation to all sections with anchor links\n\n2. **Introduction Section**\n   - How to use the guide\n   - Stack technology overview\n   - Quick reference for finding solutions\n\n3. **Well-Organized Structure** with 4 main categories:\n   - **Erros de Variáveis de Ambiente** - Environment configuration issues\n   - **Erros de Autenticação** - Authentication and OAuth problems\n   - **Erros do Supabase** - Database, RLS, and storage issues\n   - **Erros de APIs Externas** - External API integration problems\n\n4. **Detailed Content for Gemini API** (based on code analysis):\n   - \"API Gemini não configurada\" error with complete solution\n   - \"Erro ao conectar com API Gemini\" troubleshooting\n   - URL validation errors with supported platforms list\n\n5. **Additional Sections**:\n   - Diagnostic tools (placeholder for upcoming check-env script)\n   - Resource links (internal and external documentation)\n   - Contribution guidelines\n\n6. **Professional Formatting**:\n   - Clear visual hierarchy with emojis\n   - Code blocks with proper syntax\n   - Markdown tables and examples\n   - Cross-references to other documentation\n\n### File Statistics:\n- **Size**: 11KB\n- **Lines**: 353\n- **Status**: ✅ Committed to git\n\nThe file is ready to be expanded in the next subtasks (1.2-1.5) with detailed error documentation for environment variables, authentication, and Supabase-specific issues.",
+          "phase": "coding",
+          "subtask_id": "1.1",
+          "session": 2
+        },
+        {
+          "timestamp": "2026-01-07T14:36:20.821095+00:00",
+          "type": "text",
+          "content": "Vou implementar o subtask 1.2, expandindo a seção de Erros de Variáveis de Ambiente com detalhes sobre cada variável obrigatória e opcional.\n\nPrimeiro, vou ler o arquivo completo para entender o contexto:",
+          "phase": "coding",
+          "subtask_id": "1.2",
+          "session": 3
+        },
+        {
+          "timestamp": "2026-01-07T14:36:21.439918+00:00",
+          "type": "tool_start",
+          "content": "[Read] ./docs/TROUBLESHOOTING.md",
+          "phase": "coding",
+          "tool_name": "Read",
+          "tool_input": "./docs/TROUBLESHOOTING.md",
+          "subtask_id": "1.2",
+          "session": 3
+        },
+        {
+          "timestamp": "2026-01-07T14:36:21.509430+00:00",
+          "type": "tool_end",
+          "content": "[Read] Done",
+          "phase": "coding",
+          "tool_name": "Read",
+          "subtask_id": "1.2",
+          "session": 3,
+          "detail": "     1→# Guia de Troubleshooting - Plataforma de Advocate Marketing\n     2→\n     3→## 📋 Índice\n     4→\n     5→- [Introdução](#introdução)\n     6→- [Links Rápidos](#links-rápidos)\n     7→- [Categorias de Erros](#categorias-de-erros)\n     8→  - [1. Erros de Variáveis de Ambiente](#1-erros-de-variáveis-de-ambiente)\n     9→  - [2. Erros de Autenticação](#2-erros-de-autenticação)\n    10→  - [3. Erros do Supabase](#3-erros-do-supabase)\n    11→  - [4. Erros de APIs Externas](#4-erros-de-apis-externas)\n    12→- [Ferramentas de Diagnóstico](#ferramentas-de-diagnóstico)\n    13→- [Recursos Adicionais](#recursos-adicionais)\n    14→\n    15→---\n    16→\n    17→## Introdução\n    18→\n    19→Este guia contém soluções para os erros mais comuns encontrados durante o desenvolvimento e operação da Plataforma de Advocate Marketing. O objetivo é economizar tempo de troubleshooting e fornecer soluções práticas e testadas.\n    20→\n    21→### Como Usar Este Guia\n    22→\n    23→1. **Identifique a categoria do erro**: Use o índice acima para navegar até a seção relevante\n    24→2. **Procure pela mensagem de erro**: Busque pela mensagem exata que você está vendo\n    25→3. **Siga os passos de solução**: Cada erro tem passos claros para resolução\n    26→4. **Use as ferramentas de diagnóstico**: Execute `npm run check-env` para verificar sua configuração\n    27→\n    28→### Stack Tecnológica\n    29→\n    30→Este guia cobre erros relacionados a:\n    31→- **Frontend**: Next.js 15 (App Router)\n    32→- **Backend/Database**: Supabase\n    33→- **Autenticação**: Supabase Auth (Email/Password + OAuth Google)\n    34→- **APIs Externas**: Google Gemini AI\n    35→- **Linguagem**: TypeScript\n    36→- **Estilização**: Tailwind CSS\n    37→\n    38→---\n    39→\n    40→## Links Rápidos\n    41→\n    42→### Guias de Configuração\n    43→- [Configuração Inicial do Supabase](./SETUP_SUPABASE.md) _(em desenvolvimento)_\n    44→- [Configuração de Variáveis de Ambiente](#1-erros-de-variáveis-de-ambiente)\n    45→- [Configuração do OAuth Google](#21-erro-oauth-google-não-configurado)\n    46→\n    47→### Ferramentas\n    48→- [Script de Verificação de Ambiente](#ferramentas-de-diagnóstico)\n    49→- [Exemplo de .env.local](../.env.local.example)\n    50→\n    51→### Documentação Externa\n    52→- [Documentação do Supabase](https://supabase.com/docs)\n    53→- [Documentação do Next.js 15](https://nextjs.org/docs)\n    54→- [Documentação do Gemini AI](https://ai.google.dev/docs)\n    55→\n    56→---\n    57→\n    58→## Categorias de Erros\n    59→\n    60→### 1. Erros de Variáveis de Ambiente\n    61→\n    62→> ⚠️ **Esta seção será expandida na próxima atualização**\n    63→\n    64→Erros relacionados a variáveis de ambiente faltantes ou mal configuradas são a causa mais comum de problemas durante o desenvolvimento.\n    65→\n    66→**Variáveis Obrigatórias:**\n    67→- `NEXT_PUBLIC_SUPABASE_URL`\n    68→- `NEXT_PUBLIC_SUPABASE_ANON_KEY`\n    69→- `NEXT_PUBLIC_SITE_URL`\n    70→\n    71→**Variáveis Opcionais:**\n    72→- `GEMINI_API_KEY` (necessária para verificação automática de vídeos)\n    73→- `SUPABASE_SERVICE_ROLE_KEY` (necessária para operações administrativas)\n    74→\n    75→**Ações Rápidas:**\n    76→1. Verifique se o arquivo `.env.local` existe na raiz do projeto\n    77→2. Execute `npm run check-env` para diagnosticar problemas\n    78→3. Compare seu arquivo com `.env.local.example`\n    79→\n    80→**Ver mais detalhes:** _(Esta seção será expandida com erros específicos e soluções detalhadas)_\n    81→\n    82→---\n    83→\n    84→### 2. Erros de Autenticação\n    85→\n    86→> ⚠️ **Esta seção será expandida na próxima atualização**\n    87→\n    88→Erros relacionados ao sistema de autenticação do Supabase, incluindo login, registro, OAuth e gerenciamento de sessões.\n    89→\n    90→**Erros Comuns:**\n    91→- Falha no login\n    92→- OAuth Google não funciona\n    93→- Sessão expirada\n    94→- Email não confirmado\n    95→- Problemas com RLS (Row Level Security)\n    96→\n    97→**Ações Rápidas:**\n    98→1. Verifique se o projeto Supabase está ativo\n    99→2. Confirme que as URLs de callback do OAuth estão configuradas\n   100→3. Verifique as políticas de RLS no Supabase Dashboard\n   101→\n   102→**Ver mais detalhes:** _(Esta seção será expandida com erros específicos e soluções detalhadas)_\n   103→\n   104→---\n   105→\n   106→### 3. Erros do Supabase\n   107→\n   108→> ⚠️ **Esta seção será expandida na próxima atualização**\n   109→\n   110→Erros relacionados ao banco de dados, queries, storage, migrações e Row Level Security (RLS).\n   111→\n   112→**Categorias:**\n   113→- **Conexão**: Problemas ao conectar com o Supabase\n   114→- **Queries**: Erros em consultas SQL\n   115→- **RLS**: Políticas de segurança bloqueando operações\n   116→- **Storage**: Problemas com upload/download de arquivos\n   117→- **Migrações**: Erros ao aplicar mudanças no schema\n   118→\n   119→**Ações Rápidas:**\n   120→1. Verifique o status do projeto no [Supabase Dashboard](https://app.supabase.com)\n   121→2. Confirme que as tabelas foram criadas corretamente\n   122→3. Revise as políticas de RLS para a tabela em questão\n   123→4. Verifique os logs de erro no Supabase Dashboard\n   124→\n   125→**Ver mais detalhes:** _(Esta seção será expandida com erros específicos e soluções detalhadas)_\n   126→\n   127→---\n   128→\n   129→### 4. Erros de APIs Externas\n   130→\n   131→> ⚠️ **Esta seção será expandida na próxima atualização**\n   132→\n   133→Erros relacionados à integração com APIs externas, especialmente Google Gemini AI.\n   134→\n   135→#### 4.1. Erro: \"API Gemini não configurada\"\n   136→\n   137→**Mensagem de Erro:**\n   138→```\n   139→API Gemini não configurada - verificação manual necessária\n   140→```\n   141→\n   142→**Causa:**\n   143→A variável de ambiente `GEMINI_API_KEY` não está configurada ou está com valor padrão.\n   144→\n   145→**Impacto:**\n   146→A verificação automática de vídeos de desafios não funcionará. O sistema cairá para verificação manual.\n   147→\n   148→**Solução:**\n   149→\n   150→1. **Obter uma API Key do Gemini:**\n   151→   - Acesse [Google AI Studio](https://makersuite.google.com/app/apikey)\n   152→   - Faça login com sua conta Google\n   153→   - Clique em \"Create API Key\"\n   154→   - Copie a chave gerada\n   155→\n   156→2. **Adicionar ao arquivo `.env.local`:**\n   157→   ```env\n   158→   GEMINI_API_KEY=sua-chave-aqui\n   159→   ```\n   160→\n   161→3. **Reiniciar o servidor de desenvolvimento:**\n   162→   ```bash\n   163→   npm run dev\n   164→   ```\n   165→\n   166→4. **Verificar:**\n   167→   - Execute `npm run check-env` para confirmar\n   168→   - Tente submeter um vídeo de desafio\n   169→   - A verificação automática deve aparecer\n   170→\n   171→**Nota:** A API Gemini tem um tier gratuito generoso. Para mais informações, consulte a [documentação de pricing](https://ai.google.dev/pricing).\n   172→\n   173→---\n   174→\n   175→#### 4.2. Erro: \"Erro ao conectar com API Gemini\"\n   176→\n   177→**Mensagem de Erro:**\n   178→```\n   179→Erro ao conectar com API Gemini\n   180→```\n   181→\n   182→**Causas Possíveis:**\n   183→- API Key inválida ou revogada\n   184→- Problema de rede/firewall\n   185→- Limite de taxa (rate limit) atingido\n   186→- Serviço do Gemini temporariamente indisponível\n   187→\n   188→**Solução:**\n   189→\n   190→1. **Verificar validade da API Key:**\n   191→   ```bash\n   192→   curl \"https://generativelanguage.googleapis.com/v1beta/models?key=SUA_API_KEY\"\n   193→   ```\n   194→\n   195→2. **Verificar se a key não está restrita:**\n   196→   - Acesse [Google Cloud Console](https://console.cloud.google.com/apis/credentials)\n   197→   - Verifique as restrições da API Key\n   198→   - Certifique-se que \"Generative Language API\" está habilitada\n   199→\n   200→3. **Verificar rate limits:**\n   201→   - O tier gratuito tem limites de requisições por minuto\n   202→   - Aguarde alguns minutos e tente novamente\n   203→   - Considere implementar retry com backoff exponencial\n   204→\n   205→4. **Verificar logs:**\n   206→   ```typescript\n   207→   // O código em src/lib/gemini.ts já loga erros\n   208→   console.error('Gemini API error:', response.status, await response.text());\n   209→   ```\n   210→\n   211→**Workaround Temporário:**\n   212→Se a API continuar indisponível, o sistema automaticamente volta para verificação manual. Isso não impede o funcionamento do aplicativo.\n   213→\n   214→---\n   215→\n   216→#### 4.3. URL de Vídeo Inválida\n   217→\n   218→**Mensagem de Erro:**\n   219→```\n   220→URL de vídeo não é de uma plataforma suportada\n   221→```\n   222→\n   223→**Causa:**\n   224→A URL fornecida não corresponde aos padrões de plataformas de vídeo suportadas.\n   225→\n   226→**Plataformas Suportadas:**\n   227→- ✅ Instagram: `instagram.com/p/`, `instagram.com/reel/`, `instagram.com/reels/`, `instagram.com/tv/`\n   228→- ✅ YouTube: `youtube.com/watch`, `youtu.be/`\n   229→- ✅ TikTok: `tiktok.com/@`, `vm.tiktok.com/`\n   230→- ✅ Facebook: `facebook.com/.../videos`, `fb.watch/`\n   231→\n   232→**Solução:**\n   233→\n   234→1. **Verificar o formato da URL:**\n   235→   - Copie a URL diretamente do navegador\n   236→   - Não use links encurtados (exceto do próprio TikTok)\n   237→   - Certifique-se que é um link de vídeo, não de perfil\n   238→\n   239→2. **Exemplos de URLs válidas:**\n   240→   ```\n   241→   https://www.instagram.com/reel/ABC123xyz/\n   242→   https://www.youtube.com/watch?v=dQw4w9WgXcQ\n   243→   https://youtu.be/dQw4w9WgXcQ\n   244→   https://www.tiktok.com/@username/video/1234567890\n   245→   https://vm.tiktok.com/ABC123/\n   246→   ```\n   247→\n   248→3. **Se a URL for válida mas ainda assim for rejeitada:**\n   249→   - Abra uma issue no repositório\n   250→   - Inclua a URL (se não for privada)\n   251→   - O padrão pode precisar ser atualizado em `src/lib/gemini.ts`\n   252→\n   253→---\n   254→\n   255→## Ferramentas de Diagnóstico\n   256→\n   257→### Script de Verificação de Ambiente\n   258→\n   259→> ⚠️ **Em desenvolvimento**\n   260→\n   261→Em breve, você poderá executar:\n   262→\n   263→```bash\n   264→npm run check-env\n   265→```\n   266→\n   267→Este script irá:\n   268→- ✅ Verificar se todas as variáveis obrigatórias estão definidas\n   269→- ✅ Testar conexão com o Supabase\n   270→- ✅ Validar formato das URLs\n   271→- ✅ Verificar se APIs externas estão acessíveis\n   272→- ✅ Exibir sugest\n\n... [truncated - full output was 13450 chars]",
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-07T14:36:28.898912+00:00",
+          "type": "text",
+          "content": "Agora vou expandir a seção 1 com detalhes sobre cada variável de ambiente:",
+          "phase": "coding",
+          "subtask_id": "1.2",
+          "session": 3
+        },
+        {
+          "timestamp": "2026-01-07T14:37:28.789997+00:00",
+          "type": "tool_start",
+          "content": "[Edit] ./docs/TROUBLESHOOTING.md",
+          "phase": "coding",
+          "tool_name": "Edit",
+          "tool_input": "./docs/TROUBLESHOOTING.md",
+          "subtask_id": "1.2",
+          "session": 3
+        },
+        {
+          "timestamp": "2026-01-07T14:37:28.821084+00:00",
+          "type": "tool_end",
+          "content": "[Edit] Done",
+          "phase": "coding",
+          "tool_name": "Edit",
+          "subtask_id": "1.2",
+          "session": 3,
+          "detail": "The file ./docs/TROUBLESHOOTING.md has been updated. Here's the result of running `cat -n` on a snippet of the edited file:\n    56→---\n    57→\n    58→## Categorias de Erros\n    59→\n    60→### 1. Erros de Variáveis de Ambiente\n    61→\n    62→Erros relacionados a variáveis de ambiente faltantes ou mal configuradas são a causa mais comum de problemas durante o desenvolvimento.\n    63→\n    64→**Variáveis Obrigatórias:**\n    65→- `NEXT_PUBLIC_SUPABASE_URL`\n    66→- `NEXT_PUBLIC_SUPABASE_ANON_KEY`\n    67→- `NEXT_PUBLIC_SITE_URL`\n    68→\n    69→**Variáveis Opcionais:**\n    70→- `GEMINI_API_KEY` (necessária para verificação automática de vídeos)\n    71→- `SUPABASE_SERVICE_ROLE_KEY` (necessária para operações administrativas)\n    72→\n    73→**Ações Rápidas:**\n    74→1. Verifique se o arquivo `.env.local` existe na raiz do projeto\n    75→2. Execute `npm run check-env` para diagnosticar problemas\n    76→3. Compare seu arquivo com `.env.local.example`\n    77→\n    78→---\n    79→\n    80→#### 1.1. Erro: \"NEXT_PUBLIC_SUPABASE_URL is not defined\"\n    81→\n    82→**Mensagem de Erro:**\n    83→```\n    84→Error: NEXT_PUBLIC_SUPABASE_URL is not defined\n    85→createClientComponentClient requires NEXT_PUBLIC_SUPABASE_URL\n    86→```\n    87→\n    88→**Causa:**\n    89→A variável de ambiente `NEXT_PUBLIC_SUPABASE_URL` não está definida no arquivo `.env.local` ou o servidor não foi reiniciado após adicionar a variável.\n    90→\n    91→**Impacto:**\n    92→- ❌ Aplicação não consegue conectar com o banco de dados Supabase\n    93→- ❌ Todas as operações de autenticação falharão\n    94→- ❌ Página de login/registro não funcionará\n    95→- ❌ Aplicação pode crashar ao carregar\n    96→\n    97→**Solução:**\n    98→\n    99→1. **Obter a URL do Supabase:**\n   100→   - Acesse o [Supabase Dashboard](https://app.supabase.com)\n   101→   - Selecione seu projeto\n   102→   - Vá para **Settings** > **API**\n   103→   - Copie o valor de **Project URL** (exemplo: `https://xxxxxxxxxxxx.supabase.co`)\n   104→\n   105→2. **Adicionar ao arquivo `.env.local`:**\n   106→   ```env\n   107→   NEXT_PUBLIC_SUPABASE_URL=https://seu-projeto-id.supabase.co\n   108→   ```\n   109→\n   110→3. **Reiniciar o servidor de desenvolvimento:**\n   111→   ```bash\n   112→   # Pare o servidor (Ctrl+C) e reinicie\n   113→   npm run dev\n   114→   ```\n   115→\n   116→4. **Verificar:**\n   117→   - Acesse a página inicial do projeto\n   118→   - Verifique se o erro desapareceu\n   119→   - Tente fazer login ou criar uma conta\n   120→\n   121→**⚠️ Atenção:**\n   122→- A URL deve começar com `https://` e terminar com `.supabase.co`\n   123→- Não adicione `/` no final da URL\n   124→- Esta variável tem o prefixo `NEXT_PUBLIC_` porque é usada no cliente (browser)\n   125→\n   126→---\n   127→\n   128→#### 1.2. Erro: \"NEXT_PUBLIC_SUPABASE_ANON_KEY is not defined\"\n   129→\n   130→**Mensagem de Erro:**\n   131→```\n   132→Error: NEXT_PUBLIC_SUPABASE_ANON_KEY is not defined\n   133→createClientComponentClient requires NEXT_PUBLIC_SUPABASE_ANON_KEY\n   134→```\n   135→\n   136→**Causa:**\n   137→A variável de ambiente `NEXT_PUBLIC_SUPABASE_ANON_KEY` não está definida no arquivo `.env.local` ou o servidor não foi reiniciado após adicionar a variável.\n   138→\n   139→**Impacto:**\n   140→- ❌ Aplicação não consegue autenticar requisições ao Supabase\n   141→- ❌ Todas as operações de leitura/escrita no banco falharão\n   142→- ❌ Login e registro não funcionarão\n   143→- ❌ Aplicação pode crashar ao carregar\n   144→\n   145→**Solução:**\n   146→\n   147→1. **Obter a Anon Key do Supabase:**\n   148→   - Acesse o [Supabase Dashboard](https://app.supabase.com)\n   149→   - Selecione seu projeto\n   150→   - Vá para **Settings** > **API**\n   151→   - Copie o valor de **anon public** (um token JWT longo)\n   152→\n   153→2. **Adicionar ao arquivo `.env.local`:**\n   154→   ```env\n   155→   NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\n   156→   ```\n   157→\n   158→3. **Reiniciar o servidor de desenvolvimento:**\n   159→   ```bash\n   160→   # Pare o servidor (Ctrl+C) e reinicie\n   161→   npm run dev\n   162→   ```\n   163→\n   164→4. **Verificar:**\n   165→   - Acesse a página inicial do projeto\n   166→   - Verifique se o erro desapareceu\n   167→   - Tente fazer login ou criar uma conta\n   168→\n   169→**⚠️ Atenção:**\n   170→- Esta é uma chave pública (anon/anonymous) e pode ser exposta no cliente\n   171→- É diferente da `service_role` key (que é secreta e nunca deve ser exposta)\n   172→- A segurança é garantida pelas políticas de RLS (Row Level Security) no Supabase\n   173→- Esta variável tem o prefixo `NEXT_PUBLIC_` porque é usada no cliente (browser)\n   174→\n   175→---\n   176→\n   177→#### 1.3. Erro: \"NEXT_PUBLIC_SITE_URL is not defined\"\n   178→\n   179→**Mensagem de Erro:**\n   180→```\n   181→Warning: NEXT_PUBLIC_SITE_URL is not defined\n   182→Defaulting to http://localhost:3000\n   183→```\n   184→\n   185→**Causa:**\n   186→A variável de ambiente `NEXT_PUBLIC_SITE_URL` não está definida. Esta variável é especialmente importante para:\n   187→- Callbacks de autenticação (OAuth Google, Email confirmação)\n   188→- URLs de redirecionamento\n   189→- Geração de links absolutos\n   190→\n   191→**Impacto:**\n   192→- ⚠️ OAuth Google pode não funcionar corretamente\n   193→- ⚠️ Email de confirmação pode ter links quebrados\n   194→- ⚠️ Redirecionamentos após login podem falhar\n   195→- ✅ Aplicação continua funcionando localmente\n   196→\n   197→**Solução:**\n   198→\n   199→1. **Para Desenvolvimento Local:**\n   200→   ```env\n   201→   NEXT_PUBLIC_SITE_URL=http://localhost:3000\n   202→   ```\n   203→\n   204→2. **Para Produção (Vercel, Netlify, etc.):**\n   205→   ```env\n   206→   NEXT_PUBLIC_SITE_URL=https://seu-dominio.com\n   207→   ```\n   208→\n   209→3. **Configurar no Supabase:**\n   210→   - Acesse o [Supabase Dashboard](https://app.supabase.com)\n   211→   - Vá para **Authentication** > **URL Configuration**\n   212→   - Adicione a URL em **Site URL**\n   213→   - Adicione em **Redirect URLs**: `https://seu-dominio.com/auth/callback`\n   214→\n   215→4. **Reiniciar o servidor:**\n   216→   ```bash\n   217→   npm run dev\n   218→   ```\n   219→\n   220→**⚠️ Atenção:**\n   221→- Use `http://localhost:3000` para desenvolvimento local\n   222→- Use `https://` (não `http://`) em produção\n   223→- Não adicione `/` no final da URL\n   224→- Certifique-se que a URL está registrada no Supabase para OAuth funcionar\n   225→\n   226→---\n   227→\n   228→#### 1.4. Erro: \"SUPABASE_SERVICE_ROLE_KEY is not defined\"\n   229→\n   230→**Mensagem de Erro:**\n   231→```\n   232→Warning: SUPABASE_SERVICE_ROLE_KEY not configured\n   233→Server-side admin operations may fail\n   234→```\n   235→\n   236→**Causa:**\n   237→A variável de ambiente `SUPABASE_SERVICE_ROLE_KEY` não está configurada. Esta é uma chave opcional mas necessária para operações administrativas no servidor.\n   238→\n   239→**Impacto:**\n   240→- ⚠️ Operações administrativas falharão (ex: deletar usuários, bypass RLS)\n   241→- ⚠️ Server Actions que precisam de acesso total ao banco falharão\n   242→- ✅ Funcionalidades normais da aplicação continuam funcionando\n   243→- ✅ Usuários regulares não são afetados\n   244→\n   245→**Quando é Necessária:**\n   246→- Operações de admin que precisam bypass de RLS\n   247→- Gerenciamento de usuários (criar/deletar contas)\n   248→- Operações de manutenção do banco\n   249→- Scripts de seed/migração\n   250→\n   251→**Solução:**\n   252→\n   253→1. **Obter a Service Role Key do Supabase:**\n   254→   - Acesse o [Supabase Dashboard](https://app.supabase.com)\n   255→   - Selecione seu projeto\n   256→   - Vá para **Settings** > **API**\n   257→   - Copie o valor de **service_role** (um token JWT longo)\n   258→   - ⚠️ **ATENÇÃO**: Esta chave tem acesso total ao banco!\n   259→\n   260→2. **Adicionar ao arquivo `.env.local`:**\n   261→   ```env\n   262→   SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\n   263→   ```\n   264→\n   265→3. **Reiniciar o servidor:**\n   266→   ```bash\n   267→   npm run dev\n   268→   ```\n   269→\n   270→**🔐 SEGURANÇA CRÍTICA:**\n   271→- ⛔ **NUNCA** exponha esta chave no cliente (não use prefixo `NEXT_PUBLIC_`)\n   272→- ⛔ **NUNCA** commite esta chave no Git\n   273→- ⛔ **NUNCA** use em Client Components\n   274→- ✅ Use apenas em Server Actions e Route Handlers\n   275→- ✅ Adicione `.env.local` no `.gitignore`\n   276→- ✅ Em produção, configure como variável de ambiente no host (Vercel, etc.)\n   277→\n   278→**Exemplo de uso seguro:**\n   279→```typescript\n   280→// ✅ CORRETO: Server Action\n   281→'use server'\n   282→import { createClient } from '@/lib/supabase/server'\n   283→\n   284→export async function adminAction() {\n   285→  const supabase = createClient({\n   286→    serviceRole: true // Usa a service role key\n   287→  })\n   288→  // Operações administrativas aqui\n   289→}\n   290→\n   291→// ❌ ERRADO: Client Component\n   292→'use client'\n   293→const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY // ⛔ NUNCA FAÇA ISSO!\n   294→```\n   295→\n   296→---\n   297→\n   298→#### 1.5. Erro: \"GEMINI_API_KEY is not defined\"\n   299→\n   300→**Mensagem de Erro:**\n   301→```\n   302→Warning: GEMINI_API_KEY not configured\n   303→Video verification will use manual review\n   304→```\n   305→\n   306→**Causa:**\n   307→A variável de ambiente `GEMINI_API_KEY` não está configurada. Esta chave é opcional e usada para verificação automática de vídeos via Google Gemini AI.\n   308→\n   309→**Impacto:**\n   310→- ⚠️ Verificação automática de vídeos de desafios não funcionará\n   311→- ⚠️ Sistema cairá para verificação manual (menos eficiente)\n   312→- ✅ Aplicação continua funcionando normalmente\n   313→- ✅ Usuários podem submeter vídeos, mas precisam de aprovação manual\n   314→\n   315→**Solução:**\n   316→\n   317→1. **Obter uma API Key do Gemini:**\n   318→   - Acesse [Google AI Studio](https://makersuite.google.com/app/apikey)\n   319→   - Faça login com sua conta Google\n   320→   - Clique em **Create API Key**\n   321→   - Copie a chave gerada\n   322→\n   323→2. **Adicionar ao arquivo `.env.local`:**\n   324→   ```env\n   325→   GEMINI_API_KEY=AIzaSy...\n   326→   ```\n   327→\n   328→3. **Reiniciar o servidor:**\n   329→   ```bash\n   330→   npm run dev\n   331→   ```\n   332→\n   333→4. **Verificar:**\n   334→   - Tente submeter um vídeo de desafio\n   335→   \n\n... [truncated - full output was 14452 chars]",
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-07T14:37:35.139589+00:00",
+          "type": "text",
+          "content": "Perfeito! A seção de Erros de Variáveis de Ambiente foi expandida com 7 subseções detalhadas cobrindo:\n\n1. NEXT_PUBLIC_SUPABASE_URL\n2. NEXT_PUBLIC_SUPABASE_ANON_KEY\n3. NEXT_PUBLIC_SITE_URL\n4. SUPABASE_SERVICE_ROLE_KEY\n5. GEMINI_API_KEY\n6. Arquivo .env.local não existe\n7. Invalid Supabase URL format\n\nAgora vou commitar as mudanças e atualizar o plano:",
+          "phase": "coding",
+          "subtask_id": "1.2",
+          "session": 3
+        },
+        {
+          "timestamp": "2026-01-07T14:37:36.107044+00:00",
+          "type": "tool_start",
+          "content": "[Bash] git add ./docs/TROUBLESHOOTING.md",
+          "phase": "coding",
+          "tool_name": "Bash",
+          "tool_input": "git add ./docs/TROUBLESHOOTING.md",
+          "subtask_id": "1.2",
+          "session": 3
+        },
+        {
+          "timestamp": "2026-01-07T14:37:37.982704+00:00",
+          "type": "tool_start",
+          "content": "[Bash] git commit -m \"auto-claude: 1.2 - Seção com err...",
+          "phase": "coding",
+          "tool_name": "Bash",
+          "tool_input": "git commit -m \"auto-claude: 1.2 - Seção com err...",
+          "subtask_id": "1.2",
+          "session": 3
+        },
+        {
+          "timestamp": "2026-01-07T14:37:39.055161+00:00",
+          "type": "tool_end",
+          "content": "[Bash] Done",
+          "phase": "coding",
+          "tool_name": "Bash",
+          "subtask_id": "1.2",
+          "session": 3,
+          "detail": "",
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-07T14:37:44.482644+00:00",
+          "type": "text",
+          "content": "Agora vou atualizar o status do subtask no plano:",
+          "phase": "coding",
+          "subtask_id": "1.2",
+          "session": 3
+        },
+        {
+          "timestamp": "2026-01-07T14:37:46.980327+00:00",
+          "type": "tool_start",
+          "content": "[mcp__auto-claude__update_subtask_status]",
+          "phase": "coding",
+          "tool_name": "mcp__auto-claude__update_subtask_status",
+          "subtask_id": "1.2",
+          "session": 3
+        },
+        {
+          "timestamp": "2026-01-07T14:37:46.997708+00:00",
+          "type": "tool_end",
+          "content": "[mcp__auto-claude__update_subtask_status] Done",
+          "phase": "coding",
+          "tool_name": "mcp__auto-claude__update_subtask_status",
+          "subtask_id": "1.2",
+          "session": 3,
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-07T14:38:00.454349+00:00",
+          "type": "text",
+          "content": "Perfeito! ✅ **Subtask 1.2 completado com sucesso!**\n\n## Resumo do Trabalho Realizado\n\nExpandi a **Seção 1 - Erros de Variáveis de Ambiente** do guia TROUBLESHOOTING.md com 7 subseções detalhadas:\n\n### 📋 Subseções Criadas:\n\n1. **1.1** - Erro: \"NEXT_PUBLIC_SUPABASE_URL is not defined\"\n2. **1.2** - Erro: \"NEXT_PUBLIC_SUPABASE_ANON_KEY is not defined\"\n3. **1.3** - Erro: \"NEXT_PUBLIC_SITE_URL is not defined\"\n4. **1.4** - Erro: \"SUPABASE_SERVICE_ROLE_KEY is not defined\"\n5. **1.5** - Erro: \"GEMINI_API_KEY is not defined\"\n6. **1.6** - Arquivo .env.local não existe\n7. **1.7** - Erro: \"Invalid Supabase URL format\"\n\n### 📝 Cada subseção inclui:\n\n- ✅ Mensagem de erro exata\n- ✅ Causa do problema\n- ✅ Impacto no sistema (com ícones visuais: ❌ ⚠️ ✅)\n- ✅ Solução passo-a-passo detalhada\n- ✅ Atenções e notas de segurança\n- ✅ Exemplos de código e comandos\n- ✅ Links para documentação externa\n\n### 🔐 Destaques de Segurança:\n\nA seção 1.4 (SUPABASE_SERVICE_ROLE_KEY) inclui avisos críticos de segurança sobre:\n- Nunca expor a chave no cliente\n- Nunca commitar no Git\n- Uso apenas em Server Actions\n- Exemplos de uso correto vs incorreto\n\n### ✔️ Checklist de Qualidade:\n\n- [x] Segue padrões dos arquivos de referência\n- [x] Sem console.log ou debugging statements\n- [x] Linguagem clara e acessível\n- [x] Commit realizado com sucesso\n- [x] Status atualizado no implementation_plan.json\n\nO guia agora oferece documentação completa e prática para resolver todos os erros relacionados às variáveis de ambiente do projeto!",
+          "phase": "coding",
+          "subtask_id": "1.2",
+          "session": 3
+        },
+        {
+          "timestamp": "2026-01-07T14:38:13.910835+00:00",
+          "type": "text",
+          "content": "Vou implementar a subtask 1.3, criando a seção de erros de autenticação no guia de troubleshooting. Primeiro, vou ler o arquivo completo para entender a estrutura e onde inserir o novo conteúdo.",
+          "phase": "coding",
+          "subtask_id": "1.3",
+          "session": 4
+        },
+        {
+          "timestamp": "2026-01-07T14:38:14.296573+00:00",
+          "type": "tool_start",
+          "content": "[Read] ./docs/TROUBLESHOOTING.md",
+          "phase": "coding",
+          "tool_name": "Read",
+          "tool_input": "./docs/TROUBLESHOOTING.md",
+          "subtask_id": "1.3",
+          "session": 4
+        },
+        {
+          "timestamp": "2026-01-07T14:38:14.330336+00:00",
+          "type": "tool_end",
+          "content": "[Read] Done",
+          "phase": "coding",
+          "tool_name": "Read",
+          "subtask_id": "1.3",
+          "session": 4,
+          "detail": "     1→# Guia de Troubleshooting - Plataforma de Advocate Marketing\n     2→\n     3→## 📋 Índice\n     4→\n     5→- [Introdução](#introdução)\n     6→- [Links Rápidos](#links-rápidos)\n     7→- [Categorias de Erros](#categorias-de-erros)\n     8→  - [1. Erros de Variáveis de Ambiente](#1-erros-de-variáveis-de-ambiente)\n     9→  - [2. Erros de Autenticação](#2-erros-de-autenticação)\n    10→  - [3. Erros do Supabase](#3-erros-do-supabase)\n    11→  - [4. Erros de APIs Externas](#4-erros-de-apis-externas)\n    12→- [Ferramentas de Diagnóstico](#ferramentas-de-diagnóstico)\n    13→- [Recursos Adicionais](#recursos-adicionais)\n    14→\n    15→---\n    16→\n    17→## Introdução\n    18→\n    19→Este guia contém soluções para os erros mais comuns encontrados durante o desenvolvimento e operação da Plataforma de Advocate Marketing. O objetivo é economizar tempo de troubleshooting e fornecer soluções práticas e testadas.\n    20→\n    21→### Como Usar Este Guia\n    22→\n    23→1. **Identifique a categoria do erro**: Use o índice acima para navegar até a seção relevante\n    24→2. **Procure pela mensagem de erro**: Busque pela mensagem exata que você está vendo\n    25→3. **Siga os passos de solução**: Cada erro tem passos claros para resolução\n    26→4. **Use as ferramentas de diagnóstico**: Execute `npm run check-env` para verificar sua configuração\n    27→\n    28→### Stack Tecnológica\n    29→\n    30→Este guia cobre erros relacionados a:\n    31→- **Frontend**: Next.js 15 (App Router)\n    32→- **Backend/Database**: Supabase\n    33→- **Autenticação**: Supabase Auth (Email/Password + OAuth Google)\n    34→- **APIs Externas**: Google Gemini AI\n    35→- **Linguagem**: TypeScript\n    36→- **Estilização**: Tailwind CSS\n    37→\n    38→---\n    39→\n    40→## Links Rápidos\n    41→\n    42→### Guias de Configuração\n    43→- [Configuração Inicial do Supabase](./SETUP_SUPABASE.md) _(em desenvolvimento)_\n    44→- [Configuração de Variáveis de Ambiente](#1-erros-de-variáveis-de-ambiente)\n    45→- [Configuração do OAuth Google](#21-erro-oauth-google-não-configurado)\n    46→\n    47→### Ferramentas\n    48→- [Script de Verificação de Ambiente](#ferramentas-de-diagnóstico)\n    49→- [Exemplo de .env.local](../.env.local.example)\n    50→\n    51→### Documentação Externa\n    52→- [Documentação do Supabase](https://supabase.com/docs)\n    53→- [Documentação do Next.js 15](https://nextjs.org/docs)\n    54→- [Documentação do Gemini AI](https://ai.google.dev/docs)\n    55→\n    56→---\n    57→\n    58→## Categorias de Erros\n    59→\n    60→### 1. Erros de Variáveis de Ambiente\n    61→\n    62→Erros relacionados a variáveis de ambiente faltantes ou mal configuradas são a causa mais comum de problemas durante o desenvolvimento.\n    63→\n    64→**Variáveis Obrigatórias:**\n    65→- `NEXT_PUBLIC_SUPABASE_URL`\n    66→- `NEXT_PUBLIC_SUPABASE_ANON_KEY`\n    67→- `NEXT_PUBLIC_SITE_URL`\n    68→\n    69→**Variáveis Opcionais:**\n    70→- `GEMINI_API_KEY` (necessária para verificação automática de vídeos)\n    71→- `SUPABASE_SERVICE_ROLE_KEY` (necessária para operações administrativas)\n    72→\n    73→**Ações Rápidas:**\n    74→1. Verifique se o arquivo `.env.local` existe na raiz do projeto\n    75→2. Execute `npm run check-env` para diagnosticar problemas\n    76→3. Compare seu arquivo com `.env.local.example`\n    77→\n    78→---\n    79→\n    80→#### 1.1. Erro: \"NEXT_PUBLIC_SUPABASE_URL is not defined\"\n    81→\n    82→**Mensagem de Erro:**\n    83→```\n    84→Error: NEXT_PUBLIC_SUPABASE_URL is not defined\n    85→createClientComponentClient requires NEXT_PUBLIC_SUPABASE_URL\n    86→```\n    87→\n    88→**Causa:**\n    89→A variável de ambiente `NEXT_PUBLIC_SUPABASE_URL` não está definida no arquivo `.env.local` ou o servidor não foi reiniciado após adicionar a variável.\n    90→\n    91→**Impacto:**\n    92→- ❌ Aplicação não consegue conectar com o banco de dados Supabase\n    93→- ❌ Todas as operações de autenticação falharão\n    94→- ❌ Página de login/registro não funcionará\n    95→- ❌ Aplicação pode crashar ao carregar\n    96→\n    97→**Solução:**\n    98→\n    99→1. **Obter a URL do Supabase:**\n   100→   - Acesse o [Supabase Dashboard](https://app.supabase.com)\n   101→   - Selecione seu projeto\n   102→   - Vá para **Settings** > **API**\n   103→   - Copie o valor de **Project URL** (exemplo: `https://xxxxxxxxxxxx.supabase.co`)\n   104→\n   105→2. **Adicionar ao arquivo `.env.local`:**\n   106→   ```env\n   107→   NEXT_PUBLIC_SUPABASE_URL=https://seu-projeto-id.supabase.co\n   108→   ```\n   109→\n   110→3. **Reiniciar o servidor de desenvolvimento:**\n   111→   ```bash\n   112→   # Pare o servidor (Ctrl+C) e reinicie\n   113→   npm run dev\n   114→   ```\n   115→\n   116→4. **Verificar:**\n   117→   - Acesse a página inicial do projeto\n   118→   - Verifique se o erro desapareceu\n   119→   - Tente fazer login ou criar uma conta\n   120→\n   121→**⚠️ Atenção:**\n   122→- A URL deve começar com `https://` e terminar com `.supabase.co`\n   123→- Não adicione `/` no final da URL\n   124→- Esta variável tem o prefixo `NEXT_PUBLIC_` porque é usada no cliente (browser)\n   125→\n   126→---\n   127→\n   128→#### 1.2. Erro: \"NEXT_PUBLIC_SUPABASE_ANON_KEY is not defined\"\n   129→\n   130→**Mensagem de Erro:**\n   131→```\n   132→Error: NEXT_PUBLIC_SUPABASE_ANON_KEY is not defined\n   133→createClientComponentClient requires NEXT_PUBLIC_SUPABASE_ANON_KEY\n   134→```\n   135→\n   136→**Causa:**\n   137→A variável de ambiente `NEXT_PUBLIC_SUPABASE_ANON_KEY` não está definida no arquivo `.env.local` ou o servidor não foi reiniciado após adicionar a variável.\n   138→\n   139→**Impacto:**\n   140→- ❌ Aplicação não consegue autenticar requisições ao Supabase\n   141→- ❌ Todas as operações de leitura/escrita no banco falharão\n   142→- ❌ Login e registro não funcionarão\n   143→- ❌ Aplicação pode crashar ao carregar\n   144→\n   145→**Solução:**\n   146→\n   147→1. **Obter a Anon Key do Supabase:**\n   148→   - Acesse o [Supabase Dashboard](https://app.supabase.com)\n   149→   - Selecione seu projeto\n   150→   - Vá para **Settings** > **API**\n   151→   - Copie o valor de **anon public** (um token JWT longo)\n   152→\n   153→2. **Adicionar ao arquivo `.env.local`:**\n   154→   ```env\n   155→   NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\n   156→   ```\n   157→\n   158→3. **Reiniciar o servidor de desenvolvimento:**\n   159→   ```bash\n   160→   # Pare o servidor (Ctrl+C) e reinicie\n   161→   npm run dev\n   162→   ```\n   163→\n   164→4. **Verificar:**\n   165→   - Acesse a página inicial do projeto\n   166→   - Verifique se o erro desapareceu\n   167→   - Tente fazer login ou criar uma conta\n   168→\n   169→**⚠️ Atenção:**\n   170→- Esta é uma chave pública (anon/anonymous) e pode ser exposta no cliente\n   171→- É diferente da `service_role` key (que é secreta e nunca deve ser exposta)\n   172→- A segurança é garantida pelas políticas de RLS (Row Level Security) no Supabase\n   173→- Esta variável tem o prefixo `NEXT_PUBLIC_` porque é usada no cliente (browser)\n   174→\n   175→---\n   176→\n   177→#### 1.3. Erro: \"NEXT_PUBLIC_SITE_URL is not defined\"\n   178→\n   179→**Mensagem de Erro:**\n   180→```\n   181→Warning: NEXT_PUBLIC_SITE_URL is not defined\n   182→Defaulting to http://localhost:3000\n   183→```\n   184→\n   185→**Causa:**\n   186→A variável de ambiente `NEXT_PUBLIC_SITE_URL` não está definida. Esta variável é especialmente importante para:\n   187→- Callbacks de autenticação (OAuth Google, Email confirmação)\n   188→- URLs de redirecionamento\n   189→- Geração de links absolutos\n   190→\n   191→**Impacto:**\n   192→- ⚠️ OAuth Google pode não funcionar corretamente\n   193→- ⚠️ Email de confirmação pode ter links quebrados\n   194→- ⚠️ Redirecionamentos após login podem falhar\n   195→- ✅ Aplicação continua funcionando localmente\n   196→\n   197→**Solução:**\n   198→\n   199→1. **Para Desenvolvimento Local:**\n   200→   ```env\n   201→   NEXT_PUBLIC_SITE_URL=http://localhost:3000\n   202→   ```\n   203→\n   204→2. **Para Produção (Vercel, Netlify, etc.):**\n   205→   ```env\n   206→   NEXT_PUBLIC_SITE_URL=https://seu-dominio.com\n   207→   ```\n   208→\n   209→3. **Configurar no Supabase:**\n   210→   - Acesse o [Supabase Dashboard](https://app.supabase.com)\n   211→   - Vá para **Authentication** > **URL Configuration**\n   212→   - Adicione a URL em **Site URL**\n   213→   - Adicione em **Redirect URLs**: `https://seu-dominio.com/auth/callback`\n   214→\n   215→4. **Reiniciar o servidor:**\n   216→   ```bash\n   217→   npm run dev\n   218→   ```\n   219→\n   220→**⚠️ Atenção:**\n   221→- Use `http://localhost:3000` para desenvolvimento local\n   222→- Use `https://` (não `http://`) em produção\n   223→- Não adicione `/` no final da URL\n   224→- Certifique-se que a URL está registrada no Supabase para OAuth funcionar\n   225→\n   226→---\n   227→\n   228→#### 1.4. Erro: \"SUPABASE_SERVICE_ROLE_KEY is not defined\"\n   229→\n   230→**Mensagem de Erro:**\n   231→```\n   232→Warning: SUPABASE_SERVICE_ROLE_KEY not configured\n   233→Server-side admin operations may fail\n   234→```\n   235→\n   236→**Causa:**\n   237→A variável de ambiente `SUPABASE_SERVICE_ROLE_KEY` não está configurada. Esta é uma chave opcional mas necessária para operações administrativas no servidor.\n   238→\n   239→**Impacto:**\n   240→- ⚠️ Operações administrativas falharão (ex: deletar usuários, bypass RLS)\n   241→- ⚠️ Server Actions que precisam de acesso total ao banco falharão\n   242→- ✅ Funcionalidades normais da aplicação continuam funcionando\n   243→- ✅ Usuários regulares não são afetados\n   244→\n   245→**Quando é Necessária:**\n   246→- Operações de admin que precisam bypass de RLS\n   247→- Gerenciamento de usuários (criar/deletar contas)\n   248→- Operações de manutenção do banco\n   249→- Scripts de seed/migração\n   250→\n   251→**Solução:**\n   252→\n   253→1. **Obter a Service Role Key do Supabase:**\n   254→   - Acesse o [Supabase Dashboard](https://app.supabase.com)\n   255→   - Selecione seu projeto\n   256→   - Vá para **Settings** > **API**\n   257→   - Copie o valor de **service_role** (um token JWT longo)\n   258→   - ⚠️ **ATENÇÃO**: Esta chave tem acesso total ao banco!\n   259→\n   260→2. **Adicionar ao arquivo `.env.local`:**\n   261→   ```env\n   262→   SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\n   263→   ```\n   264→\n   265→3. **Reiniciar o serv\n\n... [truncated - full output was 26701 chars]",
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-07T14:38:25.318177+00:00",
+          "type": "text",
+          "content": "Agora vou expandir a seção 2 (Erros de Autenticação) seguindo o padrão estabelecido no documento. Vou substituir o placeholder atual por uma seção completa e detalhada.",
+          "phase": "coding",
+          "subtask_id": "1.3",
+          "session": 4
+        },
+        {
+          "timestamp": "2026-01-07T14:40:07.313568+00:00",
+          "type": "tool_start",
+          "content": "[Edit] ./docs/TROUBLESHOOTING.md",
+          "phase": "coding",
+          "tool_name": "Edit",
+          "tool_input": "./docs/TROUBLESHOOTING.md",
+          "subtask_id": "1.3",
+          "session": 4
+        },
+        {
+          "timestamp": "2026-01-07T14:40:07.351360+00:00",
+          "type": "tool_end",
+          "content": "[Edit] Done",
+          "phase": "coding",
+          "tool_name": "Edit",
+          "subtask_id": "1.3",
+          "session": 4,
+          "detail": "The file ./docs/TROUBLESHOOTING.md has been updated. Here's the result of running `cat -n` on a snippet of the edited file:\n   460→```\n   461→\n   462→---\n   463→\n   464→### 2. Erros de Autenticação\n   465→\n   466→Erros relacionados ao sistema de autenticação do Supabase, incluindo login, registro, OAuth e gerenciamento de sessões.\n   467→\n   468→**Tipos de Autenticação Suportados:**\n   469→- 📧 Email/Password (com confirmação de email)\n   470→- 🔐 OAuth Google\n   471→- 🔄 Refresh de sessão automático\n   472→- 🚪 Logout\n   473→\n   474→**Fluxo de Autenticação:**\n   475→1. Usuário faz login ou registro\n   476→2. Supabase cria sessão e retorna tokens JWT\n   477→3. Tokens são armazenados em cookies\n   478→4. Middleware verifica autenticação em rotas protegidas\n   479→5. Server Actions usam sessão para operações no banco\n   480→\n   481→**Ações Rápidas:**\n   482→1. Verifique se o projeto Supabase está ativo no [Dashboard](https://app.supabase.com)\n   483→2. Confirme que as URLs de callback do OAuth estão configuradas corretamente\n   484→3. Verifique as políticas de RLS no Supabase Dashboard\n   485→4. Limpe cookies e cache do navegador se houver problemas persistentes\n   486→\n   487→---\n   488→\n   489→#### 2.1. Erro: OAuth Google não configurado\n   490→\n   491→**Mensagem de Erro:**\n   492→```\n   493→OAuth provider 'google' is not configured for this project\n   494→```\n   495→\n   496→**Causa:**\n   497→O provedor OAuth Google não foi habilitado no projeto Supabase ou as credenciais OAuth não foram configuradas corretamente.\n   498→\n   499→**Impacto:**\n   500→- ❌ Botão \"Continuar com Google\" não funciona\n   501→- ❌ Usuários não conseguem fazer login via Google\n   502→- ✅ Login com email/senha continua funcionando\n   503→- ✅ Usuários existentes não são afetados\n   504→\n   505→**Solução:**\n   506→\n   507→1. **Criar credenciais OAuth no Google Cloud Console:**\n   508→   - Acesse o [Google Cloud Console](https://console.cloud.google.com/)\n   509→   - Crie um novo projeto ou selecione um existente\n   510→   - Vá para **APIs & Services** > **Credentials**\n   511→   - Clique em **Create Credentials** > **OAuth 2.0 Client ID**\n   512→   - Tipo de aplicativo: **Web application**\n   513→   - **Authorized JavaScript origins:**\n   514→     ```\n   515→     https://seu-projeto-id.supabase.co\n   516→     ```\n   517→   - **Authorized redirect URIs:**\n   518→     ```\n   519→     https://seu-projeto-id.supabase.co/auth/v1/callback\n   520→     ```\n   521→   - Clique em **Create** e copie o **Client ID** e **Client Secret**\n   522→\n   523→2. **Configurar OAuth no Supabase:**\n   524→   - Acesse o [Supabase Dashboard](https://app.supabase.com)\n   525→   - Selecione seu projeto\n   526→   - Vá para **Authentication** > **Providers**\n   527→   - Encontre **Google** e clique para configurar\n   528→   - Habilite o provider\n   529→   - Cole o **Client ID** e **Client Secret** do Google\n   530→   - Clique em **Save**\n   531→\n   532→3. **Adicionar tela de consentimento OAuth (se necessário):**\n   533→   - No Google Cloud Console, vá para **OAuth consent screen**\n   534→   - Configure as informações básicas do aplicativo\n   535→   - Adicione os escopos necessários: `email`, `profile`, `openid`\n   536→   - Adicione seu domínio em **Authorized domains**\n   537→\n   538→4. **Testar a configuração:**\n   539→   - Limpe cookies do navegador\n   540→   - Acesse a página de login\n   541→   - Clique em \"Continuar com Google\"\n   542→   - Verifique se o popup de consentimento do Google aparece\n   543→   - Complete o login\n   544→\n   545→**⚠️ Atenção:**\n   546→- Para desenvolvimento local, adicione `http://localhost:3000` nos **Authorized JavaScript origins**\n   547→- Para produção, use URLs HTTPS\n   548→- Pode levar alguns minutos para as configurações propagarem\n   549→- Se estiver testando em modo development do Google Cloud, adicione seu email como test user\n   550→\n   551→**🔍 Troubleshooting Adicional:**\n   552→- Se aparecer \"redirect_uri_mismatch\", verifique se as URLs de callback estão idênticas no Google e Supabase\n   553→- Se aparecer \"access_denied\", verifique a tela de consentimento OAuth\n   554→- Verifique se a variável `NEXT_PUBLIC_SITE_URL` está configurada corretamente\n   555→\n   556→---\n   557→\n   558→#### 2.2. Erro: \"Invalid login credentials\"\n   559→\n   560→**Mensagem de Erro:**\n   561→```\n   562→Invalid login credentials\n   563→```\n   564→\n   565→**Causas Possíveis:**\n   566→- Email ou senha incorretos\n   567→- Usuário não existe no sistema\n   568→- Conta foi deletada\n   569→- Email ainda não foi confirmado (se confirmação obrigatória)\n   570→\n   571→**Impacto:**\n   572→- ❌ Usuário não consegue fazer login\n   573→- ⚠️ Pode indicar tentativa de ataque se muitas tentativas falhas\n   574→\n   575→**Solução:**\n   576→\n   577→**Para Usuários:**\n   578→\n   579→1. **Verificar credenciais:**\n   580→   - Confirme que o email está correto (sem espaços extras)\n   581→   - Verifique se o Caps Lock não está ativado\n   582→   - Tente redefinir a senha se não se lembrar\n   583→\n   584→2. **Verificar se a conta existe:**\n   585→   - Tente fazer \"Esqueci minha senha\"\n   586→   - Se receber email, a conta existe\n   587→   - Se não receber, provavelmente precisa se registrar\n   588→\n   589→3. **Verificar email de confirmação:**\n   590→   - Cheque sua caixa de entrada e spam\n   591→   - Procure por email de confirmação do Supabase\n   592→   - Clique no link de confirmação antes de fazer login\n   593→\n   594→**Para Desenvolvedores:**\n   595→\n   596→1. **Verificar no Supabase Dashboard:**\n   597→   - Vá para **Authentication** > **Users**\n   598→   - Busque pelo email do usuário\n   599→   - Verifique o status da conta (confirmado, ativo, etc.)\n   600→\n   601→2. **Verificar políticas de senha:**\n   602→   - Supabase por padrão requer senhas com mínimo 6 caracteres\n   603→   - Verifique se há requisitos customizados em **Authentication** > **Policies**\n   604→\n   605→3. **Verificar logs de autenticação:**\n   606→   - No Supabase Dashboard, vá para **Logs**\n   607→   - Filtre por \"auth\" para ver tentativas de login\n   608→   - Identifique o erro específico\n   609→\n   610→4. **Testar com conta admin:**\n   611→   - Crie uma conta de teste no Dashboard manualmente\n   612→   - Tente fazer login com ela\n   613→   - Se funcionar, o problema é com a conta específica do usuário\n   614→\n   615→**🔐 Segurança:**\n   616→```typescript\n   617→// Implementar rate limiting para prevenir brute force\n   618→// Exemplo em Server Action:\n   619→'use server'\n   620→\n   621→import { ratelimit } from '@/lib/ratelimit'\n   622→\n   623→export async function login(email: string, password: string) {\n   624→  // Rate limit por IP ou email\n   625→  const { success } = await ratelimit.limit(email)\n   626→\n   627→  if (!success) {\n   628→    throw new Error('Muitas tentativas. Tente novamente em alguns minutos.')\n   629→  }\n   630→\n   631→  // Continuar com login...\n   632→}\n   633→```\n   634→\n   635→**⚠️ Atenção:**\n   636→- NUNCA revele se o email existe ou não (segurança)\n   637→- Mensagem genérica \"Invalid credentials\" é intencional\n   638→- Implemente rate limiting para prevenir ataques de força bruta\n   639→- Considere adicionar captcha após múltiplas tentativas falhas\n   640→\n   641→---\n   642→\n   643→#### 2.3. Erro: \"Email not confirmed\"\n   644→\n   645→**Mensagem de Erro:**\n   646→```\n   647→Email not confirmed\n   648→You need to confirm your email address before signing in\n   649→```\n   650→\n   651→**Causa:**\n   652→O usuário tentou fazer login mas ainda não confirmou o endereço de email clicando no link enviado por email.\n   653→\n   654→**Impacto:**\n   655→- ❌ Usuário não consegue fazer login\n   656→- ✅ Conta foi criada e existe no sistema\n   657→- ⚠️ Email pode estar em spam ou não ter sido recebido\n   658→\n   659→**Solução:**\n   660→\n   661→**Para Usuários:**\n   662→\n   663→1. **Verificar email de confirmação:**\n   664→   - Cheque a caixa de entrada do email cadastrado\n   665→   - Verifique a pasta de spam/lixo eletrônico\n   666→   - Procure por email com assunto \"Confirm Your Email\" ou similar\n   667→\n   668→2. **Clicar no link de confirmação:**\n   669→   - Abra o email de confirmação\n   670→   - Clique no link de confirmação\n   671→   - Você será redirecionado para a aplicação\n   672→   - Tente fazer login novamente\n   673→\n   674→3. **Reenviar email de confirmação:**\n   675→   - Na página de login, procure por \"Reenviar email de confirmação\"\n   676→   - Digite seu email\n   677→   - Verifique a caixa de entrada novamente\n   678→\n   679→**Para Desenvolvedores:**\n   680→\n   681→1. **Configurar emails no Supabase:**\n   682→   - Acesse **Authentication** > **Email Templates**\n   683→   - Customize o template de confirmação se necessário\n   684→   - Verifique se o from address está configurado corretamente\n   685→\n   686→2. **Configurar SMTP customizado (recomendado para produção):**\n   687→   - Vá para **Project Settings** > **Auth**\n   688→   - Configure SMTP customizado (SendGrid, Postmark, etc.)\n   689→   - Isso melhora a deliverability dos emails\n   690→   - Configure SPF, DKIM e DMARC no DNS\n   691→\n   692→3. **Verificar URL de callback:**\n   693→   - Em **Authentication** > **URL Configuration**\n   694→   - Verifique se o **Site URL** está correto\n   695→   - Adicione suas URLs de redirect em **Redirect URLs**\n   696→\n   697→4. **Implementar função de reenvio de email:**\n   698→   ```typescript\n   699→   // Server Action para reenviar email de confirmação\n   700→   'use server'\n   701→\n   702→   import { createClient } from '@/lib/supabase/server'\n   703→\n   704→   export async function resendConfirmationEmail(email: string) {\n   705→     const supabase = createClient()\n   706→\n   707→     const { error } = await supabase.auth.resend({\n   708→       type: 'signup',\n   709→       email: email,\n   710→     })\n   711→\n   712→     if (error) {\n   713→       throw new Error('Erro ao reenviar email de confirmação')\n   714→     }\n   715→\n   716→     return { success: true }\n   717→   }\n   718→   ```\n   719→\n   720→5. **Desabilitar confirmação de email (apenas desenvolvimento):**\n   721→   - ⚠️ **Apenas para desenvolvimento local!**\n   722→   - Vá para **Authentication** > **Email Auth**\n   723→   - Desabilite \"Confirm email\"\n   724→ \n\n... [truncated - full output was 26645 chars]",
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-07T14:40:19.767066+00:00",
+          "type": "text",
+          "content": "Excelente! Expandi a seção 2 (Erros de Autenticação) com 5 subseções detalhadas:\n\n1. **2.1 OAuth Google não configurado** - Como configurar OAuth no Google Cloud Console e Supabase\n2. **2.2 \"Invalid login credentials\"** - Troubleshooting de falhas de login com guia para usuários e desenvolvedores\n3. **2.3 \"Email not confirmed\"** - Como lidar com confirmação de email, incluindo reenvio e configuração de SMTP\n4. **2.4 \"Session expired\"** - Gerenciamento de sessões, refresh tokens, e middleware\n5. **2.5 \"User not authorized\" / RLS** - Guia completo sobre Row Level Security com exemplos de políticas SQL\n\nTodas as subseções seguem o padrão estabelecido com mensagem de erro, causa, impacto, soluções detalhadas e avisos importantes. Agora vou fazer o commit:",
+          "phase": "coding",
+          "subtask_id": "1.3",
+          "session": 4
+        },
+        {
+          "timestamp": "2026-01-07T14:40:20.589916+00:00",
+          "type": "tool_start",
+          "content": "[Bash] git add ./docs/TROUBLESHOOTING.md",
+          "phase": "coding",
+          "tool_name": "Bash",
+          "tool_input": "git add ./docs/TROUBLESHOOTING.md",
+          "subtask_id": "1.3",
+          "session": 4
+        },
+        {
+          "timestamp": "2026-01-07T14:40:25.542712+00:00",
+          "type": "tool_end",
+          "content": "[Bash] Done",
+          "phase": "coding",
+          "tool_name": "Bash",
+          "subtask_id": "1.3",
+          "session": 4,
+          "detail": "",
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-07T14:40:37.652817+00:00",
+          "type": "tool_start",
+          "content": "[Bash] git commit -m \"auto-claude: 1.3 - Seção com err...",
+          "phase": "coding",
+          "tool_name": "Bash",
+          "tool_input": "git commit -m \"auto-claude: 1.3 - Seção com err...",
+          "subtask_id": "1.3",
+          "session": 4
+        },
+        {
+          "timestamp": "2026-01-07T14:40:39.873141+00:00",
+          "type": "tool_end",
+          "content": "[Bash] Done",
+          "phase": "coding",
+          "tool_name": "Bash",
+          "subtask_id": "1.3",
+          "session": 4,
+          "detail": "[auto-claude/026-criar-guia-de-troubleshooting-para-erros-comuns 51ae2d1] auto-claude: 1.3 - Seção com erros de login, OAuth, sessão expirada, email não confirmado e permissões\n Committer: Ilan  Kriger <macbookair@MacBook-Air-de-Ilan.local>\nYour name and email address were configured automatically based\non your username and hostname. Please check that they are accurate.\nYou can suppress this message by setting them explicitly. Run the\nfollowing command and follow the instructions in your editor to edit\nyour configuration file:\n\n    git config --global --edit\n\nAfter doing this, you may fix the identity used for this commit with:\n\n    git commit --amend --reset-author\n\n 1 file changed, 698 insertions(+), 11 deletions(-)",
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-07T14:40:45.025380+00:00",
+          "type": "text",
+          "content": "Perfeito! Commit realizado com sucesso. Agora vou atualizar o status da subtask no plano de implementação:",
+          "phase": "coding",
+          "subtask_id": "1.3",
+          "session": 4
+        },
+        {
+          "timestamp": "2026-01-07T14:40:47.067857+00:00",
+          "type": "tool_start",
+          "content": "[mcp__auto-claude__update_subtask_status]",
+          "phase": "coding",
+          "tool_name": "mcp__auto-claude__update_subtask_status",
+          "subtask_id": "1.3",
+          "session": 4
+        },
+        {
+          "timestamp": "2026-01-07T14:40:47.093087+00:00",
+          "type": "tool_end",
+          "content": "[mcp__auto-claude__update_subtask_status] Done",
+          "phase": "coding",
+          "tool_name": "mcp__auto-claude__update_subtask_status",
+          "subtask_id": "1.3",
+          "session": 4,
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-07T14:40:51.626360+00:00",
+          "type": "text",
+          "content": "Excelente! A subtask 1.3 foi concluída com sucesso. Vou verificar o status do progresso:",
+          "phase": "coding",
+          "subtask_id": "1.3",
+          "session": 4
+        },
+        {
+          "timestamp": "2026-01-07T14:40:51.923824+00:00",
+          "type": "tool_start",
+          "content": "[mcp__auto-claude__get_build_progress]",
+          "phase": "coding",
+          "tool_name": "mcp__auto-claude__get_build_progress",
+          "subtask_id": "1.3",
+          "session": 4
+        },
+        {
+          "timestamp": "2026-01-07T14:40:52.147195+00:00",
+          "type": "tool_end",
+          "content": "[mcp__auto-claude__get_build_progress] Done",
+          "phase": "coding",
+          "tool_name": "mcp__auto-claude__get_build_progress",
+          "subtask_id": "1.3",
+          "session": 4,
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-07T14:41:06.935489+00:00",
+          "type": "text",
+          "content": "## ✅ Subtask 1.3 Concluída\n\nExpandi com sucesso a **Seção 2 (Erros de Autenticação)** do guia de troubleshooting com as seguintes subseções:\n\n### 📋 Conteúdo Adicionado\n\n1. **2.1 OAuth Google não configurado**\n   - Configuração completa no Google Cloud Console\n   - Integração com Supabase Auth\n   - Troubleshooting de redirect URIs\n\n2. **2.2 \"Invalid login credentials\"**\n   - Guia para usuários e desenvolvedores\n   - Implementação de rate limiting\n   - Verificação de contas no Dashboard\n\n3. **2.3 \"Email not confirmed\"**\n   - Reenvio de email de confirmação\n   - Configuração de SMTP customizado\n   - Troubleshooting de deliverability\n\n4. **2.4 \"Session expired\" / \"Auth session missing\"**\n   - Refresh automático de tokens\n   - Implementação de middleware\n   - Auth state listeners\n   - Auto-save de dados\n\n5. **2.5 \"User not authorized\" / Problemas com RLS**\n   - Guia completo de Row Level Security\n   - Exemplos de políticas SQL para profiles, challenges e submissions\n   - Debug de políticas\n   - Uso de service role\n\n### 📊 Progresso Geral\n- **3/11 subtasks concluídas (27%)**\n- **Fase atual**: Documentação Principal de Troubleshooting (3/5)\n\n### 🔄 Próxima Subtask\n**1.4**: Seção com erros de RLS, conexão, queries, storage e migrações (Erros do Supabase)\n\nDeseja que eu continue com a próxima subtask automaticamente?",
+          "phase": "coding",
+          "subtask_id": "1.3",
+          "session": 4
+        },
+        {
+          "timestamp": "2026-01-07T14:41:19.770908+00:00",
+          "type": "text",
+          "content": "Vou implementar a subtask 1.4, adicionando a seção sobre erros do Supabase (RLS, conexão, queries, storage e migrações) no guia de troubleshooting.\n\nPrimeiro, deixe-me ler o arquivo completo para entender a estrutura e o padrão:",
+          "phase": "coding",
+          "subtask_id": "1.4",
+          "session": 5
+        },
+        {
+          "timestamp": "2026-01-07T14:41:20.258735+00:00",
+          "type": "tool_start",
+          "content": "[Read] ./docs/TROUBLESHOOTING.md",
+          "phase": "coding",
+          "tool_name": "Read",
+          "tool_input": "./docs/TROUBLESHOOTING.md",
+          "subtask_id": "1.4",
+          "session": 5
+        },
+        {
+          "timestamp": "2026-01-07T14:41:20.573172+00:00",
+          "type": "tool_end",
+          "content": "[Read] Done",
+          "phase": "coding",
+          "tool_name": "Read",
+          "subtask_id": "1.4",
+          "session": 5,
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-07T14:41:28.473943+00:00",
+          "type": "text",
+          "content": "Agora vou implementar a seção 3 sobre erros do Supabase, expandindo com detalhes sobre RLS, conexão, queries, storage e migrações:",
+          "phase": "coding",
+          "subtask_id": "1.4",
+          "session": 5
+        },
+        {
+          "timestamp": "2026-01-07T14:44:11.428176+00:00",
+          "type": "tool_start",
+          "content": "[Edit] ./docs/TROUBLESHOOTING.md",
+          "phase": "coding",
+          "tool_name": "Edit",
+          "tool_input": "./docs/TROUBLESHOOTING.md",
+          "subtask_id": "1.4",
+          "session": 5
+        },
+        {
+          "timestamp": "2026-01-07T14:44:11.484340+00:00",
+          "type": "tool_end",
+          "content": "[Edit] Done",
+          "phase": "coding",
+          "tool_name": "Edit",
+          "subtask_id": "1.4",
+          "session": 5,
+          "detail": "The file ./docs/TROUBLESHOOTING.md has been updated. Here's the result of running `cat -n` on a snippet of the edited file:\n  1169→- [Policy Examples](https://supabase.com/docs/guides/auth/row-level-security#policy-examples)\n  1170→\n  1171→---\n  1172→\n  1173→### 3. Erros do Supabase\n  1174→\n  1175→Erros relacionados ao banco de dados Supabase, incluindo conexão, queries, Row Level Security (RLS), storage e migrações.\n  1176→\n  1177→**Categorias Cobertas:**\n  1178→- 🔌 **Conexão**: Problemas ao conectar com o Supabase\n  1179→- 🔍 **Queries**: Erros em consultas SQL e operações no banco\n  1180→- 🔐 **RLS**: Políticas de segurança bloqueando operações\n  1181→- 📦 **Storage**: Problemas com upload/download de arquivos\n  1182→- 🔄 **Migrações**: Erros ao aplicar mudanças no schema\n  1183→\n  1184→**Ações Rápidas:**\n  1185→1. Verifique o status do projeto no [Supabase Dashboard](https://app.supabase.com)\n  1186→2. Confirme que as tabelas foram criadas corretamente\n  1187→3. Revise as políticas de RLS para a tabela em questão\n  1188→4. Verifique os logs de erro no Supabase Dashboard > Logs\n  1189→\n  1190→---\n  1191→\n  1192→#### 3.1. Erro: \"Failed to fetch\" / Erro de Conexão\n  1193→\n  1194→**Mensagem de Erro:**\n  1195→```\n  1196→Failed to fetch\n  1197→TypeError: Failed to fetch\n  1198→NetworkError when attempting to fetch resource\n  1199→```\n  1200→\n  1201→**Causa:**\n  1202→A aplicação não consegue se conectar com o servidor do Supabase. Possíveis causas:\n  1203→- Projeto Supabase pausado ou deletado\n  1204→- URL do Supabase incorreta\n  1205→- Problemas de rede/firewall\n  1206→- Supabase temporariamente indisponível\n  1207→- CORS não configurado corretamente\n  1208→\n  1209→**Impacto:**\n  1210→- ❌ Todas as operações no banco de dados falham\n  1211→- ❌ Autenticação não funciona\n  1212→- ❌ Aplicação pode ficar completamente inutilizável\n  1213→- ⚠️ Usuários veem mensagens de erro de conexão\n  1214→\n  1215→**Solução:**\n  1216→\n  1217→1. **Verificar status do projeto Supabase:**\n  1218→   - Acesse o [Supabase Dashboard](https://app.supabase.com)\n  1219→   - Verifique se o projeto está **Active** (não pausado)\n  1220→   - Projetos inativos por muito tempo são pausados automaticamente\n  1221→   - Se pausado, clique em **Resume Project**\n  1222→\n  1223→2. **Verificar URL do Supabase:**\n  1224→   ```bash\n  1225→   # Verifique se a URL está correta\n  1226→   echo $NEXT_PUBLIC_SUPABASE_URL\n  1227→   ```\n  1228→   - Deve ser algo como: `https://abcdefghijk.supabase.co`\n  1229→   - Compare com a URL no Dashboard: **Settings** > **API** > **Project URL**\n  1230→\n  1231→3. **Testar conexão direta:**\n  1232→   ```bash\n  1233→   # Testar se o servidor responde\n  1234→   curl https://seu-projeto-id.supabase.co/rest/v1/\n  1235→   ```\n  1236→   - Deve retornar uma resposta (pode ser erro 401, mas pelo menos conecta)\n  1237→   - Se não responder, o problema é de rede ou projeto pausado\n  1238→\n  1239→4. **Verificar firewall/proxy:**\n  1240→   - Algumas redes corporativas bloqueiam o Supabase\n  1241→   - Tente em uma rede diferente ou usando 4G\n  1242→   - Configure exceção no firewall para `*.supabase.co`\n  1243→\n  1244→5. **Verificar configuração de CORS (se usando domínio customizado):**\n  1245→   - No Dashboard, vá para **Settings** > **API**\n  1246→   - Em **CORS Configuration**, adicione seu domínio\n  1247→   - Exemplo: `https://seu-dominio.com`\n  1248→\n  1249→6. **Limpar cache e reiniciar:**\n  1250→   ```bash\n  1251→   # Limpar cache do Next.js\n  1252→   rm -rf .next\n  1253→\n  1254→   # Reiniciar servidor\n  1255→   npm run dev\n  1256→   ```\n  1257→\n  1258→**🔍 Debug:**\n  1259→```typescript\n  1260→// Adicione em um Server Action para testar conexão\n  1261→'use server'\n  1262→\n  1263→import { createClient } from '@/lib/supabase/server'\n  1264→\n  1265→export async function testConnection() {\n  1266→  try {\n  1267→    const supabase = createClient()\n  1268→    const { data, error } = await supabase.from('profiles').select('count').limit(1)\n  1269→\n  1270→    if (error) {\n  1271→      console.error('Connection test failed:', error)\n  1272→      return { success: false, error: error.message }\n  1273→    }\n  1274→\n  1275→    return { success: true, message: 'Connected successfully' }\n  1276→  } catch (err) {\n  1277→    console.error('Network error:', err)\n  1278→    return { success: false, error: 'Network error' }\n  1279→  }\n  1280→}\n  1281→```\n  1282→\n  1283→**⚠️ Atenção:**\n  1284→- Projetos Supabase gratuitos são pausados após 1 semana de inatividade\n  1285→- Reativar um projeto pode levar alguns minutos\n  1286→- Em produção, considere um plano pago para evitar pausas automáticas\n  1287→- Sempre verifique o status no Dashboard primeiro\n  1288→\n  1289→---\n  1290→\n  1291→#### 3.2. Erro: \"relation does not exist\" / Tabela não existe\n  1292→\n  1293→**Mensagem de Erro:**\n  1294→```\n  1295→relation \"public.table_name\" does not exist\n  1296→error: relation \"profiles\" does not exist\n  1297→```\n  1298→\n  1299→**Causa:**\n  1300→A aplicação está tentando acessar uma tabela que não existe no banco de dados. Causas comuns:\n  1301→- Migrações não foram executadas\n  1302→- Tabela foi deletada acidentalmente\n  1303→- Typo no nome da tabela\n  1304→- Schema incorreto (public vs outro schema)\n  1305→\n  1306→**Impacto:**\n  1307→- ❌ Operações que usam essa tabela falham\n  1308→- ❌ Pode causar crash da aplicação\n  1309→- ⚠️ Outras tabelas podem continuar funcionando\n  1310→\n  1311→**Solução:**\n  1312→\n  1313→1. **Verificar se a tabela existe:**\n  1314→   - Acesse o Supabase Dashboard\n  1315→   - Vá para **Table Editor**\n  1316→   - Procure pela tabela na lista\n  1317→\n  1318→2. **Se a tabela não existe, criar manualmente:**\n  1319→   ```sql\n  1320→   -- Exemplo: Criar tabela de profiles\n  1321→   CREATE TABLE profiles (\n  1322→     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n  1323→     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,\n  1324→     full_name TEXT,\n  1325→     avatar_url TEXT,\n  1326→     role TEXT DEFAULT 'advocate',\n  1327→     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n  1328→     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()\n  1329→   );\n  1330→\n  1331→   -- Criar índice para melhor performance\n  1332→   CREATE INDEX idx_profiles_user_id ON profiles(user_id);\n  1333→\n  1334→   -- Habilitar RLS\n  1335→   ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;\n  1336→\n  1337→   -- Criar políticas básicas\n  1338→   CREATE POLICY \"Users can view own profile\"\n  1339→     ON profiles FOR SELECT\n  1340→     USING (auth.uid() = user_id);\n  1341→\n  1342→   CREATE POLICY \"Users can update own profile\"\n  1343→     ON profiles FOR UPDATE\n  1344→     USING (auth.uid() = user_id);\n  1345→   ```\n  1346→\n  1347→3. **Executar migrações do projeto:**\n  1348→   ```bash\n  1349→   # Se o projeto tem migrações SQL na pasta supabase/migrations/\n  1350→   # Execute-as no SQL Editor do Supabase Dashboard\n  1351→\n  1352→   # Ou se estiver usando Supabase CLI:\n  1353→   supabase db push\n  1354→   ```\n  1355→\n  1356→4. **Verificar schema correto:**\n  1357→   ```typescript\n  1358→   // Se a tabela está em outro schema\n  1359→   const { data, error } = await supabase\n  1360→     .from('other_schema.table_name') // Especificar schema\n  1361→     .select('*')\n  1362→\n  1363→   // Ou configurar schema padrão no cliente\n  1364→   ```\n  1365→\n  1366→5. **Verificar typos no código:**\n  1367→   ```typescript\n  1368→   // ❌ ERRADO - typo no nome\n  1369→   await supabase.from('profles').select('*')\n  1370→\n  1371→   // ✅ CORRETO\n  1372→   await supabase.from('profiles').select('*')\n  1373→   ```\n  1374→\n  1375→**🔄 Criando Todas as Tabelas do Projeto:**\n  1376→\n  1377→Se você precisa recriar todas as tabelas do zero, execute este script SQL no Supabase Dashboard (**SQL Editor**):\n  1378→\n  1379→```sql\n  1380→-- Tabela de perfis\n  1381→CREATE TABLE profiles (\n  1382→  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n  1383→  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE UNIQUE NOT NULL,\n  1384→  full_name TEXT,\n  1385→  avatar_url TEXT,\n  1386→  role TEXT DEFAULT 'advocate' CHECK (role IN ('advocate', 'admin')),\n  1387→  points INTEGER DEFAULT 0,\n  1388→  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n  1389→  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()\n  1390→);\n  1391→\n  1392→-- Tabela de desafios\n  1393→CREATE TABLE challenges (\n  1394→  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n  1395→  title TEXT NOT NULL,\n  1396→  description TEXT NOT NULL,\n  1397→  points INTEGER NOT NULL DEFAULT 100,\n  1398→  status TEXT DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'archived')),\n  1399→  created_by UUID REFERENCES auth.users(id),\n  1400→  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n  1401→  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()\n  1402→);\n  1403→\n  1404→-- Tabela de submissões\n  1405→CREATE TABLE submissions (\n  1406→  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n  1407→  challenge_id UUID REFERENCES challenges(id) ON DELETE CASCADE NOT NULL,\n  1408→  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,\n  1409→  video_url TEXT NOT NULL,\n  1410→  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),\n  1411→  verification_notes TEXT,\n  1412→  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n  1413→  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()\n  1414→);\n  1415→\n  1416→-- Criar índices\n  1417→CREATE INDEX idx_profiles_user_id ON profiles(user_id);\n  1418→CREATE INDEX idx_challenges_status ON challenges(status);\n  1419→CREATE INDEX idx_submissions_user_id ON submissions(user_id);\n  1420→CREATE INDEX idx_submissions_challenge_id ON submissions(challenge_id);\n  1421→CREATE INDEX idx_submissions_status ON submissions(status);\n  1422→\n  1423→-- Habilitar RLS em todas as tabelas\n  1424→ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;\n  1425→ALTER TABLE challenges ENABLE ROW LEVEL SECURITY;\n  1426→ALTER TABLE submissions ENABLE ROW LEVEL SECURITY;\n  1427→\n  1428→-- Políticas para profiles\n  1429→CREATE POLICY \"Users can view own profile\" ON profiles\n  1430→  FOR SELECT USING (auth.uid() = user_id);\n  1431→CREATE POLICY \"Users can update own profile\" ON profiles\n  1432→  FOR UPDATE USING (auth.uid() = user_id);\n  1433→CR\n\n... [truncated - full output was 40123 chars]",
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-07T14:44:22.811131+00:00",
+          "type": "text",
+          "content": "Excelente! Implementei a seção 3 completa sobre erros do Supabase com 8 erros detalhados cobrindo:\n\n- ✅ **3.1** - Erro de conexão (Failed to fetch)\n- ✅ **3.2** - Tabela não existe (relation does not exist) \n- ✅ **3.3** - Coluna não existe (column does not exist)\n- ✅ **3.4** - Violação de constraint UNIQUE (duplicate key)\n- ✅ **3.5** - Violação de chave estrangeira (foreign key violation)\n- ✅ **3.6** - Storage bucket não encontrado\n- ✅ **3.7** - JSON inválido\n- ✅ **3.8** - Problemas com migrações\n\nCada erro inclui mensagens reais, causas, impactos, soluções detalhadas, exemplos de código TypeScript/SQL e warnings. Agora vou fazer o commit:",
+          "phase": "coding",
+          "subtask_id": "1.4",
+          "session": 5
+        },
+        {
+          "timestamp": "2026-01-07T14:44:25.662387+00:00",
+          "type": "tool_start",
+          "content": "[Bash] git add -A && git commit -m \"auto-claude: 1.4 -...",
+          "phase": "coding",
+          "tool_name": "Bash",
+          "tool_input": "git add -A && git commit -m \"auto-claude: 1.4 -...",
+          "subtask_id": "1.4",
+          "session": 5
+        }
+      ]
+    },
+    "validation": {
+      "phase": "validation",
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "entries": []
+    }
+  }
+}

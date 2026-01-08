@@ -1,17 +1,17 @@
 {
   "active": true,
-  "spec": "025-documentar-componentes-ui-com-exemplos-de-props",
+  "spec": "026-criar-guia-de-troubleshooting-para-erros-comuns",
   "state": "building",
   "subtasks": {
     "completed": 3,
-    "total": 13,
+    "total": 11,
     "in_progress": 1,
     "failed": 0
   },
   "phase": {
-    "current": "Componentes de Formul\u00e1rio B\u00e1sicos",
+    "current": "Documenta\u00e7\u00e3o Principal de Troubleshooting",
     "id": null,
-    "total": 4
+    "total": 5
   },
   "workers": {
     "active": 0,
@@ -19,7 +19,7 @@
   },
   "session": {
     "number": 5,
-    "started_at": "2026-01-07T11:30:35.407671"
+    "started_at": "2026-01-07T11:30:34.381577"
   },
-  "last_update": "2026-01-07T11:40:21.460126"
+  "last_update": "2026-01-07T11:41:13.444768"
 }
