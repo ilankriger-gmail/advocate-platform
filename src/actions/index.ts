@@ -19,3 +19,6 @@ export * from './challenges';
 
 // Recompensas (exportando apenas do arquivo principal para evitar conflitos)
 export * from './rewards';
+
+// Leaderboard
+export * from './leaderboard';

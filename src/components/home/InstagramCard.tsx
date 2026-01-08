@@ -7,6 +7,8 @@ import {
   ImageCarousel,
   YouTubeEmbed,
   InstagramEmbed,
+  SaveButton,
+  ShareButton,
 } from '@/components/posts';
 import { formatRelativeTime } from '@/lib/utils';
 import type { PostWithAuthor } from '@/lib/supabase/types';
@@ -66,16 +68,18 @@ export function InstagramCard({ post }: InstagramCardProps) {
         <InstagramEmbed url={post.instagram_url!} />
       )}
 
-      {/* Ações - Votos */}
-      <div className="p-3 flex items-center gap-4">
+      {/* Ações - Votos, Save, Share */}
+      <div className="p-3 flex items-center gap-2">
         <VoteButtons
           postId={post.id}
           initialScore={post.likes_count || 0}
           initialUserVote={null}
         />
-        <span className="text-sm text-gray-500">
+        <span className="text-sm text-gray-500 flex-1">
           {post.comments_count || 0} comentários
         </span>
+        <SaveButton postId={post.id} />
+        <ShareButton postId={post.id} postTitle={post.title} />
       </div>
 
       {/* Conteúdo - Só mostra se tiver título ou conteúdo */}

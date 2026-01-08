@@ -1,0 +1,389 @@
+{
+  "feature": "Public Leaderboards & Rankings",
+  "description": "Display public leaderboards showing top fans by coins earned, challenges completed, and event attendance. Include weekly, monthly, and all-time rankings with badges and recognition tiers.",
+  "created_at": "2025-01-07",
+  "updated_at": "2026-01-08T17:13:53.859Z",
+  "status": "in_progress",
+  "planStatus": "in_progress",
+  "phases": [
+    {
+      "id": "phase-1",
+      "name": "Database Layer",
+      "description": "Create SQL migration for leaderboard aggregation views and RLS policies",
+      "subtasks": [
+        {
+          "id": "1.1",
+          "title": "Create leaderboard SQL migration",
+          "description": "Create SQL migration file with views for aggregating user rankings by coins, challenges completed, and events attended. Include time-based filtering (weekly, monthly, all-time) and user tier calculation.",
+          "status": "completed",
+          "files": [
+            "migrations/leaderboard-rankings.sql"
+          ],
+          "acceptance_criteria": [
+            "View for coins leaderboard with time filters",
+            "View for challenges completed leaderboard",
+            "View for events attended leaderboard",
+            "Function to calculate user tier (Bronze/Silver/Gold/Diamond)",
+            "Function to get user's own rank in any leaderboard"
+          ],
+          "notes": "Created comprehensive SQL migration file with:\n- get_user_tier() function for tier calculation (Bronze/Silver/Gold/Diamond based on score thresholds)\n- leaderboard_coins view for ranking users by coin balance\n- leaderboard_challenges view for ranking by challenges completed\n- leaderboard_events view for ranking by events attended with check-in\n- leaderboard_combined view for overall ranking (weighted score formula)\n- get_user_coins_rank() function with time period filters (weekly/monthly/all-time)\n- get_user_challenges_rank() function with time filters\n- get_user_events_rank() function with time filters\n- get_user_combined_rank() function with time filters\n- RLS policies for public authenticated access to leaderboards\n- Performance indexes on key columns (balance, approved_at, check_in_time, created_at)\nFile: migrations/leaderboard-rankings.sql (515 lines)",
+          "updated_at": "2026-01-07T18:18:33.844490+00:00"
+        },
+        {
+          "id": "1.2",
+          "title": "Add RLS policies for public access",
+          "description": "Create RLS policies that allow public/authenticated access to leaderboard data while protecting sensitive user information.",
+          "status": "completed",
+          "files": [
+            "migrations/leaderboard-rankings.sql"
+          ],
+          "acceptance_criteria": [
+            "Public read access to leaderboard rankings",
+            "Only display approved/public user data",
+            "Protect private user information"
+          ],
+          "notes": "Enhanced RLS policies for secure public leaderboard access. Added 5 comprehensive policies:\n1. users_viewable_by_authenticated - Allows authenticated users to view basic user profiles\n2. user_coins_leaderboard_viewable - Allows viewing all coin balances for rankings\n3. coin_transactions_leaderboard_viewable - Enables time-filtered ranking calculations\n4. challenge_participants_leaderboard_viewable - Shows only approved participations\n5. event_registrations_leaderboard_viewable - Shows only confirmed check-ins\n\nAll policies are idempotent, include comprehensive documentation on data protection strategy, and ensure sensitive user information (email, phone, etc.) remains protected while allowing public access to leaderboard data. File: migrations/leaderboard-rankings.sql (lines 441-571)",
+          "updated_at": "2026-01-07T18:27:29.989666+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-2",
+      "name": "TypeScript Types",
+      "description": "Define TypeScript types for leaderboard data structures",
+      "subtasks": [
+        {
+          "id": "2.1",
+          "title": "Create leaderboard types",
+          "description": "Add TypeScript types and interfaces for leaderboard entries, tiers, time periods, and ranking categories.",
+          "status": "completed",
+          "files": [
+            "src/lib/supabase/types.ts"
+          ],
+          "acceptance_criteria": [
+            "LeaderboardEntry type with user info and score",
+            "LeaderboardTier enum (Bronze, Silver, Gold, Diamond)",
+            "TimePeriod type (weekly, monthly, all_time)",
+            "LeaderboardCategory type (coins, challenges, events)",
+            "UserRanking type for user's own position"
+          ],
+          "notes": "Added comprehensive TypeScript types for leaderboard system in src/lib/supabase/types.ts (33 new lines):\n- LeaderboardTier: 'bronze' | 'silver' | 'gold' | 'diamond'\n- TimePeriod: 'weekly' | 'monthly' | 'all_time'\n- LeaderboardCategory: 'coins' | 'challenges' | 'events' | 'combined'\n- LeaderboardEntry: interface with user_id, full_name, avatar_url, score, tier, rank, last_activity\n- UserRanking: interface with user_id, rank, score, tier, total_participants, category, period\n\nAll types follow existing codebase patterns with Portuguese comments and proper TypeScript typing conventions. Types align with SQL views and functions from migration file.",
+          "updated_at": "2026-01-07T18:29:48.064145+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-3",
+      "name": "Backend Queries",
+      "description": "Create Supabase queries for fetching leaderboard data",
+      "subtasks": [
+        {
+          "id": "3.1",
+          "title": "Create leaderboard queries file",
+          "description": "Create src/lib/supabase/leaderboard.ts with functions for fetching leaderboard data by category and time period.",
+          "status": "completed",
+          "files": [
+            "src/lib/supabase/leaderboard.ts",
+            "src/lib/supabase/index.ts"
+          ],
+          "acceptance_criteria": [
+            "getCoinsLeaderboard(period, limit) function",
+            "getChallengesLeaderboard(period, limit) function",
+            "getEventsLeaderboard(period, limit) function",
+            "getUserRank(userId, category, period) function",
+            "getCombinedLeaderboard(period, limit) function"
+          ],
+          "notes": "Created src/lib/supabase/leaderboard.ts with all required functions:\n- getCoinsLeaderboard(period, limit): Fetches coins leaderboard with support for weekly/monthly/all-time periods\n- getChallengesLeaderboard(period, limit): Fetches challenges completed leaderboard with time filtering\n- getEventsLeaderboard(period, limit): Fetches events attended leaderboard with time filtering\n- getCombinedLeaderboard(period, limit): Fetches overall ranking combining all activities with weighted scoring (coins + challenges*50 + events*30)\n- getUserRank(userId, category, period): Gets user's rank in any category using SQL functions from migration\n\nAll functions follow established patterns from challenges.ts and events.ts:\n- Proper error handling with empty array returns\n- Portuguese comments as per project guidelines\n- TypeScript typing with imported types\n- Optimized queries using SQL views for all-time periods\n- Client-side aggregation for weekly/monthly periods\n\nAlso updated src/lib/supabase/index.ts to export leaderboard module.\n\nFiles created/modified:\n- src/lib/supabase/leaderboard.ts (435 lines, new file)\n- src/lib/supabase/index.ts (added export for leaderboard)",
+          "updated_at": "2026-01-07T18:33:10.855183+00:00"
+        },
+        {
+          "id": "3.2",
+          "title": "Create server actions for leaderboard",
+          "description": "Create server actions that can be called from components to fetch leaderboard data with proper error handling.",
+          "status": "completed",
+          "files": [
+            "src/actions/leaderboard.ts",
+            "src/actions/index.ts"
+          ],
+          "acceptance_criteria": [
+            "Server action for fetching leaderboard by category",
+            "Server action for fetching user's own rank",
+            "Proper error handling and loading states"
+          ],
+          "notes": "Created comprehensive server actions for leaderboard functionality in src/actions/leaderboard.ts with proper error handling:\n\n- fetchLeaderboard(category, period, limit): Generic action to fetch any leaderboard by category\n- fetchUserRank(category, period): Get current user's rank in any category (requires authentication)\n- fetchCoinsLeaderboard(period, limit): Specific action for coins leaderboard\n- fetchChallengesLeaderboard(period, limit): Specific action for challenges leaderboard\n- fetchEventsLeaderboard(period, limit): Specific action for events leaderboard\n- fetchCombinedLeaderboard(period, limit): Specific action for combined/overall ranking\n\nAll actions follow established patterns from challenges.ts:\n- 'use server' directive for Next.js Server Actions\n- ActionResponse<T> type with error/success/data structure\n- Try-catch error handling with user-friendly Portuguese error messages\n- Portuguese comments following project guidelines\n- Proper TypeScript typing with imported types\n- Authentication check for user-specific actions\n\nAlso updated src/actions/index.ts to export the leaderboard module for clean imports.\n\nFiles created/modified:\n- src/actions/leaderboard.ts (177 lines, new file)\n- src/actions/index.ts (added leaderboard export)",
+          "updated_at": "2026-01-07T18:35:45.814455+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-4",
+      "name": "UI Components",
+      "description": "Create reusable UI components for leaderboard display",
+      "subtasks": [
+        {
+          "id": "4.1",
+          "title": "Create TierBadge component",
+          "description": "Create a badge component that displays user recognition tiers (Bronze, Silver, Gold, Diamond) with appropriate icons and colors.",
+          "status": "completed",
+          "files": [
+            "src/components/leaderboard/TierBadge.tsx"
+          ],
+          "acceptance_criteria": [
+            "Bronze tier with bronze color scheme",
+            "Silver tier with silver/gray color scheme",
+            "Gold tier with gold/yellow color scheme",
+            "Diamond tier with blue/purple color scheme",
+            "Icons for each tier level"
+          ],
+          "notes": "Created comprehensive TierBadge component with all tier color schemes (Bronze/Silver/Gold/Diamond), icons for each tier, and multiple size options. Component follows existing patterns and includes helper function getTierByScore().",
+          "updated_at": "2026-01-07T18:38:47.129024+00:00"
+        },
+        {
+          "id": "4.2",
+          "title": "Create LeaderboardEntry component",
+          "description": "Create a component for displaying individual leaderboard entries with rank, avatar, name, score, and tier badge.",
+          "status": "completed",
+          "files": [
+            "src/components/leaderboard/LeaderboardEntry.tsx"
+          ],
+          "acceptance_criteria": [
+            "Display rank position (1st, 2nd, 3rd with medals)",
+            "Display user avatar",
+            "Display user name",
+            "Display score/points",
+            "Display tier badge",
+            "Highlight current user's entry"
+          ],
+          "notes": "Created comprehensive LeaderboardEntry component with all acceptance criteria met:\n- Display rank position (1st, 2nd, 3rd with medal emojis \ud83e\udd47\ud83e\udd48\ud83e\udd49)\n- Display user avatar using Avatar component\n- Display user name with proper truncation\n- Display score/points with thousand separators (formatScore function)\n- Display tier badge using TierBadge component\n- Highlight current user's entry with bg-primary-50 and border-l-4 border-primary-500\n- Optional last activity display with smart formatting (today, yesterday, days ago, etc.)\n- Created compact variant (LeaderboardEntry.Compact) for widgets/previews\n- Different visual states for top 3 (larger emoji), current user (highlighted), and others\n- Hover states with bg-surface-50 transition\n- Fully responsive design\n- Follows all established patterns from ChallengeRanking and other components\n- Portuguese comments following project guidelines\n- TypeScript typed with proper imports from @/lib/supabase/types\n- Uses existing UI components (Avatar, TierBadge) for consistency\n\nFile created: src/components/leaderboard/LeaderboardEntry.tsx (222 lines)",
+          "updated_at": "2026-01-07T18:41:12.316353+00:00"
+        },
+        {
+          "id": "4.3",
+          "title": "Create LeaderboardList component",
+          "description": "Create a component that displays a list of leaderboard entries with pagination support (top 10/25/50).",
+          "status": "completed",
+          "files": [
+            "src/components/leaderboard/LeaderboardList.tsx"
+          ],
+          "acceptance_criteria": [
+            "Display top 10/25/50 fans option",
+            "Empty state when no data",
+            "Loading skeleton state",
+            "Responsive design for mobile/desktop"
+          ],
+          "notes": "Created comprehensive LeaderboardList component with all acceptance criteria met:\n- Display top 10/25/50 fans option with interactive button controls\n- Empty state when no data with motivational message and icon\n- Loading skeleton state with animated placeholders\n- Responsive design for mobile/desktop with flexible layout\n- Created compact variant (LeaderboardList.Compact) for widgets/previews showing top 5\n- Shows count of displayed vs total participants\n- Indicator for additional entries not shown\n- Info message about real-time ranking updates\n- Follows all established patterns from ChallengeRanking and other components\n- Portuguese comments following project guidelines\n- TypeScript typed with proper imports from @/lib/supabase/types\n- Uses existing UI components (Card, Button, LeaderboardEntry) for consistency\n\nFile created: src/components/leaderboard/LeaderboardList.tsx (279 lines)",
+          "updated_at": "2026-01-07T18:43:56.295856+00:00"
+        },
+        {
+          "id": "4.4",
+          "title": "Create UserRankCard component",
+          "description": "Create a component that shows the current user's rank even if they're not in the top positions.",
+          "status": "completed",
+          "files": [
+            "src/components/leaderboard/UserRankCard.tsx"
+          ],
+          "acceptance_criteria": [
+            "Show user's current rank position",
+            "Show user's score",
+            "Show how many points to next rank",
+            "Show user's tier",
+            "Motivational message based on position"
+          ],
+          "notes": "Created comprehensive UserRankCard component with all acceptance criteria met:\n- Shows user's current rank position in a highlighted card\n- Displays user's score with proper formatting\n- Calculates and shows points needed to reach next tier\n- Shows user's tier with TierBadge component\n- Provides motivational messages based on position (1st, top 10, top 25, top 50, etc.)\n- Visual progress bar showing advancement to next tier\n- Loading skeleton state with animated placeholders\n- Not ranked state for users without activity\n- Compact variant (UserRankCard.Compact) for widgets/previews\n- Follows all established patterns from LeaderboardEntry and other components\n- Portuguese comments and pt-BR number formatting\n- TypeScript typed with UserRanking interface\n- Uses existing UI components (Card, Avatar, TierBadge) for consistency\n- Gradient background (primary-50 to white) for visual distinction\n- Responsive design for mobile/desktop\n\nTier progression system implemented:\n- Bronze \u2192 Silver: 100 points required\n- Silver \u2192 Gold: 500 points required\n- Gold \u2192 Diamond: 1000 points required\n- Diamond: Maximum tier (congratulations message)\n\nComponent structure:\n- Main UserRankCard: Full-featured with avatar, stats, progress bar, and motivational message\n- UserRankCard.Compact: Simplified version for dashboard widgets\n\nFile created: src/components/leaderboard/UserRankCard.tsx (387 lines)",
+          "updated_at": "2026-01-07T18:46:12.944984+00:00"
+        },
+        {
+          "id": "4.5",
+          "title": "Create LeaderboardTabs component",
+          "description": "Create a tabbed interface for switching between weekly, monthly, and all-time views.",
+          "status": "completed",
+          "files": [
+            "src/components/leaderboard/LeaderboardTabs.tsx"
+          ],
+          "acceptance_criteria": [
+            "Weekly tab with date range indicator",
+            "Monthly tab with month indicator",
+            "All-time tab",
+            "Active tab styling",
+            "Callback for tab change"
+          ],
+          "notes": "Created comprehensive LeaderboardTabs component with all acceptance criteria met:\n- Weekly tab with date range indicator (\"\u00daltimos 7 dias\")\n- Monthly tab with month indicator (\"\u00daltimos 30 dias\")\n- All-time tab (\"Desde o in\u00edcio\")\n- Active tab styling with primary-600 color and border-b-2\n- Callback for tab change (onPeriodChange prop)\n- Icons for each period (calendar for weekly/monthly, lightning for all-time)\n- Informational text describing the active period\n- Compact variant (LeaderboardTabs.Compact) for widgets/previews\n- Follows all established patterns from other leaderboard components\n- Portuguese comments following project guidelines\n- TypeScript typed with TimePeriod type from @/lib/supabase/types\n- Proper accessibility attributes (role, aria-selected, aria-controls)\n- Responsive design with flexbox layout\n- Hover and focus states with smooth transitions\n\nComponent structure:\n- Main LeaderboardTabs: Full-featured with icons, labels, descriptions, and informational text\n- LeaderboardTabs.Compact: Simplified version with segmented control style for dashboard widgets\n\nHelper functions:\n- getPeriodLabel(): Returns Portuguese label for each period\n- getPeriodDescription(): Returns date range description\n- getPeriodIcon(): Returns SVG icon for each period\n\nFile created: src/components/leaderboard/LeaderboardTabs.tsx (242 lines)",
+          "updated_at": "2026-01-07T18:49:23.363262+00:00"
+        },
+        {
+          "id": "4.6",
+          "title": "Create CategorySelector component",
+          "description": "Create a component for selecting leaderboard category (coins, challenges, events).",
+          "status": "completed",
+          "files": [
+            "src/components/leaderboard/CategorySelector.tsx"
+          ],
+          "acceptance_criteria": [
+            "Coins earned category",
+            "Challenges completed category",
+            "Events attended category",
+            "Icon for each category",
+            "Active state styling"
+          ],
+          "notes": "Created comprehensive CategorySelector component with all acceptance criteria met:\n- Coins earned category with coin icon\n- Challenges completed category with badge/checkmark icon\n- Events attended category with calendar icon\n- Combined/overall ranking category with chart icon\n- Active state styling with primary colors, border, shadow, and checkmark indicator\n- Created compact variant (CategorySelector.Compact) for widgets/previews\n- Grid layout (2 columns mobile, 4 columns desktop) for better UX\n- Individual category cards with icon, label, and description\n- Hover states with smooth transitions\n- Focus states for accessibility\n- Follows all established patterns from LeaderboardTabs and other components\n- Portuguese comments and labels following project guidelines\n- TypeScript typed with LeaderboardCategory from @/lib/supabase/types\n- Helper functions for labels, descriptions, and icons\n- Informational text describing the active category\n- Responsive design with proper spacing and layout\n\nComponent structure:\n- Main CategorySelector: Full-featured with grid layout, large icons, and descriptions\n- CategorySelector.Compact: Simplified version with horizontal tabs for dashboard widgets\n\nFile created: src/components/leaderboard/CategorySelector.tsx (277 lines)",
+          "updated_at": "2026-01-07T18:51:51.759127+00:00"
+        },
+        {
+          "id": "4.7",
+          "title": "Create index exports for leaderboard components",
+          "description": "Create index.ts file to export all leaderboard components for clean imports.",
+          "status": "completed",
+          "files": [
+            "src/components/leaderboard/index.ts"
+          ],
+          "acceptance_criteria": [
+            "Export all leaderboard components",
+            "Clean import path"
+          ],
+          "notes": "Created index.ts file to export all leaderboard components for clean imports. The file exports:\n- TierBadge component and getTierByScore helper function\n- LeaderboardEntry and LeaderboardEntryCompact components\n- LeaderboardList and LeaderboardListCompact components\n- UserRankCard and UserRankCardCompact components\n- LeaderboardTabs and LeaderboardTabsCompact components\n- CategorySelector and CategorySelectorCompact components\n\nThis allows for clean imports like: import { LeaderboardList, TierBadge } from '@/components/leaderboard'\n\nFile created: src/components/leaderboard/index.ts (6 export lines)",
+          "updated_at": "2026-01-07T18:53:18.062214+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-5",
+      "name": "Page Implementation",
+      "description": "Create the main leaderboard page and integrate with navigation",
+      "subtasks": [
+        {
+          "id": "5.1",
+          "title": "Create leaderboard page",
+          "description": "Create the main /ranking page that displays the public leaderboards with all categories and time filters.",
+          "status": "completed",
+          "files": [
+            "src/app/(dashboard)/ranking/page.tsx"
+          ],
+          "acceptance_criteria": [
+            "Display leaderboard with category tabs",
+            "Time period filter (weekly/monthly/all-time)",
+            "Show top 10/25/50 option",
+            "Show current user's rank card",
+            "Page header with title and description",
+            "Responsive layout"
+          ],
+          "notes": "Created comprehensive /ranking page with all acceptance criteria met:\n\n\u2705 Display leaderboard with category tabs (coins, challenges, events, combined)\n\u2705 Time period filter (weekly/monthly/all-time) with LeaderboardTabs component\n\u2705 Show top 10/25/50 option with LeaderboardList component\n\u2705 Show current user's rank card using UserRankCard component\n\u2705 Page header with title and description\n\u2705 Responsive layout following existing patterns\n\u2705 Loading states and error handling\n\u2705 Additional features:\n  - Tier legend explaining Bronze/Silver/Gold/Diamond tiers\n  - Helpful tips card for users on how to improve ranking\n  - Real-time data fetching using server actions\n  - User authentication check with redirect\n  - Clean component composition using all leaderboard components created in Phase 4\n\nFile: src/app/(dashboard)/ranking/page.tsx (272 lines)\nPattern: Follows existing page patterns from desafios and eventos pages\nComponent: Client component with useState/useEffect for interactivity",
+          "updated_at": "2026-01-07T18:56:44.469917+00:00"
+        },
+        {
+          "id": "5.2",
+          "title": "Add leaderboard to navigation",
+          "description": "Add the ranking page to the sidebar navigation with appropriate icon.",
+          "status": "completed",
+          "files": [
+            "src/lib/constants.ts",
+            "src/components/layout/Sidebar.tsx"
+          ],
+          "acceptance_criteria": [
+            "Add 'Ranking' item to MAIN_NAV",
+            "Add Trophy icon to sidebar icons",
+            "Correct href to /ranking"
+          ],
+          "notes": "Successfully added ranking page to sidebar navigation:\n- Added 'Ranking' item to MAIN_NAV in src/lib/constants.ts with href '/ranking', label 'Ranking', and icon 'Trophy'\n- Added Trophy icon SVG to the icons object in src/components/layout/Sidebar.tsx\n- Positioned between 'Eventos' and 'Meus Premios' for logical navigation flow\n- Trophy icon uses a badge/medal design that matches the leaderboard theme\n- All acceptance criteria met:\n  \u2705 Add 'Ranking' item to MAIN_NAV\n  \u2705 Add Trophy icon to sidebar icons\n  \u2705 Correct href to /ranking\n\nFiles modified:\n- src/lib/constants.ts (added Ranking to MAIN_NAV array)\n- src/components/layout/Sidebar.tsx (added Trophy icon SVG)\n\nCommit: 8fbc8b9",
+          "updated_at": "2026-01-07T18:58:13.983244+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-6",
+      "name": "Dashboard Integration",
+      "description": "Integrate leaderboard preview into the main dashboard",
+      "subtasks": [
+        {
+          "id": "6.1",
+          "title": "Create LeaderboardPreview widget",
+          "description": "Create a compact leaderboard widget for the dashboard showing top 5 users with link to full ranking.",
+          "status": "completed",
+          "files": [
+            "src/components/leaderboard/LeaderboardPreview.tsx"
+          ],
+          "acceptance_criteria": [
+            "Show top 5 users",
+            "Compact design",
+            "Link to full ranking page",
+            "Show user's rank if not in top 5"
+          ],
+          "notes": "Created comprehensive LeaderboardPreview widget component with all acceptance criteria met:\n\n\u2705 Show top 5 users - Fetches top 5 from combined leaderboard using fetchCombinedLeaderboard('all_time', 5)\n\u2705 Compact design - Uses LeaderboardEntry.Compact component for clean, space-efficient display\n\u2705 Link to full ranking page - Multiple links to /ranking page with \"Ver ranking completo\" button\n\u2705 Show user's rank if not in top 5 - Displays UserRankCard.Compact when user is authenticated and not in top 5\n\nComponent features:\n- Client component with 'use client' directive\n- Loading skeleton state (LeaderboardPreviewSkeleton) with animated placeholders\n- Empty state when no participants exist\n- Error handling with user-friendly error messages\n- Real-time data fetching using server actions\n- Shows header with trophy icon and \"Top Rankings\" title\n- Displays top 5 participants in compact format\n- Separator with \"Sua posi\u00e7\u00e3o\" label before user's rank card\n- Info message about real-time updates\n- Responsive design following existing patterns\n- Portuguese comments and labels following project guidelines\n- TypeScript typed with LeaderboardEntryType and UserRanking interfaces\n- Uses existing UI components (Card, Button) for consistency\n\nFile created: src/components/leaderboard/LeaderboardPreview.tsx (250 lines)\nExported in: src/components/leaderboard/index.ts\n\nPattern compliance:\n- Follows existing patterns from LeaderboardList and UserRankCard components\n- Uses server actions for data fetching\n- Proper error handling with try/catch\n- Loading/error/empty states implementation\n- Uses .Compact variants of existing components for consistent compact design",
+          "updated_at": "2026-01-08T17:17:40.193309+00:00"
+        },
+        {
+          "id": "6.2",
+          "title": "Add leaderboard preview to dashboard",
+          "description": "Integrate the LeaderboardPreview widget into the main dashboard page.",
+          "status": "completed",
+          "files": [
+            "src/app/(dashboard)/dashboard/page.tsx"
+          ],
+          "acceptance_criteria": [
+            "Display leaderboard widget on dashboard",
+            "Proper positioning in layout",
+            "Loading state handling"
+          ],
+          "notes": "Successfully integrated LeaderboardPreview widget into main dashboard page:\n\u2705 Display leaderboard widget on dashboard - Added LeaderboardPreview component between Quick Actions and Recent Posts sections\n\u2705 Proper positioning in layout - Placed in logical flow after Quick Actions card at line 154\n\u2705 Loading state handling - Component has built-in loading skeleton, error state, and empty state handling\n\nIntegration details:\n- Imported LeaderboardPreview from '@/components/leaderboard' \n- Passed user.id as currentUserId prop for personalized ranking display\n- Widget automatically shows:\n  - Top 5 users from combined leaderboard (all-time)\n  - User's rank if not in top 5\n  - Link to full ranking page\n  - Loading/error/empty states\n- Follows existing dashboard patterns with Card component structure\n- Responsive design compatible with mobile/desktop layouts\n\nFile modified: src/app/(dashboard)/dashboard/page.tsx (added import and component at lines 8 and 154)",
+          "updated_at": "2026-01-08T17:19:39.435453+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-7",
+      "name": "Testing & Polish",
+      "description": "Final testing, bug fixes, and polish",
+      "subtasks": [
+        {
+          "id": "7.1",
+          "title": "Test all leaderboard functionality",
+          "description": "Comprehensive testing of all leaderboard features including edge cases.",
+          "status": "pending",
+          "files": [],
+          "acceptance_criteria": [
+            "Test with no data (empty state)",
+            "Test with large datasets",
+            "Test time period filters",
+            "Test user rank calculation",
+            "Test tier badge display",
+            "Test responsive design"
+          ]
+        },
+        {
+          "id": "7.2",
+          "title": "Update build progress and documentation",
+          "description": "Update build-progress.txt with completion status and any notes for future reference.",
+          "status": "pending",
+          "files": [
+            ".auto-claude/specs/032-public-leaderboards-rankings/build-progress.txt"
+          ],
+          "acceptance_criteria": [
+            "Document all implemented features",
+            "Note any known limitations",
+            "Provide SQL migration instructions"
+          ]
+        }
+      ]
+    }
+  ],
+  "qa_signoff": {
+    "status": "pending",
+    "issues": "",
+    "tests_passed": ""
+  },
+  "dependencies": {
+    "external": [],
+    "internal": [
+      "src/lib/supabase/server.ts (createClient)",
+      "src/lib/supabase/types.ts (existing types)",
+      "src/components/ui/* (existing UI components)",
+      "src/contexts/AuthContext.tsx (user context)"
+    ]
+  },
+  "notes": [
+    "Rankings should update in real-time after challenge completion or event check-in",
+    "Tier thresholds: Bronze (0-99), Silver (100-499), Gold (500-999), Diamond (1000+)",
+    "Time periods: Weekly (last 7 days), Monthly (last 30 days), All-time",
+    "User must be authenticated to see their own rank, but leaderboard is public"
+  ],
+  "last_updated": "2026-01-08T17:19:39.435462+00:00"
+}

@@ -74,6 +74,7 @@ export const MAIN_NAV = [
   { href: '/', label: 'Inicio', icon: 'Home' },
   { href: '/desafios', label: 'Desafios', icon: 'Target' },
   { href: '/eventos', label: 'Eventos', icon: 'Calendar' },
+  { href: '/ranking', label: 'Ranking', icon: 'Trophy' },
   { href: '/premios', label: 'Meus Premios', icon: 'Gift' },
   { href: '/perfil', label: 'Perfil', icon: 'User' },
 ] as const;
