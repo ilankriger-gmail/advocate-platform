@@ -1,25 +1,25 @@
 {
   "active": true,
-  "spec": "032-public-leaderboards-rankings",
+  "spec": "017-criar-skeletonevent-e-skeletonchallenge-components",
   "state": "building",
   "subtasks": {
-    "completed": 15,
-    "total": 18,
+    "completed": 1,
+    "total": 8,
     "in_progress": 1,
     "failed": 0
   },
   "phase": {
-    "current": "Dashboard Integration",
+    "current": "Criar SkeletonEventCard",
     "id": null,
-    "total": 2
+    "total": 3
   },
   "workers": {
     "active": 0,
     "max": 1
   },
   "session": {
-    "number": 2,
-    "started_at": "2026-01-08T14:13:54.975341"
+    "number": 3,
+    "started_at": "2026-01-08T20:53:22.740713"
   },
-  "last_update": "2026-01-08T14:18:29.048816"
+  "last_update": "2026-01-08T20:56:53.387019"
 }
