@@ -1,8 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import DOMPurify from 'isomorphic-dompurify';
-import { Card, Avatar, Badge, Button } from '@/components/ui';
+import { Card, Avatar, Badge, Button, ConfirmModal } from '@/components/ui';
 import { formatRelativeTime } from '@/lib/utils';
 import { POST_STATUS } from '@/lib/constants';
 import { usePosts } from '@/hooks';
@@ -48,6 +49,7 @@ export function PostCard({
   compact = false,
 }: PostCardProps) {
   const { approve, reject, delete: deletePost, isPending } = usePosts();
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const statusConfig = POST_STATUS[post.status];
   const voteScore = (post as unknown as Record<string, unknown>).vote_score as number || 0;
@@ -63,10 +65,13 @@ export function PostCard({
     }
   };
 
-  const handleDelete = async () => {
-    if (confirm('Tem certeza que deseja deletar este post?')) {
-      await deletePost(post.id);
-    }
+  const handleDelete = () => {
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    await deletePost(post.id);
+    setIsDeleteModalOpen(false);
   };
 
   const author = post.author || { id: post.user_id, full_name: 'Usuário', avatar_url: null };
@@ -81,52 +86,67 @@ export function PostCard({
     const textContent = post.content ? stripHtml(post.content) : '';
 
     return (
-      <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-        <Avatar
-          name={author.full_name || 'Usuário'}
-          src={author.avatar_url || undefined}
-          size="sm"
-        />
-        <div className="flex-1 min-w-0">
-          <h4 className="font-medium text-gray-900 truncate">{post.title}</h4>
-          <p className="text-sm text-gray-500 truncate">{textContent}</p>
-          <div className="flex items-center gap-3 mt-1 text-xs text-gray-400">
-            <span>{formatRelativeTime(post.created_at)}</span>
-            {post.status !== 'approved' && (
-              <Badge variant={post.status === 'pending' ? 'warning' : 'error'} size="sm">
-                {statusConfig.label}
-              </Badge>
-            )}
-            <span className="flex items-center gap-1">
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-              </svg>
-              {voteScore}
-            </span>
-            {isOwner && (
-              <>
-                <Link
-                  href={`/perfil/posts/${post.id}/editar`}
-                  className="text-purple-600 hover:text-purple-800"
-                >
-                  Editar
-                </Link>
-                <button
-                  onClick={handleDelete}
-                  disabled={isPending}
-                  className="text-red-500 hover:text-red-700 disabled:opacity-50"
-                >
-                  Excluir
-                </button>
-              </>
-            )}
+      <>
+        <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+          <Avatar
+            name={author.full_name || 'Usuário'}
+            src={author.avatar_url || undefined}
+            size="sm"
+          />
+          <div className="flex-1 min-w-0">
+            <h4 className="font-medium text-gray-900 truncate">{post.title}</h4>
+            <p className="text-sm text-gray-500 truncate">{textContent}</p>
+            <div className="flex items-center gap-3 mt-1 text-xs text-gray-400">
+              <span>{formatRelativeTime(post.created_at)}</span>
+              {post.status !== 'approved' && (
+                <Badge variant={post.status === 'pending' ? 'warning' : 'error'} size="sm">
+                  {statusConfig.label}
+                </Badge>
+              )}
+              <span className="flex items-center gap-1">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                </svg>
+                {voteScore}
+              </span>
+              {isOwner && (
+                <>
+                  <Link
+                    href={`/perfil/posts/${post.id}/editar`}
+                    className="text-purple-600 hover:text-purple-800"
+                  >
+                    Editar
+                  </Link>
+                  <button
+                    onClick={handleDelete}
+                    disabled={isPending}
+                    className="text-red-500 hover:text-red-700 disabled:opacity-50"
+                  >
+                    Excluir
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+
+        {/* Delete Confirmation Modal */}
+        <ConfirmModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          onConfirm={handleConfirmDelete}
+          title="Excluir post"
+          description="Tem certeza que deseja deletar este post? Esta ação não pode ser desfeita."
+          variant="danger"
+          confirmText="Excluir"
+          cancelText="Cancelar"
+        />
+      </>
     );
   }
 
   return (
+    <>
     <Card className="overflow-hidden">
       {/* Header */}
       <div className="p-4 flex items-start justify-between">
@@ -275,5 +295,18 @@ export function PostCard({
         </div>
       )}
     </Card>
+
+    {/* Delete Confirmation Modal */}
+    <ConfirmModal
+      isOpen={isDeleteModalOpen}
+      onClose={() => setIsDeleteModalOpen(false)}
+      onConfirm={handleConfirmDelete}
+      title="Excluir post"
+      description="Tem certeza que deseja deletar este post? Esta ação não pode ser desfeita."
+      variant="danger"
+      confirmText="Excluir"
+      cancelText="Cancelar"
+    />
+  </>
   );
 }
