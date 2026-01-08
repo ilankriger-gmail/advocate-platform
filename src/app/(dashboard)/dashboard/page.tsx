@@ -5,6 +5,7 @@ import { getUserStats, getUserPosts } from '@/lib/supabase/queries';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, Avatar, Badge } from '@/components/ui';
 import { formatRelativeTime } from '@/lib/utils';
+import { LeaderboardPreview } from '@/components/leaderboard';
 
 /**
  * Dashboard principal - exibe estatisticas e acoes rapidas
@@ -148,6 +149,9 @@ export default async function DashboardPage() {
           </Link>
         </div>
       </Card>
+
+      {/* Leaderboard Preview */}
+      <LeaderboardPreview currentUserId={user.id} />
 
       {/* Posts Recentes */}
       {recentPosts.length > 0 && (
