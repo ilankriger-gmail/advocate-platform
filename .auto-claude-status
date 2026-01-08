@@ -2,6 +2,7 @@
   "active": true,
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   "spec": "026-criar-guia-de-troubleshooting-para-erros-comuns",
   "state": "building",
   "subtasks": {
@@ -21,10 +22,18 @@
     "completed": 18,
     "total": 20,
 >>>>>>> auto-claude/030-replace-excessive-any-types-with-proper-typescript
+=======
+  "spec": "027-extract-duplicated-admin-authorization-pattern-int",
+  "state": "building",
+  "subtasks": {
+    "completed": 25,
+    "total": 28,
+>>>>>>> auto-claude/027-extract-duplicated-admin-authorization-pattern-int
     "in_progress": 1,
     "failed": 0
   },
   "phase": {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     "current": "Documenta\u00e7\u00e3o Principal de Troubleshooting",
@@ -40,12 +49,18 @@
     "id": 0,
     "total": 0
 >>>>>>> auto-claude/030-replace-excessive-any-types-with-proper-typescript
+=======
+    "current": "Testing and verification",
+    "id": 6,
+    "total": 3
+>>>>>>> auto-claude/027-extract-duplicated-admin-authorization-pattern-int
   },
   "workers": {
     "active": 0,
     "max": 1
   },
   "session": {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     "number": 5,
@@ -64,4 +79,10 @@
   },
   "last_update": "2026-01-07T15:06:05.454012"
 >>>>>>> auto-claude/030-replace-excessive-any-types-with-proper-typescript
+=======
+    "number": 17,
+    "started_at": "2026-01-07T13:57:53.489704"
+  },
+  "last_update": "2026-01-07T15:29:48.820743"
+>>>>>>> auto-claude/027-extract-duplicated-admin-authorization-pattern-int
 }
