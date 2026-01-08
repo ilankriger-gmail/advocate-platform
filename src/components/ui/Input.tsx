@@ -2,11 +2,94 @@
 
 import { forwardRef, type InputHTMLAttributes, type ReactNode } from 'react';
 
+/**
+ * Propriedades do componente Input
+ *
+ * @interface InputProps
+ * @extends {InputHTMLAttributes<HTMLInputElement>}
+ *
+ * @example
+ * // Input básico com label
+ * <Input label="Nome completo" placeholder="Digite seu nome" />
+ *
+ * @example
+ * // Input com mensagem de erro (validação)
+ * <Input
+ *   label="E-mail"
+ *   type="email"
+ *   error="E-mail inválido"
+ *   value={email}
+ * />
+ *
+ * @example
+ * // Input com texto de ajuda
+ * <Input
+ *   label="Username"
+ *   hint="Apenas letras minúsculas e números"
+ *   placeholder="username123"
+ * />
+ *
+ * @example
+ * // Input com ícone à esquerda (busca)
+ * <Input
+ *   label="Buscar"
+ *   placeholder="Buscar conteúdo..."
+ *   leftIcon={<IconSearch />}
+ * />
+ *
+ * @example
+ * // Input com ícone à direita (senha)
+ * <Input
+ *   label="Senha"
+ *   type={showPassword ? 'text' : 'password'}
+ *   rightIcon={
+ *     <button onClick={togglePassword}>
+ *       {showPassword ? <IconEyeOff /> : <IconEye />}
+ *     </button>
+ *   }
+ * />
+ *
+ * @example
+ * // Input com validação e ícone
+ * <Input
+ *   label="Código de verificação"
+ *   error={codeError}
+ *   leftIcon={<IconLock />}
+ *   maxLength={6}
+ * />
+ */
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+  /**
+   * Texto do label exibido acima do campo de input.
+   * Quando fornecido, cria um elemento <label> acessível associado ao input.
+   */
   label?: string;
+
+  /**
+   * Mensagem de erro exibida abaixo do input.
+   * Quando presente, o input é estilizado com borda vermelha e a mensagem
+   * aparece com um ícone de alerta. Sobrepõe o hint se ambos estiverem presentes.
+   */
   error?: string;
+
+  /**
+   * Texto de ajuda exibido abaixo do input.
+   * Fornece orientações adicionais ao usuário. Ocultado quando há um erro.
+   */
   hint?: string;
+
+  /**
+   * Ícone ou elemento exibido no lado esquerdo dentro do input.
+   * Ajusta automaticamente o padding do texto para acomodar o ícone.
+   * Útil para ícones de busca, e-mail, telefone, etc.
+   */
   leftIcon?: ReactNode;
+
+  /**
+   * Ícone ou elemento exibido no lado direito dentro do input.
+   * Ajusta automaticamente o padding do texto para acomodar o ícone.
+   * Útil para toggle de senha, botões de limpar, ícones de status, etc.
+   */
   rightIcon?: ReactNode;
 }
 

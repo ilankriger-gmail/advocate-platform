@@ -2,16 +2,98 @@
 
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
 
-// Variantes de estilo do botão
+/**
+ * Variantes de estilo disponíveis para o botão
+ *
+ * @typedef {'primary' | 'secondary' | 'outline' | 'ghost' | 'danger'} ButtonVariant
+ *
+ * - `primary`: Botão principal com fundo azul (ações primárias)
+ * - `secondary`: Botão secundário com fundo cinza claro (ações secundárias)
+ * - `outline`: Botão com borda e fundo transparente (ações alternativas)
+ * - `ghost`: Botão sem borda e fundo transparente (ações sutis)
+ * - `danger`: Botão vermelho para ações destrutivas (excluir, cancelar)
+ */
 type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
+
+/**
+ * Tamanhos disponíveis para o botão
+ *
+ * @typedef {'sm' | 'md' | 'lg'} ButtonSize
+ *
+ * - `sm`: Pequeno - altura reduzida, ideal para espaços compactos
+ * - `md`: Médio - tamanho padrão recomendado
+ * - `lg`: Grande - maior destaque, ideal para CTAs principais
+ */
 type ButtonSize = 'sm' | 'md' | 'lg';
 
+/**
+ * Propriedades do componente Button
+ *
+ * @interface ButtonProps
+ * @extends {ButtonHTMLAttributes<HTMLButtonElement>}
+ *
+ * @example
+ * // Botão primário básico
+ * <Button>Salvar</Button>
+ *
+ * @example
+ * // Botão com loading
+ * <Button isLoading={isSaving}>Salvando...</Button>
+ *
+ * @example
+ * // Botão com ícones
+ * <Button leftIcon={<IconPlus />} variant="secondary">
+ *   Adicionar Item
+ * </Button>
+ *
+ * @example
+ * // Botão de largura completa
+ * <Button fullWidth variant="primary">
+ *   Confirmar
+ * </Button>
+ *
+ * @example
+ * // Botão danger com ícone à direita
+ * <Button variant="danger" rightIcon={<IconTrash />}>
+ *   Excluir
+ * </Button>
+ */
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  /**
+   * Variante visual do botão
+   * @default 'primary'
+   */
   variant?: ButtonVariant;
+
+  /**
+   * Tamanho do botão
+   * @default 'md'
+   */
   size?: ButtonSize;
+
+  /**
+   * Indica se o botão está em estado de carregamento.
+   * Quando true, exibe um spinner e desabilita o botão.
+   * @default false
+   */
   isLoading?: boolean;
+
+  /**
+   * Ícone exibido à esquerda do texto do botão.
+   * Substituído pelo spinner quando isLoading=true.
+   */
   leftIcon?: ReactNode;
+
+  /**
+   * Ícone exibido à direita do texto do botão.
+   * Ocultado quando isLoading=true.
+   */
   rightIcon?: ReactNode;
+
+  /**
+   * Se true, o botão ocupa toda a largura disponível do container pai.
+   * @default false
+   */
   fullWidth?: boolean;
 }
 

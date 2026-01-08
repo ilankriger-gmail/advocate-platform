@@ -1,14 +1,105 @@
 import { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
+/**
+ * Tipos de ícones pré-definidos para estados vazios
+ *
+ * @typedef {'posts' | 'campaigns' | 'rewards' | 'users' | 'search'} EmptyStateIconType
+ *
+ * - `posts`: Ícone de posts/conteúdo para listas de publicações vazias
+ * - `campaigns`: Ícone de megafone para listas de campanhas vazias
+ * - `rewards`: Ícone de presente/prêmio para listas de recompensas vazias
+ * - `users`: Ícone de grupo de pessoas para listas de usuários vazias
+ * - `search`: Ícone de lupa para resultados de busca vazios
+ */
+export type EmptyStateIconType = 'posts' | 'campaigns' | 'rewards' | 'users' | 'search';
+
+/**
+ * Propriedades do componente EmptyState
+ *
+ * @interface EmptyStateProps
+ *
+ * @example
+ * // EmptyState básico sem ícone
+ * <EmptyState
+ *   title="Nenhum item encontrado"
+ *   description="Não há itens para exibir no momento."
+ * />
+ *
+ * @example
+ * // EmptyState com ícone pré-definido
+ * <EmptyState
+ *   icon={<EmptyStateIcon type="posts" />}
+ *   title="Nenhum post ainda"
+ *   description="Comece criando seu primeiro post para aparecer aqui."
+ * />
+ *
+ * @example
+ * // EmptyState com ícone customizado
+ * <EmptyState
+ *   icon={<FolderIcon className="w-12 h-12" />}
+ *   title="Pasta vazia"
+ *   description="Esta pasta não contém nenhum arquivo."
+ * />
+ *
+ * @example
+ * // EmptyState com ação (botão)
+ * <EmptyState
+ *   icon={<EmptyStateIcon type="campaigns" />}
+ *   title="Nenhuma campanha ativa"
+ *   description="Crie sua primeira campanha para começar a engajar seus advocates."
+ *   action={
+ *     <Button variant="primary">
+ *       Criar campanha
+ *     </Button>
+ *   }
+ * />
+ *
+ * @example
+ * // EmptyState de busca sem resultados
+ * <EmptyState
+ *   icon={<EmptyStateIcon type="search" />}
+ *   title="Nenhum resultado encontrado"
+ *   description="Tente usar palavras-chave diferentes ou verifique a ortografia."
+ *   className="py-20"
+ * />
+ */
 export interface EmptyStateProps {
+  /**
+   * Ícone exibido no topo do estado vazio (use EmptyStateIcon para ícones pré-definidos)
+   */
   icon?: ReactNode;
+
+  /**
+   * Título principal do estado vazio
+   */
   title: string;
+
+  /**
+   * Descrição adicional explicando o estado vazio ou sugerindo próximos passos
+   */
   description?: string;
+
+  /**
+   * Elemento de ação (geralmente um botão) para resolver o estado vazio
+   */
   action?: ReactNode;
+
+  /**
+   * Classes CSS adicionais para customização
+   */
   className?: string;
 }
 
+/**
+ * Componente para exibir estados vazios com mensagem, ícone opcional e ação
+ *
+ * Usado quando listas, tabelas ou seções não possuem conteúdo para exibir.
+ * Fornece feedback visual claro ao usuário e opcionalmente sugere uma ação.
+ *
+ * @param {EmptyStateProps} props - Propriedades do componente
+ * @returns {JSX.Element} Componente EmptyState renderizado
+ */
 export function EmptyState({
   icon,
   title,
@@ -37,8 +128,56 @@ export function EmptyState({
   );
 }
 
-// Ícones pré-definidos para estados vazios comuns
-export function EmptyStateIcon({ type }: { type: 'posts' | 'campaigns' | 'rewards' | 'users' | 'search' }) {
+/**
+ * Propriedades do componente EmptyStateIcon
+ *
+ * @interface EmptyStateIconProps
+ *
+ * @example
+ * // Ícone de posts
+ * <EmptyStateIcon type="posts" />
+ *
+ * @example
+ * // Ícone de campanhas
+ * <EmptyStateIcon type="campaigns" />
+ *
+ * @example
+ * // Ícone de recompensas
+ * <EmptyStateIcon type="rewards" />
+ *
+ * @example
+ * // Ícone de usuários
+ * <EmptyStateIcon type="users" />
+ *
+ * @example
+ * // Ícone de busca
+ * <EmptyStateIcon type="search" />
+ *
+ * @example
+ * // Uso completo com EmptyState
+ * <EmptyState
+ *   icon={<EmptyStateIcon type="rewards" />}
+ *   title="Nenhuma recompensa disponível"
+ *   description="Adicione recompensas para incentivar seus advocates."
+ * />
+ */
+export interface EmptyStateIconProps {
+  /**
+   * Tipo de ícone pré-definido a ser exibido
+   */
+  type: EmptyStateIconType;
+}
+
+/**
+ * Componente que fornece ícones pré-definidos para estados vazios comuns
+ *
+ * Fornece ícones SVG otimizados e consistentes para diferentes tipos de
+ * estados vazios na aplicação (posts, campanhas, recompensas, usuários, busca).
+ *
+ * @param {EmptyStateIconProps} props - Propriedades do componente
+ * @returns {JSX.Element} Ícone SVG renderizado
+ */
+export function EmptyStateIcon({ type }: EmptyStateIconProps) {
   const icons = {
     posts: (
       <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">

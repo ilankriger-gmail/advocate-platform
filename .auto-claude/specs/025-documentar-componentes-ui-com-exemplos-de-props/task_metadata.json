@@ -1,0 +1,8 @@
+{
+  "sourceType": "ideation",
+  "ideationType": "documentation_gaps",
+  "ideaId": "doc-004",
+  "rationale": "A biblioteca de componentes e usada em toda a aplicacao. Documentacao clara de props acelera o desenvolvimento e garante uso consistente. Componentes como Button tem 6+ props (variant, size, isLoading, icons) que precisam ser explicadas.",
+  "category": "documentation",
+  "priority": "medium"
+}

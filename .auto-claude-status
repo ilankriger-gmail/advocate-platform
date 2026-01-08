@@ -1,25 +1,25 @@
 {
   "active": true,
-  "spec": "031-split-large-action-files-into-domain-specific-modu",
-  "state": "complete",
+  "spec": "025-documentar-componentes-ui-com-exemplos-de-props",
+  "state": "building",
   "subtasks": {
-    "completed": 14,
-    "total": 14,
-    "in_progress": 0,
+    "completed": 3,
+    "total": 13,
+    "in_progress": 1,
     "failed": 0
   },
   "phase": {
-    "current": "Atualização do index e validação",
+    "current": "Componentes de Formul\u00e1rio B\u00e1sicos",
     "id": null,
-    "total": 3
+    "total": 4
   },
   "workers": {
     "active": 0,
     "max": 1
   },
   "session": {
-    "number": 1,
-    "started_at": "2026-01-07T13:57:45.172489"
+    "number": 5,
+    "started_at": "2026-01-07T11:30:35.407671"
   },
-  "last_update": "2026-01-07T13:59:27.962771"
+  "last_update": "2026-01-07T11:40:21.460126"
 }

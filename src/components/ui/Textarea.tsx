@@ -3,9 +3,69 @@
 import { forwardRef, TextareaHTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
 
+/**
+ * Propriedades do componente Textarea
+ *
+ * @interface TextareaProps
+ * @extends {TextareaHTMLAttributes<HTMLTextAreaElement>}
+ *
+ * @example
+ * // Textarea básico com label
+ * <Textarea label="Descrição" placeholder="Digite sua descrição..." />
+ *
+ * @example
+ * // Textarea com mensagem de erro (validação)
+ * <Textarea
+ *   label="Comentário"
+ *   error="O comentário deve ter pelo menos 10 caracteres"
+ *   value={comment}
+ * />
+ *
+ * @example
+ * // Textarea com texto de ajuda
+ * <Textarea
+ *   label="Biografia"
+ *   hint="Conte um pouco sobre você (máximo 500 caracteres)"
+ *   placeholder="Digite sua biografia..."
+ *   maxLength={500}
+ * />
+ *
+ * @example
+ * // Textarea com número de linhas customizado
+ * <Textarea
+ *   label="Observações"
+ *   rows={5}
+ *   placeholder="Adicione suas observações aqui..."
+ * />
+ *
+ * @example
+ * // Textarea com validação e dica
+ * <Textarea
+ *   label="Feedback"
+ *   error={feedbackError}
+ *   hint={!feedbackError ? "Seu feedback é importante para nós" : undefined}
+ *   value={feedback}
+ *   onChange={handleFeedbackChange}
+ * />
+ */
 export interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
+  /**
+   * Texto do label exibido acima do campo de textarea.
+   * Quando fornecido, cria um elemento <label> acessível associado ao textarea.
+   */
   label?: string;
+
+  /**
+   * Mensagem de erro exibida abaixo do textarea.
+   * Quando presente, o textarea é estilizado com borda vermelha e a mensagem
+   * aparece em vermelho. Sobrepõe o hint se ambos estiverem presentes.
+   */
   error?: string;
+
+  /**
+   * Texto de ajuda exibido abaixo do textarea.
+   * Fornece orientações adicionais ao usuário. Ocultado quando há um erro.
+   */
   hint?: string;
 }
 
