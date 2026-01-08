@@ -29,7 +29,7 @@ export default async function ObrigadoPage() {
           Obrigado!
         </h1>
         <p className="text-lg text-gray-600 mb-2">
-          Sua avaliacao foi enviada com sucesso.
+          Seu cadastro foi enviado com sucesso.
         </p>
         <p className="text-gray-500 mb-8">
           Nossa equipe ira analisar sua solicitacao e em breve entraremos em contato
