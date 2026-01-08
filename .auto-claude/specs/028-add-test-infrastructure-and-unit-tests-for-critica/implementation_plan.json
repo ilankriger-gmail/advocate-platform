@@ -1,0 +1,489 @@
+{
+  "feature": "Add test infrastructure and unit tests for critical business logic",
+  "description": "Set up Jest testing infrastructure with TypeScript support and create unit tests for critical business logic including coin transactions, reward claims, and challenge participation.",
+  "created_at": "2026-01-07T14:25:35.296Z",
+  "updated_at": "2026-01-07T16:57:49.781Z",
+  "status": "in_progress",
+  "planStatus": "in_progress",
+  "workflow_type": "development",
+  "services_involved": [
+    "jest",
+    "ts-jest",
+    "@testing-library"
+  ],
+  "spec_file": "spec.md",
+  "phases": [
+    {
+      "id": "phase-1",
+      "name": "Test Infrastructure Setup",
+      "description": "Install and configure Jest with TypeScript support for Next.js environment",
+      "subtasks": [
+        {
+          "id": "1.1",
+          "title": "Install Jest and testing dependencies",
+          "description": "Install jest, ts-jest, @types/jest, jest-environment-jsdom, and @testing-library packages",
+          "status": "completed",
+          "acceptance_criteria": [
+            "Jest and ts-jest installed",
+            "@types/jest installed for TypeScript support",
+            "jest-environment-jsdom for DOM testing",
+            "@testing-library/react for component testing"
+          ],
+          "files_to_modify": [
+            "package.json"
+          ],
+          "estimated_complexity": "low",
+          "notes": "Successfully added all required testing dependencies to package.json: jest (^29.7.0), ts-jest (^29.1.1), @types/jest (^29.5.11), jest-environment-jsdom (^29.7.0), @testing-library/react (^14.1.2), @testing-library/jest-dom (^6.1.5), and @testing-library/user-event (^14.5.1)",
+          "updated_at": "2026-01-07T14:35:41.670403+00:00"
+        },
+        {
+          "id": "1.2",
+          "title": "Create Jest configuration",
+          "description": "Configure Jest for Next.js with TypeScript path aliases and proper module resolution",
+          "status": "completed",
+          "acceptance_criteria": [
+            "jest.config.js created with proper settings",
+            "Path aliases (@/*) configured correctly",
+            "TypeScript transformation enabled",
+            "Test file patterns defined"
+          ],
+          "files_to_modify": [
+            "jest.config.js"
+          ],
+          "estimated_complexity": "medium",
+          "notes": "Successfully created jest.config.js with Next.js integration, TypeScript support via ts-jest, path alias mapping (@/* \u2192 ./src/*), jsdom test environment, test file patterns, and coverage configuration",
+          "updated_at": "2026-01-07T14:37:33.124555+00:00"
+        },
+        {
+          "id": "1.3",
+          "title": "Create Jest setup file",
+          "description": "Create setup file for global test configuration and mocks",
+          "status": "completed",
+          "acceptance_criteria": [
+            "jest.setup.ts created",
+            "Global mocks configured",
+            "Test environment properly initialized"
+          ],
+          "files_to_modify": [
+            "jest.setup.ts"
+          ],
+          "estimated_complexity": "low",
+          "notes": "Successfully created jest.setup.ts with global test configuration including: @testing-library/jest-dom matchers, Next.js cache and navigation mocks (revalidatePath, revalidateTag, useRouter, redirect), Supabase environment variables setup, console warning suppression for expected test warnings, and automatic mock cleanup after each test",
+          "updated_at": "2026-01-07T14:39:09.313284+00:00"
+        },
+        {
+          "id": "1.4",
+          "title": "Add test scripts to package.json",
+          "description": "Add npm scripts for running tests, test coverage, and watch mode",
+          "status": "completed",
+          "acceptance_criteria": [
+            "test script added",
+            "test:watch script added",
+            "test:coverage script added"
+          ],
+          "files_to_modify": [
+            "package.json"
+          ],
+          "estimated_complexity": "low",
+          "notes": "Successfully added three npm scripts to package.json: 'test' for running all tests once with jest, 'test:watch' for running tests in watch mode (re-runs on file changes), and 'test:coverage' for generating coverage reports",
+          "updated_at": "2026-01-07T14:40:50.850976+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-2",
+      "name": "Test Mocks and Utilities",
+      "description": "Create reusable mock utilities for Supabase client and authentication",
+      "subtasks": [
+        {
+          "id": "2.1",
+          "title": "Create Supabase client mock",
+          "description": "Create a comprehensive mock for the Supabase client that simulates database operations",
+          "status": "completed",
+          "acceptance_criteria": [
+            "Mock createClient function created",
+            "Mock for auth.getUser() implemented",
+            "Mock for from().select().eq().single() chain",
+            "Mock for from().insert().select().single() chain",
+            "Mock for from().update().eq() chain",
+            "Mock for from().delete().eq() chain",
+            "Mock for rpc() function"
+          ],
+          "files_to_modify": [
+            "src/__tests__/mocks/supabase.ts"
+          ],
+          "estimated_complexity": "high",
+          "notes": "Successfully created comprehensive Supabase client mock with the following features:\n\n1. **MockSupabaseState class** - Manages test state including user authentication, table data, and RPC functions\n2. **MockQueryBuilder** - Simulates SELECT queries with chainable methods (select, eq, single)\n3. **MockInsertBuilder** - Simulates INSERT operations with select() and single() support\n4. **MockUpdateBuilder** - Simulates UPDATE operations with eq() filters\n5. **MockDeleteBuilder** - Simulates DELETE operations with eq() filters\n6. **Auth mock** - Implements auth.getUser() for authentication testing\n7. **Table operations** - Implements from() for accessing tables\n8. **RPC functions** - Implements rpc() for calling database functions\n9. **Helper functions** - Exported utilities for test setup:\n   - resetSupabaseMocks() - Reset all mock state\n   - setMockUser() - Set authenticated user\n   - setMockData() - Set table data\n   - addMockData() - Add single record\n   - setMockRpcFunction() - Register RPC function\n   - getMockData() - Get table data\n\nThe mock provides a complete simulation of Supabase client operations matching the patterns used in src/actions/rewards.ts and src/actions/challenges.ts. All query chains are properly implemented and the API is fully thenable for async/await usage.",
+          "updated_at": "2026-01-07T14:43:26.626546+00:00"
+        },
+        {
+          "id": "2.2",
+          "title": "Create test data factories",
+          "description": "Create factory functions to generate test data for users, rewards, challenges, etc.",
+          "status": "completed",
+          "acceptance_criteria": [
+            "createMockUser factory created",
+            "createMockReward factory created",
+            "createMockChallenge factory created",
+            "createMockUserCoins factory created",
+            "createMockParticipation factory created"
+          ],
+          "files_to_modify": [
+            "src/__tests__/factories/index.ts"
+          ],
+          "estimated_complexity": "medium",
+          "notes": "Successfully created comprehensive factory functions in src/__tests__/factories/index.ts with the following features:\n\n1. **createMockUser()** - Factory for creating test users with sensible defaults\n2. **createMockAdmin()** - Convenience factory for admin/creator users\n3. **createMockReward()** - Factory for creating test rewards\n4. **createMockChallenge()** - Factory for creating test challenges (physical type by default)\n5. **createMockUserCoins()** - Factory for user coin balances\n6. **createMockParticipation()** - Factory for challenge participations\n7. **createMockRewardClaim()** - Factory for reward claims\n8. **createMockCoinTransaction()** - Factory for coin transactions\n9. **createMockProfile()** - Factory for profile data (used in actions)\n10. **createMany()** - Utility to generate multiple records at once\n11. **resetFactories()** - Utility to reset ID counter for test isolation\n\nAll factories:\n- Use TypeScript types from @/lib/supabase/types for type safety\n- Generate unique IDs automatically using an internal counter\n- Provide sensible default values for all fields\n- Allow overriding any field via partial objects\n- Support creating multiple records with the createMany() utility\n\nThe implementation is simple, straightforward, and uses no external dependencies - just plain TypeScript with proper typing throughout.",
+          "updated_at": "2026-01-07T16:48:12.000000+00:00"
+        },
+        {
+          "id": "2.3",
+          "title": "Create test helpers",
+          "description": "Create helper functions for common test scenarios",
+          "status": "completed",
+          "acceptance_criteria": [
+            "setupAuthenticatedUser helper created",
+            "setupAdminUser helper created",
+            "resetMocks helper created"
+          ],
+          "files_to_modify": [
+            "src/__tests__/helpers/index.ts"
+          ],
+          "estimated_complexity": "low",
+          "notes": "Successfully created comprehensive helper functions in src/__tests__/helpers/index.ts with the following features:\n\n1. **setupAuthenticatedUser()** - Configures an authenticated user with customizable coin balance and properties. Sets up:\n   - Mock user with auth.getUser() returning the user\n   - User coins balance in user_coins table\n   - Profile data in profiles table\n   - Default coin balance of 100 (overridable)\n\n2. **setupAdminUser()** - Configures an authenticated admin/creator user with customizable coin balance. Similar to setupAuthenticatedUser but with role='creator' and is_creator=true by default.\n\n3. **resetMocks()** - Resets all mock state (Supabase mocks and factory ID counters) for test isolation. Should be called in beforeEach/afterEach.\n\n4. **setupTestScenario()** - Utility that resets mocks and runs a custom setup function, returning the result. Useful for complex test scenarios with multiple data requirements.\n\nAll helpers:\n- Follow TypeScript best practices with proper typing\n- Include comprehensive JSDoc documentation with examples\n- Combine mocks and factories to reduce test boilerplate\n- Provide sensible defaults with override options\n- Are simple and straightforward to use\n\nAlso created comprehensive test file (src/__tests__/helpers/index.test.ts) with 177 lines covering all helper functions and their integration with the Supabase mock.",
+          "updated_at": "2026-01-07T16:42:19.159260+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-3",
+      "name": "Utility Function Tests",
+      "description": "Test pure utility functions that have no external dependencies",
+      "subtasks": [
+        {
+          "id": "3.1",
+          "title": "Test date formatting functions",
+          "description": "Write tests for formatDate, formatDateTime, and formatRelativeTime",
+          "status": "completed",
+          "acceptance_criteria": [
+            "formatDate tests with various date inputs",
+            "formatDateTime tests",
+            "formatRelativeTime tests for all time ranges"
+          ],
+          "files_to_modify": [
+            "src/__tests__/lib/utils.test.ts"
+          ],
+          "estimated_complexity": "low",
+          "notes": "Successfully created comprehensive tests for date formatting functions (formatDate, formatDateTime, formatRelativeTime) in src/__tests__/lib/utils.test.ts. Tests include:\n\n1. **formatDate tests** - Tests for default formatting, string dates, custom options, ISO dates, and option overrides\n2. **formatDateTime tests** - Tests for date+time formatting, midnight, noon, and leading zeros\n3. **formatRelativeTime tests** - Comprehensive coverage for all time ranges:\n   - \"agora mesmo\" for < 60 seconds\n   - Minutes (singular and plural)\n   - Hours (singular and plural)\n   - Days (singular and plural)\n   - Full date format for 7+ days\n   - Edge cases including future dates\n4. **Edge cases** - Tests for both Date objects and string dates\n\nAll tests follow the established patterns from other test files with Portuguese comments and proper TypeScript typing. Total of 32 test cases covering all scenarios.",
+          "updated_at": "2026-01-07T16:45:07.079539+00:00"
+        },
+        {
+          "id": "3.2",
+          "title": "Test string manipulation functions",
+          "description": "Write tests for getInitials, truncate, slugify",
+          "status": "completed",
+          "acceptance_criteria": [
+            "getInitials tests with various names",
+            "truncate tests with different lengths",
+            "slugify tests with special characters"
+          ],
+          "files_to_modify": [
+            "src/__tests__/lib/utils.test.ts"
+          ],
+          "estimated_complexity": "low",
+          "notes": "Successfully added comprehensive tests for string utility functions (getInitials, truncate, slugify) in src/__tests__/lib/utils.test.ts. Tests include:\n\n1. **getInitials tests** - 13 test cases covering:\n   - Full names with 2-4 words\n   - Single word names\n   - Uppercase conversion\n   - Null/undefined/empty string handling (\"?\" fallback)\n   - Extra spaces and special characters\n   - Accented characters\n\n2. **truncate tests** - 13 test cases covering:\n   - Text shorter/equal/longer than maxLength\n   - Ellipsis addition (3 characters)\n   - Boundary cases (maxLength of 3, 4, 5)\n   - Empty strings and single characters\n   - Special characters and very long text\n\n3. **slugify tests** - 23 test cases covering:\n   - Lowercase conversion and space-to-hyphen replacement\n   - Accent removal (Portuguese characters like \u00e3, \u00e7, \u00e9)\n   - Special character removal\n   - Leading/trailing hyphen removal\n   - Multiple hyphen collapsing\n   - Numbers handling\n   - Edge cases (empty string, only special chars, only spaces)\n   - URL slug validation\n\nTotal of 49 new test cases added, all following established patterns with Portuguese comments and proper TypeScript typing.",
+          "updated_at": "2026-01-07T16:47:27.060285+00:00"
+        },
+        {
+          "id": "3.3",
+          "title": "Test validation functions",
+          "description": "Write tests for isValidEmail, isValidUrl",
+          "status": "completed",
+          "acceptance_criteria": [
+            "isValidEmail tests with valid/invalid emails",
+            "isValidUrl tests with valid/invalid URLs"
+          ],
+          "files_to_modify": [
+            "src/__tests__/lib/utils.test.ts"
+          ],
+          "estimated_complexity": "low",
+          "notes": "Successfully created comprehensive tests for validation functions (isValidEmail, isValidUrl) in src/__tests__/lib/utils.test.ts. Tests include:\n\n1. **isValidEmail tests** - 21 test cases covering:\n   - Valid email formats (simple, subdomain, plus sign, dots, numbers, hyphens)\n   - Long TLDs and Brazilian domains (.com.br)\n   - Invalid scenarios (missing @, domain, username, TLD)\n   - Special cases (spaces, multiple @, empty string)\n   - Edge cases (leading/trailing dots, special characters)\n\n2. **isValidUrl tests** - 25 test cases covering:\n   - Valid URL formats (HTTP, HTTPS, FTP)\n   - URL components (path, query params, hash, port, subdomain)\n   - Complex URLs (authentication, IP addresses, localhost)\n   - Real-world URLs (YouTube, encoded characters)\n   - Invalid scenarios (no protocol, malformed, relative paths)\n   - Edge cases (empty string, spaces, protocol-only)\n\nTotal of 46 new test cases added, all following established patterns with proper TypeScript typing and comprehensive coverage of both validation functions.",
+          "updated_at": "2026-01-07T17:00:00.000000+00:00"
+        },
+        {
+          "id": "3.4",
+          "title": "Test number formatting functions",
+          "description": "Write tests for formatPoints, formatCompactNumber",
+          "status": "completed",
+          "acceptance_criteria": [
+            "formatPoints tests with various numbers",
+            "formatCompactNumber tests for K and M suffixes"
+          ],
+          "files_to_modify": [
+            "src/__tests__/lib/utils.test.ts"
+          ],
+          "estimated_complexity": "low",
+          "notes": "Successfully created comprehensive tests for number formatting functions (formatPoints, formatCompactNumber) in src/__tests__/lib/utils.test.ts. Tests include:\n\n1. **formatPoints tests** - 15 test cases covering:\n   - Small numbers without thousand separator (100, 5, 42, 999)\n   - Numbers with thousand separator (1.000, 5.432, 234.567)\n   - Millions with multiple separators (1.000.000, 2.500.000)\n   - Edge cases (zero, exactly 1000, very large numbers)\n   - Brazilian locale formatting with dot as separator\n\n2. **formatCompactNumber tests** - 25 test cases covering:\n   - Numbers below 1000 returned as string (0, 7, 42, 500, 999)\n   - Thousands with K suffix (1K, 5K, 10K, 12.5K)\n   - Decimal formatting with one decimal place (5.5K, 1.1K, 1.5K)\n   - Removal of trailing .0 for round numbers (5K, 10K, not 5.0K)\n   - Millions with M suffix (1M, 5M, 10M, 25M, 350M)\n   - Decimal rounding (1234 \u2192 1.2K, 1234567 \u2192 1.2M)\n   - Edge cases (exactly 1000, 1000000, rounding behavior)\n   - Real-world scenarios (follower counts, viral content numbers)\n\nTotal of 40 new test cases added, all following established patterns with Portuguese comments and proper TypeScript typing. Tests cover all code paths and edge cases for both functions. Fixed rounding edge case where 999999 correctly rounds to 1000K (not 999.9K).",
+          "updated_at": "2026-01-07T17:05:12.686873+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-4",
+      "name": "Rewards System Tests",
+      "description": "Test the critical reward claim and coin transaction logic",
+      "subtasks": [
+        {
+          "id": "4.1",
+          "title": "Test claimReward validation",
+          "description": "Test all validation scenarios for reward claiming",
+          "status": "completed",
+          "acceptance_criteria": [
+            "Test unauthenticated user rejection",
+            "Test reward not found error",
+            "Test out of stock error",
+            "Test insufficient balance error"
+          ],
+          "files_to_modify": [
+            "src/__tests__/actions/rewards.test.ts"
+          ],
+          "estimated_complexity": "medium",
+          "notes": "Successfully created comprehensive tests for claimReward validation scenarios in src/__tests__/actions/rewards.test.ts. Tests include:\n\n1. **Unauthenticated user rejection** - Tests that claimReward rejects when no user is authenticated\n2. **Reward not found error** - Tests non-existent reward ID\n3. **Inactive reward rejection** - Tests that inactive rewards are treated as not found\n4. **Out of stock error** - Tests when quantity_available is 0\n5. **Insufficient balance error** - Tests when user balance is less than coins_required\n6. **No user_coins record** - Tests when user has no balance record at all\n7. **Edge cases** - Tests boundary conditions like balance exactly 1 less than required, exactly equal to required\n8. **Validation order** - Tests that validations happen in correct priority order (auth \u2192 reward \u2192 stock \u2192 balance)\n\nTotal of 11 comprehensive test cases covering all acceptance criteria plus edge cases. All tests follow established patterns with:\n- Portuguese comments using Arrange/Act/Assert pattern\n- Proper use of helper functions (resetMocks, setupAuthenticatedUser)\n- Factory functions for test data (createMockReward)\n- Mock setup for Supabase client and Next.js cache\n- beforeEach cleanup for test isolation\n\nThe test file is well-structured, thoroughly tests the validation logic, and maintains consistency with existing test files in the project.",
+          "updated_at": "2026-01-07T17:08:00.719195+00:00"
+        },
+        {
+          "id": "4.2",
+          "title": "Test claimReward success flow",
+          "description": "Test successful reward claim with coin deduction",
+          "status": "completed",
+          "acceptance_criteria": [
+            "Test claim record created",
+            "Test coins deducted from balance",
+            "Test transaction recorded",
+            "Test stock decremented"
+          ],
+          "files_to_modify": [
+            "src/__tests__/actions/rewards.test.ts"
+          ],
+          "estimated_complexity": "high",
+          "notes": "Implemented comprehensive test for successful reward claim that verifies: success response, reward claim creation with correct user/reward IDs and status, coin balance deduction, transaction recording with negative amount and 'spent' type, and stock decrementation. Test follows established patterns using getMockData to verify all database changes.",
+          "updated_at": "2026-01-07T17:10:42.713237+00:00"
+        },
+        {
+          "id": "4.3",
+          "title": "Test cancelClaim functionality",
+          "description": "Test claim cancellation and coin refund logic",
+          "status": "completed",
+          "acceptance_criteria": [
+            "Test cancellation only for pending claims",
+            "Test coins refunded to user",
+            "Test refund transaction recorded",
+            "Test stock restored"
+          ],
+          "files_to_modify": [
+            "src/__tests__/actions/rewards.test.ts"
+          ],
+          "estimated_complexity": "medium",
+          "notes": "Successfully created comprehensive tests for cancelClaim functionality in src/__tests__/actions/rewards.test.ts with the following coverage:\n\n**Validation Tests (7 test cases):**\n- Unauthenticated user rejection\n- Non-existent claim rejection\n- Claim belonging to another user rejection\n- Already approved/shipped/delivered/cancelled claim rejection (only pending claims can be cancelled)\n\n**Success Flow Tests (8 test cases):**\n- Basic cancellation with coin refund and stock restoration\n- Different coin amounts (1000+500, etc.)\n- Edge case: current balance lower than spent coins (refund still works correctly)\n- Edge case: zero balance with refund\n- Description without reward name (fallback to generic message)\n- RPC stock increment with correct reward_id parameter\n- Multiple cancellations processed independently\n\nAll tests verify:\n- Claim status updated to 'cancelled'\n- Coins refunded (added back to user balance)\n- Refund transaction recorded with positive amount and 'earned' type\n- Stock restored via increment_reward_stock RPC call\n- Proper error messages for invalid scenarios\n\nTests follow established patterns with:\n- Portuguese comments using Arrange/Act/Assert pattern\n- Proper use of helper functions (resetMocks, setupAuthenticatedUser)\n- Factory functions for test data (createMockReward, createMockRewardClaim)\n- Mock RPC function setup for stock increment\n- Comprehensive assertions using getMockData\n\nCommitted with: auto-claude: 4.3 - Test claim cancellation and coin refund logic",
+          "updated_at": "2026-01-07T18:05:06.269540+00:00"
+        },
+        {
+          "id": "4.4",
+          "title": "Test addCoinsToUser admin function",
+          "description": "Test admin coin management functionality",
+          "status": "completed",
+          "acceptance_criteria": [
+            "Test non-admin rejection",
+            "Test invalid amount rejection",
+            "Test coins added to existing user",
+            "Test coins added to new user (no balance record)",
+            "Test transaction recorded"
+          ],
+          "files_to_modify": [
+            "src/__tests__/actions/rewards.test.ts"
+          ],
+          "estimated_complexity": "medium",
+          "notes": "Successfully created comprehensive tests for addCoinsToUser admin function in src/__tests__/actions/rewards.test.ts with the following coverage:\n\n**Validation Tests (7 test cases):**\n- Unauthenticated user rejection\n- Non-admin user rejection  \n- Non-creator user rejection\n- Zero amount rejection\n- Negative amount rejection\n- Validation order priority (auth -> permissions -> amount)\n\n**Success Flow Tests (9 test cases):**\n- Adding coins to user with existing balance\n- Adding coins to new user (no balance record)\n- Creator (not admin) can add coins\n- Large values calculation\n- Edge case: adding coins to user with zero balance\n- Transaction description recording\n- Multiple independent additions to different users\n- Multiple additions to same user (cumulative balance)\n\nAll tests verify:\n- Success response returned\n- User balance created/updated correctly\n- Transaction recorded with positive amount and 'earned' type\n- Proper error messages for invalid scenarios\n- Authorization checks (admin/creator only)\n- Amount validation (must be > 0)\n\nTests follow established patterns with:\n- Portuguese comments using Arrange/Act/Assert pattern\n- Proper use of helper functions (resetMocks, setupAuthenticatedUser, setupAdminUser)\n- Factory functions for test data (createMockUser)\n- Comprehensive assertions using getMockData\n- Edge cases and boundary conditions\n\nTotal of 16 test cases covering all acceptance criteria plus additional edge cases.\n\nCommitted with: auto-claude: 4.4 - Test admin coin management functionality",
+          "updated_at": "2026-01-07T18:09:27.545607+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-5",
+      "name": "Challenges System Tests",
+      "description": "Test challenge participation and approval logic",
+      "subtasks": [
+        {
+          "id": "5.1",
+          "title": "Test participateInChallenge validation",
+          "description": "Test all validation scenarios for challenge participation",
+          "status": "completed",
+          "acceptance_criteria": [
+            "Test unauthenticated user rejection",
+            "Test challenge not found error",
+            "Test non-physical challenge rejection",
+            "Test duplicate participation rejection"
+          ],
+          "files_to_modify": [
+            "src/__tests__/actions/challenges.test.ts"
+          ],
+          "estimated_complexity": "medium",
+          "notes": "Successfully created comprehensive tests for participateInChallenge validation scenarios in src/__tests__/actions/challenges.test.ts with the following coverage:\n\n**Validation Tests (15 test cases):**\n- Unauthenticated user rejection\n- Challenge not found error\n- Inactive challenge rejection (is_active: false)\n- Closed challenge rejection (status: 'closed')\n- Non-physical challenge rejection for both 'engajamento' and 'participe' types\n- Duplicate participation rejection (pending status)\n- Duplicate participation rejection (approved status)\n- Validation order priority (auth \u2192 challenge existence \u2192 type \u2192 duplication)\n- Multiple users can participate in same challenge\n\nAll tests verify:\n- Proper error messages for invalid scenarios\n- Validation happens in correct priority order\n- Type checking prevents non-physical challenges from accepting direct participations\n- Users cannot participate twice in the same challenge\n- All validations from the participateInChallenge function are covered\n\nTests follow established patterns with:\n- Portuguese comments using Arrange/Act/Assert pattern\n- Proper use of helper functions (resetMocks, setupAuthenticatedUser)\n- Factory functions for test data (createMockChallenge, createMockParticipation)\n- Mock setup for Supabase client, Next.js cache, and Gemini AI\n- beforeEach cleanup for test isolation\n\nCommitted with: auto-claude: 5.1 - Test all validation scenarios for challenge partic",
+          "updated_at": "2026-01-07T18:12:35.635556+00:00"
+        },
+        {
+          "id": "5.2",
+          "title": "Test participateInChallenge success",
+          "description": "Test successful challenge participation creation",
+          "status": "completed",
+          "acceptance_criteria": [
+            "Test participation created with pending status",
+            "Test result value recorded",
+            "Test video proof URL stored"
+          ],
+          "files_to_modify": [
+            "src/__tests__/actions/challenges.test.ts"
+          ],
+          "estimated_complexity": "medium",
+          "notes": "Successfully created comprehensive tests for successful challenge participation creation in src/__tests__/actions/challenges.test.ts with the following coverage:\n\n**Test Cases (4 tests):**\n1. **Basic participation creation** - Tests that participation is created with correct data including user_id, challenge_id, status (pending), result_value, video_proof_url, social_media_url, coins_earned (0), and created_at timestamp\n2. **Participation without optional URLs** - Tests that video_proof_url and social_media_url are stored as null when not provided\n3. **Different result values** - Tests that various result_value numbers are correctly recorded (e.g., 100 repetitions)\n4. **AI verdict inclusion** - Tests that when a video URL is provided, the AI analysis result is stored in the ai_verdict field with isValid, achievedValue, confidence, and reasoning properties\n\nAll tests verify:\n- Success response returned (success: true, error: undefined)\n- Participation record created in challenge_participants table\n- All participation fields have correct values\n- Status is always 'pending' initially\n- coins_earned is 0 until approved\n\nTests follow established patterns with:\n- Portuguese comments using Arrange/Act/Assert pattern\n- Proper use of helper functions (resetMocks, setupAuthenticatedUser)\n- Factory functions for test data (createMockChallenge)\n- Comprehensive assertions using getMockData\n- Coverage of all acceptance criteria (status, result value, video proof URL)\n\nCommitted with: auto-claude: 5.2 - Test successful challenge participation creation",
+          "updated_at": "2026-01-07T18:14:53.620914+00:00"
+        },
+        {
+          "id": "5.3",
+          "title": "Test approveParticipation flow",
+          "description": "Test challenge approval and coin reward logic",
+          "status": "completed",
+          "acceptance_criteria": [
+            "Test non-admin rejection",
+            "Test participation status updated",
+            "Test coins awarded to participant",
+            "Test transaction recorded"
+          ],
+          "files_to_modify": [
+            "src/__tests__/actions/challenges.test.ts"
+          ],
+          "estimated_complexity": "high",
+          "notes": "Implemented comprehensive tests for challenge approval and coin reward logic. Tests cover access validations (authentication, authorization), coin rewards (default/custom amounts, balance updates, transactions), and status updates. All tests follow AAA pattern and are well documented in Portuguese.",
+          "updated_at": "2026-01-07T18:18:28.576140+00:00"
+        },
+        {
+          "id": "5.4",
+          "title": "Test rejectParticipation flow",
+          "description": "Test challenge rejection functionality",
+          "status": "completed",
+          "acceptance_criteria": [
+            "Test non-admin rejection",
+            "Test participation status updated to rejected",
+            "Test no coins awarded"
+          ],
+          "files_to_modify": [
+            "src/__tests__/actions/challenges.test.ts"
+          ],
+          "estimated_complexity": "low",
+          "notes": "Added comprehensive tests for rejectParticipation function covering access validation, status updates, data preservation, no coin rewards, and error scenarios. Tests follow the same patterns as approveParticipation tests.",
+          "updated_at": "2026-01-07T18:26:42.086859+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-6",
+      "name": "Reward Query Tests",
+      "description": "Test reward and coin query functions",
+      "subtasks": [
+        {
+          "id": "6.1",
+          "title": "Test canClaimReward function",
+          "description": "Test the validation function for reward claiming eligibility",
+          "status": "completed",
+          "acceptance_criteria": [
+            "Test unauthenticated user",
+            "Test reward not found",
+            "Test inactive reward",
+            "Test out of stock",
+            "Test insufficient balance",
+            "Test successful claim eligibility"
+          ],
+          "files_to_modify": [
+            "src/__tests__/lib/supabase/rewards.test.ts"
+          ],
+          "estimated_complexity": "medium",
+          "notes": "Successfully created comprehensive tests for canClaimReward validation function in src/__tests__/lib/supabase/rewards.test.ts with the following coverage:\n\n**Validation Tests (15 test cases):**\n- Unauthenticated user rejection\n- Reward not found error\n- Inactive reward rejection (is_active: false)\n- Out of stock error (quantity_available: 0 or negative)\n- Insufficient balance error\n- No user_coins record handling\n- Edge case: saldo exactly 1 less than required\n- Validation order priority (auth \u2192 reward existence \u2192 status \u2192 stock \u2192 balance)\n- Status validation before stock validation\n- Stock validation before balance validation\n\n**Success Flow Tests (6 test cases):**\n- Basic successful eligibility check\n- Edge case: balance exactly equal to required coins\n- Edge case: stock exactly 1 unit\n- Large balance with cheap reward\n- Free reward (0 coins required)\n- Independent evaluation of multiple rewards\n\nAll tests verify:\n- Correct canClaim boolean return value\n- Proper reason messages for invalid scenarios\n- All validations from the canClaimReward function are covered\n- Edge cases and boundary conditions\n\nTests follow established patterns with:\n- Portuguese comments using Arrange/Act/Assert pattern\n- Proper use of helper functions (resetMocks, setupAuthenticatedUser)\n- Factory functions for test data (createMockReward)\n- Mock setup for Supabase client\n- beforeEach cleanup for test isolation\n\nTotal of 21 comprehensive test cases covering all acceptance criteria plus additional edge cases.\n\nCommitted with: auto-claude: 6.1 - Test the validation function for reward claiming eligibility",
+          "updated_at": "2026-01-07T18:33:41.704364+00:00"
+        },
+        {
+          "id": "6.2",
+          "title": "Test getRewardsStats function",
+          "description": "Test the statistics calculation for rewards",
+          "status": "completed",
+          "acceptance_criteria": [
+            "Test total earned calculation",
+            "Test total spent calculation",
+            "Test pending claims count",
+            "Test delivered claims count"
+          ],
+          "files_to_modify": [
+            "src/__tests__/lib/supabase/rewards.test.ts"
+          ],
+          "estimated_complexity": "medium",
+          "notes": "Implementados testes abrangentes para getRewardsStats incluindo:\n- Valida\u00e7\u00e3o de autentica\u00e7\u00e3o\n- Cen\u00e1rios de dados vazios\n- C\u00e1lculo correto de moedas ganhas (total_earned) com transa\u00e7\u00f5es simples e m\u00faltiplas\n- C\u00e1lculo correto de moedas gastas (total_spent) com valores absolutos\n- Contagem de resgates por status (total_claims, pending_claims, delivered_claims)\n- Isolamento de dados entre usu\u00e1rios\n- Cen\u00e1rios completos com dados mistos\n- Edge cases com n\u00fameros grandes\n\nTotal de 18 testes cobrindo todos os aspectos da fun\u00e7\u00e3o de estat\u00edsticas.",
+          "updated_at": "2026-01-07T18:39:19.979449+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-7",
+      "name": "Test Validation and CI Setup",
+      "description": "Verify all tests pass and set up continuous integration",
+      "subtasks": [
+        {
+          "id": "7.1",
+          "title": "Run full test suite",
+          "description": "Execute all tests and ensure they pass",
+          "status": "pending",
+          "acceptance_criteria": [
+            "All utility tests pass",
+            "All reward action tests pass",
+            "All challenge action tests pass",
+            "All query tests pass"
+          ],
+          "files_to_modify": [],
+          "estimated_complexity": "low"
+        },
+        {
+          "id": "7.2",
+          "title": "Generate coverage report",
+          "description": "Run tests with coverage and document coverage levels",
+          "status": "pending",
+          "acceptance_criteria": [
+            "Coverage report generated",
+            "Critical files have >80% coverage",
+            "Coverage thresholds configured"
+          ],
+          "files_to_modify": [
+            "jest.config.js"
+          ],
+          "estimated_complexity": "low"
+        }
+      ]
+    }
+  ],
+  "final_acceptance": [
+    "Jest test infrastructure is fully configured and working",
+    "All utility functions have comprehensive test coverage",
+    "Critical business logic (claimReward, cancelClaim, participateInChallenge, approveParticipation) is tested",
+    "Test suite runs successfully with npm test",
+    "Coverage report shows >80% coverage for critical files"
+  ],
+  "notes": [
+    "Server Actions use 'use server' directive and need special handling for mocking",
+    "Supabase client needs comprehensive mocking for chained query methods",
+    "revalidatePath from Next.js needs to be mocked",
+    "Focus on business logic tests, not integration tests",
+    "All tests should be isolated and not require database connection"
+  ],
+  "qa_signoff": {
+    "status": "pending",
+    "tests_passed": null,
+    "issues": null
+  },
+  "last_updated": "2026-01-07T18:39:19.979457+00:00"
+}

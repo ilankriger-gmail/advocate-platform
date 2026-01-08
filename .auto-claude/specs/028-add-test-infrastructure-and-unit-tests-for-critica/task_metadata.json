@@ -1,0 +1,9 @@
+{
+  "sourceType": "ideation",
+  "ideationType": "code_quality",
+  "ideaId": "cq-002",
+  "rationale": "Without tests, refactoring is risky, bugs can slip through undetected, and there's no documentation of expected behavior. The coin/rewards system especially needs tests since financial logic bugs can cause user frustration or business losses.",
+  "category": "refactoring",
+  "codeQualitySeverity": "critical",
+  "priority": "urgent"
+}
