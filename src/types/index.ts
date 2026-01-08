@@ -14,6 +14,9 @@ export * from './profile';
 // Tipos de Actions
 export * from './actions';
 
+// Tipos de Analytics
+export * from './analytics';
+
 // Re-export tipos do Supabase
 export type {
   // Database
