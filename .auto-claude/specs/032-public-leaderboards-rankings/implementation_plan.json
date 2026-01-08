@@ -314,7 +314,7 @@
           "id": "6.2",
           "title": "Add leaderboard preview to dashboard",
           "description": "Integrate the LeaderboardPreview widget into the main dashboard page.",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/app/(dashboard)/dashboard/page.tsx"
           ],
@@ -322,7 +322,9 @@
             "Display leaderboard widget on dashboard",
             "Proper positioning in layout",
             "Loading state handling"
-          ]
+          ],
+          "notes": "Successfully integrated LeaderboardPreview widget into main dashboard page:\n\u2705 Display leaderboard widget on dashboard - Added LeaderboardPreview component between Quick Actions and Recent Posts sections\n\u2705 Proper positioning in layout - Placed in logical flow after Quick Actions card at line 154\n\u2705 Loading state handling - Component has built-in loading skeleton, error state, and empty state handling\n\nIntegration details:\n- Imported LeaderboardPreview from '@/components/leaderboard' \n- Passed user.id as currentUserId prop for personalized ranking display\n- Widget automatically shows:\n  - Top 5 users from combined leaderboard (all-time)\n  - User's rank if not in top 5\n  - Link to full ranking page\n  - Loading/error/empty states\n- Follows existing dashboard patterns with Card component structure\n- Responsive design compatible with mobile/desktop layouts\n\nFile modified: src/app/(dashboard)/dashboard/page.tsx (added import and component at lines 8 and 154)",
+          "updated_at": "2026-01-08T17:19:39.435453+00:00"
         }
       ]
     },
@@ -383,5 +385,5 @@
     "Time periods: Weekly (last 7 days), Monthly (last 30 days), All-time",
     "User must be authenticated to see their own rank, but leaderboard is public"
   ],
-  "last_updated": "2026-01-08T17:17:40.193317+00:00"
+  "last_updated": "2026-01-08T17:19:39.435462+00:00"
 }
