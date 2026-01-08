@@ -314,7 +314,7 @@ export async function getCohortAnalysisData(
   const cohortDataArray: CohortData[] = [];
 
   // Para cada cohort, calcular retenção
-  for (const [cohortId, userIds] of cohortMap.entries()) {
+  for (const [cohortId, userIds] of Array.from(cohortMap.entries())) {
     // Extrair data do cohort ID
     const cohortDate = parseCohortIdToDate(cohortId, period);
     if (!cohortDate) continue;
