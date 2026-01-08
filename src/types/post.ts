@@ -15,6 +15,9 @@ export type PostLike = Database['public']['Tables']['post_likes']['Row'];
 export type PostStatus = 'pending' | 'approved' | 'rejected';
 export type PostType = 'creator' | 'community';
 
+// Tipo de mídia do post
+export type MediaType = 'none' | 'image' | 'carousel' | 'youtube' | 'instagram';
+
 // Post com dados do autor
 export interface PostWithAuthor extends Post {
   author: {
@@ -49,10 +52,24 @@ export interface PostFilters {
 
 // Dados para criar post via formulario
 export interface CreatePostData {
-  title: string;
+  title?: string;            // Opcional para posts com YouTube/Instagram
   content?: string;
-  media_url?: string;
   type: PostType;
+  media_type?: MediaType;
+  media_url?: string[];      // Array para suportar carrossel
+  youtube_url?: string;      // Apenas para criadores
+  instagram_url?: string;    // Apenas para criadores
+}
+
+// Dados para atualizar post
+export interface UpdatePostData {
+  id: string;
+  title?: string;
+  content?: string;
+  media_type?: MediaType;
+  media_url?: string[];
+  youtube_url?: string;
+  instagram_url?: string;
 }
 
 // Dados para rejeicao de post

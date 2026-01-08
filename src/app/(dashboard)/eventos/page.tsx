@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card } from '@/components/ui';
 import { EventCard } from '@/components/events/EventCard';
+import { EventRegistrationWithEvent } from '@/lib/supabase/types';
 
 export default async function EventosPage() {
   const supabase = await createClient();
@@ -113,7 +114,7 @@ export default async function EventosPage() {
             Eventos que Voce Participou
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {pastRegistrations.map((reg: any) => (
+            {pastRegistrations.map((reg: EventRegistrationWithEvent) => (
               <Card key={reg.id} className="p-4 bg-gray-50">
                 <div className="flex items-start gap-3">
                   <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">

@@ -138,6 +138,13 @@ export default async function AdminDashboardPage() {
             <span className="text-2xl">🎁</span>
             <span className="text-sm text-purple-700 font-medium text-center">Gerenciar Premios</span>
           </Link>
+          <Link
+            href="/admin/setup"
+            className="flex flex-col items-center gap-2 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+          >
+            <span className="text-2xl">⚙️</span>
+            <span className="text-sm text-gray-700 font-medium text-center">Configuração</span>
+          </Link>
         </div>
       </Card>
 

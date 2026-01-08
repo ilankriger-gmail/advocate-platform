@@ -2,6 +2,9 @@
  * Exportacoes centralizadas de tipos
  */
 
+// Tipos de Actions
+export * from './action';
+
 // Tipos de Post
 export * from './post';
 

@@ -2,7 +2,8 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
-import type { ActionResponse } from './types';
+import { ActionResponse } from '@/types/action';
+import type { Event } from '@/lib/supabase/types';
 
 /**
  * Inscrever-se em um evento
@@ -193,6 +194,212 @@ export async function submitEventFeedback(
     }
 
     revalidatePath('/eventos');
+    return { success: true };
+  } catch {
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+// ============ ADMIN ACTIONS ============
+
+/**
+ * Criar evento (admin)
+ */
+export async function createEvent(data: {
+  title: string;
+  description?: string | null;
+  type: 'virtual' | 'presencial' | 'hibrido';
+  location?: string | null;
+  starts_at: string;
+  ends_at?: string | null;
+  max_participants?: number | null;
+  meeting_url?: string | null;
+  image_url?: string | null;
+}): Promise<ActionResponse<Event>> {
+  try {
+    const supabase = await createClient();
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return { error: 'Usuario nao autenticado' };
+    }
+
+    // Verificar se e admin/creator
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role, is_creator')
+      .eq('id', user.id)
+      .single();
+
+    if (!profile || (profile.role !== 'admin' && !profile.is_creator)) {
+      return { error: 'Acesso nao autorizado' };
+    }
+
+    const { data: event, error } = await supabase
+      .from('events')
+      .insert({
+        title: data.title,
+        description: data.description || null,
+        type: data.type,
+        location: data.location || null,
+        starts_at: data.starts_at,
+        ends_at: data.ends_at || null,
+        max_participants: data.max_participants || null,
+        meeting_url: data.meeting_url || null,
+        image_url: data.image_url || null,
+        is_active: true,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating event:', error);
+      return { error: 'Erro ao criar evento' };
+    }
+
+    revalidatePath('/eventos');
+    revalidatePath('/admin/eventos');
+    return { success: true, data: event };
+  } catch {
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+/**
+ * Ativar/Desativar evento (admin)
+ */
+export async function toggleEventActive(
+  eventId: string,
+  isActive: boolean
+): Promise<ActionResponse> {
+  try {
+    const supabase = await createClient();
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return { error: 'Usuario nao autenticado' };
+    }
+
+    // Verificar se e admin/creator
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role, is_creator')
+      .eq('id', user.id)
+      .single();
+
+    if (!profile || (profile.role !== 'admin' && !profile.is_creator)) {
+      return { error: 'Acesso nao autorizado' };
+    }
+
+    const { error } = await supabase
+      .from('events')
+      .update({ is_active: isActive })
+      .eq('id', eventId);
+
+    if (error) {
+      return { error: 'Erro ao atualizar evento' };
+    }
+
+    revalidatePath('/eventos');
+    revalidatePath('/admin/eventos');
+    return { success: true };
+  } catch {
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+/**
+ * Atualizar evento (admin)
+ */
+export async function updateEvent(
+  eventId: string,
+  data: Partial<{
+    title: string;
+    description: string;
+    location: string;
+    start_time: string;
+    end_time: string;
+    max_participants: number;
+    required_level: number;
+    is_virtual: boolean;
+    meeting_url: string;
+    image_url: string;
+    is_active: boolean;
+  }>
+): Promise<ActionResponse> {
+  try {
+    const supabase = await createClient();
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return { error: 'Usuario nao autenticado' };
+    }
+
+    // Verificar se e admin
+    const { data: profile } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    if (!profile || profile.role !== 'admin') {
+      return { error: 'Acesso nao autorizado' };
+    }
+
+    const { error } = await supabase
+      .from('events')
+      .update({ ...data, updated_at: new Date().toISOString() })
+      .eq('id', eventId);
+
+    if (error) {
+      return { error: 'Erro ao atualizar evento' };
+    }
+
+    revalidatePath('/eventos');
+    revalidatePath('/admin/eventos');
+    return { success: true };
+  } catch {
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+/**
+ * Confirmar inscricao de participante (admin)
+ */
+export async function confirmEventRegistration(
+  eventId: string,
+  userId: string
+): Promise<ActionResponse> {
+  try {
+    const supabase = await createClient();
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return { error: 'Usuario nao autenticado' };
+    }
+
+    // Verificar se e admin
+    const { data: profile } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    if (!profile || profile.role !== 'admin') {
+      return { error: 'Acesso nao autorizado' };
+    }
+
+    const { error } = await supabase
+      .from('event_registrations')
+      .update({ status: 'confirmed' })
+      .eq('event_id', eventId)
+      .eq('user_id', userId);
+
+    if (error) {
+      return { error: 'Erro ao confirmar inscricao' };
+    }
+
+    revalidatePath('/admin/eventos');
     return { success: true };
   } catch {
     return { error: 'Erro interno do servidor' };

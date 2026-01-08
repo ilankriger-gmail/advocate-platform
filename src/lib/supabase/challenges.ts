@@ -10,6 +10,8 @@ import type {
   ChallengeParticipantWithUser,
   ChallengeWinner,
   ChallengeType,
+  ParticipantWithUsers,
+  ParticipantWithUsersAndChallenge,
 } from './types';
 
 /**
@@ -163,7 +165,7 @@ export async function getChallengeRanking(
 
   if (error || !data) return [];
 
-  return data.map((participant: any) => ({
+  return data.map((participant: ParticipantWithUsers) => ({
     ...participant,
     user: participant.users || null,
     users: undefined,
@@ -221,7 +223,7 @@ export async function getPendingParticipations(): Promise<ChallengeParticipantWi
 
   if (error || !data) return [];
 
-  return data.map((participant: any) => ({
+  return data.map((participant: ParticipantWithUsersAndChallenge) => ({
     ...participant,
     user: participant.users || null,
     users: undefined,

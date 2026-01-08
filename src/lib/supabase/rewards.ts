@@ -10,6 +10,8 @@ import type {
   CoinTransaction,
   RewardClaim,
   RewardClaimWithDetails,
+  ClaimWithReward,
+  ClaimWithUserAndReward,
 } from './types';
 
 /**
@@ -135,7 +137,7 @@ export async function getUserClaims(): Promise<RewardClaimWithDetails[]> {
 
   if (error || !data) return [];
 
-  return data.map((claim: any) => ({
+  return data.map((claim: ClaimWithReward) => ({
     ...claim,
     reward: claim.rewards,
     rewards: undefined,
@@ -145,7 +147,10 @@ export async function getUserClaims(): Promise<RewardClaimWithDetails[]> {
 /**
  * Buscar todos os resgates pendentes (para admin)
  */
-export async function getPendingClaims(): Promise<(RewardClaim & { user: any; reward: Reward })[]> {
+export async function getPendingClaims(): Promise<(RewardClaim & {
+  user: { id: string; full_name: string | null; email: string; avatar_url: string | null; };
+  reward: Reward
+})[]> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
@@ -156,7 +161,7 @@ export async function getPendingClaims(): Promise<(RewardClaim & { user: any; re
 
   if (error || !data) return [];
 
-  return data.map((claim: any) => ({
+  return data.map((claim: ClaimWithUserAndReward) => ({
     ...claim,
     reward: claim.rewards,
     user: claim.users,

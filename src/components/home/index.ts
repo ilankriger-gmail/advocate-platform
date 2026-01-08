@@ -1,3 +1,8 @@
 export { HeroSection } from './HeroSection';
 export { CreatorFeed } from './CreatorFeed';
 export { CommunityFeed } from './CommunityFeed';
+export { LeaderboardWidget } from './LeaderboardWidget';
+export { FeedTabs } from './FeedTabs';
+export { InstagramCard } from './InstagramCard';
+export { InfiniteFeed } from './InfiniteFeed';
+export { SortSelector } from './SortSelector';

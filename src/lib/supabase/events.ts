@@ -3,7 +3,7 @@
  */
 
 import { createClient } from './server';
-import type { Event, EventWithRegistration, EventRegistration } from './types';
+import type { Event, EventWithRegistration, EventRegistration, EventRegistrationWithEvent } from './types';
 
 /**
  * Buscar todos os eventos ativos
@@ -113,7 +113,7 @@ export async function getUserEvents(): Promise<EventWithRegistration[]> {
 
   if (!registrations) return [];
 
-  return registrations.map((reg: any) => ({
+  return registrations.map((reg: EventRegistrationWithEvent) => ({
     ...reg.events,
     registrations_count: 0,
     is_registered: true,

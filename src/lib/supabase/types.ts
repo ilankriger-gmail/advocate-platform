@@ -218,6 +218,19 @@ export interface CommentWithAuthor extends PostComment {
   } | null;
 }
 
+/**
+ * Tipo para post com dados do usuário associado (join com users)
+ * Usado em queries que fazem join com a tabela users retornando campos específicos
+ */
+export interface PostWithUsers extends Post {
+  users: {
+    id: string;
+    full_name: string | null;
+    avatar_url: string | null;
+    is_creator: boolean;
+  } | null;
+}
+
 // Tipo para o perfil do criador
 export interface CreatorProfile extends User {
   posts_count: number;
@@ -260,6 +273,14 @@ export interface EventWithRegistration extends Event {
   registrations_count: number;
   is_registered: boolean;
   user_registration?: EventRegistration | null;
+}
+
+/**
+ * Tipo para registro de evento com dados do evento associado
+ * Usado quando fazemos join com a tabela events
+ */
+export interface EventRegistrationWithEvent extends EventRegistration {
+  events: Event | null;
 }
 
 // ============ DESAFIOS ============
@@ -331,6 +352,44 @@ export interface ChallengeParticipantWithUser extends ChallengeParticipant {
   } | null;
 }
 
+/**
+ * Tipo para participação com dados do desafio associado
+ * Usado quando fazemos join com a tabela challenges
+ */
+export interface ParticipationWithChallenge extends ChallengeParticipant {
+  challenges: {
+    coins_reward: number;
+  } | null;
+}
+
+/**
+ * Tipo para participação com dados do usuário associado (join com users)
+ * Usado em queries que fazem join com a tabela users retornando campos específicos
+ */
+export interface ParticipantWithUsers extends ChallengeParticipant {
+  users: {
+    id: string;
+    full_name: string | null;
+    avatar_url: string | null;
+  } | null;
+}
+
+/**
+ * Tipo para participação com dados do usuário e do desafio associados
+ * Usado quando fazemos join com as tabelas users e challenges
+ */
+export interface ParticipantWithUsersAndChallenge extends ChallengeParticipant {
+  users: {
+    id: string;
+    full_name: string | null;
+    avatar_url: string | null;
+  } | null;
+  challenges: {
+    title: string;
+    type: ChallengeType;
+  } | null;
+}
+
 // ============ RECOMPENSAS E MOEDAS ============
 
 export type RewardClaimStatus = 'pending' | 'approved' | 'shipped' | 'delivered' | 'cancelled';
@@ -379,6 +438,28 @@ export interface RewardWithAvailability extends Reward {
 
 export interface RewardClaimWithDetails extends RewardClaim {
   reward: Reward;
+}
+
+/**
+ * Tipo para resgate com dados da recompensa associada
+ * Usado quando fazemos join com a tabela rewards
+ */
+export interface ClaimWithReward extends RewardClaim {
+  rewards: Reward | null;
+}
+
+/**
+ * Tipo para resgate com dados do usuário e da recompensa associados
+ * Usado quando fazemos join com as tabelas users e rewards
+ */
+export interface ClaimWithUserAndReward extends RewardClaim {
+  users: {
+    id: string;
+    full_name: string | null;
+    email: string;
+    avatar_url: string | null;
+  } | null;
+  rewards: Reward | null;
 }
 
 // ============ SUBMISSÕES EXTERNAS ============
