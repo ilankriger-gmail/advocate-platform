@@ -3,7 +3,8 @@
 import { useEditor, EditorContent, Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
+import { PromptModal } from '@/components/ui';
 
 interface RichTextEditorProps {
   content: string;
@@ -15,24 +16,39 @@ interface RichTextEditorProps {
 
 // Barra de ferramentas do editor
 function MenuBar({ editor, disableLinks = false }: { editor: Editor | null; disableLinks?: boolean }) {
+  const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
+  const [previousUrl, setPreviousUrl] = useState('');
+
   const setLink = useCallback(() => {
     if (!editor) return;
 
-    const previousUrl = editor.getAttributes('link').href;
-    const url = window.prompt('URL do link:', previousUrl);
+    const currentUrl = editor.getAttributes('link').href || '';
+    setPreviousUrl(currentUrl);
+    setIsLinkModalOpen(true);
+  }, [editor]);
 
-    // Cancelado
-    if (url === null) return;
+  const handleLinkSubmit = useCallback(async (url: string) => {
+    if (!editor) return;
 
     // URL vazia = remover link
     if (url === '') {
       editor.chain().focus().extendMarkRange('link').unsetLink().run();
+      setIsLinkModalOpen(false);
       return;
     }
 
     // Adicionar https:// se não tiver protocolo
     const finalUrl = url.match(/^https?:\/\//) ? url : `https://${url}`;
     editor.chain().focus().extendMarkRange('link').setLink({ href: finalUrl }).run();
+    setIsLinkModalOpen(false);
+  }, [editor]);
+
+  const handleModalClose = useCallback(() => {
+    setIsLinkModalOpen(false);
+    // Restore editor focus after modal closes
+    setTimeout(() => {
+      editor?.commands.focus();
+    }, 100);
   }, [editor]);
 
   if (!editor) {
@@ -40,7 +56,8 @@ function MenuBar({ editor, disableLinks = false }: { editor: Editor | null; disa
   }
 
   return (
-    <div className="flex flex-wrap gap-1 p-2 border-b border-gray-200 bg-gray-50 rounded-t-lg">
+    <>
+      <div className="flex flex-wrap gap-1 p-2 border-b border-gray-200 bg-gray-50 rounded-t-lg">
       {/* Bold */}
       <button
         type="button"
@@ -171,7 +188,21 @@ function MenuBar({ editor, disableLinks = false }: { editor: Editor | null; disa
       >
         ↪
       </button>
-    </div>
+      </div>
+
+      {/* Link Modal */}
+      <PromptModal
+        isOpen={isLinkModalOpen}
+        onClose={handleModalClose}
+        onSubmit={handleLinkSubmit}
+        title="Adicionar link"
+        description="Digite a URL do link. Deixe vazio para remover o link."
+        placeholder="https://exemplo.com"
+        initialValue={previousUrl}
+        submitText="Confirmar"
+        cancelText="Cancelar"
+      />
+    </>
   );
 }
 
