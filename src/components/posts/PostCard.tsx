@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import DOMPurify from 'isomorphic-dompurify';
-import { Card, Avatar, Badge, Button, ConfirmModal } from '@/components/ui';
+import { Card, Avatar, Badge, Button, ConfirmModal, PromptModal } from '@/components/ui';
 import { formatRelativeTime } from '@/lib/utils';
 import { POST_STATUS } from '@/lib/constants';
 import { usePosts } from '@/hooks';
@@ -50,6 +50,7 @@ export function PostCard({
 }: PostCardProps) {
   const { approve, reject, delete: deletePost, isPending } = usePosts();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
 
   const statusConfig = POST_STATUS[post.status];
   const voteScore = (post as unknown as Record<string, unknown>).vote_score as number || 0;
@@ -58,11 +59,13 @@ export function PostCard({
     await approve(post.id);
   };
 
-  const handleReject = async () => {
-    const reason = prompt('Motivo da rejeição:');
-    if (reason) {
-      await reject(post.id, reason);
-    }
+  const handleReject = () => {
+    setIsRejectModalOpen(true);
+  };
+
+  const handleConfirmReject = async (reason: string) => {
+    await reject(post.id, reason);
+    setIsRejectModalOpen(false);
   };
 
   const handleDelete = () => {
@@ -139,6 +142,19 @@ export function PostCard({
           description="Tem certeza que deseja deletar este post? Esta ação não pode ser desfeita."
           variant="danger"
           confirmText="Excluir"
+          cancelText="Cancelar"
+        />
+
+        {/* Reject Reason Modal */}
+        <PromptModal
+          isOpen={isRejectModalOpen}
+          onClose={() => setIsRejectModalOpen(false)}
+          onSubmit={handleConfirmReject}
+          title="Rejeitar post"
+          description="Informe o motivo da rejeição. Esta informação será enviada ao autor."
+          placeholder="Digite o motivo da rejeição..."
+          required
+          submitText="Rejeitar"
           cancelText="Cancelar"
         />
       </>
@@ -305,6 +321,19 @@ export function PostCard({
       description="Tem certeza que deseja deletar este post? Esta ação não pode ser desfeita."
       variant="danger"
       confirmText="Excluir"
+      cancelText="Cancelar"
+    />
+
+    {/* Reject Reason Modal */}
+    <PromptModal
+      isOpen={isRejectModalOpen}
+      onClose={() => setIsRejectModalOpen(false)}
+      onSubmit={handleConfirmReject}
+      title="Rejeitar post"
+      description="Informe o motivo da rejeição. Esta informação será enviada ao autor."
+      placeholder="Digite o motivo da rejeição..."
+      required
+      submitText="Rejeitar"
       cancelText="Cancelar"
     />
   </>
