@@ -4,11 +4,16 @@ import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { analyzeVideoChallenge, type AIVerdict } from '@/lib/gemini';
 <<<<<<< HEAD
+<<<<<<< HEAD
 import type { ActionResponse } from './types';
 import type { Challenge, ChallengeParticipant, ChallengeWinner, ParticipationWithChallenge } from '@/lib/supabase/types';
 =======
 import { ActionResponse } from '@/types';
 >>>>>>> auto-claude/029-consolidate-duplicated-actionresponse-type-into-sh
+=======
+import { ActionResponse } from '@/types/action';
+import type { Challenge, ChallengeParticipant, ChallengeWinner, ParticipationWithChallenge } from '@/lib/supabase/types';
+>>>>>>> auto-claude/030-replace-excessive-any-types-with-proper-typescript
 
 /**
  * Participar de um desafio fisico

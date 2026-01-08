@@ -3,11 +3,16 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { ActionResponse } from '@/types/action';
 import type { Event } from '@/lib/supabase/types';
 =======
 import { ActionResponse } from '@/types';
 >>>>>>> auto-claude/029-consolidate-duplicated-actionresponse-type-into-sh
+=======
+import { ActionResponse } from '@/types/action';
+import type { Event } from '@/lib/supabase/types';
+>>>>>>> auto-claude/030-replace-excessive-any-types-with-proper-typescript
 
 /**
  * Inscrever-se em um evento

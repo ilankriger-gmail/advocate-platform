@@ -12,6 +12,7 @@
       "Glob(./**)",
       "Grep(./**)",
 <<<<<<< HEAD
+<<<<<<< HEAD
       "Read(/Users/macbookair/advocate-platform/.worktrees/026-criar-guia-de-troubleshooting-para-erros-comuns/**)",
       "Write(/Users/macbookair/advocate-platform/.worktrees/026-criar-guia-de-troubleshooting-para-erros-comuns/**)",
       "Edit(/Users/macbookair/advocate-platform/.worktrees/026-criar-guia-de-troubleshooting-para-erros-comuns/**)",
@@ -30,6 +31,16 @@
       "Write(/Users/macbookair/advocate-platform/.worktrees/029-consolidate-duplicated-actionresponse-type-into-sh/.auto-claude/specs/029-consolidate-duplicated-actionresponse-type-into-sh/**)",
       "Edit(/Users/macbookair/advocate-platform/.worktrees/029-consolidate-duplicated-actionresponse-type-into-sh/.auto-claude/specs/029-consolidate-duplicated-actionresponse-type-into-sh/**)",
 >>>>>>> auto-claude/029-consolidate-duplicated-actionresponse-type-into-sh
+=======
+      "Read(/Users/macbookair/advocate-platform/.worktrees/030-replace-excessive-any-types-with-proper-typescript/**)",
+      "Write(/Users/macbookair/advocate-platform/.worktrees/030-replace-excessive-any-types-with-proper-typescript/**)",
+      "Edit(/Users/macbookair/advocate-platform/.worktrees/030-replace-excessive-any-types-with-proper-typescript/**)",
+      "Glob(/Users/macbookair/advocate-platform/.worktrees/030-replace-excessive-any-types-with-proper-typescript/**)",
+      "Grep(/Users/macbookair/advocate-platform/.worktrees/030-replace-excessive-any-types-with-proper-typescript/**)",
+      "Read(/Users/macbookair/advocate-platform/.worktrees/030-replace-excessive-any-types-with-proper-typescript/.auto-claude/specs/030-replace-excessive-any-types-with-proper-typescript/**)",
+      "Write(/Users/macbookair/advocate-platform/.worktrees/030-replace-excessive-any-types-with-proper-typescript/.auto-claude/specs/030-replace-excessive-any-types-with-proper-typescript/**)",
+      "Edit(/Users/macbookair/advocate-platform/.worktrees/030-replace-excessive-any-types-with-proper-typescript/.auto-claude/specs/030-replace-excessive-any-types-with-proper-typescript/**)",
+>>>>>>> auto-claude/030-replace-excessive-any-types-with-proper-typescript
       "Bash(*)",
       "WebFetch(*)",
       "WebSearch(*)",
