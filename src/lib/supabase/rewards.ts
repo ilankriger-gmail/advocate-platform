@@ -22,26 +22,30 @@ export async function getActiveRewards(): Promise<RewardWithAvailability[]> {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  const { data: rewards, error } = await supabase
-    .from('rewards')
-    .select('*')
-    .eq('is_active', true)
-    .order('coins_required', { ascending: true });
+  // Paralelizar busca de rewards e user coins usando Promise.all
+  const [rewardsResult, coinsResult] = await Promise.all([
+    // Query 1: Buscar recompensas ativas
+    supabase
+      .from('rewards')
+      .select('*')
+      .eq('is_active', true)
+      .order('coins_required', { ascending: true }),
 
-  if (error || !rewards) return [];
+    // Query 2: Buscar saldo do usuário (se existir)
+    user
+      ? supabase
+          .from('user_coins')
+          .select('balance')
+          .eq('user_id', user.id)
+          .single()
+      : Promise.resolve({ data: null, error: null }),
+  ]);
 
-  // Buscar saldo do usuário para verificar se pode resgatar
-  let userBalance = 0;
-  if (user) {
-    const { data: coins } = await supabase
-      .from('user_coins')
-      .select('balance')
-      .eq('user_id', user.id)
-      .single();
-    userBalance = coins?.balance || 0;
-  }
+  if (rewardsResult.error || !rewardsResult.data) return [];
 
-  return rewards.map((reward) => ({
+  const userBalance = coinsResult.data?.balance || 0;
+
+  return rewardsResult.data.map((reward) => ({
     ...reward,
     can_claim: reward.quantity_available > 0 && userBalance >= reward.coins_required,
   })) as RewardWithAvailability[];
