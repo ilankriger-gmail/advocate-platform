@@ -2,19 +2,13 @@
 
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { getFeedPosts, type FeedType, type FeedSortType } from '@/actions/feed';
-import type { PostWithAuthor } from '@/types/post';
+import type { PostWithAuthor, PaginatedFeedResponse } from '@/types/post';
 
 interface UseInfiniteFeedOptions {
   type: FeedType;
   sort?: FeedSortType;
   initialData?: PostWithAuthor[];
   limit?: number;
-}
-
-interface FeedPage {
-  posts: PostWithAuthor[];
-  nextCursor: string | null;
-  hasMore: boolean;
 }
 
 /**
@@ -27,7 +21,7 @@ export function useInfiniteFeed({
   initialData,
   limit = 10,
 }: UseInfiniteFeedOptions) {
-  const query = useInfiniteQuery<FeedPage>({
+  const query = useInfiniteQuery<PaginatedFeedResponse<PostWithAuthor>>({
     queryKey: ['feed', type, sort],
     queryFn: async ({ pageParam }) => {
       return getFeedPosts({
@@ -44,7 +38,7 @@ export function useInfiniteFeed({
       ? {
           pages: [
             {
-              posts: initialData,
+              data: initialData,
               nextCursor: initialData.length === limit ? initialData[initialData.length - 1].created_at : null,
               hasMore: initialData.length === limit,
             },
@@ -55,7 +49,7 @@ export function useInfiniteFeed({
   });
 
   // Flatten posts de todas as páginas
-  const posts = query.data?.pages.flatMap((page) => page.posts) ?? [];
+  const posts = query.data?.pages.flatMap((page) => page.data) ?? [];
 
   // Verificar se tem mais posts
   const hasMore = query.data?.pages[query.data.pages.length - 1]?.hasMore ?? false;

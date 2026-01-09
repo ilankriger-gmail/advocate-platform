@@ -1,7 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import type { PostWithAuthor } from '@/types/post';
+import type { PostWithAuthor, PaginatedFeedResponse } from '@/types/post';
 
 export type FeedSortType = 'new' | 'top' | 'hot';
 export type FeedType = 'creator' | 'community' | 'all';
@@ -57,12 +57,6 @@ interface GetFeedParams {
   limit?: number;
 }
 
-interface FeedResponse {
-  posts: PostWithAuthor[];
-  nextCursor: string | null;
-  hasMore: boolean;
-}
-
 /**
  * Busca posts do feed com paginação por cursor
  * Suporta diferentes tipos (criador/comunidade) e ordenações (novo/top/hot)
@@ -72,7 +66,7 @@ export async function getFeedPosts({
   sort = 'new',
   cursor,
   limit = 10,
-}: GetFeedParams): Promise<FeedResponse> {
+}: GetFeedParams): Promise<PaginatedFeedResponse<PostWithAuthor>> {
   const supabase = await createClient();
 
   // Construir query base
@@ -142,7 +136,7 @@ export async function getFeedPosts({
 
   if (error) {
     console.error('Erro ao buscar feed:', error);
-    return { posts: [], nextCursor: null, hasMore: false };
+    return { data: [], nextCursor: null, hasMore: false };
   }
 
   let posts = (data || []) as PostWithAuthor[];
@@ -183,7 +177,7 @@ export async function getFeedPosts({
     }
   }
 
-  return { posts, nextCursor, hasMore };
+  return { data: posts, nextCursor, hasMore };
 }
 
 /**
@@ -195,5 +189,5 @@ export async function getInitialFeedPosts(
   limit = 10
 ): Promise<PostWithAuthor[]> {
   const result = await getFeedPosts({ type, limit });
-  return result.posts;
+  return result.data;
 }
