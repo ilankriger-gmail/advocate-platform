@@ -45,7 +45,6 @@ export async function updateSession(request: NextRequest) {
     '/registro',
     '/seja-nextlover',
     '/auth/callback',
-    '/admin/login',
   ];
 
   const pathname = request.nextUrl.pathname;
