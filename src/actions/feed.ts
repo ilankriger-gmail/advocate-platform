@@ -7,6 +7,39 @@ export type FeedSortType = 'new' | 'top' | 'hot';
 export type FeedType = 'creator' | 'community' | 'all';
 
 /**
+ * Cursor composto para ordenação 'top'
+ * Codifica likes_count e id para paginação determinística
+ */
+interface TopCursor {
+  likes_count: number;
+  id: string;
+}
+
+/**
+ * Codifica um cursor composto em string base64
+ */
+function encodeTopCursor(cursor: TopCursor): string {
+  return Buffer.from(JSON.stringify(cursor)).toString('base64');
+}
+
+/**
+ * Decodifica um cursor composto de string base64
+ * Retorna null se o cursor for inválido
+ */
+function decodeTopCursor(cursor: string): TopCursor | null {
+  try {
+    const decoded = Buffer.from(cursor, 'base64').toString('utf-8');
+    const parsed = JSON.parse(decoded);
+    if (typeof parsed.likes_count === 'number' && typeof parsed.id === 'string') {
+      return parsed;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Calcula hot score usando algoritmo Reddit-like
  * Posts com mais votos E mais recentes aparecem primeiro
  * O score decai exponencialmente com o tempo
@@ -61,37 +94,54 @@ export async function getFeedPosts({
     query = query.eq('type', type);
   }
 
-  // Aplicar ordenação
+  // Aplicar ordenação e paginação por cursor
   switch (sort) {
-    case 'top':
-      query = query.order('likes_count', { ascending: false });
+    case 'top': {
+      // Ordenação estável: likes_count DESC, id DESC
+      query = query
+        .order('likes_count', { ascending: false })
+        .order('id', { ascending: false });
+
+      // Aplicar cursor composto se fornecido
+      if (cursor) {
+        const decodedCursor = decodeTopCursor(cursor);
+        if (decodedCursor) {
+          // WHERE (likes_count < cursor_likes) OR (likes_count = cursor_likes AND id < cursor_id)
+          query = query.or(
+            `likes_count.lt.${decodedCursor.likes_count},and(likes_count.eq.${decodedCursor.likes_count},id.lt.${decodedCursor.id})`
+          );
+        }
+      }
       break;
+    }
     case 'hot':
       // Hot usa likes_count com decay temporal
       // Por ora, usa likes_count + created_at como fallback
       query = query
         .order('likes_count', { ascending: false })
         .order('created_at', { ascending: false });
+
+      // Para hot, usamos offset simples por enquanto
+      // Será implementado em 1.2
+      if (cursor) {
+        const offset = parseInt(cursor, 10) || 0;
+        query = query.range(offset, offset + limit - 1);
+      }
       break;
     case 'new':
     default:
       query = query.order('created_at', { ascending: false });
-  }
 
-  // Paginação por cursor (usando created_at para new, vote_score+id para top)
-  if (cursor) {
-    if (sort === 'new') {
-      query = query.lt('created_at', cursor);
-    } else {
-      // Para top/hot, usamos offset simples por enquanto
-      // Cursor-based pagination com vote_score é mais complexo
-      const offset = parseInt(cursor, 10) || 0;
-      query = query.range(offset, offset + limit - 1);
-    }
+      // Cursor baseado em created_at
+      if (cursor) {
+        query = query.lt('created_at', cursor);
+      }
   }
 
   // Limitar resultados
-  if (sort === 'new' || !cursor) {
+  if ((sort === 'new' && !cursor) || (sort === 'top' && !cursor) || (sort === 'hot' && !cursor)) {
+    query = query.limit(limit);
+  } else if (sort === 'new' || sort === 'top') {
     query = query.limit(limit);
   }
 
@@ -120,12 +170,24 @@ export async function getFeedPosts({
   // Calcular próximo cursor
   let nextCursor: string | null = null;
   if (hasMore && posts.length > 0) {
-    if (sort === 'new') {
-      nextCursor = posts[posts.length - 1].created_at;
-    } else {
-      // Para top/hot, usar offset
-      const currentOffset = cursor ? parseInt(cursor, 10) : 0;
-      nextCursor = String(currentOffset + limit);
+    const lastPost = posts[posts.length - 1];
+
+    switch (sort) {
+      case 'new':
+        nextCursor = lastPost.created_at;
+        break;
+      case 'top':
+        // Cursor composto com likes_count e id
+        nextCursor = encodeTopCursor({
+          likes_count: lastPost.likes_count,
+          id: lastPost.id,
+        });
+        break;
+      case 'hot':
+        // Para hot, usar offset por enquanto (será implementado em 1.2)
+        const currentOffset = cursor ? parseInt(cursor, 10) : 0;
+        nextCursor = String(currentOffset + limit);
+        break;
     }
   }
 
