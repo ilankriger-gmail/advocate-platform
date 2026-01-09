@@ -2,37 +2,28 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { checkAdminSession } from '@/actions/admin-auth';
 
 export function AdminAuthCheck({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const checkAuth = () => {
-      const isAuth = localStorage.getItem('admin_authenticated') === 'true';
-      const loginTime = localStorage.getItem('admin_login_time');
+    const checkAuth = async () => {
+      try {
+        // Verificar sessão via server action segura
+        const isAuth = await checkAdminSession();
 
-      // Verificar se a sessao expirou (24 horas)
-      if (isAuth && loginTime) {
-        const loginDate = new Date(loginTime);
-        const now = new Date();
-        const hoursDiff = (now.getTime() - loginDate.getTime()) / (1000 * 60 * 60);
-
-        if (hoursDiff > 24) {
-          // Sessao expirada
-          localStorage.removeItem('admin_authenticated');
-          localStorage.removeItem('admin_login_time');
+        if (!isAuth) {
           setIsAuthenticated(false);
           router.push('/admin/login');
-          return;
+        } else {
+          setIsAuthenticated(true);
         }
-      }
-
-      if (!isAuth) {
+      } catch (error) {
+        // Em caso de erro, redirecionar para login
         setIsAuthenticated(false);
         router.push('/admin/login');
-      } else {
-        setIsAuthenticated(true);
       }
     };
 
@@ -55,20 +46,29 @@ export function AdminAuthCheck({ children }: { children: React.ReactNode }) {
 }
 
 export function AdminLogoutButton() {
-  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogout = () => {
-    localStorage.removeItem('admin_authenticated');
-    localStorage.removeItem('admin_login_time');
-    router.push('/admin/login');
+  const handleLogout = async () => {
+    setIsLoading(true);
+    try {
+      // Chamar server action segura para logout
+      const { adminLogout } = await import('@/actions/admin-auth');
+      await adminLogout();
+      // O server action redireciona automaticamente para /admin/login
+    } catch (error) {
+      // Em caso de erro, forçar navegação para login
+      setIsLoading(false);
+      window.location.href = '/admin/login';
+    }
   };
 
   return (
     <button
       onClick={handleLogout}
-      className="px-3 py-1.5 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+      disabled={isLoading}
+      className="px-3 py-1.5 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
     >
-      Sair
+      {isLoading ? 'Saindo...' : 'Sair'}
     </button>
   );
 }

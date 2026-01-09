@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar } from '@/components/ui';
 import { cn } from '@/lib/utils';
+import { checkAdminSession } from '@/actions/admin-auth';
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -25,28 +26,18 @@ export function Header({ onMenuClick, showMenuButton = false, className, siteNam
   // Verificar se o usuario e admin/creator
   const isCreator = user?.user_metadata?.is_creator === true;
 
-  // Verificar autenticacao admin via localStorage
+  // Verificar autenticacao admin via server action segura
   useEffect(() => {
-    const checkAdminAuth = () => {
-      const isAuth = localStorage.getItem('admin_authenticated') === 'true';
-      const loginTime = localStorage.getItem('admin_login_time');
-
-      if (isAuth && loginTime) {
-        const loginDate = new Date(loginTime);
-        const now = new Date();
-        const hoursDiff = (now.getTime() - loginDate.getTime()) / (1000 * 60 * 60);
-
-        if (hoursDiff <= 24) {
-          setIsAdmin(true);
-          return;
-        }
+    const checkAdminAuth = async () => {
+      try {
+        const isAuth = await checkAdminSession();
+        setIsAdmin(isAuth);
+      } catch (error) {
+        setIsAdmin(false);
       }
-      setIsAdmin(false);
     };
 
     checkAdminAuth();
-    window.addEventListener('storage', checkAdminAuth);
-    return () => window.removeEventListener('storage', checkAdminAuth);
   }, []);
 
   const showAdminLink = isCreator || isAdmin;

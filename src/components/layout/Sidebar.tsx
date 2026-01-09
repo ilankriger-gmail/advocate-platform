@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { MAIN_NAV, CREATOR_NAV } from '@/lib/constants';
+import { checkAdminSession } from '@/actions/admin-auth';
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -85,36 +86,18 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
   // Verifica se e o criador da comunidade
   const isCreator = user?.user_metadata?.is_creator === true;
 
-  // Verificar autenticacao admin via localStorage (similar ao AdminAuthCheck)
+  // Verificar autenticacao admin via server action segura
   useEffect(() => {
-    const checkAdminAuth = () => {
-      const isAuth = localStorage.getItem('admin_authenticated') === 'true';
-      const loginTime = localStorage.getItem('admin_login_time');
-
-      // Verificar se a sessao expirou (24 horas)
-      if (isAuth && loginTime) {
-        const loginDate = new Date(loginTime);
-        const now = new Date();
-        const hoursDiff = (now.getTime() - loginDate.getTime()) / (1000 * 60 * 60);
-
-        if (hoursDiff > 24) {
-          // Sessao expirada
-          localStorage.removeItem('admin_authenticated');
-          localStorage.removeItem('admin_login_time');
-          setIsAdminAuth(false);
-          return;
-        }
-        setIsAdminAuth(true);
-      } else {
+    const checkAdminAuth = async () => {
+      try {
+        const isAuth = await checkAdminSession();
+        setIsAdminAuth(isAuth);
+      } catch (error) {
         setIsAdminAuth(false);
       }
     };
 
     checkAdminAuth();
-
-    // Re-verificar quando o storage muda (em caso de login/logout em outra aba)
-    window.addEventListener('storage', checkAdminAuth);
-    return () => window.removeEventListener('storage', checkAdminAuth);
   }, []);
 
   // Mostrar menu admin se for criador OU se estiver autenticado via /admin/login

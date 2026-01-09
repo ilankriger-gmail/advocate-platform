@@ -8,22 +8,24 @@ Esta plataforma é construída com **Next.js 15**, **Supabase** e **TypeScript**
 
 ### 📊 Estatísticas da Documentação
 
-- **12 documentos** de arquitetura
+- **14 documentos** de arquitetura
 - **100+ diagramas** Mermaid
 - **15 tabelas** de banco de dados documentadas
 - **45+ Server Actions** catalogadas
 - **60+ políticas RLS** explicadas
 - **6 módulos** principais (Auth, Profile, Posts, Events, Challenges, Rewards)
+- **2 guias** de setup completos (Supabase + Admin)
 
 ---
 
 ## 🚀 Por Onde Começar?
 
 ### Para Novos Desenvolvedores
-1. 📖 Comece com **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Visão geral da arquitetura
-2. 🧩 Entenda **[COMPONENTS.md](./COMPONENTS.md)** - Server vs Client Components
-3. ⚡ Explore **[SERVER_ACTIONS.md](./SERVER_ACTIONS.md)** - Todas as ações disponíveis
-4. 🔐 Revise **[SECURITY_RLS.md](./SECURITY_RLS.md)** - Políticas de segurança
+1. ⚙️ Configure o ambiente com **[SETUP_SUPABASE.md](./SETUP_SUPABASE.md)** e **[SETUP_ADMIN.md](./SETUP_ADMIN.md)**
+2. 📖 Comece com **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Visão geral da arquitetura
+3. 🧩 Entenda **[COMPONENTS.md](./COMPONENTS.md)** - Server vs Client Components
+4. ⚡ Explore **[SERVER_ACTIONS.md](./SERVER_ACTIONS.md)** - Todas as ações disponíveis
+5. 🔐 Revise **[SECURITY_RLS.md](./SECURITY_RLS.md)** - Políticas de segurança
 
 ### Para Arquitetos de Software
 1. 🏗️ **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Decisões arquiteturais
@@ -148,6 +150,39 @@ Diferenças de acesso entre roles Admin e Advocate.
 - 30+ diagramas incluindo quadrant charts e flowcharts
 
 **Quando consultar:** Ao implementar funcionalidades restritas a admins ou validar permissões.
+
+---
+
+### ⚙️ Setup e Configuração
+
+#### [SETUP_SUPABASE.md](./SETUP_SUPABASE.md)
+Guia completo de configuração do Supabase.
+
+**Conteúdo:**
+- Criar projeto no Supabase
+- Obter chaves de API
+- Configurar variáveis de ambiente
+- Configurar autenticação com Google OAuth
+- Habilitar Row Level Security (RLS)
+- Verificar configuração
+- Troubleshooting de setup
+
+**Quando consultar:** Ao fazer setup inicial do projeto ou configurar novo ambiente.
+
+---
+
+#### [SETUP_ADMIN.md](./SETUP_ADMIN.md)
+Guia de configuração do painel administrativo.
+
+**Conteúdo:**
+- Configurar variáveis de ambiente admin
+- Gerar hash de senha bcrypt (3 métodos diferentes)
+- Testar login e logout admin
+- Segurança e boas práticas
+- Troubleshooting de autenticação admin
+- Checklist de configuração completa
+
+**Quando consultar:** Ao configurar acesso administrativo em desenvolvimento ou produção.
 
 ---
 
@@ -357,16 +392,18 @@ graph TB
 
 | Caso de Uso | Documentos Relevantes | Ordem Sugerida |
 |-------------|----------------------|----------------|
+| **Setup inicial do projeto** | SETUP_SUPABASE.md → SETUP_ADMIN.md → ARCHITECTURE.md | 1 → 2 → 3 |
+| **Configurar painel admin** | SETUP_ADMIN.md → AUTHORIZATION.md → DATA_FLOW_AUTH.md | 1 → 2 → 3 |
 | **Criar novo componente** | COMPONENTS.md → SERVER_ACTIONS.md → SECURITY_RLS.md | 1 → 2 → 3 |
 | **Implementar nova feature** | ARCHITECTURE.md → MODULE_DEPENDENCIES.md → SERVER_ACTIONS.md → DATABASE.md | 1 → 2 → 3 → 4 |
 | **Debugar permissões** | AUTHORIZATION.md → SECURITY_RLS.md → SERVER_ACTIONS.md | 1 → 2 → 3 |
 | **Entender fluxo existente** | Escolher DATA_FLOW_*.md relevante → SERVER_ACTIONS.md → DATABASE.md | 1 → 2 → 3 |
 | **Criar nova tabela** | DATABASE.md → SECURITY_RLS.md → SERVER_ACTIONS.md | 1 → 2 → 3 |
-| **Onboarding geral** | ARCHITECTURE.md → COMPONENTS.md → Todos os DATA_FLOW_*.md | 1 → 2 → 3+ |
+| **Onboarding geral** | SETUP_SUPABASE.md → SETUP_ADMIN.md → ARCHITECTURE.md → COMPONENTS.md | 1 → 2 → 3 → 4 |
 | **Trabalhar com autenticação** | DATA_FLOW_AUTH.md → AUTHORIZATION.md → SECURITY_RLS.md | 1 → 2 → 3 |
 | **Implementar gamificação** | DATA_FLOW_CHALLENGES.md → DATA_FLOW_PROFILE_REWARDS.md → MODULE_DEPENDENCIES.md | 1 → 2 → 3 |
 | **Integrar IA** | DATA_FLOW_CHALLENGES.md (seção Google Gemini) → SERVER_ACTIONS.md | 1 → 2 |
-| **Deploy/Setup inicial** | MODULE_DEPENDENCIES.md → DATABASE.md → SECURITY_RLS.md | 1 → 2 → 3 |
+| **Deploy/Setup inicial** | SETUP_SUPABASE.md → MODULE_DEPENDENCIES.md → DATABASE.md → SECURITY_RLS.md | 1 → 2 → 3 → 4 |
 
 ---
 
@@ -437,10 +474,11 @@ Consulte **SERVER_ACTIONS.md** para catálogo completo das 45+ actions organizad
 
 ### 🆕 Primeiro Dia no Projeto
 ```
-1. Leia ARCHITECTURE.md (30 min)
-2. Explore COMPONENTS.md (20 min)
-3. Navegue pelos DATA_FLOW_*.md do seu módulo (40 min)
-4. Revise SECURITY_RLS.md para entender permissões (20 min)
+1. Configure o ambiente com SETUP_SUPABASE.md e SETUP_ADMIN.md (30 min)
+2. Leia ARCHITECTURE.md para visão geral (30 min)
+3. Explore COMPONENTS.md para entender componentes (20 min)
+4. Navegue pelos DATA_FLOW_*.md do seu módulo (40 min)
+5. Revise SECURITY_RLS.md para entender permissões (20 min)
 ```
 
 ### 🐛 Debugando um Problema
@@ -521,12 +559,13 @@ Esta documentação é viva e deve evoluir com o projeto!
 
 | Categoria | Documentos | Diagramas | Linhas |
 |-----------|------------|-----------|--------|
+| **Setup e Configuração** | 2 | 5+ | 1.000+ |
 | **Arquitetura Geral** | 1 | 10+ | 1.000+ |
 | **Componentes e Camadas** | 3 | 30+ | 4.000+ |
 | **Segurança** | 2 | 40+ | 5.000+ |
 | **Banco de Dados** | 1 | 15+ | 1.500+ |
 | **Fluxos de Dados** | 5 | 100+ | 10.000+ |
-| **TOTAL** | **12** | **195+** | **21.500+** |
+| **TOTAL** | **14** | **200+** | **22.500+** |
 
 ---
 
@@ -562,10 +601,10 @@ Esta documentação foi criada para ser sua **fonte única de verdade** sobre a 
 
 ### 🎓 Próximos Passos Sugeridos
 
-1. **Iniciantes:** Comece por [ARCHITECTURE.md](./ARCHITECTURE.md)
+1. **Iniciantes:** Configure com [SETUP_SUPABASE.md](./SETUP_SUPABASE.md) e [SETUP_ADMIN.md](./SETUP_ADMIN.md), depois [ARCHITECTURE.md](./ARCHITECTURE.md)
 2. **Desenvolvedores:** Mergulhe em [COMPONENTS.md](./COMPONENTS.md) e [SERVER_ACTIONS.md](./SERVER_ACTIONS.md)
 3. **Arquitetos:** Explore [MODULE_DEPENDENCIES.md](./MODULE_DEPENDENCIES.md) e [DATABASE.md](./DATABASE.md)
-4. **DevOps:** Foque em [SECURITY_RLS.md](./SECURITY_RLS.md) e [AUTHORIZATION.md](./AUTHORIZATION.md)
+4. **DevOps:** Foque em [SETUP_SUPABASE.md](./SETUP_SUPABASE.md), [SECURITY_RLS.md](./SECURITY_RLS.md) e [AUTHORIZATION.md](./AUTHORIZATION.md)
 
 ### 💬 Feedback
 
