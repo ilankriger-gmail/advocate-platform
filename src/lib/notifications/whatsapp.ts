@@ -70,7 +70,7 @@ export async function sendApprovalWhatsApp({
     const siteName = settings.site_name;
 
     // Gerar link de cadastro com email pre-preenchido
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://nextlovers.com';
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://comunidade.omocodoteamo.com.br';
     const registrationUrl = loginUrl || (email
       ? `${baseUrl}/registro?email=${encodeURIComponent(email)}`
       : `${baseUrl}/registro`);

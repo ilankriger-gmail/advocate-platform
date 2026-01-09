@@ -14,9 +14,9 @@ interface HeaderProps {
 }
 
 // Rotas onde o Header nao deve aparecer
-const HIDDEN_HEADER_ROUTES = ['/seja-nextlover', '/login', '/registro'];
+const HIDDEN_HEADER_ROUTES = ['/seja-arena', '/login', '/registro'];
 
-export function Header({ onMenuClick, showMenuButton = false, className, siteName = 'NextLOVERS' }: HeaderProps) {
+export function Header({ onMenuClick, showMenuButton = false, className, siteName = 'Arena Te Amo' }: HeaderProps) {
   const { user, profile, signOut } = useAuth();
   const pathname = usePathname();
 

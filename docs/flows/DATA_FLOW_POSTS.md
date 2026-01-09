@@ -1,6 +1,6 @@
 # 📝 Fluxo de Posts e Feed
 
-Este documento detalha todos os fluxos relacionados ao sistema de posts da plataforma NextLOVERS, incluindo criação, moderação, exibição no feed, likes, comentários e o fluxo de dados entre Server Components, Client Components, Server Actions e Supabase.
+Este documento detalha todos os fluxos relacionados ao sistema de posts da plataforma Arena Te Amo, incluindo criação, moderação, exibição no feed, likes, comentários e o fluxo de dados entre Server Components, Client Components, Server Actions e Supabase.
 
 ## Índice
 
@@ -2335,6 +2335,6 @@ src/
 
 ---
 
-**Documentação gerada para**: NextLOVERS Platform
+**Documentação gerada para**: Arena Te Amo Platform
 **Última atualização**: 2026-01-07
 **Versão**: 1.0.0

@@ -9,9 +9,9 @@ interface HeroSectionProps {
 
 export function HeroSection({
   isLoggedIn,
-  title = 'Comunidade NextLOVERS',
+  title = 'Arena Te Amo',
   subtitle = 'Comunidade oficial de O Moço do Te Amo | NextlevelDJ',
-  siteName = 'NextLOVERS',
+  siteName = 'Arena Te Amo',
 }: HeroSectionProps) {
   return (
     <section className="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 text-white overflow-hidden">

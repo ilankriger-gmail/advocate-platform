@@ -6,7 +6,7 @@ import { InstagramCard } from '@/components/home';
 import { Card, Skeleton } from '@/components/ui';
 
 export const metadata = {
-  title: 'Posts Salvos | NextLOVERS',
+  title: 'Posts Salvos | Arena Te Amo',
   description: 'Seus posts favoritos salvos',
 };
 

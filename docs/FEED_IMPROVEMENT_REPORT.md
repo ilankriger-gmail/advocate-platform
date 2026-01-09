@@ -135,7 +135,7 @@ const hotScore = (votes: number, createdAt: Date) => {
 - Contraste mínimo 4.5:1
 - Navegação por teclado completa
 - Focus indicators visíveis
-- Hashtags em PascalCase (`#NextLovers` não `#nextlovers`)
+- Hashtags em PascalCase (`#ArenaTeAmo` não `#arenateamo`)
 - Respeitar `prefers-reduced-motion`
 
 ---

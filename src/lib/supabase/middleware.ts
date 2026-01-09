@@ -43,7 +43,7 @@ export async function updateSession(request: NextRequest) {
     '/',
     '/login',
     '/registro',
-    '/seja-nextlover',
+    '/seja-arena',
     '/auth/callback',
   ];
 

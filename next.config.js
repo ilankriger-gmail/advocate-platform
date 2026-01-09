@@ -6,7 +6,7 @@ const nextConfig = {
       beforeFiles: [
         {
           source: '/',
-          destination: '/seja-nextlover',
+          destination: '/seja-arena',
           has: [{ type: 'host', value: 'comece.omocodoteamo.com.br' }],
         },
       ],

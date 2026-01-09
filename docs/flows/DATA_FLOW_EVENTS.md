@@ -1,6 +1,6 @@
 # 📅 Fluxo de Eventos
 
-Este documento detalha todos os fluxos relacionados ao sistema de eventos da plataforma NextLOVERS, incluindo listagem de eventos, registro de participação, verificação de nível de advocate, gerenciamento admin, check-in e feedback.
+Este documento detalha todos os fluxos relacionados ao sistema de eventos da plataforma Arena Te Amo, incluindo listagem de eventos, registro de participação, verificação de nível de advocate, gerenciamento admin, check-in e feedback.
 
 ## Índice
 

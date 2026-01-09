@@ -167,7 +167,7 @@ interface SendApprovalWhatsAppParams {
 export async function sendApprovalWhatsApp({
   to,
   name,
-  siteName = 'NextLOVERS',
+  siteName = 'Arena Te Amo',
   registrationUrl,
   leadId,
 }: SendApprovalWhatsAppParams): Promise<WhatsAppSendResult> {

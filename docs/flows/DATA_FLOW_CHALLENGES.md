@@ -1,6 +1,6 @@
 # 🎯 Fluxo de Desafios
 
-Este documento detalha todos os fluxos relacionados ao sistema de desafios da plataforma NextLOVERS, incluindo listagem de desafios, participação, submissão de evidências, verificação por IA, aprovação admin, seleção de vencedores e sistema de recompensas.
+Este documento detalha todos os fluxos relacionados ao sistema de desafios da plataforma Arena Te Amo, incluindo listagem de desafios, participação, submissão de evidências, verificação por IA, aprovação admin, seleção de vencedores e sistema de recompensas.
 
 ## Índice
 
@@ -2600,7 +2600,7 @@ src/
 
 ## Resumo
 
-O sistema de desafios da plataforma NextLOVERS oferece uma experiência gamificada completa:
+O sistema de desafios da plataforma Arena Te Amo oferece uma experiência gamificada completa:
 
 ### ✅ Pontos Fortes
 

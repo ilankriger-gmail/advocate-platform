@@ -97,7 +97,7 @@ async function processCheckEmailOpened(task: ScheduledTask): Promise<{
     // Buscar configuracoes do site
     const settings = await getSiteSettings(['site_name']);
     const siteName = settings.site_name;
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://nextlovers.com';
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://comunidade.omocodoteamo.com.br';
     const registrationUrl = `${baseUrl}/registro?email=${encodeURIComponent(lead.email)}`;
 
     // Enviar WhatsApp

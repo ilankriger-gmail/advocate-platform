@@ -67,7 +67,7 @@ export function NPSForm() {
     }
 
     // Redirecionar para pagina de obrigado
-    router.push('/seja-nextlover/obrigado');
+    router.push('/seja-arena/obrigado');
   }
 
   return (

@@ -85,7 +85,7 @@ export async function updateSiteSetting(
   // Revalidar todas as páginas que usam configurações
   revalidatePath('/', 'layout');
   revalidatePath('/login');
-  revalidatePath('/seja-nextlover');
+  revalidatePath('/seja-arena');
   revalidatePath('/admin/configuracoes');
 
   return { success: true, error: null };
@@ -140,7 +140,7 @@ export async function updateMultipleSiteSettings(
   // Revalidar todas as páginas que usam configurações
   revalidatePath('/', 'layout');
   revalidatePath('/login');
-  revalidatePath('/seja-nextlover');
+  revalidatePath('/seja-arena');
   revalidatePath('/admin/configuracoes');
 
   if (errors.length > 0) {

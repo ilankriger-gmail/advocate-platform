@@ -1,6 +1,6 @@
 # 🔐 Fluxo de Autenticação
 
-Este documento detalha todos os fluxos de autenticação da plataforma NextLOVERS, incluindo login com Google OAuth, gerenciamento de sessão, proteção de rotas e contexto de autenticação no cliente.
+Este documento detalha todos os fluxos de autenticação da plataforma Arena Te Amo, incluindo login com Google OAuth, gerenciamento de sessão, proteção de rotas e contexto de autenticação no cliente.
 
 ## Índice
 
@@ -974,6 +974,6 @@ src/
 
 ---
 
-**Documentação gerada para**: NextLOVERS Platform
+**Documentação gerada para**: Arena Te Amo Platform
 **Última atualização**: 2026-01-07
 **Versão**: 1.0.0

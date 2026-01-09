@@ -112,7 +112,7 @@ export async function sendApprovalEmail({
   leadId,
 }: SendApprovalEmailParams): Promise<EmailSendResult> {
   // Gerar link de cadastro com email pre-preenchido
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://nextlovers.com';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://comunidade.omocodoteamo.com.br';
   const registrationUrl = loginUrl || `${baseUrl}/registro?email=${encodeURIComponent(to)}`;
   try {
     const resend = getResendClient();
@@ -127,7 +127,7 @@ export async function sendApprovalEmail({
     const siteName = settings.site_name;
     const fromName = settings.email_from_name;
 
-    const fromEmail = process.env.RESEND_FROM_EMAIL || 'noreply@nextlovers.com';
+    const fromEmail = process.env.RESEND_FROM_EMAIL || 'noreply@omocodoteamo.com.br';
 
     const { data, error } = await resend.emails.send({
       from: `${fromName} <${fromEmail}>`,

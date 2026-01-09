@@ -296,7 +296,7 @@ export async function sendLeadEmailNotification(leadId: string): Promise<ActionR
     }
 
     // Gerar link de cadastro com email pre-preenchido
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://nextlovers.com';
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://comunidade.omocodoteamo.com.br';
     const registrationUrl = `${baseUrl}/registro?email=${encodeURIComponent(lead.email)}`;
 
     // Enviar email com logging automatico
@@ -373,7 +373,7 @@ export async function sendLeadWhatsAppNotification(leadId: string): Promise<Acti
 
     // Buscar configuracoes do site
     const settings = await getSiteSettings(['site_name']);
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://nextlovers.com';
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://comunidade.omocodoteamo.com.br';
     const registrationUrl = `${baseUrl}/registro?email=${encodeURIComponent(lead.email)}`;
 
     // Enviar WhatsApp via Meta Cloud API
@@ -496,7 +496,7 @@ export async function bulkApproveAndNotify(leadIds: string[]): Promise<ActionRes
 
     // Buscar configuracoes do site
     const settings = await getSiteSettings(['site_name']);
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://nextlovers.com';
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://comunidade.omocodoteamo.com.br';
 
     // Enviar notificacoes para cada lead aprovado
     for (const lead of approvedLeads || []) {
@@ -606,7 +606,7 @@ export async function sendAllNotifications(leadId: string): Promise<ActionRespon
 
     // Buscar configuracoes do site
     const settings = await getSiteSettings(['site_name']);
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://nextlovers.com';
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://comunidade.omocodoteamo.com.br';
     const registrationUrl = `${baseUrl}/registro?email=${encodeURIComponent(lead.email)}`;
 
     // Enviar email se ainda nao foi enviado

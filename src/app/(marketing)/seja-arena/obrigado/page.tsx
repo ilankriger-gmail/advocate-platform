@@ -54,7 +54,7 @@ export default async function ObrigadoPage() {
 
         {/* Botao voltar */}
         <Link
-          href="/seja-nextlover"
+          href="/seja-arena"
           className="inline-flex items-center gap-2 text-pink-600 hover:text-pink-700 font-medium"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

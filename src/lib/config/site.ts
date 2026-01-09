@@ -36,18 +36,18 @@ export interface SiteSetting {
  * Valores padrão caso o banco não tenha a configuração
  */
 const DEFAULT_VALUES: Record<SiteSettingKey, string> = {
-  site_name: 'NextLOVERS',
+  site_name: 'Arena Te Amo',
   site_description: 'Comunidade oficial de O Moço do Te Amo | NextlevelDJ',
   creator_name: 'O Moço do Te Amo',
   creator_handle: 'NextlevelDJ',
-  hero_title: 'Comunidade NextLOVERS',
+  hero_title: 'Arena Te Amo',
   hero_subtitle: 'Comunidade oficial de O Moço do Te Amo | NextlevelDJ',
-  login_title: 'NextLOVERS',
+  login_title: 'Arena Te Amo',
   login_subtitle: 'Comunidade oficial de O Moço do Te Amo',
-  meta_title: 'NextLOVERS - Comunidade O Moço do Te Amo',
+  meta_title: 'Arena Te Amo - Comunidade O Moço do Te Amo',
   meta_description: 'Comunidade oficial de O Moço do Te Amo | NextlevelDJ',
-  email_from_name: 'NextLOVERS',
-  footer_text: 'O Moço do Te Amo - Comunidade NextLOVERS',
+  email_from_name: 'Arena Te Amo',
+  footer_text: 'O Moço do Te Amo - Arena Te Amo',
 };
 
 /**

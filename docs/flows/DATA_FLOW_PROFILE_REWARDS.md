@@ -1,6 +1,6 @@
 # 👤 Fluxo de Perfil e Recompensas
 
-Este documento detalha todos os fluxos relacionados à gestão de perfil, sistema de níveis de advocate, resgate de recompensas e histórico de participações da plataforma NextLOVERS.
+Este documento detalha todos os fluxos relacionados à gestão de perfil, sistema de níveis de advocate, resgate de recompensas e histórico de participações da plataforma Arena Te Amo.
 
 ## Índice
 
@@ -1798,7 +1798,7 @@ graph TB
 
 ## Resumo
 
-O sistema de **Perfil e Recompensas** da plataforma NextLOVERS oferece:
+O sistema de **Perfil e Recompensas** da plataforma Arena Te Amo oferece:
 
 1. ✅ **Gestão de Perfil Completa**: Edição de dados pessoais, links sociais e bio
 2. ✅ **Sistema de Níveis**: 5 níveis de advocate com benefícios progressivos
