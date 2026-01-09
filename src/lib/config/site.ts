@@ -16,7 +16,13 @@ export type SiteSettingKey =
   | 'meta_title'
   | 'meta_description'
   | 'email_from_name'
-  | 'footer_text';
+  | 'footer_text'
+  | 'openai_api_key'
+  | 'resend_api_key'
+  | 'meta_pixel_id'
+  | 'meta_access_token'
+  | 'whatsapp_phone_number_id'
+  | 'whatsapp_access_token';
 
 /**
  * Tipo para uma configuração do site

@@ -125,7 +125,7 @@ export default function AdminConfiguracoesPage() {
       ['meta_title', 'meta_description'].includes(s.key)
     ),
     apis: settings.filter(s =>
-      ['openai_api_key', 'resend_api_key', 'meta_pixel_id', 'meta_access_token'].includes(s.key)
+      ['openai_api_key', 'resend_api_key', 'meta_pixel_id', 'meta_access_token', 'whatsapp_phone_number_id', 'whatsapp_access_token'].includes(s.key)
     ),
     outros: settings.filter(s =>
       ['email_from_name', 'footer_text'].includes(s.key)
