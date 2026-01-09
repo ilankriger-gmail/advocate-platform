@@ -3,7 +3,7 @@
 import { useEffect, useRef, useCallback, memo } from 'react';
 import { useInfiniteFeed } from '@/hooks/useInfiniteFeed';
 import { InstagramCard } from './InstagramCard';
-import { Card, Skeleton, Spinner } from '@/components/ui';
+import { Card, Skeleton, Spinner, Button } from '@/components/ui';
 import type { FeedType, FeedSortType } from '@/actions/feed';
 import type { PostWithAuthor } from '@/types/post';
 
@@ -42,8 +42,11 @@ export function InfiniteFeed({ type, sort = 'new', initialPosts }: InfiniteFeedP
     hasMore,
     isLoading,
     isFetchingNextPage,
+    isError,
+    error,
     fetchNextPage,
     prefetchNextPage,
+    refetch,
   } = useInfiniteFeed({
     type,
     sort,
@@ -125,6 +128,34 @@ export function InfiniteFeed({ type, sort = 'new', initialPosts }: InfiniteFeedP
     );
   }
 
+  // Estado de erro no carregamento inicial
+  if (isError && posts.length === 0) {
+    // Log do erro para debugging
+    console.error('Erro ao carregar feed:', error);
+
+    return (
+      <Card className="p-8 text-center">
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <p className="text-lg font-medium text-gray-900">
+              Ops! Algo deu errado
+            </p>
+            <p className="text-sm text-gray-500">
+              Não conseguimos carregar o feed. Por favor, tente novamente.
+            </p>
+          </div>
+          <Button
+            variant="primary"
+            size="md"
+            onClick={() => refetch()}
+          >
+            Tentar novamente
+          </Button>
+        </div>
+      </Card>
+    );
+  }
+
   // Estado vazio
   if (posts.length === 0) {
     return (
@@ -167,8 +198,29 @@ export function InfiniteFeed({ type, sort = 'new', initialPosts }: InfiniteFeedP
         </div>
       )}
 
+      {/* Erro ao carregar próxima página */}
+      {isError && posts.length > 0 && !isFetchingNextPage && (
+        <Card className="p-6 text-center">
+          <div className="space-y-3">
+            <p className="text-sm text-gray-600">
+              Erro ao carregar mais posts
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                console.error('Erro ao carregar próxima página:', error);
+                fetchNextPage();
+              }}
+            >
+              Tentar novamente
+            </Button>
+          </div>
+        </Card>
+      )}
+
       {/* Mensagem de fim do feed */}
-      {!hasMore && posts.length > 0 && (
+      {!hasMore && !isError && posts.length > 0 && (
         <div className="py-8 text-center text-gray-400 text-sm">
           Você chegou ao fim do feed
         </div>
