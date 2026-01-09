@@ -223,23 +223,21 @@ export async function getPostById(id: string): Promise<PostWithAuthor | null> {
 
   const { data: post, error } = await supabase
     .from('posts')
-    .select('*')
+    .select(`
+      *,
+      author:users!posts_user_id_fkey(
+        id,
+        full_name,
+        avatar_url,
+        is_creator
+      )
+    `)
     .eq('id', id)
     .single();
 
   if (error || !post) return null;
 
-  // Buscar autor
-  const { data: author } = await supabase
-    .from('users')
-    .select('id, full_name, avatar_url, is_creator')
-    .eq('id', post.user_id)
-    .single();
-
-  return {
-    ...post,
-    author: author || null,
-  };
+  return post as PostWithAuthor;
 }
 
 // ============ PERFIL ============
