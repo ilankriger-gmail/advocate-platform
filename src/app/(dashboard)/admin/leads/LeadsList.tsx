@@ -78,7 +78,7 @@ export function LeadsList({ leads, currentStatus }: LeadsListProps) {
       alert(
         `${result.data.approved} lead(s) aprovado(s)!\n` +
         `${result.data.emailsSent} email(s) enviado(s)\n` +
-        `${result.data.whatsappsSent} WhatsApp(s) enviado(s)`
+        `${result.data.tasksScheduled} WhatsApp(s) agendado(s) para 24h`
       );
     }
 

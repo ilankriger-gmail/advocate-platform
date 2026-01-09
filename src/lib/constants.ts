@@ -88,6 +88,7 @@ export const CREATOR_NAV = [
   { href: '/admin/premios', label: 'Premios', icon: 'Gift' },
   { href: '/admin/usuarios', label: 'Usuarios', icon: 'Users' },
   { href: '/admin/leads', label: 'Leads NPS', icon: 'Chart' },
+  { href: '/admin/notificacoes', label: 'Notificacoes', icon: 'Bell' },
 ] as const;
 
 // Links de redes sociais

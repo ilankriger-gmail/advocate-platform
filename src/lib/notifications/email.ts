@@ -1,5 +1,7 @@
 import { Resend } from 'resend';
 import { getSiteSettings } from '@/lib/config/site';
+import { createAdminClient } from '@/lib/supabase/admin';
+import type { EmailSendResult } from '@/types/notification';
 
 // Cliente Resend inicializado lazily
 let resendClient: Resend | null = null;
@@ -20,16 +22,95 @@ interface SendApprovalEmailParams {
   to: string;
   name: string;
   loginUrl?: string;
+  leadId?: string; // ID do lead para logging
+}
+
+interface LogEmailNotificationParams {
+  leadId: string;
+  messageId: string;
+  status?: 'pending' | 'sent' | 'delivered' | 'opened' | 'failed' | 'cancelled';
+}
+
+/**
+ * Registra uma notificacao de email no banco de dados
+ */
+export async function logEmailNotification({
+  leadId,
+  messageId,
+  status = 'sent',
+}: LogEmailNotificationParams): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = createAdminClient();
+
+    const { error } = await supabase
+      .from('notifications_log')
+      .upsert(
+        {
+          lead_id: leadId,
+          channel: 'email',
+          status,
+          external_id: messageId,
+          sent_at: new Date().toISOString(),
+          metadata: { opened: false },
+        },
+        { onConflict: 'lead_id,channel' }
+      );
+
+    if (error) {
+      console.error('[Email] Erro ao registrar notificacao:', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (err) {
+    console.error('[Email] Erro ao registrar notificacao:', err);
+    return { success: false, error: 'Erro ao registrar notificacao' };
+  }
+}
+
+/**
+ * Atualiza o status de uma notificacao de email
+ */
+export async function updateEmailNotificationStatus(
+  messageId: string,
+  status: 'delivered' | 'opened' | 'failed',
+  metadata?: Record<string, unknown>
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = createAdminClient();
+
+    const updateData: Record<string, unknown> = { status };
+    if (metadata) {
+      updateData.metadata = metadata;
+    }
+
+    const { error } = await supabase
+      .from('notifications_log')
+      .update(updateData)
+      .eq('external_id', messageId);
+
+    if (error) {
+      console.error('[Email] Erro ao atualizar status:', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (err) {
+    console.error('[Email] Erro ao atualizar status:', err);
+    return { success: false, error: 'Erro ao atualizar status' };
+  }
 }
 
 /**
  * Envia email de aprovacao para o lead com link de cadastro
+ * Retorna message_id para rastreamento de abertura
  */
 export async function sendApprovalEmail({
   to,
   name,
   loginUrl,
-}: SendApprovalEmailParams): Promise<{ success: boolean; error?: string }> {
+  leadId,
+}: SendApprovalEmailParams): Promise<EmailSendResult> {
   // Gerar link de cadastro com email pre-preenchido
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://nextlovers.com';
   const registrationUrl = loginUrl || `${baseUrl}/registro?email=${encodeURIComponent(to)}`;
@@ -48,7 +129,7 @@ export async function sendApprovalEmail({
 
     const fromEmail = process.env.RESEND_FROM_EMAIL || 'noreply@nextlovers.com';
 
-    const { error } = await resend.emails.send({
+    const { data, error } = await resend.emails.send({
       from: `${fromName} <${fromEmail}>`,
       to: [to],
       subject: `Voce foi aprovado para o ${siteName}!`,
@@ -127,13 +208,50 @@ export async function sendApprovalEmail({
     });
 
     if (error) {
-      console.error('Error sending email:', error);
+      console.error('[Email] Erro ao enviar:', error);
       return { success: false, error: error.message };
     }
 
-    return { success: true };
+    const messageId = data?.id;
+
+    // Se temos leadId, registrar a notificacao no banco
+    if (leadId && messageId) {
+      await logEmailNotification({
+        leadId,
+        messageId,
+        status: 'sent',
+      });
+    }
+
+    return { success: true, message_id: messageId };
   } catch (err) {
-    console.error('Error sending email:', err);
+    console.error('[Email] Erro ao enviar:', err);
     return { success: false, error: 'Erro ao enviar email' };
+  }
+}
+
+/**
+ * Verifica se um email foi aberto pelo lead
+ */
+export async function checkEmailOpened(leadId: string): Promise<boolean> {
+  try {
+    const supabase = createAdminClient();
+
+    const { data, error } = await supabase
+      .from('notifications_log')
+      .select('status, metadata')
+      .eq('lead_id', leadId)
+      .eq('channel', 'email')
+      .single();
+
+    if (error || !data) {
+      return false;
+    }
+
+    // Verificar se status e 'opened' ou se metadata.opened e true
+    const metadata = data.metadata as Record<string, unknown> | null;
+    return data.status === 'opened' || metadata?.opened === true;
+  } catch {
+    return false;
   }
 }

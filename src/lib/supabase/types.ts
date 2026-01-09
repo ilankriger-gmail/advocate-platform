@@ -517,6 +517,7 @@ export interface NpsLead {
   email_sent_at: string | null;
   whatsapp_sent: boolean;
   whatsapp_sent_at: string | null;
+  whatsapp_opted_in: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -552,6 +553,73 @@ export type TimePeriod = 'weekly' | 'monthly' | 'all_time';
  * Categorias de leaderboard disponíveis
  */
 export type LeaderboardCategory = 'coins' | 'challenges' | 'events' | 'combined';
+
+// ============ NOTIFICACOES ============
+
+/**
+ * Canal de notificacao
+ */
+export type NotificationChannel = 'email' | 'whatsapp';
+
+/**
+ * Status da notificacao
+ */
+export type NotificationStatus = 'pending' | 'sent' | 'delivered' | 'opened' | 'failed' | 'cancelled';
+
+/**
+ * Tipo da tarefa agendada
+ */
+export type ScheduledTaskType = 'check_email_opened' | 'send_reminder' | 'cleanup';
+
+/**
+ * Status da tarefa agendada
+ */
+export type ScheduledTaskStatus = 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
+
+/**
+ * Log de notificacao no banco de dados
+ */
+export interface NotificationLogRow {
+  id: string;
+  lead_id: string;
+  channel: NotificationChannel;
+  status: NotificationStatus;
+  external_id: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+  sent_at: string | null;
+}
+
+/**
+ * Tarefa agendada no banco de dados
+ */
+export interface ScheduledTaskRow {
+  id: string;
+  type: ScheduledTaskType;
+  lead_id: string | null;
+  scheduled_for: string;
+  status: ScheduledTaskStatus;
+  attempts: number;
+  max_attempts: number;
+  last_error: string | null;
+  payload: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+  completed_at: string | null;
+}
+
+/**
+ * Log de notificacao com dados do lead associado
+ */
+export interface NotificationLogWithLead extends NotificationLogRow {
+  nps_leads: {
+    id: string;
+    name: string;
+    email: string;
+    phone: string | null;
+  } | null;
+}
 
 /**
  * Entrada individual no leaderboard

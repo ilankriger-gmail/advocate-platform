@@ -4,6 +4,12 @@ import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { ActionResponse } from '@/types/action';
 import type { NpsLead, NpsLeadInsert } from '@/lib/supabase/types';
+import {
+  sendApprovalEmail,
+  sendApprovalWhatsApp,
+  scheduleEmailCheck,
+} from '@/lib/notifications';
+import { getSiteSettings } from '@/lib/config/site';
 
 // ============ ACOES PUBLICAS ============
 
@@ -230,8 +236,12 @@ export async function getLeadStats(): Promise<ActionResponse<{
 
 /**
  * Enviar notificacao por email para lead aprovado
+ * Sistema Hibrido: Envia email + agenda verificacao de abertura para WhatsApp
  */
-export async function sendLeadEmailNotification(leadId: string): Promise<ActionResponse> {
+export async function sendLeadEmailNotification(leadId: string): Promise<ActionResponse<{
+  emailSent: boolean;
+  taskScheduled: boolean;
+}>> {
   try {
     const supabase = await createClient();
 
@@ -257,14 +267,15 @@ export async function sendLeadEmailNotification(leadId: string): Promise<ActionR
     }
 
     // Gerar link de cadastro com email pre-preenchido
-    const registrationUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://nextlovers.com'}/registro?email=${encodeURIComponent(lead.email)}`;
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://nextlovers.com';
+    const registrationUrl = `${baseUrl}/registro?email=${encodeURIComponent(lead.email)}`;
 
-    // Enviar email (import dinamico para evitar erro se nao configurado)
-    const { sendApprovalEmail } = await import('@/lib/notifications/email');
+    // Enviar email com logging automatico
     const result = await sendApprovalEmail({
       to: lead.email,
       name: lead.name,
       loginUrl: registrationUrl,
+      leadId: lead.id,
     });
 
     if (!result.success) {
@@ -277,11 +288,22 @@ export async function sendLeadEmailNotification(leadId: string): Promise<ActionR
       .update({
         email_sent: true,
         email_sent_at: new Date().toISOString(),
+        whatsapp_opted_in: lead.phone ? true : false,
       })
       .eq('id', leadId);
 
+    // Agendar verificacao de abertura para 24h (se tem telefone)
+    let taskScheduled = false;
+    if (lead.phone) {
+      const scheduleResult = await scheduleEmailCheck(lead.id, {
+        email: lead.email,
+        lead_name: lead.name,
+      });
+      taskScheduled = scheduleResult.success;
+    }
+
     revalidatePath('/admin/leads');
-    return { success: true };
+    return { success: true, data: { emailSent: true, taskScheduled } };
   } catch {
     return { error: 'Erro interno do servidor' };
   }
@@ -289,6 +311,7 @@ export async function sendLeadEmailNotification(leadId: string): Promise<ActionR
 
 /**
  * Enviar notificacao por WhatsApp para lead aprovado
+ * Usa Meta Cloud API
  */
 export async function sendLeadWhatsAppNotification(leadId: string): Promise<ActionResponse> {
   try {
@@ -319,12 +342,18 @@ export async function sendLeadWhatsAppNotification(leadId: string): Promise<Acti
       return { error: 'WhatsApp ja foi enviado para este lead' };
     }
 
-    // Enviar WhatsApp (import dinamico para evitar erro se nao configurado)
-    const { sendApprovalWhatsApp } = await import('@/lib/notifications/whatsapp');
+    // Buscar configuracoes do site
+    const settings = await getSiteSettings(['site_name']);
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://nextlovers.com';
+    const registrationUrl = `${baseUrl}/registro?email=${encodeURIComponent(lead.email)}`;
+
+    // Enviar WhatsApp via Meta Cloud API
     const result = await sendApprovalWhatsApp({
       to: lead.phone,
       name: lead.name,
-      email: lead.email,
+      siteName: settings.site_name,
+      registrationUrl,
+      leadId: lead.id,
     });
 
     if (!result.success) {
@@ -394,11 +423,13 @@ export async function bulkApproveLeads(leadIds: string[]): Promise<ActionRespons
 
 /**
  * Aprovar multiplos leads em massa e enviar notificacoes
+ * Sistema Hibrido: Envia email 100%, agenda verificacao de abertura para 24h
+ * Se o email nao for aberto em 24h + lead tem WhatsApp, envia WhatsApp via CRON
  */
 export async function bulkApproveAndNotify(leadIds: string[]): Promise<ActionResponse<{
   approved: number;
   emailsSent: number;
-  whatsappsSent: number;
+  tasksScheduled: number;
 }>> {
   try {
     const supabase = await createClient();
@@ -419,6 +450,8 @@ export async function bulkApproveAndNotify(leadIds: string[]): Promise<ActionRes
         status: 'approved',
         approved_by: auth.user.id,
         approved_at: new Date().toISOString(),
+        // Marcar leads com telefone como opted_in para WhatsApp
+        whatsapp_opted_in: true,
       })
       .in('id', leadIds)
       .eq('status', 'pending')
@@ -430,23 +463,28 @@ export async function bulkApproveAndNotify(leadIds: string[]): Promise<ActionRes
 
     const approved = approvedLeads?.length || 0;
     let emailsSent = 0;
-    let whatsappsSent = 0;
+    let tasksScheduled = 0;
 
-    // Importar servicos de notificacao
-    const { sendApprovalEmail } = await import('@/lib/notifications/email');
-    const { sendApprovalWhatsApp } = await import('@/lib/notifications/whatsapp');
+    // Buscar configuracoes do site
+    const settings = await getSiteSettings(['site_name']);
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://nextlovers.com';
 
     // Enviar notificacoes para cada lead aprovado
     for (const lead of approvedLeads || []) {
-      // Enviar email
+      const registrationUrl = `${baseUrl}/registro?email=${encodeURIComponent(lead.email)}`;
+
+      // Enviar email (100% dos aprovados)
       const emailResult = await sendApprovalEmail({
         to: lead.email,
         name: lead.name,
-        loginUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://nextlovers.com'}/registro?email=${encodeURIComponent(lead.email)}`,
+        loginUrl: registrationUrl,
+        leadId: lead.id, // Para logging automatico
       });
 
       if (emailResult.success) {
         emailsSent++;
+
+        // Atualizar lead com email_sent
         await supabase
           .from('nps_leads')
           .update({
@@ -454,31 +492,24 @@ export async function bulkApproveAndNotify(leadIds: string[]): Promise<ActionRes
             email_sent_at: new Date().toISOString(),
           })
           .eq('id', lead.id);
-      }
 
-      // Enviar WhatsApp se tiver telefone
-      if (lead.phone) {
-        const whatsappResult = await sendApprovalWhatsApp({
-          to: lead.phone,
-          name: lead.name,
-          email: lead.email,
-        });
+        // Agendar verificacao de abertura do email para 24h
+        // O CRON ira enviar WhatsApp se o email nao for aberto
+        if (lead.phone && lead.whatsapp_opted_in !== false) {
+          const scheduleResult = await scheduleEmailCheck(lead.id, {
+            email: lead.email,
+            lead_name: lead.name,
+          });
 
-        if (whatsappResult.success) {
-          whatsappsSent++;
-          await supabase
-            .from('nps_leads')
-            .update({
-              whatsapp_sent: true,
-              whatsapp_sent_at: new Date().toISOString(),
-            })
-            .eq('id', lead.id);
+          if (scheduleResult.success) {
+            tasksScheduled++;
+          }
         }
       }
     }
 
     revalidatePath('/admin/leads');
-    return { success: true, data: { approved, emailsSent, whatsappsSent } };
+    return { success: true, data: { approved, emailsSent, tasksScheduled } };
   } catch {
     return { error: 'Erro interno do servidor' };
   }
@@ -513,10 +544,11 @@ export async function checkEmailApproved(email: string): Promise<ActionResponse<
 
 /**
  * Enviar todas as notificacoes para lead aprovado
+ * Sistema Hibrido: Envia email + agenda verificacao de abertura
  */
 export async function sendAllNotifications(leadId: string): Promise<ActionResponse<{
   email: boolean;
-  whatsapp: boolean;
+  taskScheduled: boolean;
 }>> {
   try {
     const supabase = await createClient();
@@ -540,19 +572,21 @@ export async function sendAllNotifications(leadId: string): Promise<ActionRespon
 
     const results = {
       email: false,
-      whatsapp: false,
+      taskScheduled: false,
     };
 
-    // Gerar link de cadastro com email pre-preenchido
-    const registrationUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://nextlovers.com'}/registro?email=${encodeURIComponent(lead.email)}`;
+    // Buscar configuracoes do site
+    const settings = await getSiteSettings(['site_name']);
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://nextlovers.com';
+    const registrationUrl = `${baseUrl}/registro?email=${encodeURIComponent(lead.email)}`;
 
     // Enviar email se ainda nao foi enviado
     if (!lead.email_sent) {
-      const { sendApprovalEmail } = await import('@/lib/notifications/email');
       const emailResult = await sendApprovalEmail({
         to: lead.email,
         name: lead.name,
         loginUrl: registrationUrl,
+        leadId: lead.id,
       });
       results.email = emailResult.success;
 
@@ -562,34 +596,21 @@ export async function sendAllNotifications(leadId: string): Promise<ActionRespon
           .update({
             email_sent: true,
             email_sent_at: new Date().toISOString(),
+            whatsapp_opted_in: lead.phone ? true : false,
           })
           .eq('id', leadId);
+
+        // Agendar verificacao de abertura para 24h
+        if (lead.phone) {
+          const scheduleResult = await scheduleEmailCheck(lead.id, {
+            email: lead.email,
+            lead_name: lead.name,
+          });
+          results.taskScheduled = scheduleResult.success;
+        }
       }
     } else {
       results.email = true; // Ja foi enviado
-    }
-
-    // Enviar WhatsApp se tem telefone e ainda nao foi enviado
-    if (lead.phone && !lead.whatsapp_sent) {
-      const { sendApprovalWhatsApp } = await import('@/lib/notifications/whatsapp');
-      const whatsappResult = await sendApprovalWhatsApp({
-        to: lead.phone,
-        name: lead.name,
-        email: lead.email,
-      });
-      results.whatsapp = whatsappResult.success;
-
-      if (whatsappResult.success) {
-        await supabase
-          .from('nps_leads')
-          .update({
-            whatsapp_sent: true,
-            whatsapp_sent_at: new Date().toISOString(),
-          })
-          .eq('id', leadId);
-      }
-    } else if (lead.whatsapp_sent) {
-      results.whatsapp = true; // Ja foi enviado
     }
 
     revalidatePath('/admin/leads');

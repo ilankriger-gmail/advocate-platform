@@ -14,6 +14,9 @@ export * from './profile';
 // Tipos de Analytics
 export * from './analytics';
 
+// Tipos de Notificacoes
+export * from './notification';
+
 // Re-export tipos do Supabase
 export type {
   // Database
@@ -58,4 +61,12 @@ export type {
   // External Submissions
   ExternalSubmission,
   VerificationStatus,
+  // Notifications
+  NotificationChannel,
+  NotificationStatus,
+  ScheduledTaskType,
+  ScheduledTaskStatus,
+  NotificationLogRow,
+  ScheduledTaskRow,
+  NotificationLogWithLead,
 } from '@/lib/supabase/types';
