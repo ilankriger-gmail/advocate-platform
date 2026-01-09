@@ -4,10 +4,6 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, Button, Input } from '@/components/ui';
 
-// Credenciais do admin (em producao, usar variaveis de ambiente)
-const ADMIN_USERNAME = 'admin';
-const ADMIN_PASSWORD = 'admin123';
-
 export default function AdminLoginPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
