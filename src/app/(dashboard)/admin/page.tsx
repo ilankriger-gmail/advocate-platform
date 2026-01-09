@@ -45,6 +45,7 @@ export default async function AdminDashboardPage() {
     { count: activeRewards },
     { count: pendingLeads },
     { count: totalLeads },
+    { count: analyzedLeads },
   ] = await Promise.all([
     supabase.from('posts').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
     supabase.from('challenges').select('*', { count: 'exact', head: true }).eq('is_active', true),
@@ -56,6 +57,7 @@ export default async function AdminDashboardPage() {
     supabase.from('rewards').select('*', { count: 'exact', head: true }).eq('is_active', true),
     supabase.from('nps_leads').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
     supabase.from('nps_leads').select('*', { count: 'exact', head: true }),
+    supabase.from('nps_leads').select('*', { count: 'exact', head: true }).not('ai_score', 'is', null),
   ]);
 
   const stats = [
@@ -105,7 +107,7 @@ export default async function AdminDashboardPage() {
       icon: '📊',
       href: '/admin/leads',
       color: 'border-l-orange-500',
-      description: `${pendingLeads || 0} pendentes de aprovacao`,
+      description: `${pendingLeads || 0} pendentes · ${analyzedLeads || 0} analisados por AI`,
     },
     {
       title: 'Configuracoes',
@@ -160,10 +162,10 @@ export default async function AdminDashboardPage() {
           </Link>
           <Link
             href="/admin/leads"
-            className="flex flex-col items-center gap-2 p-4 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors"
+            className="flex flex-col items-center gap-2 p-4 bg-gradient-to-br from-orange-50 to-indigo-50 rounded-lg hover:from-orange-100 hover:to-indigo-100 transition-colors border border-indigo-100"
           >
-            <span className="text-2xl">📊</span>
-            <span className="text-sm text-orange-700 font-medium text-center">Leads NPS</span>
+            <span className="text-2xl">🤖</span>
+            <span className="text-sm text-indigo-700 font-medium text-center">Leads + AI</span>
           </Link>
           <Link
             href="/admin/configuracoes"
