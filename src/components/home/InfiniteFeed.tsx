@@ -43,16 +43,31 @@ export function InfiniteFeed({ type, sort = 'new', initialPosts }: InfiniteFeedP
     isLoading,
     isFetchingNextPage,
     fetchNextPage,
+    prefetchNextPage,
   } = useInfiniteFeed({
     type,
     sort,
     initialData: initialPosts,
   });
 
+  // Ref para o elemento sentinel de prefetch (trigger antecipado)
+  const prefetchSentinelRef = useRef<HTMLDivElement>(null);
   // Ref para o elemento sentinel (trigger do infinite scroll)
   const sentinelRef = useRef<HTMLDivElement>(null);
 
-  // Callback para Intersection Observer
+  // Callback para Intersection Observer de prefetch
+  const handlePrefetchObserver = useCallback(
+    (entries: IntersectionObserverEntry[]) => {
+      const [entry] = entries;
+      // Prefetch quando o usuário está se aproximando do fim (~70% do conteúdo visível)
+      if (entry.isIntersecting && hasMore && !isFetchingNextPage) {
+        prefetchNextPage();
+      }
+    },
+    [hasMore, isFetchingNextPage, prefetchNextPage]
+  );
+
+  // Callback para Intersection Observer de fetch real
   const handleObserver = useCallback(
     (entries: IntersectionObserverEntry[]) => {
       const [entry] = entries;
@@ -63,7 +78,25 @@ export function InfiniteFeed({ type, sort = 'new', initialPosts }: InfiniteFeedP
     [hasMore, isFetchingNextPage, fetchNextPage]
   );
 
-  // Setup Intersection Observer
+  // Setup Intersection Observer para prefetch (antecipado)
+  useEffect(() => {
+    const prefetchSentinel = prefetchSentinelRef.current;
+    if (!prefetchSentinel) return;
+
+    const observer = new IntersectionObserver(handlePrefetchObserver, {
+      root: null, // viewport
+      rootMargin: '800px', // Prefetch quando ainda faltam 800px para chegar ao fim (~70% visível)
+      threshold: 0.1,
+    });
+
+    observer.observe(prefetchSentinel);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [handlePrefetchObserver]);
+
+  // Setup Intersection Observer para fetch real
   useEffect(() => {
     const sentinel = sentinelRef.current;
     if (!sentinel) return;
@@ -111,6 +144,9 @@ export function InfiniteFeed({ type, sort = 'new', initialPosts }: InfiniteFeedP
       {posts.map((post) => (
         <MemoizedCard key={post.id} post={post} />
       ))}
+
+      {/* Sentinel element para prefetch antecipado (invisível, trigger mais cedo) */}
+      <div ref={prefetchSentinelRef} className="h-0" aria-hidden="true" />
 
       {/* Sentinel element para trigger do infinite scroll */}
       <div ref={sentinelRef} className="h-4" />

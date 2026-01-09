@@ -1,8 +1,9 @@
 'use client';
 
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { getFeedPosts, type FeedType, type FeedSortType } from '@/actions/feed';
 import type { PostWithAuthor, PaginatedFeedResponse } from '@/types/post';
+import { useCallback } from 'react';
 
 interface UseInfiniteFeedOptions {
   type: FeedType;
@@ -21,6 +22,8 @@ export function useInfiniteFeed({
   initialData,
   limit = 10,
 }: UseInfiniteFeedOptions) {
+  const queryClient = useQueryClient();
+
   const query = useInfiniteQuery<PaginatedFeedResponse<PostWithAuthor>>({
     queryKey: ['feed', type, sort],
     queryFn: async ({ pageParam }) => {
@@ -54,6 +57,41 @@ export function useInfiniteFeed({
   // Verificar se tem mais posts
   const hasMore = query.data?.pages[query.data.pages.length - 1]?.hasMore ?? false;
 
+  /**
+   * Prefetch da próxima página para melhorar performance
+   * Usa React Query cache - não faz request duplicado se já está em cache ou loading
+   */
+  const prefetchNextPage = useCallback(async () => {
+    // Não prefetch se não há mais páginas ou já está carregando
+    if (!hasMore || query.isFetchingNextPage) {
+      return;
+    }
+
+    // Obter o cursor da última página
+    const lastPage = query.data?.pages[query.data.pages.length - 1];
+    const nextCursor = lastPage?.nextCursor;
+
+    // Só prefetch se temos um cursor válido
+    if (!nextCursor) {
+      return;
+    }
+
+    // Prefetch usando React Query - automaticamente deduplica e usa cache
+    await queryClient.prefetchInfiniteQuery({
+      queryKey: ['feed', type, sort],
+      queryFn: async ({ pageParam }) => {
+        return getFeedPosts({
+          type,
+          sort,
+          cursor: pageParam as string | undefined,
+          limit,
+        });
+      },
+      initialPageParam: nextCursor,
+      pages: 1, // Apenas prefetch da próxima página
+    });
+  }, [hasMore, query.isFetchingNextPage, query.data?.pages, type, sort, limit, queryClient]);
+
   return {
     posts,
     hasMore,
@@ -62,6 +100,7 @@ export function useInfiniteFeed({
     isError: query.isError,
     error: query.error,
     fetchNextPage: query.fetchNextPage,
+    prefetchNextPage,
     refetch: query.refetch,
   };
 }
