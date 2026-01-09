@@ -12,6 +12,7 @@ import type {
   RewardClaim,
   CoinTransaction,
 } from '@/lib/supabase/types';
+import type { PostWithAuthor } from '@/types/post';
 
 let idCounter = 0;
 const generateId = (): string => {
@@ -238,4 +239,42 @@ export const createMany = <T>(
       typeof overrides === 'function' ? overrides(index) : overrides;
     return factory(itemOverrides);
   });
+};
+
+/**
+ * Cria um post de teste com autor
+ */
+export const createMockPost = (
+  overrides: Partial<PostWithAuthor> = {}
+): PostWithAuthor => {
+  const id = overrides.id || generateId();
+  const userId = overrides.user_id || generateId();
+  const now = generateTimestamp();
+
+  // Cria dados do autor se não fornecido
+  const author = overrides.author || {
+    id: userId,
+    full_name: `Author ${userId}`,
+    avatar_url: null,
+    is_creator: false,
+  };
+
+  return {
+    id,
+    user_id: userId,
+    title: `Post ${id}`,
+    content: `Content for post ${id}`,
+    type: 'community',
+    status: 'approved',
+    media_type: 'none',
+    media_url: null,
+    youtube_url: null,
+    instagram_url: null,
+    likes_count: 0,
+    comments_count: 0,
+    created_at: now,
+    updated_at: now,
+    author,
+    ...overrides,
+  };
 };

@@ -1,25 +1,25 @@
 {
   "active": true,
-  "spec": "017-criar-skeletonevent-e-skeletonchallenge-components",
+  "spec": "012-adicionar-paginacao-infinita-com-cursor-based-pagi",
   "state": "building",
   "subtasks": {
-    "completed": 7,
-    "total": 8,
+    "completed": 6,
+    "total": 12,
     "in_progress": 1,
     "failed": 0
   },
   "phase": {
-    "current": "Verificacao e QA",
-    "id": null,
-    "total": 2
+    "current": "",
+    "id": 0,
+    "total": 0
   },
   "workers": {
     "active": 0,
     "max": 1
   },
   "session": {
-    "number": 9,
-    "started_at": "2026-01-08T20:53:22.740713"
+    "number": 8,
+    "started_at": "2026-01-08T21:17:09.703547"
   },
-  "last_update": "2026-01-08T21:05:57.435346"
+  "last_update": "2026-01-08T21:39:26.889100"
 }
