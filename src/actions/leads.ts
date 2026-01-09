@@ -17,7 +17,7 @@ import { analyzeLeadWithAI } from '@/lib/ai';
 /**
  * Submeter formulario NPS (publico - sem autenticacao)
  */
-export async function submitNpsLead(data: NpsLeadInsert): Promise<ActionResponse<NpsLead>> {
+export async function submitNpsLead(data: NpsLeadInsert): Promise<ActionResponse> {
   try {
     const supabase = await createClient();
 
@@ -38,8 +38,8 @@ export async function submitNpsLead(data: NpsLeadInsert): Promise<ActionResponse
       return { error: 'Por favor, explique o motivo da sua nota' };
     }
 
-    // Inserir lead
-    const { data: lead, error } = await supabase
+    // Inserir lead (sem select, pois usuario anonimo nao tem permissao de leitura)
+    const { error } = await supabase
       .from('nps_leads')
       .insert({
         score: data.score,
@@ -47,44 +47,18 @@ export async function submitNpsLead(data: NpsLeadInsert): Promise<ActionResponse
         name: data.name.trim(),
         email: data.email.trim().toLowerCase(),
         phone: data.phone?.trim() || null,
-      })
-      .select()
-      .single();
+      });
 
     if (error) {
       console.error('Error creating NPS lead:', error);
       return { error: 'Erro ao enviar formulario. Tente novamente.' };
     }
 
-    // Analise AI em background (nao bloqueia a submissao)
-    analyzeLeadWithAI({
-      name: data.name.trim(),
-      score: data.score,
-      reason: data.reason.trim(),
-    })
-      .then(async (analysis) => {
-        if (analysis) {
-          // Atualizar lead com resultado da analise
-          const supabaseUpdate = await createClient();
-          await supabaseUpdate
-            .from('nps_leads')
-            .update({
-              ai_score: analysis.score,
-              ai_sentiment: analysis.sentiment,
-              ai_recommendation: analysis.recommendation,
-              ai_summary: analysis.summary,
-              ai_strengths: analysis.strengths,
-              ai_concerns: analysis.concerns,
-              ai_analyzed_at: new Date().toISOString(),
-            })
-            .eq('id', lead.id);
-        }
-      })
-      .catch((err) => {
-        console.error('[AI] Error analyzing lead:', err);
-      });
+    // Analise AI em background - buscar lead pelo email (via service role seria ideal, mas por hora desabilitado)
+    // TODO: Implementar analise AI via webhook ou cron job
+    // analyzeLeadWithAI({ name: data.name.trim(), score: data.score, reason: data.reason.trim() })
 
-    return { success: true, data: lead };
+    return { success: true };
   } catch {
     return { error: 'Erro interno do servidor' };
   }

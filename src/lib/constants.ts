@@ -81,7 +81,7 @@ export const MAIN_NAV = [
 
 // Navegação do criador/admin (adicional)
 export const CREATOR_NAV = [
-  { href: '/admin', label: 'Painel Admin', icon: 'Settings' },
+  { href: '/admin', label: 'Painel Admin', icon: 'Shield' },
   { href: '/admin/posts', label: 'Moderar Posts', icon: 'FileText' },
   { href: '/admin/desafios', label: 'Desafios', icon: 'Target' },
   { href: '/admin/eventos', label: 'Eventos', icon: 'Calendar' },
@@ -89,6 +89,7 @@ export const CREATOR_NAV = [
   { href: '/admin/usuarios', label: 'Usuarios', icon: 'Users' },
   { href: '/admin/leads', label: 'Leads NPS', icon: 'Chart' },
   { href: '/admin/notificacoes', label: 'Notificacoes', icon: 'Bell' },
+  { href: '/admin/configuracoes', label: 'Configuracoes', icon: 'Settings' },
 ] as const;
 
 // Links de redes sociais
