@@ -59,27 +59,32 @@ export async function getRewardById(rewardId: string): Promise<RewardWithAvailab
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  const { data: reward, error } = await supabase
-    .from('rewards')
-    .select('*')
-    .eq('id', rewardId)
-    .single();
+  // Paralelizar busca de reward e user coins usando Promise.all
+  const [rewardResult, coinsResult] = await Promise.all([
+    // Query 1: Buscar recompensa
+    supabase
+      .from('rewards')
+      .select('*')
+      .eq('id', rewardId)
+      .single(),
 
-  if (error || !reward) return null;
+    // Query 2: Buscar saldo do usuário (se existir)
+    user
+      ? supabase
+          .from('user_coins')
+          .select('balance')
+          .eq('user_id', user.id)
+          .single()
+      : Promise.resolve({ data: null, error: null }),
+  ]);
 
-  let userBalance = 0;
-  if (user) {
-    const { data: coins } = await supabase
-      .from('user_coins')
-      .select('balance')
-      .eq('user_id', user.id)
-      .single();
-    userBalance = coins?.balance || 0;
-  }
+  if (rewardResult.error || !rewardResult.data) return null;
+
+  const userBalance = coinsResult.data?.balance || 0;
 
   return {
-    ...reward,
-    can_claim: reward.quantity_available > 0 && userBalance >= reward.coins_required,
+    ...rewardResult.data,
+    can_claim: rewardResult.data.quantity_available > 0 && userBalance >= rewardResult.data.coins_required,
   } as RewardWithAvailability;
 }
 
