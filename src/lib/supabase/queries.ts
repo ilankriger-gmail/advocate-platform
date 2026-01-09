@@ -185,7 +185,15 @@ export async function getPosts(filters?: PostFilters): Promise<PostWithAuthor[]>
 
   let query = supabase
     .from('posts')
-    .select('*')
+    .select(`
+      *,
+      author:users!posts_user_id_fkey(
+        id,
+        full_name,
+        avatar_url,
+        is_creator
+      )
+    `)
     .order('created_at', { ascending: false });
 
   if (filters?.status) {
@@ -202,23 +210,9 @@ export async function getPosts(filters?: PostFilters): Promise<PostWithAuthor[]>
 
   const { data: posts, error } = await query;
 
-  if (error) return [];
+  if (error || !posts || posts.length === 0) return [];
 
-  if (!posts || posts.length === 0) return [];
-
-  // Buscar autores separadamente
-  const userIds = Array.from(new Set(posts.map(p => p.user_id)));
-  const { data: users } = await supabase
-    .from('users')
-    .select('id, full_name, avatar_url, is_creator')
-    .in('id', userIds);
-
-  const usersMap = new Map((users || []).map(u => [u.id, u]));
-
-  return posts.map(post => ({
-    ...post,
-    author: usersMap.get(post.user_id) || null,
-  }));
+  return posts as PostWithAuthor[];
 }
 
 /**
