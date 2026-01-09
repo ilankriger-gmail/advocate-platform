@@ -293,23 +293,25 @@ export async function getUserProfile(userId: string): Promise<User | null> {
 export async function getUserPosts(userId: string, limit = 10): Promise<PostWithAuthor[]> {
   const supabase = await createClient();
 
-  const { data: user } = await supabase
-    .from('users')
-    .select('id, full_name, avatar_url, is_creator')
-    .eq('id', userId)
-    .single();
-
-  const { data: posts } = await supabase
+  // Buscar posts do usuário com JOIN
+  const { data: posts, error } = await supabase
     .from('posts')
-    .select('*')
+    .select(`
+      *,
+      author:users!posts_user_id_fkey(
+        id,
+        full_name,
+        avatar_url,
+        is_creator
+      )
+    `)
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
     .limit(limit);
 
-  return (posts || []).map(post => ({
-    ...post,
-    author: user || null,
-  }));
+  if (error || !posts || posts.length === 0) return [];
+
+  return posts as PostWithAuthor[];
 }
 
 // Seção de recompensas removida - use src/lib/supabase/rewards.ts
