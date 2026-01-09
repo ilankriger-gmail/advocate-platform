@@ -3,7 +3,7 @@
 import { useEffect, useRef, useCallback, memo } from 'react';
 import { useInfiniteFeed } from '@/hooks/useInfiniteFeed';
 import { InstagramCard } from './InstagramCard';
-import { Card, Skeleton } from '@/components/ui';
+import { Card, Skeleton, Spinner } from '@/components/ui';
 import type { FeedType, FeedSortType } from '@/actions/feed';
 import type { PostWithAuthor } from '@/types/post';
 
@@ -114,11 +114,11 @@ export function InfiniteFeed({ type, sort = 'new', initialPosts }: InfiniteFeedP
     };
   }, [handleObserver]);
 
-  // Estado de loading inicial
+  // Estado de loading inicial - mostra 10 skeletons para melhor feedback
   if (isLoading && posts.length === 0) {
     return (
       <div className="space-y-6">
-        {[1, 2, 3].map((i) => (
+        {Array.from({ length: 10 }).map((_, i) => (
           <PostSkeleton key={i} />
         ))}
       </div>
@@ -140,9 +140,18 @@ export function InfiniteFeed({ type, sort = 'new', initialPosts }: InfiniteFeedP
 
   return (
     <div className="space-y-6">
-      {/* Lista de posts */}
-      {posts.map((post) => (
-        <MemoizedCard key={post.id} post={post} />
+      {/* Lista de posts com animação de entrada */}
+      {posts.map((post, index) => (
+        <div
+          key={post.id}
+          className="animate-fade-in"
+          style={{
+            animationDelay: `${Math.min(index * 50, 500)}ms`,
+            animationFillMode: 'backwards',
+          }}
+        >
+          <MemoizedCard post={post} />
+        </div>
       ))}
 
       {/* Sentinel element para prefetch antecipado (invisível, trigger mais cedo) */}
@@ -151,10 +160,10 @@ export function InfiniteFeed({ type, sort = 'new', initialPosts }: InfiniteFeedP
       {/* Sentinel element para trigger do infinite scroll */}
       <div ref={sentinelRef} className="h-4" />
 
-      {/* Loading indicator para próxima página */}
+      {/* Loading indicator sutil para próxima página */}
       {isFetchingNextPage && (
-        <div className="py-4">
-          <PostSkeleton />
+        <div className="flex justify-center py-8">
+          <Spinner size="md" className="text-primary-600" />
         </div>
       )}
 

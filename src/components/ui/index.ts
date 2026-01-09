@@ -11,6 +11,7 @@ export { ConfirmModal } from './ConfirmModal';
 export { PromptModal } from './PromptModal';
 export { Tabs, TabsList, TabsTrigger, TabsContent } from './Tabs';
 export { Skeleton, SkeletonText, SkeletonAvatar, SkeletonCard, SkeletonPost, SkeletonTable } from './Skeleton';
+export { Spinner } from './Spinner';
 export { EmptyState, EmptyStateIcon } from './EmptyState';
 export { ToastProvider, useToast, useToastHelpers } from './Toast';
 
