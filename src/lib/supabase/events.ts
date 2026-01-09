@@ -78,36 +78,40 @@ export async function getEventById(eventId: string): Promise<EventWithRegistrati
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  const { data: event, error } = await supabase
-    .from('events')
-    .select('*')
-    .eq('id', eventId)
-    .single();
-
-  if (error || !event) return null;
-
-  const { count } = await supabase
-    .from('event_registrations')
-    .select('id', { count: 'exact' })
-    .eq('event_id', eventId)
-    .neq('status', 'cancelled');
-
-  let userRegistration = null;
-  if (user) {
-    const { data } = await supabase
-      .from('event_registrations')
+  // Paralelizar todas as queries usando Promise.all
+  const [eventResult, countResult, userRegistrationResult] = await Promise.all([
+    // Query 1: Buscar o evento
+    supabase
+      .from('events')
       .select('*')
+      .eq('id', eventId)
+      .single(),
+
+    // Query 2: Buscar contagem de registros
+    supabase
+      .from('event_registrations')
+      .select('id', { count: 'exact' })
       .eq('event_id', eventId)
-      .eq('user_id', user.id)
-      .single();
-    userRegistration = data;
-  }
+      .neq('status', 'cancelled'),
+
+    // Query 3: Buscar registro do usuário (se existir)
+    user
+      ? supabase
+          .from('event_registrations')
+          .select('*')
+          .eq('event_id', eventId)
+          .eq('user_id', user.id)
+          .single()
+      : Promise.resolve({ data: null, error: null }),
+  ]);
+
+  if (eventResult.error || !eventResult.data) return null;
 
   return {
-    ...event,
-    registrations_count: count || 0,
-    is_registered: !!userRegistration && userRegistration.status !== 'cancelled',
-    user_registration: userRegistration,
+    ...eventResult.data,
+    registrations_count: countResult.count || 0,
+    is_registered: !!userRegistrationResult.data && userRegistrationResult.data.status !== 'cancelled',
+    user_registration: userRegistrationResult.data,
   } as EventWithRegistration;
 }
 
