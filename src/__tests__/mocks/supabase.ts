@@ -111,7 +111,9 @@ export const mockSupabaseState = new MockSupabaseState();
 class MockQueryBuilder {
   private table: string;
   private selectedFields: string = '*';
-  private filters: Array<{ field: string; value: any }> = [];
+  private filters: Array<{ field: string; operator: string; value: any }> = [];
+  private orderBy: Array<{ field: string; ascending: boolean }> = [];
+  private limitValue: number | null = null;
   private shouldReturnSingle: boolean = false;
 
   constructor(table: string) {
@@ -130,7 +132,51 @@ class MockQueryBuilder {
    * Mock do método eq() - adiciona filtro de igualdade
    */
   eq(field: string, value: any) {
-    this.filters.push({ field, value });
+    this.filters.push({ field, operator: 'eq', value });
+    return this;
+  }
+
+  /**
+   * Mock do método lt() - adiciona filtro de menos que
+   */
+  lt(field: string, value: any) {
+    this.filters.push({ field, operator: 'lt', value });
+    return this;
+  }
+
+  /**
+   * Mock do método gt() - adiciona filtro de maior que
+   */
+  gt(field: string, value: any) {
+    this.filters.push({ field, operator: 'gt', value });
+    return this;
+  }
+
+  /**
+   * Mock do método or() - adiciona filtros OR complexos
+   * Exemplo: 'likes_count.lt.5,and(likes_count.eq.5,id.lt.abc)'
+   */
+  or(condition: string) {
+    this.filters.push({ field: '__or__', operator: 'or', value: condition });
+    return this;
+  }
+
+  /**
+   * Mock do método order() - ordena resultados
+   */
+  order(field: string, options?: { ascending?: boolean }) {
+    this.orderBy.push({
+      field,
+      ascending: options?.ascending ?? true,
+    });
+    return this;
+  }
+
+  /**
+   * Mock do método limit() - limita número de resultados
+   */
+  limit(count: number) {
+    this.limitValue = count;
     return this;
   }
 
@@ -150,7 +196,38 @@ class MockQueryBuilder {
 
     // Aplica filtros
     for (const filter of this.filters) {
-      data = data.filter(item => item[filter.field] === filter.value);
+      if (filter.operator === 'eq') {
+        data = data.filter(item => item[filter.field] === filter.value);
+      } else if (filter.operator === 'lt') {
+        data = data.filter(item => item[filter.field] < filter.value);
+      } else if (filter.operator === 'gt') {
+        data = data.filter(item => item[filter.field] > filter.value);
+      } else if (filter.operator === 'or') {
+        // Parse condição OR complexa
+        // Exemplo: 'likes_count.lt.5,and(likes_count.eq.5,id.lt.abc)'
+        data = data.filter(item => this.evaluateOrCondition(item, filter.value));
+      }
+    }
+
+    // Aplica ordenação
+    if (this.orderBy.length > 0) {
+      data = [...data].sort((a, b) => {
+        for (const order of this.orderBy) {
+          const aVal = a[order.field];
+          const bVal = b[order.field];
+
+          if (aVal === bVal) continue;
+
+          const comparison = aVal < bVal ? -1 : 1;
+          return order.ascending ? comparison : -comparison;
+        }
+        return 0;
+      });
+    }
+
+    // Aplica limit
+    if (this.limitValue !== null) {
+      data = data.slice(0, this.limitValue);
     }
 
     // Se for single, retorna apenas um resultado
@@ -161,6 +238,50 @@ class MockQueryBuilder {
 
     // Retorna array de resultados
     return resolve({ data, error: null });
+  }
+
+  /**
+   * Avalia condição OR complexa
+   * Suporta: 'field.lt.value,and(field.eq.value,field2.lt.value2)'
+   */
+  private evaluateOrCondition(item: any, condition: string): boolean {
+    // Split por vírgula no nível superior
+    const parts = condition.split(',and(');
+
+    if (parts.length === 1) {
+      // Condição simples: 'likes_count.lt.5'
+      return this.evaluateSimpleCondition(item, parts[0]);
+    }
+
+    // Condição OR: primeira parte OU segunda parte
+    const firstCondition = parts[0];
+    const secondCondition = parts[1].replace(')', '');
+
+    const firstResult = this.evaluateSimpleCondition(item, firstCondition);
+    if (firstResult) return true;
+
+    // Segunda parte é um AND de condições
+    const andParts = secondCondition.split(',');
+    return andParts.every(part => this.evaluateSimpleCondition(item, part));
+  }
+
+  /**
+   * Avalia condição simples: 'field.operator.value'
+   */
+  private evaluateSimpleCondition(item: any, condition: string): boolean {
+    const [field, operator, value] = condition.split('.');
+    const itemValue = item[field];
+
+    switch (operator) {
+      case 'eq':
+        return itemValue == value;
+      case 'lt':
+        return itemValue < value;
+      case 'gt':
+        return itemValue > value;
+      default:
+        return false;
+    }
   }
 }
 

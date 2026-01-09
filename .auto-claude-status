@@ -1,25 +1,25 @@
 {
   "active": true,
-  "spec": "011-otimizar-consultas-do-banco-usando-joins-em-vez-de",
+  "spec": "012-adicionar-paginacao-infinita-com-cursor-based-pagi",
   "state": "building",
   "subtasks": {
-    "completed": 16,
-    "total": 17,
+    "completed": 10,
+    "total": 12,
     "in_progress": 1,
     "failed": 0
   },
   "phase": {
-    "current": "Testes e valida\u00e7\u00e3o",
-    "id": null,
-    "total": 2
+    "current": "",
+    "id": 0,
+    "total": 0
   },
   "workers": {
     "active": 0,
     "max": 1
   },
   "session": {
-    "number": 18,
-    "started_at": "2026-01-08T21:17:10.272880"
+    "number": 10,
+    "started_at": "2026-01-08T21:17:09.703547"
   },
-  "last_update": "2026-01-08T21:44:20.834687"
+  "last_update": "2026-01-08T21:46:26.817237"
 }

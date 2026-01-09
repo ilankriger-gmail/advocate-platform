@@ -77,3 +77,30 @@ export interface RejectPostData {
   postId: string;
   reason: string;
 }
+
+/**
+ * Resposta paginada genérica com cursor-based pagination
+ *
+ * @template T - Tipo dos itens retornados na página
+ *
+ * @property {T[]} data - Array de itens da página atual
+ * @property {string | null} nextCursor - Cursor para a próxima página (null se não houver mais páginas)
+ * @property {boolean} hasMore - Indica se existem mais páginas disponíveis
+ * @property {number} [totalEstimate] - Estimativa total de itens (opcional, útil para UI de progresso)
+ *
+ * @example
+ * ```typescript
+ * const response: PaginatedFeedResponse<PostWithAuthor> = {
+ *   data: [post1, post2, post3],
+ *   nextCursor: 'eyJpZCI6IjEyMyIsImxpa2VzIjo0NX0=',
+ *   hasMore: true,
+ *   totalEstimate: 150
+ * };
+ * ```
+ */
+export interface PaginatedFeedResponse<T = unknown> {
+  data: T[];
+  nextCursor: string | null;
+  hasMore: boolean;
+  totalEstimate?: number;
+}

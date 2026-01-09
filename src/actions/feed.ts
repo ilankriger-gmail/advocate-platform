@@ -1,10 +1,43 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import type { PostWithAuthor } from '@/types/post';
+import type { PostWithAuthor, PaginatedFeedResponse } from '@/types/post';
 
 export type FeedSortType = 'new' | 'top' | 'hot';
 export type FeedType = 'creator' | 'community' | 'all';
+
+/**
+ * Cursor composto para ordenação 'top'
+ * Codifica likes_count e id para paginação determinística
+ */
+interface TopCursor {
+  likes_count: number;
+  id: string;
+}
+
+/**
+ * Codifica um cursor composto em string base64
+ */
+function encodeTopCursor(cursor: TopCursor): string {
+  return Buffer.from(JSON.stringify(cursor)).toString('base64');
+}
+
+/**
+ * Decodifica um cursor composto de string base64
+ * Retorna null se o cursor for inválido
+ */
+function decodeTopCursor(cursor: string): TopCursor | null {
+  try {
+    const decoded = Buffer.from(cursor, 'base64').toString('utf-8');
+    const parsed = JSON.parse(decoded);
+    if (typeof parsed.likes_count === 'number' && typeof parsed.id === 'string') {
+      return parsed;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Calcula hot score usando algoritmo Reddit-like
@@ -17,29 +50,81 @@ function calculateHotScore(voteScore: number, createdAt: string): number {
   return voteScore / Math.pow(ageInHours + 2, gravity);
 }
 
+/**
+ * Parâmetros para buscar posts do feed
+ */
 interface GetFeedParams {
+  /** Tipo de feed: 'creator' (posts do criador), 'community' (posts da comunidade) ou 'all' (todos) */
   type: FeedType;
+  /** Ordenação: 'new' (mais recentes), 'top' (mais curtidos) ou 'hot' (trending com decay temporal) */
   sort?: FeedSortType;
+  /** Cursor para paginação - string opaca retornada pela requisição anterior */
   cursor?: string;
+  /** Número de posts por página (padrão: 10) */
   limit?: number;
-}
-
-interface FeedResponse {
-  posts: PostWithAuthor[];
-  nextCursor: string | null;
-  hasMore: boolean;
 }
 
 /**
  * Busca posts do feed com paginação por cursor
- * Suporta diferentes tipos (criador/comunidade) e ordenações (novo/top/hot)
+ *
+ * @description
+ * Implementa cursor-based pagination eficiente para feeds com grande volume de dados.
+ * Suporta três tipos de ordenação:
+ * - 'new': Posts ordenados por data de criação (mais recentes primeiro)
+ * - 'top': Posts ordenados por número de curtidas (cursor composto: likes_count + id)
+ * - 'hot': Posts com trending score (combina curtidas e tempo decorrido - algoritmo Reddit-like)
+ *
+ * A paginação é determinística e previne duplicação de posts entre páginas.
+ * Apenas posts com status 'approved' são retornados.
+ *
+ * @param {GetFeedParams} params - Parâmetros da busca
+ * @returns {Promise<PaginatedFeedResponse<PostWithAuthor>>} Posts paginados com cursor para próxima página
+ *
+ * @example
+ * // Primeira página - posts do criador ordenados por mais recentes
+ * const firstPage = await getFeedPosts({
+ *   type: 'creator',
+ *   sort: 'new',
+ *   limit: 10
+ * });
+ * console.log(firstPage.data); // Array com 10 posts
+ * console.log(firstPage.hasMore); // true se existem mais posts
+ *
+ * // Segunda página - usar o cursor retornado
+ * if (firstPage.hasMore && firstPage.nextCursor) {
+ *   const secondPage = await getFeedPosts({
+ *     type: 'creator',
+ *     sort: 'new',
+ *     cursor: firstPage.nextCursor,
+ *     limit: 10
+ *   });
+ *   console.log(secondPage.data); // Próximos 10 posts
+ * }
+ *
+ * @example
+ * // Posts ordenados por curtidas (top)
+ * const topPosts = await getFeedPosts({
+ *   type: 'all',
+ *   sort: 'top',
+ *   limit: 20
+ * });
+ * // Cursor é composto: codifica likes_count e id para ordenação estável
+ *
+ * @example
+ * // Posts trending (hot) - combina curtidas e recência
+ * const hotPosts = await getFeedPosts({
+ *   type: 'community',
+ *   sort: 'hot',
+ *   limit: 15
+ * });
+ * // Hot score calculado no client: voteScore / (ageInHours + 2)^1.8
  */
 export async function getFeedPosts({
   type,
   sort = 'new',
   cursor,
   limit = 10,
-}: GetFeedParams): Promise<FeedResponse> {
+}: GetFeedParams): Promise<PaginatedFeedResponse<PostWithAuthor>> {
   const supabase = await createClient();
 
   // Construir query base
@@ -61,45 +146,55 @@ export async function getFeedPosts({
     query = query.eq('type', type);
   }
 
-  // Aplicar ordenação
+  // Aplicar ordenação e paginação por cursor
   switch (sort) {
-    case 'top':
-      query = query.order('likes_count', { ascending: false });
-      break;
-    case 'hot':
-      // Hot usa likes_count com decay temporal
-      // Por ora, usa likes_count + created_at como fallback
+    case 'top': {
+      // Ordenação estável: likes_count DESC, id DESC
       query = query
         .order('likes_count', { ascending: false })
-        .order('created_at', { ascending: false });
+        .order('id', { ascending: false });
+
+      // Aplicar cursor composto se fornecido
+      if (cursor) {
+        const decodedCursor = decodeTopCursor(cursor);
+        if (decodedCursor) {
+          // WHERE (likes_count < cursor_likes) OR (likes_count = cursor_likes AND id < cursor_id)
+          query = query.or(
+            `likes_count.lt.${decodedCursor.likes_count},and(likes_count.eq.${decodedCursor.likes_count},id.lt.${decodedCursor.id})`
+          );
+        }
+      }
+      break;
+    }
+    case 'hot':
+      // Hot usa hot_score (calculado no client) com decay temporal
+      // Cursor baseado em created_at para garantir paginação estável
+      // Buscar posts ordenados por created_at e reordenar por hot_score no client
+      query = query.order('created_at', { ascending: false });
+
+      // Cursor baseado em created_at (similar ao 'new')
+      if (cursor) {
+        query = query.lt('created_at', cursor);
+      }
       break;
     case 'new':
     default:
       query = query.order('created_at', { ascending: false });
-  }
 
-  // Paginação por cursor (usando created_at para new, vote_score+id para top)
-  if (cursor) {
-    if (sort === 'new') {
-      query = query.lt('created_at', cursor);
-    } else {
-      // Para top/hot, usamos offset simples por enquanto
-      // Cursor-based pagination com vote_score é mais complexo
-      const offset = parseInt(cursor, 10) || 0;
-      query = query.range(offset, offset + limit - 1);
-    }
+      // Cursor baseado em created_at
+      if (cursor) {
+        query = query.lt('created_at', cursor);
+      }
   }
 
   // Limitar resultados
-  if (sort === 'new' || !cursor) {
-    query = query.limit(limit);
-  }
+  query = query.limit(limit);
 
   const { data, error } = await query;
 
   if (error) {
     console.error('Erro ao buscar feed:', error);
-    return { posts: [], nextCursor: null, hasMore: false };
+    return { data: [], nextCursor: null, hasMore: false };
   }
 
   let posts = (data || []) as PostWithAuthor[];
@@ -120,26 +215,63 @@ export async function getFeedPosts({
   // Calcular próximo cursor
   let nextCursor: string | null = null;
   if (hasMore && posts.length > 0) {
-    if (sort === 'new') {
-      nextCursor = posts[posts.length - 1].created_at;
-    } else {
-      // Para top/hot, usar offset
-      const currentOffset = cursor ? parseInt(cursor, 10) : 0;
-      nextCursor = String(currentOffset + limit);
+    const lastPost = posts[posts.length - 1];
+
+    switch (sort) {
+      case 'new':
+        nextCursor = lastPost.created_at;
+        break;
+      case 'top':
+        // Cursor composto com likes_count e id
+        nextCursor = encodeTopCursor({
+          likes_count: lastPost.likes_count,
+          id: lastPost.id,
+        });
+        break;
+      case 'hot':
+        // Cursor baseado em created_at (após reordenação por hot_score)
+        nextCursor = lastPost.created_at;
+        break;
     }
   }
 
-  return { posts, nextCursor, hasMore };
+  return { data: posts, nextCursor, hasMore };
 }
 
 /**
- * Busca posts iniciais para SSR
- * Usado na página inicial para carregar dados no servidor
+ * Busca posts iniciais para SSR (Server-Side Rendering)
+ *
+ * @description
+ * Função auxiliar para carregar a primeira página de posts no servidor.
+ * Ideal para uso em Server Components do Next.js para melhorar o First Contentful Paint (FCP).
+ * Retorna apenas o array de posts, descartando metadados de paginação.
+ *
+ * @param {FeedType} type - Tipo de feed: 'creator', 'community' ou 'all'
+ * @param {number} [limit=10] - Número de posts a carregar (padrão: 10)
+ * @returns {Promise<PostWithAuthor[]>} Array de posts com dados do autor
+ *
+ * @example
+ * // Em um Server Component (Next.js App Router)
+ * export default async function HomePage() {
+ *   const initialPosts = await getInitialFeedPosts('all', 10);
+ *
+ *   return (
+ *     <InfiniteFeed
+ *       type="all"
+ *       sort="new"
+ *       initialPosts={initialPosts} // SSR - zero loading state
+ *     />
+ *   );
+ * }
+ *
+ * @example
+ * // Feed de posts do criador
+ * const creatorPosts = await getInitialFeedPosts('creator', 15);
  */
 export async function getInitialFeedPosts(
   type: FeedType,
   limit = 10
 ): Promise<PostWithAuthor[]> {
   const result = await getFeedPosts({ type, limit });
-  return result.posts;
+  return result.data;
 }
