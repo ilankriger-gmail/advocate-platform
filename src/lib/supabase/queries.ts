@@ -120,10 +120,18 @@ export async function getFeaturedCreatorPosts(limit = 3): Promise<PostWithAuthor
 export async function getCommunityPosts(limit = 20, offset = 0): Promise<PostWithAuthor[]> {
   const supabase = await createClient();
 
-  // Buscar posts do tipo 'community'
+  // Buscar posts do tipo 'community' com JOIN
   const { data: posts, error } = await supabase
     .from('posts')
-    .select('*')
+    .select(`
+      *,
+      author:users!posts_user_id_fkey(
+        id,
+        full_name,
+        avatar_url,
+        is_creator
+      )
+    `)
     .eq('status', 'approved')
     .eq('type', 'community')
     .order('created_at', { ascending: false })
@@ -131,19 +139,7 @@ export async function getCommunityPosts(limit = 20, offset = 0): Promise<PostWit
 
   if (error || !posts || posts.length === 0) return [];
 
-  // Buscar autores separadamente
-  const userIds = Array.from(new Set(posts.map(p => p.user_id)));
-  const { data: users } = await supabase
-    .from('users')
-    .select('id, full_name, avatar_url, is_creator')
-    .in('id', userIds);
-
-  const usersMap = new Map((users || []).map(u => [u.id, u]));
-
-  return posts.map(post => ({
-    ...post,
-    author: usersMap.get(post.user_id) || null,
-  }));
+  return posts as PostWithAuthor[];
 }
 
 /**
