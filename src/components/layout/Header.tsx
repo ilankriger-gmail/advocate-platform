@@ -1,12 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar } from '@/components/ui';
 import { cn } from '@/lib/utils';
-import { checkAdminSession } from '@/actions/admin-auth';
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -21,26 +19,10 @@ const HIDDEN_HEADER_ROUTES = ['/seja-nextlover', '/login', '/registro'];
 export function Header({ onMenuClick, showMenuButton = false, className, siteName = 'NextLOVERS' }: HeaderProps) {
   const { user, signOut } = useAuth();
   const pathname = usePathname();
-  const [isAdmin, setIsAdmin] = useState(false);
 
-  // Verificar se o usuario e admin/creator
+  // Verificar se o usuario e criador (unico com acesso ao admin)
   const isCreator = user?.user_metadata?.is_creator === true;
-
-  // Verificar autenticacao admin via server action segura
-  useEffect(() => {
-    const checkAdminAuth = async () => {
-      try {
-        const isAuth = await checkAdminSession();
-        setIsAdmin(isAuth);
-      } catch (error) {
-        setIsAdmin(false);
-      }
-    };
-
-    checkAdminAuth();
-  }, []);
-
-  const showAdminLink = isCreator || isAdmin;
+  const showAdminLink = isCreator;
 
   // Nao renderizar Header em certas paginas
   if (HIDDEN_HEADER_ROUTES.some(route => pathname?.startsWith(route))) {

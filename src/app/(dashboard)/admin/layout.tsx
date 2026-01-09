@@ -1,4 +1,4 @@
-import { AdminAuthCheck, AdminLogoutButton } from './AdminAuthCheck';
+import { AdminAuthCheck } from './AdminAuthCheck';
 import Link from 'next/link';
 
 export default function AdminLayout({
@@ -24,15 +24,12 @@ export default function AdminLayout({
                 <p className="text-indigo-100 text-sm">Gerencie sua plataforma</p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <Link
-                href="/admin/configuracoes"
-                className="text-indigo-100 text-sm hover:text-white bg-white/10 px-3 py-1 rounded-md"
-              >
-                Configuracoes
-              </Link>
-              <AdminLogoutButton />
-            </div>
+            <Link
+              href="/admin/configuracoes"
+              className="text-indigo-100 text-sm hover:text-white bg-white/10 px-3 py-1 rounded-md"
+            >
+              Configuracoes
+            </Link>
           </div>
         </div>
 

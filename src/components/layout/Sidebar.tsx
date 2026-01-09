@@ -1,12 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { MAIN_NAV, CREATOR_NAV } from '@/lib/constants';
-import { checkAdminSession } from '@/actions/admin-auth';
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -81,27 +79,10 @@ const icons: Record<string, React.ReactNode> = {
 export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
   const pathname = usePathname();
   const { user } = useAuth();
-  const [isAdminAuth, setIsAdminAuth] = useState(false);
 
-  // Verifica se e o criador da comunidade
+  // Verifica se e o criador da comunidade (unico com acesso ao admin)
   const isCreator = user?.user_metadata?.is_creator === true;
-
-  // Verificar autenticacao admin via server action segura
-  useEffect(() => {
-    const checkAdminAuth = async () => {
-      try {
-        const isAuth = await checkAdminSession();
-        setIsAdminAuth(isAuth);
-      } catch (error) {
-        setIsAdminAuth(false);
-      }
-    };
-
-    checkAdminAuth();
-  }, []);
-
-  // Mostrar menu admin se for criador OU se estiver autenticado via /admin/login
-  const showAdminMenu = isCreator || isAdminAuth;
+  const showAdminMenu = isCreator;
 
   return (
     <>
