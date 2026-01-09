@@ -7,16 +7,25 @@ import { Card, Skeleton, Spinner, Button } from '@/components/ui';
 import type { FeedType, FeedSortType } from '@/actions/feed';
 import type { PostWithAuthor } from '@/types/post';
 
+/**
+ * Props do componente InfiniteFeed
+ */
 interface InfiniteFeedProps {
+  /** Tipo de feed: 'creator', 'community' ou 'all' */
   type: FeedType;
+  /** Ordenação: 'new', 'top' ou 'hot' (padrão: 'new') */
   sort?: FeedSortType;
+  /** Posts iniciais do SSR - evita skeleton no primeiro render */
   initialPosts?: PostWithAuthor[];
 }
 
 // Memoizar o card para evitar re-renders desnecessários
 const MemoizedCard = memo(InstagramCard);
 
-// Loading skeleton para posts
+/**
+ * Skeleton de loading para posts
+ * Replica a estrutura visual de um post para melhor UX durante loading
+ */
 function PostSkeleton() {
   return (
     <Card className="overflow-hidden">
@@ -36,6 +45,50 @@ function PostSkeleton() {
   );
 }
 
+/**
+ * Componente de feed com infinite scroll automático
+ *
+ * @description
+ * Feed de posts com paginação infinita usando Intersection Observer.
+ * Recursos:
+ * - Infinite scroll automático (carrega ao chegar no fim)
+ * - Prefetch antecipado da próxima página (~70% do scroll)
+ * - Skeleton loading (10 posts) no carregamento inicial
+ * - Spinner sutil ao carregar mais posts
+ * - Animação fade-in suave para novos posts
+ * - Tratamento de erro com retry
+ * - SSR support com initialPosts
+ * - Memoização de cards para performance
+ *
+ * O componente usa dois Intersection Observers:
+ * 1. Prefetch Observer (rootMargin: 800px) - trigger antecipado
+ * 2. Fetch Observer (rootMargin: 100px) - carregamento real
+ *
+ * @param {InfiniteFeedProps} props - Props do componente
+ * @returns {JSX.Element} Feed renderizado
+ *
+ * @example
+ * // Uso básico com SSR
+ * export default async function HomePage() {
+ *   const initialPosts = await getInitialFeedPosts('all', 10);
+ *
+ *   return (
+ *     <InfiniteFeed
+ *       type="all"
+ *       sort="new"
+ *       initialPosts={initialPosts}
+ *     />
+ *   );
+ * }
+ *
+ * @example
+ * // Feed de posts do criador ordenados por curtidas
+ * <InfiniteFeed type="creator" sort="top" />
+ *
+ * @example
+ * // Feed de posts trending da comunidade
+ * <InfiniteFeed type="community" sort="hot" />
+ */
 export function InfiniteFeed({ type, sort = 'new', initialPosts }: InfiniteFeedProps) {
   const {
     posts,

@@ -50,16 +50,74 @@ function calculateHotScore(voteScore: number, createdAt: string): number {
   return voteScore / Math.pow(ageInHours + 2, gravity);
 }
 
+/**
+ * Parâmetros para buscar posts do feed
+ */
 interface GetFeedParams {
+  /** Tipo de feed: 'creator' (posts do criador), 'community' (posts da comunidade) ou 'all' (todos) */
   type: FeedType;
+  /** Ordenação: 'new' (mais recentes), 'top' (mais curtidos) ou 'hot' (trending com decay temporal) */
   sort?: FeedSortType;
+  /** Cursor para paginação - string opaca retornada pela requisição anterior */
   cursor?: string;
+  /** Número de posts por página (padrão: 10) */
   limit?: number;
 }
 
 /**
  * Busca posts do feed com paginação por cursor
- * Suporta diferentes tipos (criador/comunidade) e ordenações (novo/top/hot)
+ *
+ * @description
+ * Implementa cursor-based pagination eficiente para feeds com grande volume de dados.
+ * Suporta três tipos de ordenação:
+ * - 'new': Posts ordenados por data de criação (mais recentes primeiro)
+ * - 'top': Posts ordenados por número de curtidas (cursor composto: likes_count + id)
+ * - 'hot': Posts com trending score (combina curtidas e tempo decorrido - algoritmo Reddit-like)
+ *
+ * A paginação é determinística e previne duplicação de posts entre páginas.
+ * Apenas posts com status 'approved' são retornados.
+ *
+ * @param {GetFeedParams} params - Parâmetros da busca
+ * @returns {Promise<PaginatedFeedResponse<PostWithAuthor>>} Posts paginados com cursor para próxima página
+ *
+ * @example
+ * // Primeira página - posts do criador ordenados por mais recentes
+ * const firstPage = await getFeedPosts({
+ *   type: 'creator',
+ *   sort: 'new',
+ *   limit: 10
+ * });
+ * console.log(firstPage.data); // Array com 10 posts
+ * console.log(firstPage.hasMore); // true se existem mais posts
+ *
+ * // Segunda página - usar o cursor retornado
+ * if (firstPage.hasMore && firstPage.nextCursor) {
+ *   const secondPage = await getFeedPosts({
+ *     type: 'creator',
+ *     sort: 'new',
+ *     cursor: firstPage.nextCursor,
+ *     limit: 10
+ *   });
+ *   console.log(secondPage.data); // Próximos 10 posts
+ * }
+ *
+ * @example
+ * // Posts ordenados por curtidas (top)
+ * const topPosts = await getFeedPosts({
+ *   type: 'all',
+ *   sort: 'top',
+ *   limit: 20
+ * });
+ * // Cursor é composto: codifica likes_count e id para ordenação estável
+ *
+ * @example
+ * // Posts trending (hot) - combina curtidas e recência
+ * const hotPosts = await getFeedPosts({
+ *   type: 'community',
+ *   sort: 'hot',
+ *   limit: 15
+ * });
+ * // Hot score calculado no client: voteScore / (ageInHours + 2)^1.8
  */
 export async function getFeedPosts({
   type,
@@ -181,8 +239,34 @@ export async function getFeedPosts({
 }
 
 /**
- * Busca posts iniciais para SSR
- * Usado na página inicial para carregar dados no servidor
+ * Busca posts iniciais para SSR (Server-Side Rendering)
+ *
+ * @description
+ * Função auxiliar para carregar a primeira página de posts no servidor.
+ * Ideal para uso em Server Components do Next.js para melhorar o First Contentful Paint (FCP).
+ * Retorna apenas o array de posts, descartando metadados de paginação.
+ *
+ * @param {FeedType} type - Tipo de feed: 'creator', 'community' ou 'all'
+ * @param {number} [limit=10] - Número de posts a carregar (padrão: 10)
+ * @returns {Promise<PostWithAuthor[]>} Array de posts com dados do autor
+ *
+ * @example
+ * // Em um Server Component (Next.js App Router)
+ * export default async function HomePage() {
+ *   const initialPosts = await getInitialFeedPosts('all', 10);
+ *
+ *   return (
+ *     <InfiniteFeed
+ *       type="all"
+ *       sort="new"
+ *       initialPosts={initialPosts} // SSR - zero loading state
+ *     />
+ *   );
+ * }
+ *
+ * @example
+ * // Feed de posts do criador
+ * const creatorPosts = await getInitialFeedPosts('creator', 15);
  */
 export async function getInitialFeedPosts(
   type: FeedType,
