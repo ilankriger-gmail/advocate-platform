@@ -196,7 +196,7 @@ export async function toggleRewardActive(
 
     // Verificar se e admin/creator
     const { data: profile } = await supabase
-      .from('profiles')
+      .from('users')
       .select('role, is_creator')
       .eq('id', user.id)
       .single();
@@ -236,7 +236,7 @@ export async function approveClaim(claimId: string): Promise<ActionResponse> {
 
     // Verificar se e admin/creator
     const { data: profile } = await supabase
-      .from('profiles')
+      .from('users')
       .select('role, is_creator')
       .eq('id', user.id)
       .single();
@@ -275,7 +275,7 @@ export async function markClaimShipped(claimId: string): Promise<ActionResponse>
 
     // Verificar se e admin/creator
     const { data: profile } = await supabase
-      .from('profiles')
+      .from('users')
       .select('role, is_creator')
       .eq('id', user.id)
       .single();
@@ -314,7 +314,7 @@ export async function markClaimDelivered(claimId: string): Promise<ActionRespons
 
     // Verificar se e admin/creator
     const { data: profile } = await supabase
-      .from('profiles')
+      .from('users')
       .select('role, is_creator')
       .eq('id', user.id)
       .single();
@@ -360,7 +360,7 @@ export async function createReward(data: {
 
     // Verificar se e admin/creator
     const { data: profile } = await supabase
-      .from('profiles')
+      .from('users')
       .select('role, is_creator')
       .eq('id', user.id)
       .single();
@@ -484,7 +484,7 @@ export async function addCoinsToUser(
 
     // Verificar se e admin/creator
     const { data: profile } = await supabase
-      .from('profiles')
+      .from('users')
       .select('role, is_creator')
       .eq('id', user.id)
       .single();

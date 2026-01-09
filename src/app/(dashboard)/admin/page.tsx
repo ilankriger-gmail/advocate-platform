@@ -52,7 +52,7 @@ export default async function AdminDashboardPage() {
     supabase.from('challenge_participants').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
     supabase.from('events').select('*', { count: 'exact', head: true }).eq('is_active', true),
     supabase.from('events').select('*', { count: 'exact', head: true }).gt('starts_at', new Date().toISOString()),
-    supabase.from('profiles').select('*', { count: 'exact', head: true }),
+    supabase.from('users').select('*', { count: 'exact', head: true }),
     supabase.from('reward_claims').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
     supabase.from('rewards').select('*', { count: 'exact', head: true }).eq('is_active', true),
     supabase.from('nps_leads').select('*', { count: 'exact', head: true }).eq('status', 'pending'),

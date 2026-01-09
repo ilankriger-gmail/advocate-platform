@@ -13,7 +13,7 @@ export default async function AdminUsuariosPage({ searchParams }: PageProps) {
 
   // Buscar usuarios com saldo de coracoes
   let query = supabase
-    .from('profiles')
+    .from('users')
     .select(`
       *,
       user_coins (
@@ -31,7 +31,7 @@ export default async function AdminUsuariosPage({ searchParams }: PageProps) {
 
   // Estatisticas gerais
   const { count: totalUsers } = await supabase
-    .from('profiles')
+    .from('users')
     .select('*', { count: 'exact', head: true });
 
   const { data: totalCoinsData } = await supabase

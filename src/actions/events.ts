@@ -226,7 +226,7 @@ export async function createEvent(data: {
 
     // Verificar se e admin/creator
     const { data: profile } = await supabase
-      .from('profiles')
+      .from('users')
       .select('role, is_creator')
       .eq('id', user.id)
       .single();
@@ -282,7 +282,7 @@ export async function toggleEventActive(
 
     // Verificar se e admin/creator
     const { data: profile } = await supabase
-      .from('profiles')
+      .from('users')
       .select('role, is_creator')
       .eq('id', user.id)
       .single();

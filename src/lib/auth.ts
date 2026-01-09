@@ -72,7 +72,7 @@ export async function requireAuth(): Promise<AuthResponse> {
 
   // Buscar dados do perfil
   const { data: profile } = await supabase
-    .from('profiles')
+    .from('users')
     .select('id, role, is_creator')
     .eq('id', user.id)
     .single();

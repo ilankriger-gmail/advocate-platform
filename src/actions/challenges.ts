@@ -168,7 +168,7 @@ export async function approveParticipation(participationId: string, customCoins?
 
     // Verificar se e admin/creator
     const { data: profile } = await supabase
-      .from('profiles')
+      .from('users')
       .select('role, is_creator')
       .eq('id', user.id)
       .single();
@@ -261,7 +261,7 @@ export async function rejectParticipation(
 
     // Verificar se e admin/creator
     const { data: profile } = await supabase
-      .from('profiles')
+      .from('users')
       .select('role, is_creator')
       .eq('id', user.id)
       .single();
@@ -308,7 +308,7 @@ export async function toggleChallengeActive(
 
     // Verificar se e admin/creator
     const { data: profile } = await supabase
-      .from('profiles')
+      .from('users')
       .select('role, is_creator')
       .eq('id', user.id)
       .single();
@@ -348,7 +348,7 @@ export async function markWinnerPaid(winnerId: string): Promise<ActionResponse> 
 
     // Verificar se e admin/creator
     const { data: profile } = await supabase
-      .from('profiles')
+      .from('users')
       .select('role, is_creator')
       .eq('id', user.id)
       .single();
@@ -406,7 +406,7 @@ export async function createChallenge(data: {
 
     // Verificar se e admin/creator
     const { data: profile } = await supabase
-      .from('profiles')
+      .from('users')
       .select('role, is_creator')
       .eq('id', user.id)
       .single();
@@ -469,7 +469,7 @@ export async function closeChallenge(challengeId: string): Promise<ActionRespons
 
     // Verificar se e admin/creator
     const { data: profile } = await supabase
-      .from('profiles')
+      .from('users')
       .select('role, is_creator')
       .eq('id', user.id)
       .single();
@@ -514,7 +514,7 @@ export async function registerWinner(data: {
 
     // Verificar se e admin/creator
     const { data: profile } = await supabase
-      .from('profiles')
+      .from('users')
       .select('role, is_creator')
       .eq('id', user.id)
       .single();
