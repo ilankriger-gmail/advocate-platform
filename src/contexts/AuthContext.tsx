@@ -42,15 +42,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Funcao para buscar dados do perfil do usuario
   const fetchProfile = useCallback(async (userId: string) => {
     try {
-      const { data } = await supabase
+      console.log('[AuthContext] Buscando perfil para userId:', userId);
+      const { data, error } = await supabase
         .from('users')
         .select('role, is_creator')
         .eq('id', userId)
         .single();
 
+      console.log('[AuthContext] Perfil carregado:', data, 'Erro:', error);
       setProfile(data ? { role: data.role, is_creator: data.is_creator } : null);
     } catch (error) {
-      console.error('Erro ao buscar perfil:', error);
+      console.error('[AuthContext] Erro ao buscar perfil:', error);
       setProfile(null);
     }
   }, [supabase]);

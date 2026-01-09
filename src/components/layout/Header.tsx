@@ -24,6 +24,9 @@ export function Header({ onMenuClick, showMenuButton = false, className, siteNam
   // Verificacao agora feita via perfil do Supabase em vez de localStorage inseguro
   const showAdminLink = profile?.role === 'admin' || profile?.is_creator === true;
 
+  // Debug log
+  console.log('[Header] profile:', profile, 'showAdminLink:', showAdminLink);
+
   // Nao renderizar Header em certas paginas
   if (HIDDEN_HEADER_ROUTES.some(route => pathname?.startsWith(route))) {
     return null;
