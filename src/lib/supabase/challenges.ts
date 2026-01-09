@@ -29,34 +29,47 @@ export async function getActiveChallenges(): Promise<ChallengeWithStats[]> {
     .eq('status', 'active')
     .order('created_at', { ascending: false });
 
-  if (error || !challenges) return [];
+  if (error || !challenges || challenges.length === 0) return [];
 
-  // Buscar contagem de participantes e status do usuário
-  const challengesWithStats = await Promise.all(
-    challenges.map(async (challenge) => {
-      const { count } = await supabase
-        .from('challenge_participants')
-        .select('id', { count: 'exact' })
-        .eq('challenge_id', challenge.id);
+  // Extrair IDs de todos os desafios
+  const challengeIds = challenges.map(c => c.id);
 
-      let userParticipation = null;
-      if (user) {
-        const { data } = await supabase
-          .from('challenge_participants')
-          .select('*')
-          .eq('challenge_id', challenge.id)
-          .eq('user_id', user.id)
-          .single();
-        userParticipation = data;
-      }
+  // Buscar contagem de participantes para todos os desafios em uma única query
+  const { data: participantCounts } = await supabase
+    .from('challenge_participants')
+    .select('challenge_id')
+    .in('challenge_id', challengeIds);
 
-      return {
-        ...challenge,
-        participants_count: count || 0,
-        user_participation: userParticipation,
-      } as ChallengeWithStats;
-    })
-  );
+  // Contar participantes por desafio
+  const countsMap = new Map<string, number>();
+  if (participantCounts) {
+    participantCounts.forEach(p => {
+      countsMap.set(p.challenge_id, (countsMap.get(p.challenge_id) || 0) + 1);
+    });
+  }
+
+  // Buscar participações do usuário em todos os desafios em uma única query
+  let userParticipationsMap = new Map<string, ChallengeParticipant>();
+  if (user) {
+    const { data: userParticipations } = await supabase
+      .from('challenge_participants')
+      .select('*')
+      .in('challenge_id', challengeIds)
+      .eq('user_id', user.id);
+
+    if (userParticipations) {
+      userParticipations.forEach(p => {
+        userParticipationsMap.set(p.challenge_id, p);
+      });
+    }
+  }
+
+  // Combinar dados
+  const challengesWithStats = challenges.map(challenge => ({
+    ...challenge,
+    participants_count: countsMap.get(challenge.id) || 0,
+    user_participation: userParticipationsMap.get(challenge.id) || null,
+  })) as ChallengeWithStats[];
 
   return challengesWithStats;
 }
@@ -76,33 +89,47 @@ export async function getChallengesByType(type: ChallengeType): Promise<Challeng
     .eq('type', type)
     .order('created_at', { ascending: false });
 
-  if (error || !challenges) return [];
+  if (error || !challenges || challenges.length === 0) return [];
 
-  const challengesWithStats = await Promise.all(
-    challenges.map(async (challenge) => {
-      const { count } = await supabase
-        .from('challenge_participants')
-        .select('id', { count: 'exact' })
-        .eq('challenge_id', challenge.id);
+  // Extrair IDs de todos os desafios
+  const challengeIds = challenges.map(c => c.id);
 
-      let userParticipation = null;
-      if (user) {
-        const { data } = await supabase
-          .from('challenge_participants')
-          .select('*')
-          .eq('challenge_id', challenge.id)
-          .eq('user_id', user.id)
-          .single();
-        userParticipation = data;
-      }
+  // Buscar contagem de participantes para todos os desafios em uma única query
+  const { data: participantCounts } = await supabase
+    .from('challenge_participants')
+    .select('challenge_id')
+    .in('challenge_id', challengeIds);
 
-      return {
-        ...challenge,
-        participants_count: count || 0,
-        user_participation: userParticipation,
-      } as ChallengeWithStats;
-    })
-  );
+  // Contar participantes por desafio
+  const countsMap = new Map<string, number>();
+  if (participantCounts) {
+    participantCounts.forEach(p => {
+      countsMap.set(p.challenge_id, (countsMap.get(p.challenge_id) || 0) + 1);
+    });
+  }
+
+  // Buscar participações do usuário em todos os desafios em uma única query
+  let userParticipationsMap = new Map<string, ChallengeParticipant>();
+  if (user) {
+    const { data: userParticipations } = await supabase
+      .from('challenge_participants')
+      .select('*')
+      .in('challenge_id', challengeIds)
+      .eq('user_id', user.id);
+
+    if (userParticipations) {
+      userParticipations.forEach(p => {
+        userParticipationsMap.set(p.challenge_id, p);
+      });
+    }
+  }
+
+  // Combinar dados
+  const challengesWithStats = challenges.map(challenge => ({
+    ...challenge,
+    participants_count: countsMap.get(challenge.id) || 0,
+    user_participation: userParticipationsMap.get(challenge.id) || null,
+  })) as ChallengeWithStats[];
 
   return challengesWithStats;
 }
@@ -115,34 +142,38 @@ export async function getChallengeById(challengeId: string): Promise<ChallengeWi
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  const { data: challenge, error } = await supabase
-    .from('challenges')
-    .select('*')
-    .eq('id', challengeId)
-    .single();
-
-  if (error || !challenge) return null;
-
-  const { count } = await supabase
-    .from('challenge_participants')
-    .select('id', { count: 'exact' })
-    .eq('challenge_id', challengeId);
-
-  let userParticipation = null;
-  if (user) {
-    const { data } = await supabase
-      .from('challenge_participants')
+  // Paralelizar todas as queries usando Promise.all
+  const [challengeResult, countResult, userParticipationResult] = await Promise.all([
+    // Query 1: Buscar o desafio
+    supabase
+      .from('challenges')
       .select('*')
-      .eq('challenge_id', challengeId)
-      .eq('user_id', user.id)
-      .single();
-    userParticipation = data;
-  }
+      .eq('id', challengeId)
+      .single(),
+
+    // Query 2: Buscar contagem de participantes
+    supabase
+      .from('challenge_participants')
+      .select('id', { count: 'exact' })
+      .eq('challenge_id', challengeId),
+
+    // Query 3: Buscar participação do usuário (se existir)
+    user
+      ? supabase
+          .from('challenge_participants')
+          .select('*')
+          .eq('challenge_id', challengeId)
+          .eq('user_id', user.id)
+          .single()
+      : Promise.resolve({ data: null, error: null }),
+  ]);
+
+  if (challengeResult.error || !challengeResult.data) return null;
 
   return {
-    ...challenge,
-    participants_count: count || 0,
-    user_participation: userParticipation,
+    ...challengeResult.data,
+    participants_count: countResult.count || 0,
+    user_participation: userParticipationResult.data,
   } as ChallengeWithStats;
 }
 

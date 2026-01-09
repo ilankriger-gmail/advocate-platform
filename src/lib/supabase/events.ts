@@ -20,36 +20,52 @@ export async function getActiveEvents(): Promise<EventWithRegistration[]> {
     .gte('end_time', new Date().toISOString())
     .order('start_time', { ascending: true });
 
-  if (error || !events) return [];
+  if (error || !events || events.length === 0) return [];
 
-  // Buscar contagem de registros e status do usuário
-  const eventsWithRegistration = await Promise.all(
-    events.map(async (event) => {
-      const { count } = await supabase
-        .from('event_registrations')
-        .select('id', { count: 'exact' })
-        .eq('event_id', event.id)
-        .neq('status', 'cancelled');
+  // Extrair IDs de todos os eventos
+  const eventIds = events.map(e => e.id);
 
-      let userRegistration = null;
-      if (user) {
-        const { data } = await supabase
-          .from('event_registrations')
-          .select('*')
-          .eq('event_id', event.id)
-          .eq('user_id', user.id)
-          .single();
-        userRegistration = data;
-      }
+  // Buscar contagem de registros para todos os eventos em uma única query
+  const { data: registrationCounts } = await supabase
+    .from('event_registrations')
+    .select('event_id')
+    .in('event_id', eventIds)
+    .neq('status', 'cancelled');
 
-      return {
-        ...event,
-        registrations_count: count || 0,
-        is_registered: !!userRegistration && userRegistration.status !== 'cancelled',
-        user_registration: userRegistration,
-      } as EventWithRegistration;
-    })
-  );
+  // Contar registros por evento
+  const countsMap = new Map<string, number>();
+  if (registrationCounts) {
+    registrationCounts.forEach(r => {
+      countsMap.set(r.event_id, (countsMap.get(r.event_id) || 0) + 1);
+    });
+  }
+
+  // Buscar registros do usuário em todos os eventos em uma única query
+  let userRegistrationsMap = new Map<string, EventRegistration>();
+  if (user) {
+    const { data: userRegistrations } = await supabase
+      .from('event_registrations')
+      .select('*')
+      .in('event_id', eventIds)
+      .eq('user_id', user.id);
+
+    if (userRegistrations) {
+      userRegistrations.forEach(r => {
+        userRegistrationsMap.set(r.event_id, r);
+      });
+    }
+  }
+
+  // Combinar dados
+  const eventsWithRegistration = events.map(event => {
+    const userRegistration = userRegistrationsMap.get(event.id) || null;
+    return {
+      ...event,
+      registrations_count: countsMap.get(event.id) || 0,
+      is_registered: !!userRegistration && userRegistration.status !== 'cancelled',
+      user_registration: userRegistration,
+    } as EventWithRegistration;
+  });
 
   return eventsWithRegistration;
 }
@@ -62,36 +78,40 @@ export async function getEventById(eventId: string): Promise<EventWithRegistrati
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  const { data: event, error } = await supabase
-    .from('events')
-    .select('*')
-    .eq('id', eventId)
-    .single();
-
-  if (error || !event) return null;
-
-  const { count } = await supabase
-    .from('event_registrations')
-    .select('id', { count: 'exact' })
-    .eq('event_id', eventId)
-    .neq('status', 'cancelled');
-
-  let userRegistration = null;
-  if (user) {
-    const { data } = await supabase
-      .from('event_registrations')
+  // Paralelizar todas as queries usando Promise.all
+  const [eventResult, countResult, userRegistrationResult] = await Promise.all([
+    // Query 1: Buscar o evento
+    supabase
+      .from('events')
       .select('*')
+      .eq('id', eventId)
+      .single(),
+
+    // Query 2: Buscar contagem de registros
+    supabase
+      .from('event_registrations')
+      .select('id', { count: 'exact' })
       .eq('event_id', eventId)
-      .eq('user_id', user.id)
-      .single();
-    userRegistration = data;
-  }
+      .neq('status', 'cancelled'),
+
+    // Query 3: Buscar registro do usuário (se existir)
+    user
+      ? supabase
+          .from('event_registrations')
+          .select('*')
+          .eq('event_id', eventId)
+          .eq('user_id', user.id)
+          .single()
+      : Promise.resolve({ data: null, error: null }),
+  ]);
+
+  if (eventResult.error || !eventResult.data) return null;
 
   return {
-    ...event,
-    registrations_count: count || 0,
-    is_registered: !!userRegistration && userRegistration.status !== 'cancelled',
-    user_registration: userRegistration,
+    ...eventResult.data,
+    registrations_count: countResult.count || 0,
+    is_registered: !!userRegistrationResult.data && userRegistrationResult.data.status !== 'cancelled',
+    user_registration: userRegistrationResult.data,
   } as EventWithRegistration;
 }
 
@@ -172,23 +192,28 @@ export async function getEventParticipants(eventId: string) {
 export async function checkEventAvailability(eventId: string): Promise<{ available: boolean; spots_left: number | null }> {
   const supabase = await createClient();
 
-  const { data: event } = await supabase
-    .from('events')
-    .select('max_participants')
-    .eq('id', eventId)
-    .single();
+  // Paralelizar busca de evento e contagem de registros usando Promise.all
+  const [eventResult, countResult] = await Promise.all([
+    // Query 1: Buscar max_participants do evento
+    supabase
+      .from('events')
+      .select('max_participants')
+      .eq('id', eventId)
+      .single(),
 
-  if (!event || event.max_participants === null) {
+    // Query 2: Buscar contagem de registros
+    supabase
+      .from('event_registrations')
+      .select('id', { count: 'exact' })
+      .eq('event_id', eventId)
+      .neq('status', 'cancelled'),
+  ]);
+
+  if (!eventResult.data || eventResult.data.max_participants === null) {
     return { available: true, spots_left: null };
   }
 
-  const { count } = await supabase
-    .from('event_registrations')
-    .select('id', { count: 'exact' })
-    .eq('event_id', eventId)
-    .neq('status', 'cancelled');
-
-  const spotsLeft = event.max_participants - (count || 0);
+  const spotsLeft = eventResult.data.max_participants - (countResult.count || 0);
 
   return {
     available: spotsLeft > 0,

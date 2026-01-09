@@ -53,10 +53,18 @@ export async function getCreatorProfile(): Promise<CreatorProfile | null> {
 export async function getCreatorPosts(limit = 5): Promise<PostWithAuthor[]> {
   const supabase = await createClient();
 
-  // Buscar posts do tipo 'creator'
+  // Buscar posts do tipo 'creator' com JOIN
   const { data: posts, error } = await supabase
     .from('posts')
-    .select('*')
+    .select(`
+      *,
+      author:users!posts_user_id_fkey(
+        id,
+        full_name,
+        avatar_url,
+        is_creator
+      )
+    `)
     .eq('type', 'creator')
     .eq('status', 'approved')
     .order('created_at', { ascending: false })
@@ -64,19 +72,7 @@ export async function getCreatorPosts(limit = 5): Promise<PostWithAuthor[]> {
 
   if (error || !posts || posts.length === 0) return [];
 
-  // Buscar autores separadamente
-  const userIds = Array.from(new Set(posts.map(p => p.user_id)));
-  const { data: users } = await supabase
-    .from('users')
-    .select('id, full_name, avatar_url, is_creator')
-    .in('id', userIds);
-
-  const usersMap = new Map((users || []).map(u => [u.id, u]));
-
-  return posts.map(post => ({
-    ...post,
-    author: usersMap.get(post.user_id) || null,
-  }));
+  return posts as PostWithAuthor[];
 }
 
 /**
@@ -85,34 +81,27 @@ export async function getCreatorPosts(limit = 5): Promise<PostWithAuthor[]> {
 export async function getFeaturedCreatorPosts(limit = 3): Promise<PostWithAuthor[]> {
   const supabase = await createClient();
 
-  const { data: creator } = await supabase
-    .from('users')
-    .select('id, full_name, avatar_url, is_creator')
-    .eq('is_creator', true)
-    .single();
-
-  if (!creator) return [];
-
+  // Buscar posts em destaque com JOIN - usa inner join para filtrar por is_creator
   const { data: posts, error } = await supabase
     .from('posts')
-    .select('*')
-    .eq('user_id', creator.id)
+    .select(`
+      *,
+      author:users!inner(
+        id,
+        full_name,
+        avatar_url,
+        is_creator
+      )
+    `)
     .eq('status', 'approved')
     .eq('is_featured', true)
+    .eq('author.is_creator', true)
     .order('created_at', { ascending: false })
     .limit(limit);
 
-  if (error) return [];
+  if (error || !posts || posts.length === 0) return [];
 
-  return (posts || []).map(post => ({
-    ...post,
-    author: {
-      id: creator.id,
-      full_name: creator.full_name,
-      avatar_url: creator.avatar_url,
-      is_creator: true,
-    },
-  }));
+  return posts as PostWithAuthor[];
 }
 
 // ============ COMUNIDADE ============
@@ -124,10 +113,18 @@ export async function getFeaturedCreatorPosts(limit = 3): Promise<PostWithAuthor
 export async function getCommunityPosts(limit = 20, offset = 0): Promise<PostWithAuthor[]> {
   const supabase = await createClient();
 
-  // Buscar posts do tipo 'community'
+  // Buscar posts do tipo 'community' com JOIN
   const { data: posts, error } = await supabase
     .from('posts')
-    .select('*')
+    .select(`
+      *,
+      author:users!posts_user_id_fkey(
+        id,
+        full_name,
+        avatar_url,
+        is_creator
+      )
+    `)
     .eq('status', 'approved')
     .eq('type', 'community')
     .order('created_at', { ascending: false })
@@ -135,19 +132,7 @@ export async function getCommunityPosts(limit = 20, offset = 0): Promise<PostWit
 
   if (error || !posts || posts.length === 0) return [];
 
-  // Buscar autores separadamente
-  const userIds = Array.from(new Set(posts.map(p => p.user_id)));
-  const { data: users } = await supabase
-    .from('users')
-    .select('id, full_name, avatar_url, is_creator')
-    .in('id', userIds);
-
-  const usersMap = new Map((users || []).map(u => [u.id, u]));
-
-  return posts.map(post => ({
-    ...post,
-    author: usersMap.get(post.user_id) || null,
-  }));
+  return posts as PostWithAuthor[];
 }
 
 /**
@@ -156,31 +141,25 @@ export async function getCommunityPosts(limit = 20, offset = 0): Promise<PostWit
 export async function getFeed(limit = 20, offset = 0): Promise<PostWithAuthor[]> {
   const supabase = await createClient();
 
-  // Buscar posts
+  // Buscar posts com JOIN
   const { data: posts, error } = await supabase
     .from('posts')
-    .select('*')
+    .select(`
+      *,
+      author:users!posts_user_id_fkey(
+        id,
+        full_name,
+        avatar_url,
+        is_creator
+      )
+    `)
     .eq('status', 'approved')
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);
 
-  if (error) return [];
+  if (error || !posts || posts.length === 0) return [];
 
-  if (!posts || posts.length === 0) return [];
-
-  // Buscar autores separadamente
-  const userIds = Array.from(new Set(posts.map(p => p.user_id)));
-  const { data: users } = await supabase
-    .from('users')
-    .select('id, full_name, avatar_url, is_creator')
-    .in('id', userIds);
-
-  const usersMap = new Map((users || []).map(u => [u.id, u]));
-
-  return posts.map(post => ({
-    ...post,
-    author: usersMap.get(post.user_id) || null,
-  }));
+  return posts as PostWithAuthor[];
 }
 
 // ============ POSTS ============
@@ -199,7 +178,15 @@ export async function getPosts(filters?: PostFilters): Promise<PostWithAuthor[]>
 
   let query = supabase
     .from('posts')
-    .select('*')
+    .select(`
+      *,
+      author:users!posts_user_id_fkey(
+        id,
+        full_name,
+        avatar_url,
+        is_creator
+      )
+    `)
     .order('created_at', { ascending: false });
 
   if (filters?.status) {
@@ -216,23 +203,9 @@ export async function getPosts(filters?: PostFilters): Promise<PostWithAuthor[]>
 
   const { data: posts, error } = await query;
 
-  if (error) return [];
+  if (error || !posts || posts.length === 0) return [];
 
-  if (!posts || posts.length === 0) return [];
-
-  // Buscar autores separadamente
-  const userIds = Array.from(new Set(posts.map(p => p.user_id)));
-  const { data: users } = await supabase
-    .from('users')
-    .select('id, full_name, avatar_url, is_creator')
-    .in('id', userIds);
-
-  const usersMap = new Map((users || []).map(u => [u.id, u]));
-
-  return posts.map(post => ({
-    ...post,
-    author: usersMap.get(post.user_id) || null,
-  }));
+  return posts as PostWithAuthor[];
 }
 
 /**
@@ -243,23 +216,21 @@ export async function getPostById(id: string): Promise<PostWithAuthor | null> {
 
   const { data: post, error } = await supabase
     .from('posts')
-    .select('*')
+    .select(`
+      *,
+      author:users!posts_user_id_fkey(
+        id,
+        full_name,
+        avatar_url,
+        is_creator
+      )
+    `)
     .eq('id', id)
     .single();
 
   if (error || !post) return null;
 
-  // Buscar autor
-  const { data: author } = await supabase
-    .from('users')
-    .select('id, full_name, avatar_url, is_creator')
-    .eq('id', post.user_id)
-    .single();
-
-  return {
-    ...post,
-    author: author || null,
-  };
+  return post as PostWithAuthor;
 }
 
 // ============ PERFIL ============
@@ -315,23 +286,25 @@ export async function getUserProfile(userId: string): Promise<User | null> {
 export async function getUserPosts(userId: string, limit = 10): Promise<PostWithAuthor[]> {
   const supabase = await createClient();
 
-  const { data: user } = await supabase
-    .from('users')
-    .select('id, full_name, avatar_url, is_creator')
-    .eq('id', userId)
-    .single();
-
-  const { data: posts } = await supabase
+  // Buscar posts do usuário com JOIN
+  const { data: posts, error } = await supabase
     .from('posts')
-    .select('*')
+    .select(`
+      *,
+      author:users!posts_user_id_fkey(
+        id,
+        full_name,
+        avatar_url,
+        is_creator
+      )
+    `)
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
     .limit(limit);
 
-  return (posts || []).map(post => ({
-    ...post,
-    author: user || null,
-  }));
+  if (error || !posts || posts.length === 0) return [];
+
+  return posts as PostWithAuthor[];
 }
 
 // Seção de recompensas removida - use src/lib/supabase/rewards.ts
