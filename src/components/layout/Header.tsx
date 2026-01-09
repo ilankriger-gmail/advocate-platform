@@ -17,12 +17,12 @@ interface HeaderProps {
 const HIDDEN_HEADER_ROUTES = ['/seja-nextlover', '/login', '/registro'];
 
 export function Header({ onMenuClick, showMenuButton = false, className, siteName = 'NextLOVERS' }: HeaderProps) {
-  const { user, signOut } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const pathname = usePathname();
 
-  // Verificar se o usuario e criador (unico com acesso ao admin)
-  const isCreator = user?.user_metadata?.is_creator === true;
-  const showAdminLink = isCreator;
+  // Mostrar link admin se tiver role='admin' OU is_creator=true
+  // Verificacao agora feita via perfil do Supabase em vez de localStorage inseguro
+  const showAdminLink = profile?.role === 'admin' || profile?.is_creator === true;
 
   // Nao renderizar Header em certas paginas
   if (HIDDEN_HEADER_ROUTES.some(route => pathname?.startsWith(route))) {

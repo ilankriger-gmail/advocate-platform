@@ -5,6 +5,9 @@
 // Autenticação
 export * from './auth';
 
+// Autenticação Admin
+export * from './admin-auth';
+
 // Posts
 export * from './posts';
 

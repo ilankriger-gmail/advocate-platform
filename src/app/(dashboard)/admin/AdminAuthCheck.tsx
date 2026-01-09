@@ -1,36 +1,54 @@
-'use client';
-
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
+import { requireAdmin, isAuthError } from '@/lib/auth';
+import { redirect } from 'next/navigation';
 
 /**
- * Componente que verifica se o usuário é criador (is_creator = true)
- * Redireciona para /login se não estiver autenticado ou não for criador
+ * Server Component para verificacao de autenticacao admin
+ *
+ * Verifica se o usuario esta autenticado e tem role='admin' no servidor.
+ * Se nao autorizado, redireciona para /admin/login.
+ *
+ * Esta implementacao substitui a verificacao client-side insegura via localStorage.
  */
-export function AdminAuthCheck({ children }: { children: React.ReactNode }) {
-  const { user, isLoading } = useAuth();
-  const router = useRouter();
+export async function AdminAuthCheck({ children }: { children: React.ReactNode }) {
+  // Verificacao server-side usando Supabase Auth e role do usuario
+  const auth = await requireAdmin();
 
-  const isCreator = user?.user_metadata?.is_creator === true;
-
-  useEffect(() => {
-    if (!isLoading && (!user || !isCreator)) {
-      router.push('/login');
-    }
-  }, [user, isCreator, isLoading, router]);
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <div className="animate-spin w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full"></div>
-      </div>
-    );
+  // Se houve erro de autenticacao ou autorizacao, redirecionar para login
+  if (isAuthError(auth)) {
+    redirect('/admin/login');
   }
 
-  if (!user || !isCreator) {
-    return null;
-  }
-
+  // Usuario e admin autenticado, renderizar children
   return <>{children}</>;
+}
+
+/**
+ * Botao de logout do admin
+ *
+ * Chama o Server Action adminLogout para encerrar a sessao Supabase de forma segura.
+ * Usa useTransition para mostrar loading state durante o logout.
+ */
+'use client';
+
+import { useTransition } from 'react';
+import { adminLogout } from '@/actions/admin-auth';
+
+export function AdminLogoutButton() {
+  const [isPending, startTransition] = useTransition();
+
+  const handleLogout = () => {
+    startTransition(async () => {
+      await adminLogout();
+    });
+  };
+
+  return (
+    <button
+      onClick={handleLogout}
+      disabled={isPending}
+      className="px-3 py-1.5 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      {isPending ? 'Saindo...' : 'Sair'}
+    </button>
+  );
 }

@@ -11,9 +11,15 @@ import {
 import { createClient } from '@/lib/supabase/client';
 import type { User, Session } from '@supabase/supabase-js';
 
+interface UserProfile {
+  role: string;
+  is_creator: boolean;
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
+  profile: UserProfile | null;
   isLoading: boolean;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
@@ -28,9 +34,26 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const supabase = createClient();
+
+  // Funcao para buscar dados do perfil do usuario
+  const fetchProfile = useCallback(async (userId: string) => {
+    try {
+      const { data } = await supabase
+        .from('profiles')
+        .select('role, is_creator')
+        .eq('id', userId)
+        .single();
+
+      setProfile(data ? { role: data.role, is_creator: data.is_creator } : null);
+    } catch (error) {
+      console.error('Erro ao buscar perfil:', error);
+      setProfile(null);
+    }
+  }, [supabase]);
 
   useEffect(() => {
     // Obtém a sessão inicial
@@ -39,6 +62,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const { data: { session: initialSession } } = await supabase.auth.getSession();
         setSession(initialSession);
         setUser(initialSession?.user ?? null);
+
+        // Buscar dados do perfil se usuario autenticado
+        if (initialSession?.user) {
+          await fetchProfile(initialSession.user.id);
+        } else {
+          setProfile(null);
+        }
       } catch (error) {
         console.error('Erro ao obter sessão inicial:', error);
       } finally {
@@ -53,6 +83,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
       async (event, currentSession) => {
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
+
+        // Buscar dados do perfil quando usuario faz login
+        if (currentSession?.user) {
+          await fetchProfile(currentSession.user.id);
+        } else {
+          setProfile(null);
+        }
+
         setIsLoading(false);
       }
     );
@@ -61,7 +99,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return () => {
       subscription.unsubscribe();
     };
-  }, [supabase.auth]);
+  }, [supabase.auth, fetchProfile]);
 
   // Login com Google
   const signInWithGoogle = useCallback(async () => {
@@ -91,6 +129,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const value: AuthContextType = {
     user,
     session,
+    profile,
     isLoading,
     signInWithGoogle,
     signOut,

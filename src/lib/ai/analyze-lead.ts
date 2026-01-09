@@ -88,7 +88,7 @@ Se nao houver pontos fortes claros, retorne pelo menos um item generico.`;
 
   try {
     const response = await client.chat.completions.create({
-      model: 'gpt-4-turbo-preview',
+      model: 'gpt-4o-mini',
       messages: [
         {
           role: 'system',

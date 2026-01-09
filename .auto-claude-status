@@ -1,25 +1,25 @@
 {
   "active": true,
-  "spec": "012-adicionar-paginacao-infinita-com-cursor-based-pagi",
+  "spec": "004-corrigir-autenticacao-admin-client-side-via-locals",
   "state": "building",
   "subtasks": {
-    "completed": 10,
-    "total": 12,
+    "completed": 9,
+    "total": 10,
     "in_progress": 1,
     "failed": 0
   },
   "phase": {
-    "current": "",
-    "id": 0,
-    "total": 0
+    "current": "Testes e verificacao de seguranca",
+    "id": null,
+    "total": 2
   },
   "workers": {
     "active": 0,
     "max": 1
   },
   "session": {
-    "number": 10,
-    "started_at": "2026-01-08T21:17:09.703547"
+    "number": 11,
+    "started_at": "2026-01-08T21:19:59.451658"
   },
-  "last_update": "2026-01-08T21:46:26.817237"
+  "last_update": "2026-01-08T21:48:59.353058"
 }

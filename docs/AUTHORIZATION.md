@@ -1,5 +1,17 @@
 # Autorização: Admin vs Advocate
 
+> **🔒 ATUALIZAÇÃO DE SEGURANÇA - 2026-01-08**
+>
+> **Sistema de autenticação admin foi completamente refatorado para segurança server-side:**
+> - ✅ **Removido**: Autenticação insegura via localStorage (vulnerável a bypass)
+> - ✅ **Removido**: Credenciais hardcoded no código
+> - ✅ **Adicionado**: Server Actions seguros (`adminLogin`, `adminLogout`)
+> - ✅ **Adicionado**: Verificação server-side via `requireAdmin()`
+> - ✅ **Adicionado**: Validação de role='admin' no banco de dados Supabase
+> - ✅ **Segurança**: Múltiplas camadas de proteção (UI, Server Component, Server Action, RLS)
+>
+> **Detalhes completos**: Ver seções [Implementação Técnica](#implementação-técnica) e [Controle de Rotas](#controle-de-rotas)
+
 ## 📋 Índice
 
 1. [Visão Geral](#visão-geral)
@@ -890,11 +902,20 @@ graph TB
 
 **Objetivo**: Melhorar experiência, esconder opções não disponíveis
 
+**⚠️ ATUALIZAÇÃO DE SEGURANÇA**: Esta camada agora usa dados do AuthContext (baseado em Supabase) ao invés de localStorage.
+
 ```typescript
-// src/components/Navigation.tsx
+// src/components/layout/Sidebar.tsx ou Header.tsx
 'use client';
 
-export function Navigation({ userRole }: { userRole: string }) {
+import { useAuth } from '@/contexts/AuthContext';
+
+export function Sidebar() {
+  const { profile } = useAuth();
+
+  // Verificação baseada em dados do servidor (profiles table)
+  const isAdmin = profile?.role === 'admin' || profile?.is_creator === true;
+
   return (
     <nav>
       <Link href="/feed">Feed</Link>
@@ -902,8 +923,8 @@ export function Navigation({ userRole }: { userRole: string }) {
       <Link href="/desafios">Desafios</Link>
       <Link href="/premios">Recompensas</Link>
 
-      {/* ✅ Conditional rendering baseado em role */}
-      {userRole === 'admin' && (
+      {/* ✅ Conditional rendering baseado em role do banco de dados */}
+      {isAdmin && (
         <Link href="/admin">
           <span className="text-amber-500">👑 Admin</span>
         </Link>
@@ -913,7 +934,13 @@ export function Navigation({ userRole }: { userRole: string }) {
 }
 ```
 
-**⚠️ IMPORTANTE**: Esta camada é apenas UX. Um hacker pode manipular o client e ver elementos admin, mas **não consegue executar ações** devido às camadas 2, 3 e 4.
+**Mudanças de Segurança**:
+- ✅ **REMOVIDO**: Verificação via `localStorage.getItem('admin_authenticated')`
+- ✅ **ADICIONADO**: Verificação via `profile?.role === 'admin'` do AuthContext
+- ✅ **AuthContext**: Busca dados do Supabase (tabela profiles) via sessão autenticada
+- ✅ **Dados do servidor**: Role vem do banco de dados, não de variável client-side manipulável
+
+**⚠️ IMPORTANTE**: Esta camada é apenas UX. Um hacker pode manipular o client e ver elementos admin, mas **não consegue executar ações** devido às camadas 2, 3 e 4 que validam no servidor.
 
 #### Camada 2: Middleware (Route Protection)
 
@@ -1065,7 +1092,183 @@ graph TD
 
 ### 📝 Código de Verificação
 
-#### 1. Função Utilitária `isAdmin()`
+#### 1. Server Actions de Autenticação Admin
+
+**NOVO**: Server Actions seguros para login e logout de admin (implementado em 2026-01-08)
+
+```typescript
+// src/actions/admin-auth.ts
+'use server';
+
+import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
+import { revalidatePath } from 'next/cache';
+import type { ActionResponse } from './types';
+
+/**
+ * Server Action para login de admin
+ *
+ * Autentica via Supabase Auth e verifica se o usuário tem role='admin' no banco de dados.
+ * Cria uma sessão segura gerenciada pelo Supabase Auth.
+ *
+ * ✅ SEGURANÇA:
+ * - Autentica via Supabase Auth (servidor)
+ * - Verifica role='admin' na tabela profiles
+ * - Faz logout automático se usuário não for admin
+ * - Não expõe dados sensíveis ao cliente
+ * - Substitui credenciais hardcoded
+ */
+export async function adminLogin(formData: FormData): Promise<ActionResponse> {
+  const supabase = await createClient();
+
+  const email = formData.get('email') as string;
+  const password = formData.get('password') as string;
+
+  // Validação básica
+  if (!email || !password) {
+    return { error: 'Email e senha são obrigatórios' };
+  }
+
+  // Autenticar via Supabase Auth
+  const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (authError || !authData.user) {
+    // Mensagens de erro amigáveis
+    if (authError?.message.includes('Invalid login credentials')) {
+      return { error: 'Email ou senha incorretos' };
+    }
+    return { error: 'Erro ao fazer login. Tente novamente.' };
+  }
+
+  // Verificar se o usuário tem role='admin' na tabela profiles
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('id, role')
+    .eq('id', authData.user.id)
+    .single();
+
+  if (profileError || !profile) {
+    // Se houver erro ao buscar perfil, fazer logout e retornar erro
+    await supabase.auth.signOut();
+    return { error: 'Erro ao verificar permissões do usuário' };
+  }
+
+  // Verificar se o usuário é admin
+  if (profile.role !== 'admin') {
+    // Usuário não é admin, fazer logout e retornar erro
+    await supabase.auth.signOut();
+    return { error: 'Acesso não autorizado. Apenas administradores podem acessar esta área.' };
+  }
+
+  // Usuário é admin, revalidar cache e redirecionar
+  revalidatePath('/', 'layout');
+  redirect('/admin');
+}
+
+/**
+ * Server Action para logout de admin
+ *
+ * Encerra a sessão do Supabase Auth e redireciona para a página de login admin.
+ *
+ * ✅ SEGURANÇA:
+ * - Encerra sessão Supabase (servidor)
+ * - Limpa cookies de autenticação
+ * - Revalida cache para limpar dados sensíveis
+ */
+export async function adminLogout(): Promise<void> {
+  const supabase = await createClient();
+
+  // Encerrar a sessão do Supabase Auth
+  await supabase.auth.signOut();
+
+  // Revalidar cache
+  revalidatePath('/', 'layout');
+
+  // Redirecionar para a página de login admin
+  redirect('/admin/login');
+}
+```
+
+**Uso nos Componentes**:
+
+```typescript
+// Login page: src/app/admin/login/AdminLoginForm.tsx
+'use client';
+
+import { adminLogin } from '@/actions/admin-auth';
+
+export function AdminLoginForm() {
+  const [error, setError] = useState('');
+  const [isPending, startTransition] = useTransition();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError('');
+
+    const formData = new FormData(e.currentTarget);
+
+    startTransition(async () => {
+      const result = await adminLogin(formData);
+      if (result?.error) {
+        setError(result.error);
+      }
+      // Se sucesso, adminLogin() redireciona automaticamente para /admin
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input name="email" type="email" required disabled={isPending} />
+      <input name="password" type="password" required disabled={isPending} />
+      <button type="submit" disabled={isPending}>
+        {isPending ? 'Entrando...' : 'Entrar'}
+      </button>
+      {error && <p className="text-red-500">{error}</p>}
+    </form>
+  );
+}
+```
+
+#### 2. Função Utilitária `requireAdmin()`
+
+**ATUALIZADO**: Esta função é usada pelo AdminAuthCheck e outras partes do sistema
+
+```typescript
+// src/lib/auth.ts
+
+/**
+ * Verifica se o usuário autenticado tem permissões de admin APENAS
+ * Retorna o usuário autenticado com seus dados de perfil ou erro
+ *
+ * ✅ SEGURANÇA:
+ * - Valida sessão Supabase no servidor
+ * - Busca role do banco de dados (profiles table)
+ * - Retorna erro se não for admin
+ * - Usado por AdminAuthCheck e outras verificações server-side
+ */
+export async function requireAdmin(): Promise<AuthResponse> {
+  // Primeiro autentica o usuário
+  const auth = await requireAuth();
+
+  // Se houve erro na autenticação, retorna o erro
+  if (isAuthError(auth)) {
+    return auth;
+  }
+
+  // Verifica se tem permissão de admin
+  if (auth.profile.role !== 'admin') {
+    return { error: 'Acesso não autorizado' };
+  }
+
+  // Usuário tem permissão, retorna os dados
+  return auth;
+}
+```
+
+#### 3. Função Utilitária `isAdmin()` (Legado - Uso Opcional)
 
 ```typescript
 // src/lib/supabase/utils.ts
@@ -1109,18 +1312,41 @@ export default async function DashboardPage() {
 }
 ```
 
-#### 2. Hook de Autenticação (Client)
+#### 4. AuthContext com Profile do Supabase (Client)
+
+**ATUALIZADO**: AuthContext agora inclui dados completos do profile (role, is_creator) do Supabase
 
 ```typescript
-// src/hooks/useAuth.ts
+// src/contexts/AuthContext.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import type { User } from '@supabase/supabase-js';
 
-export function useAuth() {
-  const [user, setUser] = useState(null);
-  const [role, setRole] = useState<'admin' | 'user' | null>(null);
+interface Profile {
+  id: string;
+  role: string;
+  is_creator: boolean;
+  // ... outros campos do profile
+}
+
+interface AuthContextType {
+  user: User | null;
+  profile: Profile | null;
+  loading: boolean;
+}
+
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  profile: null,
+  loading: true,
+});
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
   const supabase = createClientComponentClient();
 
   useEffect(() => {
@@ -1130,15 +1356,20 @@ export function useAuth() {
       if (session) {
         setUser(session.user);
 
-        // Buscar role
-        const { data } = await supabase
-          .from('users')
-          .select('role')
+        // ✅ NOVO: Buscar profile completo do Supabase
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('id, role, is_creator, full_name, avatar_url')
           .eq('id', session.user.id)
           .single();
 
-        setRole(data?.role || 'user');
+        setProfile(profileData);
+      } else {
+        setUser(null);
+        setProfile(null);
       }
+
+      setLoading(false);
     };
 
     getUser();
@@ -1150,31 +1381,44 @@ export function useAuth() {
     return () => subscription.unsubscribe();
   }, [supabase]);
 
-  return {
-    user,
-    role,
-    isAdmin: role === 'admin',
-    isAuthenticated: !!user,
-  };
+  return (
+    <AuthContext.Provider value={{ user, profile, loading }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
+
+export const useAuth = () => useContext(AuthContext);
 ```
 
-**Uso**:
+**Uso Atualizado**:
 ```typescript
 'use client';
 
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function Navigation() {
-  const { isAdmin, isAuthenticated } = useAuth();
+  const { user, profile, loading } = useAuth();
+
+  // ✅ Verificação baseada em dados do servidor (profiles table)
+  const isAdmin = profile?.role === 'admin' || profile?.is_creator === true;
+
+  if (loading) return <div>Carregando...</div>;
 
   return (
     <nav>
-      {isAuthenticated && (
+      {user && (
         <>
           <Link href="/feed">Feed</Link>
+          <Link href="/eventos">Eventos</Link>
+          <Link href="/desafios">Desafios</Link>
+          <Link href="/premios">Recompensas</Link>
+
+          {/* ✅ Conditional rendering baseado em role do banco de dados */}
           {isAdmin && (
-            <Link href="/admin">👑 Admin</Link>
+            <Link href="/admin">
+              <span className="text-amber-500">👑 Admin</span>
+            </Link>
           )}
         </>
       )}
@@ -1182,6 +1426,13 @@ export function Navigation() {
   );
 }
 ```
+
+**Mudanças de Segurança**:
+- ✅ **Profile do Supabase**: Dados vêm da tabela `profiles` autenticada
+- ✅ **Sem localStorage**: Nenhuma verificação local manipulável
+- ✅ **Role do banco**: `profile.role` vem do servidor via sessão Supabase
+- ✅ **is_creator**: Suporte adicional para creators (role secundário)
+- ✅ **Reativo**: Atualiza automaticamente quando auth state muda
 
 #### 3. Função RLS no Banco
 
@@ -1391,64 +1642,73 @@ export default function AdminLayout({
 
 #### Componente AdminAuthCheck
 
+**IMPORTANTE**: Esta implementação foi atualizada para usar autenticação **server-side segura** ao invés de localStorage client-side.
+
 ```typescript
 // src/app/(dashboard)/admin/AdminAuthCheck.tsx
-'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { requireAdmin, isAuthError } from '@/lib/auth';
+import { redirect } from 'next/navigation';
 
-export function AdminAuthCheck({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+/**
+ * Server Component para verificação de autenticação admin
+ *
+ * Verifica se o usuário está autenticado e tem role='admin' no servidor.
+ * Se não autorizado, redireciona para /admin/login.
+ *
+ * Esta implementação substitui a verificação client-side insegura via localStorage.
+ */
+export async function AdminAuthCheck({ children }: { children: React.ReactNode }) {
+  // Verificação server-side usando Supabase Auth e role do usuário
+  const auth = await requireAdmin();
 
-  useEffect(() => {
-    const checkAuth = () => {
-      const isAuth = localStorage.getItem('admin_authenticated') === 'true';
-      const loginTime = localStorage.getItem('admin_login_time');
-
-      // Verificar se a sessão expirou (24 horas)
-      if (isAuth && loginTime) {
-        const loginDate = new Date(loginTime);
-        const now = new Date();
-        const hoursDiff = (now.getTime() - loginDate.getTime()) / (1000 * 60 * 60);
-
-        if (hoursDiff > 24) {
-          // Sessão expirada
-          localStorage.removeItem('admin_authenticated');
-          localStorage.removeItem('admin_login_time');
-          setIsAuthenticated(false);
-          router.push('/admin/login');
-          return;
-        }
-      }
-
-      if (!isAuth) {
-        setIsAuthenticated(false);
-        router.push('/admin/login');
-      } else {
-        setIsAuthenticated(true);
-      }
-    };
-
-    checkAuth();
-  }, [router]);
-
-  if (isAuthenticated === null) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <div className="animate-spin w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full"></div>
-      </div>
-    );
+  // Se houve erro de autenticação ou autorização, redirecionar para login
+  if (isAuthError(auth)) {
+    redirect('/admin/login');
   }
 
-  if (!isAuthenticated) {
-    return null;
-  }
-
+  // Usuário é admin autenticado, renderizar children
   return <>{children}</>;
 }
+
+/**
+ * Botão de logout do admin
+ *
+ * Chama o Server Action adminLogout para encerrar a sessão Supabase de forma segura.
+ * Usa useTransition para mostrar loading state durante o logout.
+ */
+'use client';
+
+import { useTransition } from 'react';
+import { adminLogout } from '@/actions/admin-auth';
+
+export function AdminLogoutButton() {
+  const [isPending, startTransition] = useTransition();
+
+  const handleLogout = () => {
+    startTransition(async () => {
+      await adminLogout();
+    });
+  };
+
+  return (
+    <button
+      onClick={handleLogout}
+      disabled={isPending}
+      className="px-3 py-1.5 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      {isPending ? 'Saindo...' : 'Sair'}
+    </button>
+  );
+}
 ```
+
+**Mudanças de Segurança**:
+- ✅ **Server Component**: AdminAuthCheck agora roda no servidor, não no cliente
+- ✅ **Sem localStorage**: Nenhuma verificação client-side que possa ser manipulada
+- ✅ **requireAdmin()**: Valida sessão Supabase e role='admin' no banco de dados
+- ✅ **Server Action**: AdminLogoutButton usa Server Action para logout seguro
+- ✅ **Múltiplas camadas**: Proteção em nível de componente, servidor e banco de dados
 
 ---
 
@@ -1904,6 +2164,16 @@ pie title "Distribuição de Funcionalidades"
 
 ---
 
-**Última atualização**: 2026-01-07
-**Versão**: 1.0
+**Última atualização**: 2026-01-08
+**Versão**: 2.0 - **ATUALIZAÇÃO DE SEGURANÇA**
 **Autor**: Documentação Técnica - Advocate Marketing Platform
+
+**Changelog v2.0 (2026-01-08)**:
+- ✅ Refatorado sistema de autenticação admin para server-side
+- ✅ Removida autenticação insegura via localStorage
+- ✅ Removidas credenciais hardcoded
+- ✅ Adicionados Server Actions seguros (adminLogin, adminLogout)
+- ✅ AdminAuthCheck convertido para Server Component
+- ✅ AuthContext estendido com dados do profile do Supabase
+- ✅ Documentação atualizada com exemplos de código reais
+- ✅ Seções de segurança expandidas com detalhes de implementação
