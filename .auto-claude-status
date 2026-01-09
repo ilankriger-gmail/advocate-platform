@@ -1,15 +1,15 @@
 {
   "active": true,
-  "spec": "004-corrigir-autenticacao-admin-client-side-via-locals",
+  "spec": "007-configurar-security-headers-no-next-js",
   "state": "building",
   "subtasks": {
-    "completed": 9,
-    "total": 10,
+    "completed": 6,
+    "total": 7,
     "in_progress": 1,
     "failed": 0
   },
   "phase": {
-    "current": "Testes e verificacao de seguranca",
+    "current": "Verificação e Testes",
     "id": null,
     "total": 2
   },
@@ -18,8 +18,8 @@
     "max": 1
   },
   "session": {
-    "number": 11,
-    "started_at": "2026-01-08T21:19:59.451658"
+    "number": 8,
+    "started_at": "2026-01-08T21:20:06.329428"
   },
-  "last_update": "2026-01-08T21:48:59.353058"
+  "last_update": "2026-01-08T21:33:43.244591"
 }
