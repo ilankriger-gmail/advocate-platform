@@ -1,11 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Card, Button, Input } from '@/components/ui';
+import { adminLogin } from '@/actions/admin-auth';
 
 export default function AdminLoginPage() {
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -13,25 +12,28 @@ export default function AdminLoginPage() {
     password: '',
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
     setIsLoading(true);
 
-    // Simular delay de autenticacao
-    await new Promise(resolve => setTimeout(resolve, 500));
+    try {
+      // Criar FormData para passar ao server action
+      const formDataObj = new FormData();
+      formDataObj.append('username', formData.username);
+      formDataObj.append('password', formData.password);
 
-    // Verificar credenciais
-    if (formData.username === ADMIN_USERNAME && formData.password === ADMIN_PASSWORD) {
-      // Salvar sessao no localStorage
-      localStorage.setItem('admin_authenticated', 'true');
-      localStorage.setItem('admin_login_time', new Date().toISOString());
+      // Chamar server action segura
+      const result = await adminLogin(formDataObj);
 
-      // Redirecionar para o admin
-      router.push('/admin');
-      router.refresh();
-    } else {
-      setError('Usuario ou senha incorretos');
+      // Se houver erro, exibir para o usuário
+      if (result?.error) {
+        setError(result.error);
+        setIsLoading(false);
+      }
+      // Se sucesso, o server action redireciona automaticamente para /admin
+    } catch (err) {
+      setError('Erro ao fazer login. Tente novamente.');
       setIsLoading(false);
     }
   };
