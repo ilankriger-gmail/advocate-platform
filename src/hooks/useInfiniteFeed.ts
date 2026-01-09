@@ -227,6 +227,8 @@ export function useInfiniteFeed({
         });
       },
       initialPageParam: nextCursor,
+      getNextPageParam: (lastPage) =>
+        (lastPage as { nextCursor?: string }).nextCursor,
       pages: 1, // Apenas prefetch da próxima página
     });
   }, [hasMore, query.isFetchingNextPage, query.data?.pages, type, sort, limit, queryClient]);
