@@ -26,10 +26,10 @@ export default function AdminLayout({
             </div>
             <div className="flex items-center gap-3">
               <Link
-                href="/admin/setup"
+                href="/admin/configuracoes"
                 className="text-indigo-100 text-sm hover:text-white bg-white/10 px-3 py-1 rounded-md"
               >
-                Configuração
+                Configuracoes
               </Link>
               <AdminLogoutButton />
             </div>

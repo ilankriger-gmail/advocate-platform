@@ -107,6 +107,14 @@ export default async function AdminDashboardPage() {
       color: 'border-l-orange-500',
       description: `${pendingLeads || 0} pendentes de aprovacao`,
     },
+    {
+      title: 'Configuracoes',
+      value: 12,
+      icon: '⚙️',
+      href: '/admin/configuracoes',
+      color: 'border-l-gray-500',
+      description: 'Nome, descricao, SEO',
+    },
   ];
 
   return (
@@ -158,11 +166,11 @@ export default async function AdminDashboardPage() {
             <span className="text-sm text-orange-700 font-medium text-center">Leads NPS</span>
           </Link>
           <Link
-            href="/admin/setup"
+            href="/admin/configuracoes"
             className="flex flex-col items-center gap-2 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
           >
             <span className="text-2xl">⚙️</span>
-            <span className="text-sm text-gray-700 font-medium text-center">Configuração</span>
+            <span className="text-sm text-gray-700 font-medium text-center">Configuracoes</span>
           </Link>
         </div>
       </Card>

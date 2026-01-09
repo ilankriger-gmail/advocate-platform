@@ -150,7 +150,7 @@ export function LeadsList({ leads, currentStatus }: LeadsListProps) {
 
       {/* Lista de leads */}
       {leads.length > 0 ? (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 grid-cols-1">
           {leads.map((lead: NpsLead) => (
             <div key={lead.id} className="relative">
               {/* Checkbox de selecao para leads pendentes */}
