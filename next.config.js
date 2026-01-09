@@ -1,5 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Rewrite para subdomínio comece.omocodoteamo.com.br mostrar a landing page
+  async rewrites() {
+    return {
+      beforeFiles: [
+        {
+          source: '/',
+          destination: '/seja-nextlover',
+          has: [{ type: 'host', value: 'comece.omocodoteamo.com.br' }],
+        },
+      ],
+    };
+  },
   async headers() {
     return [
       {
