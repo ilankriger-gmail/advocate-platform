@@ -1,25 +1,25 @@
 {
   "active": true,
-  "spec": "017-criar-skeletonevent-e-skeletonchallenge-components",
+  "spec": "003-remover-credenciais-hardcoded-do-painel-admin",
   "state": "building",
   "subtasks": {
-    "completed": 7,
-    "total": 8,
+    "completed": 2,
+    "total": 13,
     "in_progress": 1,
     "failed": 0
   },
   "phase": {
-    "current": "Verificacao e QA",
+    "current": "Server Action para Autentica\u00e7\u00e3o Admin",
     "id": null,
-    "total": 2
+    "total": 3
   },
   "workers": {
     "active": 0,
     "max": 1
   },
   "session": {
-    "number": 9,
-    "started_at": "2026-01-08T20:53:22.740713"
+    "number": 4,
+    "started_at": "2026-01-08T21:20:00.669962"
   },
-  "last_update": "2026-01-08T21:05:57.435346"
+  "last_update": "2026-01-08T21:27:07.952007"
 }
