@@ -81,34 +81,27 @@ export async function getCreatorPosts(limit = 5): Promise<PostWithAuthor[]> {
 export async function getFeaturedCreatorPosts(limit = 3): Promise<PostWithAuthor[]> {
   const supabase = await createClient();
 
-  const { data: creator } = await supabase
-    .from('users')
-    .select('id, full_name, avatar_url, is_creator')
-    .eq('is_creator', true)
-    .single();
-
-  if (!creator) return [];
-
+  // Buscar posts em destaque com JOIN - usa inner join para filtrar por is_creator
   const { data: posts, error } = await supabase
     .from('posts')
-    .select('*')
-    .eq('user_id', creator.id)
+    .select(`
+      *,
+      author:users!inner(
+        id,
+        full_name,
+        avatar_url,
+        is_creator
+      )
+    `)
     .eq('status', 'approved')
     .eq('is_featured', true)
+    .eq('author.is_creator', true)
     .order('created_at', { ascending: false })
     .limit(limit);
 
-  if (error) return [];
+  if (error || !posts || posts.length === 0) return [];
 
-  return (posts || []).map(post => ({
-    ...post,
-    author: {
-      id: creator.id,
-      full_name: creator.full_name,
-      avatar_url: creator.avatar_url,
-      is_creator: true,
-    },
-  }));
+  return posts as PostWithAuthor[];
 }
 
 // ============ COMUNIDADE ============
