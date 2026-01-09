@@ -115,17 +115,14 @@ export async function getFeedPosts({
       break;
     }
     case 'hot':
-      // Hot usa likes_count com decay temporal
-      // Por ora, usa likes_count + created_at como fallback
-      query = query
-        .order('likes_count', { ascending: false })
-        .order('created_at', { ascending: false });
+      // Hot usa hot_score (calculado no client) com decay temporal
+      // Cursor baseado em created_at para garantir paginação estável
+      // Buscar posts ordenados por created_at e reordenar por hot_score no client
+      query = query.order('created_at', { ascending: false });
 
-      // Para hot, usamos offset simples por enquanto
-      // Será implementado em 1.2
+      // Cursor baseado em created_at (similar ao 'new')
       if (cursor) {
-        const offset = parseInt(cursor, 10) || 0;
-        query = query.range(offset, offset + limit - 1);
+        query = query.lt('created_at', cursor);
       }
       break;
     case 'new':
@@ -139,11 +136,7 @@ export async function getFeedPosts({
   }
 
   // Limitar resultados
-  if ((sort === 'new' && !cursor) || (sort === 'top' && !cursor) || (sort === 'hot' && !cursor)) {
-    query = query.limit(limit);
-  } else if (sort === 'new' || sort === 'top') {
-    query = query.limit(limit);
-  }
+  query = query.limit(limit);
 
   const { data, error } = await query;
 
@@ -184,9 +177,8 @@ export async function getFeedPosts({
         });
         break;
       case 'hot':
-        // Para hot, usar offset por enquanto (será implementado em 1.2)
-        const currentOffset = cursor ? parseInt(cursor, 10) : 0;
-        nextCursor = String(currentOffset + limit);
+        // Cursor baseado em created_at (após reordenação por hot_score)
+        nextCursor = lastPost.created_at;
         break;
     }
   }
