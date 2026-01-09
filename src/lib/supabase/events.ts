@@ -192,23 +192,28 @@ export async function getEventParticipants(eventId: string) {
 export async function checkEventAvailability(eventId: string): Promise<{ available: boolean; spots_left: number | null }> {
   const supabase = await createClient();
 
-  const { data: event } = await supabase
-    .from('events')
-    .select('max_participants')
-    .eq('id', eventId)
-    .single();
+  // Paralelizar busca de evento e contagem de registros usando Promise.all
+  const [eventResult, countResult] = await Promise.all([
+    // Query 1: Buscar max_participants do evento
+    supabase
+      .from('events')
+      .select('max_participants')
+      .eq('id', eventId)
+      .single(),
 
-  if (!event || event.max_participants === null) {
+    // Query 2: Buscar contagem de registros
+    supabase
+      .from('event_registrations')
+      .select('id', { count: 'exact' })
+      .eq('event_id', eventId)
+      .neq('status', 'cancelled'),
+  ]);
+
+  if (!eventResult.data || eventResult.data.max_participants === null) {
     return { available: true, spots_left: null };
   }
 
-  const { count } = await supabase
-    .from('event_registrations')
-    .select('id', { count: 'exact' })
-    .eq('event_id', eventId)
-    .neq('status', 'cancelled');
-
-  const spotsLeft = event.max_participants - (count || 0);
+  const spotsLeft = eventResult.data.max_participants - (countResult.count || 0);
 
   return {
     available: spotsLeft > 0,
