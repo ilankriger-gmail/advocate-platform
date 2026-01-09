@@ -10,6 +10,7 @@ import {
   scheduleEmailCheck,
 } from '@/lib/notifications';
 import { getSiteSettings } from '@/lib/config/site';
+import { analyzeLeadWithAI } from '@/lib/ai';
 
 // ============ ACOES PUBLICAS ============
 
@@ -54,6 +55,34 @@ export async function submitNpsLead(data: NpsLeadInsert): Promise<ActionResponse
       console.error('Error creating NPS lead:', error);
       return { error: 'Erro ao enviar formulario. Tente novamente.' };
     }
+
+    // Analise AI em background (nao bloqueia a submissao)
+    analyzeLeadWithAI({
+      name: data.name.trim(),
+      score: data.score,
+      reason: data.reason.trim(),
+    })
+      .then(async (analysis) => {
+        if (analysis) {
+          // Atualizar lead com resultado da analise
+          const supabaseUpdate = await createClient();
+          await supabaseUpdate
+            .from('nps_leads')
+            .update({
+              ai_score: analysis.score,
+              ai_sentiment: analysis.sentiment,
+              ai_recommendation: analysis.recommendation,
+              ai_summary: analysis.summary,
+              ai_strengths: analysis.strengths,
+              ai_concerns: analysis.concerns,
+              ai_analyzed_at: new Date().toISOString(),
+            })
+            .eq('id', lead.id);
+        }
+      })
+      .catch((err) => {
+        console.error('[AI] Error analyzing lead:', err);
+      });
 
     return { success: true, data: lead };
   } catch {

@@ -520,6 +520,14 @@ export interface NpsLead {
   whatsapp_opted_in: boolean;
   created_at: string;
   updated_at: string;
+  // Campos de analise AI
+  ai_score: number | null;
+  ai_sentiment: 'positivo' | 'neutro' | 'negativo' | null;
+  ai_recommendation: 'aprovar' | 'analisar' | 'rejeitar' | null;
+  ai_summary: string | null;
+  ai_strengths: string[] | null;
+  ai_concerns: string[] | null;
+  ai_analyzed_at: string | null;
 }
 
 export interface NpsLeadInsert {

@@ -135,6 +135,70 @@ export function LeadCard({ lead }: LeadCardProps) {
           )}
         </div>
 
+        {/* Analise AI */}
+        {lead.ai_score !== null && lead.ai_score !== undefined && (
+          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-100 rounded-lg p-3 mb-3">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-sm">🤖</span>
+              <span className="text-xs font-semibold text-indigo-700">Analise AI</span>
+            </div>
+
+            <div className="flex items-center gap-3 mb-2">
+              {/* Score Badge */}
+              <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold ${
+                lead.ai_score >= 70 ? 'bg-green-500 text-white' :
+                lead.ai_score >= 40 ? 'bg-yellow-500 text-white' :
+                'bg-red-500 text-white'
+              }`}>
+                {lead.ai_score}
+              </div>
+
+              <div className="flex-1">
+                {/* Sentiment */}
+                <div className="flex items-center gap-1 text-xs text-gray-600">
+                  <span>
+                    {lead.ai_sentiment === 'positivo' ? '😊' :
+                     lead.ai_sentiment === 'neutro' ? '😐' : '😟'}
+                  </span>
+                  <span className="capitalize">{lead.ai_sentiment}</span>
+                </div>
+
+                {/* Recommendation */}
+                <div className={`text-xs font-medium ${
+                  lead.ai_recommendation === 'aprovar' ? 'text-green-600' :
+                  lead.ai_recommendation === 'analisar' ? 'text-yellow-600' :
+                  'text-red-600'
+                }`}>
+                  {lead.ai_recommendation === 'aprovar' ? '✅ Recomenda aprovar' :
+                   lead.ai_recommendation === 'analisar' ? '⚠️ Requer analise' :
+                   '❌ Recomenda rejeitar'}
+                </div>
+              </div>
+            </div>
+
+            {/* Summary */}
+            {lead.ai_summary && (
+              <p className="text-xs text-gray-600 italic mb-2">
+                &quot;{lead.ai_summary}&quot;
+              </p>
+            )}
+
+            {/* Strengths & Concerns */}
+            <div className="flex flex-wrap gap-1">
+              {lead.ai_strengths?.map((strength, i) => (
+                <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">
+                  <span>✓</span> {strength}
+                </span>
+              ))}
+              {lead.ai_concerns?.map((concern, i) => (
+                <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-100 text-red-700 text-xs rounded-full">
+                  <span>⚠</span> {concern}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Notificacoes enviadas e acoes */}
         {lead.status === 'approved' && (
           <div className="space-y-2">
