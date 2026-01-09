@@ -49,6 +49,8 @@ export async function getCreatorProfile(): Promise<CreatorProfile | null> {
 /**
  * Buscar posts do criador (para o feed do criador)
  * Filtra por type='creator' para mostrar posts do criador
+ *
+ * @deprecated Use getFeedPosts() de src/actions/feed.ts com type='creator' e cursor-based pagination
  */
 export async function getCreatorPosts(limit = 5): Promise<PostWithAuthor[]> {
   const supabase = await createClient();
@@ -120,6 +122,8 @@ export async function getFeaturedCreatorPosts(limit = 3): Promise<PostWithAuthor
 /**
  * Buscar posts da comunidade
  * Filtra por type='community' para mostrar posts da comunidade
+ *
+ * @deprecated Use getFeedPosts() de src/actions/feed.ts com type='community' e cursor-based pagination
  */
 export async function getCommunityPosts(limit = 20, offset = 0): Promise<PostWithAuthor[]> {
   const supabase = await createClient();
@@ -152,6 +156,8 @@ export async function getCommunityPosts(limit = 20, offset = 0): Promise<PostWit
 
 /**
  * Buscar todos os posts aprovados (feed geral)
+ *
+ * @deprecated Use getFeedPosts() de src/actions/feed.ts com type='all' e cursor-based pagination
  */
 export async function getFeed(limit = 20, offset = 0): Promise<PostWithAuthor[]> {
   const supabase = await createClient();
