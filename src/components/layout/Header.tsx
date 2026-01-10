@@ -13,6 +13,7 @@ interface HeaderProps {
   showMenuButton?: boolean;
   className?: string;
   siteName?: string;
+  logoUrl?: string;
 }
 
 // Rotas onde o Header nao deve aparecer
@@ -21,31 +22,15 @@ const HIDDEN_HEADER_ROUTES = ['/seja-arena', '/login', '/registro'];
 // Domínio comece onde o Header nunca aparece
 const COMECE_DOMAIN = 'comece.omocodoteamo.com.br';
 
-export function Header({ onMenuClick, showMenuButton = false, className, siteName = 'Arena Te Amo' }: HeaderProps) {
+export function Header({ onMenuClick, showMenuButton = false, className, siteName = 'Arena Te Amo', logoUrl = '/logo.png' }: HeaderProps) {
   const { user, profile, signOut, isLoading } = useAuth();
   const pathname = usePathname();
   const [isComeceDomain, setIsComeceDomain] = useState(false);
-  const [logoUrl, setLogoUrl] = useState('/logo.png');
 
-  // Detectar domínio e carregar logo
+  // Detectar domínio comece
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setIsComeceDomain(window.location.hostname === COMECE_DOMAIN);
-
-      // Carregar logo do banco
-      import('@/lib/supabase/client').then(({ createClient }) => {
-        const supabase = createClient();
-        supabase
-          .from('site_settings')
-          .select('value')
-          .eq('key', 'logo_url')
-          .single()
-          .then(({ data }) => {
-            if (data?.value) {
-              setLogoUrl(data.value);
-            }
-          });
-      });
     }
   }, []);
 

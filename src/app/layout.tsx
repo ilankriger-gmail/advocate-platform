@@ -24,17 +24,22 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Buscar logo server-side para passar ao Header
+  const settings = await getSiteSettings(['logo_url', 'site_name']);
+  const logoUrl = settings.logo_url || '/logo.png';
+  const siteName = settings.site_name || 'Arena Te Amo';
+
   return (
     <html lang="pt-BR">
       <body className={inter.className}>
         <QueryProvider>
           <AuthProvider>
-            <Header />
+            <Header logoUrl={logoUrl} siteName={siteName} />
             <main>
               {children}
             </main>

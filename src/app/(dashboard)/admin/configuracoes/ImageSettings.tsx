@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Card } from '@/components/ui';
 import { uploadLogo, resetLogo, uploadFavicon, resetFavicon } from '@/actions/settings';
@@ -24,6 +25,7 @@ export function ImageSettings({ initialLogoUrl, initialFaviconUrl }: ImageSettin
 
 // ============ Logo Uploader ============
 function LogoUploader({ initialUrl }: { initialUrl: string }) {
+  const router = useRouter();
   const [currentLogo, setCurrentLogo] = useState(initialUrl);
   const [uploading, setUploading] = useState(false);
   const [resetting, setResetting] = useState(false);
@@ -44,6 +46,7 @@ function LogoUploader({ initialUrl }: { initialUrl: string }) {
     if (result.success && result.url) {
       setCurrentLogo(result.url);
       setMessage({ type: 'success', text: 'Logo atualizada com sucesso!' });
+      router.refresh(); // Atualizar Server Components (Header)
     } else {
       setMessage({ type: 'error', text: result.error || 'Erro ao fazer upload' });
     }
@@ -63,6 +66,7 @@ function LogoUploader({ initialUrl }: { initialUrl: string }) {
     if (result.success) {
       setCurrentLogo('/logo.png');
       setMessage({ type: 'success', text: 'Logo restaurada para o padrao!' });
+      router.refresh(); // Atualizar Server Components (Header)
     } else {
       setMessage({ type: 'error', text: result.error || 'Erro ao restaurar logo' });
     }
@@ -176,6 +180,7 @@ function LogoUploader({ initialUrl }: { initialUrl: string }) {
 
 // ============ Favicon Uploader ============
 function FaviconUploader({ initialUrl }: { initialUrl: string }) {
+  const router = useRouter();
   const [currentFavicon, setCurrentFavicon] = useState(initialUrl);
   const [uploading, setUploading] = useState(false);
   const [resetting, setResetting] = useState(false);
@@ -196,6 +201,7 @@ function FaviconUploader({ initialUrl }: { initialUrl: string }) {
     if (result.success && result.url) {
       setCurrentFavicon(result.url);
       setMessage({ type: 'success', text: 'Favicon atualizado com sucesso!' });
+      router.refresh(); // Atualizar Server Components
     } else {
       setMessage({ type: 'error', text: result.error || 'Erro ao fazer upload' });
     }
@@ -215,6 +221,7 @@ function FaviconUploader({ initialUrl }: { initialUrl: string }) {
     if (result.success) {
       setCurrentFavicon('/favicon.svg');
       setMessage({ type: 'success', text: 'Favicon restaurado para o padrao!' });
+      router.refresh(); // Atualizar Server Components
     } else {
       setMessage({ type: 'error', text: result.error || 'Erro ao restaurar favicon' });
     }
