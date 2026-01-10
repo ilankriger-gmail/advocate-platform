@@ -142,19 +142,17 @@ export async function getFeedPosts({
     .eq('status', 'approved');
 
   // Filtrar por tipo ou categoria
+  // Nota: content_category pode não existir ainda (migration pendente)
+  // Nesse caso, ignoramos o filtro de categoria
   if (type === 'help_request') {
-    // Pedidos de ajuda - filtrar por content_category
+    // Pedidos de ajuda - filtrar por content_category (se coluna existir)
+    // Se a coluna não existir, retorna vazio (a aba ficará vazia até a migration)
     query = query.eq('content_category', 'help_request');
   } else if (type !== 'all') {
     // Filtrar posts normais por tipo (creator/community)
-    // e excluir pedidos de ajuda do feed normal
-    query = query
-      .eq('type', type)
-      .or('content_category.is.null,content_category.eq.normal');
-  } else {
-    // Feed 'all' - excluir pedidos de ajuda (eles têm seu próprio tab)
-    query = query.or('content_category.is.null,content_category.eq.normal');
+    query = query.eq('type', type);
   }
+  // Feed 'all' não precisa de filtro adicional
 
   // Aplicar ordenação e paginação por cursor
   switch (sort) {
