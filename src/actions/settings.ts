@@ -290,6 +290,136 @@ export async function resetFavicon(): Promise<{
 }
 
 /**
+ * Upload de logo
+ */
+export async function uploadLogo(formData: FormData): Promise<{
+  success: boolean;
+  error: string | null;
+  url?: string;
+}> {
+  const supabase = await createClient();
+
+  // Verificar se o usuário é admin/creator
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, error: 'Usuário não autenticado' };
+  }
+
+  const { data: profile } = await supabase
+    .from('users')
+    .select('is_creator')
+    .eq('id', user.id)
+    .single();
+
+  if (!profile?.is_creator) {
+    return { success: false, error: 'Acesso negado' };
+  }
+
+  const file = formData.get('file') as File;
+
+  if (!file) {
+    return { success: false, error: 'Nenhum arquivo enviado' };
+  }
+
+  // Validar tipo de arquivo
+  const allowedTypes = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'];
+  if (!allowedTypes.includes(file.type)) {
+    return { success: false, error: 'Tipo de arquivo não permitido. Use PNG, JPG, WebP ou SVG.' };
+  }
+
+  // Validar tamanho (max 2MB)
+  if (file.size > 2 * 1024 * 1024) {
+    return { success: false, error: 'Arquivo muito grande. Máximo 2MB.' };
+  }
+
+  // Upload para o storage
+  const fileExt = file.name.split('.').pop();
+  const fileName = `logo-${Date.now()}.${fileExt}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from('site-assets')
+    .upload(fileName, file, {
+      contentType: file.type,
+      upsert: true,
+    });
+
+  if (uploadError) {
+    console.error('[Settings] Erro no upload da logo:', uploadError);
+    return { success: false, error: 'Erro ao fazer upload da logo' };
+  }
+
+  // Obter URL pública
+  const { data: publicUrl } = supabase.storage
+    .from('site-assets')
+    .getPublicUrl(fileName);
+
+  const logoUrl = publicUrl.publicUrl;
+
+  // Salvar URL na configuração
+  const { error: updateError } = await supabase
+    .from('site_settings')
+    .upsert({
+      key: 'logo_url',
+      value: logoUrl,
+      label: 'Logo URL',
+      description: 'URL da logo do site',
+      field_type: 'text',
+    }, { onConflict: 'key' });
+
+  if (updateError) {
+    console.error('[Settings] Erro ao salvar URL da logo:', updateError);
+    return { success: false, error: 'Erro ao salvar configuração da logo' };
+  }
+
+  // Revalidar
+  revalidatePath('/', 'layout');
+  revalidatePath('/login');
+  revalidatePath('/seja-arena');
+  revalidatePath('/admin/configuracoes');
+
+  return { success: true, error: null, url: logoUrl };
+}
+
+/**
+ * Resetar logo para o padrão
+ */
+export async function resetLogo(): Promise<{
+  success: boolean;
+  error: string | null;
+}> {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { success: false, error: 'Usuário não autenticado' };
+  }
+
+  const { data: profile } = await supabase
+    .from('users')
+    .select('is_creator')
+    .eq('id', user.id)
+    .single();
+
+  if (!profile?.is_creator) {
+    return { success: false, error: 'Acesso negado' };
+  }
+
+  // Remover configuração da logo (volta ao padrão)
+  await supabase
+    .from('site_settings')
+    .delete()
+    .eq('key', 'logo_url');
+
+  revalidatePath('/', 'layout');
+  revalidatePath('/login');
+  revalidatePath('/seja-arena');
+  revalidatePath('/admin/configuracoes');
+
+  return { success: true, error: null };
+}
+
+/**
  * Resetar uma configuração para o valor padrão
  */
 export async function resetSiteSetting(key: SiteSettingKey): Promise<{

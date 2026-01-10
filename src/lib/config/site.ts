@@ -30,6 +30,7 @@ export type SiteSettingKey =
   | 'email_approval_cta'
   | 'email_approval_footer'
   | 'favicon_url'
+  | 'logo_url'
   // Email 2 (follow-up)
   | 'email_followup_subject'
   | 'email_followup_greeting'
@@ -84,6 +85,7 @@ const DEFAULT_VALUES: Record<SiteSettingKey, string> = {
   email_approval_footer: 'Te esperamos lá!',
   // Favicon
   favicon_url: '/favicon.svg',
+  logo_url: '/logo.png',
   // Email 2 (follow-up)
   email_followup_subject: 'Ainda dá tempo de entrar no {{site_name}}!',
   email_followup_greeting: 'Olá {{name}}!',

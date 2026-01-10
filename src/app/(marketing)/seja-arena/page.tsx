@@ -7,20 +7,31 @@ export default async function SejaNextloverPage() {
     'site_name',
     'creator_name',
     'footer_text',
+    'logo_url',
   ]);
+
+  const logoUrl = settings.logo_url || '/logo.png';
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-4 py-8">
       {/* Logo/Header */}
       <div className="text-center mb-8">
-        <Image
-          src="/logo.png"
-          alt={settings.site_name}
-          width={200}
-          height={70}
-          className="h-20 w-auto mx-auto mb-4"
-          priority
-        />
+        {logoUrl.startsWith('/') ? (
+          <Image
+            src={logoUrl}
+            alt={settings.site_name}
+            width={200}
+            height={70}
+            className="h-20 w-auto mx-auto mb-4"
+            priority
+          />
+        ) : (
+          <img
+            src={logoUrl}
+            alt={settings.site_name}
+            className="h-20 w-auto mx-auto mb-4"
+          />
+        )}
         <p className="mt-3 text-gray-600 max-w-md leading-relaxed">
           Ganhe produtos, dinheiro e participe de experiencias exclusivas para os maiores fas do {settings.creator_name}
         </p>

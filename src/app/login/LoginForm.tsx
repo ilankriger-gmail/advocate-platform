@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 interface LoginFormProps {
   siteName: string;
   subtitle: string;
+  logoUrl?: string;
 }
 
 /**
@@ -50,7 +51,7 @@ function LoadingSpinner() {
 /**
  * Formulario de Login com Google OAuth
  */
-export default function LoginForm({ siteName, subtitle }: LoginFormProps) {
+export default function LoginForm({ siteName, subtitle, logoUrl = '/logo.png' }: LoginFormProps) {
   const { user, isLoading, signInWithGoogle } = useAuth();
   const router = useRouter();
   const [isSigningIn, setIsSigningIn] = useState(false);
@@ -88,14 +89,22 @@ export default function LoginForm({ siteName, subtitle }: LoginFormProps) {
       <div className="bg-white p-8 sm:p-10 rounded-2xl shadow-xl max-w-md w-full">
         {/* Logo / Título */}
         <div className="text-center mb-8">
-          <Image
-            src="/logo.png"
-            alt={siteName}
-            width={180}
-            height={60}
-            className="h-16 w-auto mx-auto mb-4"
-            priority
-          />
+          {logoUrl.startsWith('/') ? (
+            <Image
+              src={logoUrl}
+              alt={siteName}
+              width={180}
+              height={60}
+              className="h-16 w-auto mx-auto mb-4"
+              priority
+            />
+          ) : (
+            <img
+              src={logoUrl}
+              alt={siteName}
+              className="h-16 w-auto mx-auto mb-4"
+            />
+          )}
           <p className="text-gray-600">
             {subtitle}
           </p>

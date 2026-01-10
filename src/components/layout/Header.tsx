@@ -25,11 +25,27 @@ export function Header({ onMenuClick, showMenuButton = false, className, siteNam
   const { user, profile, signOut, isLoading } = useAuth();
   const pathname = usePathname();
   const [isComeceDomain, setIsComeceDomain] = useState(false);
+  const [logoUrl, setLogoUrl] = useState('/logo.png');
 
-  // Detectar domínio apenas no client-side (após hidratação)
+  // Detectar domínio e carregar logo
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setIsComeceDomain(window.location.hostname === COMECE_DOMAIN);
+
+      // Carregar logo do banco
+      import('@/lib/supabase/client').then(({ createClient }) => {
+        const supabase = createClient();
+        supabase
+          .from('site_settings')
+          .select('value')
+          .eq('key', 'logo_url')
+          .single()
+          .then(({ data }) => {
+            if (data?.value) {
+              setLogoUrl(data.value);
+            }
+          });
+      });
     }
   }, []);
 
@@ -75,14 +91,22 @@ export function Header({ onMenuClick, showMenuButton = false, className, siteNam
 
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2">
-              <Image
-                src="/logo.png"
-                alt={siteName}
-                width={120}
-                height={40}
-                className="h-10 w-auto"
-                priority
-              />
+              {logoUrl.startsWith('/') ? (
+                <Image
+                  src={logoUrl}
+                  alt={siteName}
+                  width={120}
+                  height={40}
+                  className="h-10 w-auto"
+                  priority
+                />
+              ) : (
+                <img
+                  src={logoUrl}
+                  alt={siteName}
+                  className="h-10 w-auto"
+                />
+              )}
             </Link>
           </div>
 
