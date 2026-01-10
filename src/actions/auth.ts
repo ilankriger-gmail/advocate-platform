@@ -79,7 +79,7 @@ export async function register(formData: FormData): Promise<AuthResponse> {
 
   if (!approvedLead) {
     return {
-      error: 'Este email não está autorizado para cadastro. Por favor, preencha o formulário "Seja um NextLOVER" primeiro e aguarde aprovação.'
+      error: 'Este email não está autorizado para cadastro. Por favor, preencha o formulário de inscrição primeiro e aguarde aprovação.'
     };
   }
 

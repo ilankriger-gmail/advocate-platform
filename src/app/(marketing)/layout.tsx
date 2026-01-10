@@ -5,7 +5,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings(['site_name', 'site_description']);
 
   return {
-    title: `Seja um ${settings.site_name.replace('LOVERS', 'LOVER')}`,
+    title: settings.site_name,
     description: `Faca parte da comunidade ${settings.site_name} e tenha acesso a beneficios exclusivos`,
   };
 }

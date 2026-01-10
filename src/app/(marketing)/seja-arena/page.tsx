@@ -13,7 +13,7 @@ export default async function SejaNextloverPage() {
       {/* Logo/Header */}
       <div className="text-center mb-8">
         <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
-          Seja um {settings.site_name.replace('LOVERS', 'LOVER')}
+          {settings.site_name}
         </h1>
         <p className="mt-3 text-gray-600 max-w-md leading-relaxed">
           Ganhe produtos, dinheiro e participe de experiencias exclusivas para os maiores fas do {settings.creator_name}
