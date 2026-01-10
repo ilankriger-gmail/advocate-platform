@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar } from '@/components/ui';
 import { cn } from '@/lib/utils';
@@ -22,10 +23,14 @@ const COMECE_DOMAIN = 'comece.omocodoteamo.com.br';
 export function Header({ onMenuClick, showMenuButton = false, className, siteName = 'Arena Te Amo' }: HeaderProps) {
   const { user, profile, signOut } = useAuth();
   const pathname = usePathname();
+  const [isComeceDomain, setIsComeceDomain] = useState(false);
 
-  // Detectar se estamos no domínio comece (client-side)
-  const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
-  const isComeceDomain = hostname === COMECE_DOMAIN;
+  // Detectar domínio apenas no client-side (após hidratação)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setIsComeceDomain(window.location.hostname === COMECE_DOMAIN);
+    }
+  }, []);
 
   // Mostrar link admin se tiver role='admin' OU is_creator=true
   const showAdminLink = profile?.role === 'admin' || profile?.is_creator === true;
