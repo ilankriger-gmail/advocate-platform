@@ -59,7 +59,7 @@ export const LIMITS = {
 export const PROTECTED_ROUTES = [
   '/dashboard',
   '/desafios',
-  '/prêmios',
+  '/premios',
   '/perfil',
 ] as const;
 

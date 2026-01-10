@@ -38,6 +38,17 @@ function GoogleIcon() {
 }
 
 /**
+ * Icone de Email
+ */
+function EmailIcon() {
+  return (
+    <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+    </svg>
+  );
+}
+
+/**
  * Componente de loading
  */
 function LoadingSpinner() {
@@ -48,13 +59,21 @@ function LoadingSpinner() {
   );
 }
 
+type AuthMode = 'select' | 'login' | 'register';
+
 /**
- * Formulario de Login com Google OAuth
+ * Formulario de Login com Google OAuth e Email
  */
 export default function LoginForm({ siteName, subtitle, logoUrl = '/logo.png' }: LoginFormProps) {
-  const { user, isLoading, signInWithGoogle } = useAuth();
+  const { user, isLoading, signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
   const router = useRouter();
   const [isSigningIn, setIsSigningIn] = useState(false);
+  const [authMode, setAuthMode] = useState<AuthMode>('select');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   // Redireciona se já autenticado
   useEffect(() => {
@@ -63,15 +82,66 @@ export default function LoginForm({ siteName, subtitle, logoUrl = '/logo.png' }:
     }
   }, [user, isLoading, router]);
 
-  // Função para lidar com o login
+  // Função para lidar com o login Google
   async function handleGoogleSignIn() {
     setIsSigningIn(true);
+    setError('');
     try {
       await signInWithGoogle();
-    } catch (error) {
-      console.error('Erro ao fazer login:', error);
+    } catch {
+      setError('Erro ao fazer login com Google');
       setIsSigningIn(false);
     }
+  }
+
+  // Função para lidar com login por email
+  async function handleEmailSignIn(e: React.FormEvent) {
+    e.preventDefault();
+    setIsSigningIn(true);
+    setError('');
+
+    if (!email || !password) {
+      setError('Preencha todos os campos');
+      setIsSigningIn(false);
+      return;
+    }
+
+    const result = await signInWithEmail(email, password);
+    if (result.error) {
+      setError(result.error);
+      setIsSigningIn(false);
+    }
+  }
+
+  // Função para cadastro por email
+  async function handleEmailSignUp(e: React.FormEvent) {
+    e.preventDefault();
+    setIsSigningIn(true);
+    setError('');
+    setSuccess('');
+
+    if (!email || !password || !name) {
+      setError('Preencha todos os campos');
+      setIsSigningIn(false);
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('A senha deve ter pelo menos 6 caracteres');
+      setIsSigningIn(false);
+      return;
+    }
+
+    const result = await signUpWithEmail(email, password, name);
+    if (result.error) {
+      setError(result.error);
+    } else {
+      setSuccess('Conta criada! Verifique seu email para confirmar o cadastro.');
+      setEmail('');
+      setPassword('');
+      setName('');
+    }
+    setIsSigningIn(false);
   }
 
   // Mostra loading enquanto verifica autenticacao
@@ -117,56 +187,242 @@ export default function LoginForm({ siteName, subtitle, logoUrl = '/logo.png' }:
           </p>
         </div>
 
-        {/* Divisor visual */}
-        <div className="relative mb-8">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200"></div>
+        {/* Mensagens de erro/sucesso */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+            <p className="text-sm text-red-600 text-center">{error}</p>
           </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-white text-gray-500">
-              Entre para continuar
-            </span>
+        )}
+
+        {success && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+            <p className="text-sm text-green-600 text-center">{success}</p>
           </div>
-        </div>
+        )}
 
-        {/* Botao Google */}
-        <button
-          onClick={handleGoogleSignIn}
-          disabled={isSigningIn}
-          className="w-full flex items-center justify-center py-3 px-6 rounded-xl text-white font-semibold text-lg transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed hover:shadow-lg active:scale-[0.98]"
-          style={{ backgroundColor: '#4285F4' }}
-          onMouseEnter={(e) => {
-            if (!isSigningIn) {
-              e.currentTarget.style.backgroundColor = '#3367D6';
-            }
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = '#4285F4';
-          }}
-        >
-          {isSigningIn ? (
-            <>
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
-              Entrando...
-            </>
-          ) : (
-            <>
-              <GoogleIcon />
-              Entrar com Google
-            </>
-          )}
-        </button>
+        {/* Modo de seleção */}
+        {authMode === 'select' && (
+          <>
+            {/* Divisor visual */}
+            <div className="relative mb-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-4 bg-white text-gray-500">
+                  Entre para continuar
+                </span>
+              </div>
+            </div>
 
-        {/* Link para inscrição */}
-        <p className="mt-6 text-center text-sm text-gray-600">
-          Quer fazer parte da comunidade?{' '}
-          <a
-            href="https://comece.omocodoteamo.com.br"
-            className="text-gray-700 font-medium hover:text-gray-900 underline"
-          >
-            Inscreva-se aqui
-          </a>
-        </p>
+            {/* Botao Google */}
+            <button
+              onClick={handleGoogleSignIn}
+              disabled={isSigningIn}
+              className="w-full flex items-center justify-center py-3 px-6 rounded-xl text-white font-semibold text-lg transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed hover:shadow-lg active:scale-[0.98] mb-3"
+              style={{ backgroundColor: '#4285F4' }}
+              onMouseEnter={(e) => {
+                if (!isSigningIn) {
+                  e.currentTarget.style.backgroundColor = '#3367D6';
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#4285F4';
+              }}
+            >
+              {isSigningIn ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                  Entrando...
+                </>
+              ) : (
+                <>
+                  <GoogleIcon />
+                  Entrar com Google
+                </>
+              )}
+            </button>
+
+            {/* Botao Email */}
+            <button
+              onClick={() => setAuthMode('login')}
+              disabled={isSigningIn}
+              className="w-full flex items-center justify-center py-3 px-6 rounded-xl text-gray-700 font-semibold text-lg transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed hover:shadow-lg active:scale-[0.98] border border-gray-300 hover:bg-gray-50"
+            >
+              <EmailIcon />
+              Entrar com Email
+            </button>
+
+            {/* Link para cadastro */}
+            <p className="mt-4 text-center text-sm text-gray-600">
+              Não tem conta?{' '}
+              <button
+                onClick={() => setAuthMode('register')}
+                className="text-gray-700 font-medium hover:text-gray-900 underline"
+              >
+                Criar conta
+              </button>
+            </p>
+          </>
+        )}
+
+        {/* Modo de login por email */}
+        {authMode === 'login' && (
+          <>
+            <form onSubmit={handleEmailSignIn} className="space-y-4">
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all"
+                  placeholder="seu@email.com"
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                  Senha
+                </label>
+                <input
+                  type="password"
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all"
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={isSigningIn}
+                className="w-full flex items-center justify-center py-3 px-6 rounded-xl text-white font-semibold text-lg transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed hover:shadow-lg active:scale-[0.98] bg-gray-700 hover:bg-gray-800"
+              >
+                {isSigningIn ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                    Entrando...
+                  </>
+                ) : (
+                  'Entrar'
+                )}
+              </button>
+            </form>
+
+            <div className="mt-4 flex items-center justify-between text-sm">
+              <button
+                onClick={() => { setAuthMode('select'); setError(''); }}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                Voltar
+              </button>
+              <button
+                onClick={() => { setAuthMode('register'); setError(''); }}
+                className="text-gray-700 font-medium hover:text-gray-900 underline"
+              >
+                Criar conta
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* Modo de cadastro por email */}
+        {authMode === 'register' && (
+          <>
+            <form onSubmit={handleEmailSignUp} className="space-y-4">
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                  Nome completo
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all"
+                  placeholder="Seu nome"
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="email-register" className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  id="email-register"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all"
+                  placeholder="seu@email.com"
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="password-register" className="block text-sm font-medium text-gray-700 mb-1">
+                  Senha
+                </label>
+                <input
+                  type="password"
+                  id="password-register"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all"
+                  placeholder="Mínimo 6 caracteres"
+                  minLength={6}
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={isSigningIn}
+                className="w-full flex items-center justify-center py-3 px-6 rounded-xl text-white font-semibold text-lg transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed hover:shadow-lg active:scale-[0.98] bg-gray-700 hover:bg-gray-800"
+              >
+                {isSigningIn ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                    Criando conta...
+                  </>
+                ) : (
+                  'Criar conta'
+                )}
+              </button>
+            </form>
+
+            <div className="mt-4 flex items-center justify-between text-sm">
+              <button
+                onClick={() => { setAuthMode('select'); setError(''); setSuccess(''); }}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                Voltar
+              </button>
+              <button
+                onClick={() => { setAuthMode('login'); setError(''); setSuccess(''); }}
+                className="text-gray-700 font-medium hover:text-gray-900 underline"
+              >
+                Já tenho conta
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* Link para inscrição (apenas no modo select) */}
+        {authMode === 'select' && (
+          <p className="mt-6 text-center text-sm text-gray-600">
+            Quer fazer parte da comunidade?{' '}
+            <a
+              href="https://comece.omocodoteamo.com.br"
+              className="text-gray-700 font-medium hover:text-gray-900 underline"
+            >
+              Inscreva-se aqui
+            </a>
+          </p>
+        )}
 
         {/* Texto de rodape */}
         <p className="mt-4 text-center text-xs text-gray-400">

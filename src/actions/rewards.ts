@@ -95,7 +95,7 @@ export async function claimReward(rewardId: string): Promise<ActionResponse<Rewa
       })
       .eq('id', rewardId);
 
-    revalidatePath('/prêmios');
+    revalidatePath('/premios');
     revalidatePath('/dashboard');
     return { success: true, data: claim };
   } catch {
@@ -169,7 +169,7 @@ export async function cancelClaim(claimId: string): Promise<ActionResponse> {
     // Devolver ao estoque
     await supabase.rpc('increment_reward_stock', { reward_id: claim.reward_id });
 
-    revalidatePath('/prêmios');
+    revalidatePath('/premios');
     revalidatePath('/dashboard');
     return { success: true };
   } catch {
@@ -214,8 +214,8 @@ export async function toggleRewardActive(
       return { error: 'Erro ao atualizar recompensa' };
     }
 
-    revalidatePath('/prêmios');
-    revalidatePath('/admin/prêmios');
+    revalidatePath('/premios');
+    revalidatePath('/admin/premios');
     return { success: true };
   } catch {
     return { error: 'Erro interno do servidor' };
@@ -254,7 +254,7 @@ export async function approveClaim(claimId: string): Promise<ActionResponse> {
       return { error: 'Erro ao aprovar resgate' };
     }
 
-    revalidatePath('/admin/prêmios');
+    revalidatePath('/admin/premios');
     return { success: true };
   } catch {
     return { error: 'Erro interno do servidor' };
@@ -293,7 +293,7 @@ export async function markClaimShipped(claimId: string): Promise<ActionResponse>
       return { error: 'Erro ao atualizar status' };
     }
 
-    revalidatePath('/admin/prêmios');
+    revalidatePath('/admin/premios');
     return { success: true };
   } catch {
     return { error: 'Erro interno do servidor' };
@@ -332,7 +332,7 @@ export async function markClaimDelivered(claimId: string): Promise<ActionRespons
       return { error: 'Erro ao atualizar status' };
     }
 
-    revalidatePath('/admin/prêmios');
+    revalidatePath('/admin/premios');
     return { success: true };
   } catch {
     return { error: 'Erro interno do servidor' };
@@ -388,8 +388,8 @@ export async function createReward(data: {
       return { error: 'Erro ao criar recompensa' };
     }
 
-    revalidatePath('/prêmios');
-    revalidatePath('/admin/prêmios');
+    revalidatePath('/premios');
+    revalidatePath('/admin/premios');
     return { success: true, data: reward };
   } catch {
     return { error: 'Erro interno do servidor' };
@@ -458,8 +458,8 @@ export async function updateReward(
       return { error: 'Erro ao atualizar recompensa' };
     }
 
-    revalidatePath('/prêmios');
-    revalidatePath('/admin/prêmios');
+    revalidatePath('/premios');
+    revalidatePath('/admin/premios');
     return { success: true };
   } catch {
     return { error: 'Erro interno do servidor' };
@@ -533,7 +533,7 @@ export async function addCoinsToUser(
         description: description,
       });
 
-    revalidatePath('/admin/usuários');
+    revalidatePath('/admin/usuarios');
     return { success: true };
   } catch {
     return { error: 'Erro interno do servidor' };

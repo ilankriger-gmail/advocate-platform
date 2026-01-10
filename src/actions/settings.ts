@@ -86,7 +86,7 @@ export async function updateSiteSetting(
   revalidatePath('/', 'layout');
   revalidatePath('/login');
   revalidatePath('/seja-arena');
-  revalidatePath('/admin/configurações');
+  revalidatePath('/admin/configuracoes');
 
   return { success: true, error: null };
 }
@@ -149,7 +149,7 @@ export async function updateMultipleSiteSettings(
   revalidatePath('/', 'layout');
   revalidatePath('/login');
   revalidatePath('/seja-arena');
-  revalidatePath('/admin/configurações');
+  revalidatePath('/admin/configuracoes');
   revalidatePath('/admin/emails');
 
   if (errors.length > 0) {
@@ -248,7 +248,7 @@ export async function uploadFavicon(formData: FormData): Promise<{
 
   // Revalidar
   revalidatePath('/', 'layout');
-  revalidatePath('/admin/configurações');
+  revalidatePath('/admin/configuracoes');
 
   return { success: true, error: null, url: faviconUrl };
 }
@@ -284,7 +284,7 @@ export async function resetFavicon(): Promise<{
     .eq('key', 'favicon_url');
 
   revalidatePath('/', 'layout');
-  revalidatePath('/admin/configurações');
+  revalidatePath('/admin/configuracoes');
 
   return { success: true, error: null };
 }

@@ -22,6 +22,8 @@ interface AuthContextType {
   profile: UserProfile | null;
   isLoading: boolean;
   signInWithGoogle: () => Promise<void>;
+  signInWithEmail: (email: string, password: string) => Promise<{ error: string | null }>;
+  signUpWithEmail: (email: string, password: string, name: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
 }
 
@@ -116,6 +118,51 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [supabase.auth]);
 
+  // Login com Email
+  const signInWithEmail = useCallback(async (email: string, password: string): Promise<{ error: string | null }> => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      console.error('Erro ao fazer login com email:', error);
+      if (error.message === 'Invalid login credentials') {
+        return { error: 'Email ou senha incorretos' };
+      }
+      if (error.message === 'Email not confirmed') {
+        return { error: 'Por favor, confirme seu email antes de fazer login' };
+      }
+      return { error: error.message };
+    }
+
+    return { error: null };
+  }, [supabase.auth]);
+
+  // Cadastro com Email
+  const signUpWithEmail = useCallback(async (email: string, password: string, name: string): Promise<{ error: string | null }> => {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        data: {
+          full_name: name,
+        },
+      },
+    });
+
+    if (error) {
+      console.error('Erro ao criar conta:', error);
+      if (error.message.includes('already registered')) {
+        return { error: 'Este email já está cadastrado' };
+      }
+      return { error: error.message };
+    }
+
+    return { error: null };
+  }, [supabase.auth]);
+
   // Logout
   const signOut = useCallback(async () => {
     try {
@@ -145,6 +192,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     profile,
     isLoading,
     signInWithGoogle,
+    signInWithEmail,
+    signUpWithEmail,
     signOut,
   };
 

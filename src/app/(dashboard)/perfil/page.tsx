@@ -156,7 +156,7 @@ export default async function PerfilPage() {
                   <p className="text-indigo-100 text-sm">Seus corações</p>
                   <p className="text-2xl font-bold">{balance} ❤️</p>
                 </div>
-                <Link href="/prêmios" className="text-white/80 hover:text-white text-sm underline">
+                <Link href="/premios" className="text-white/80 hover:text-white text-sm underline">
                   Ver prêmios
                 </Link>
               </div>

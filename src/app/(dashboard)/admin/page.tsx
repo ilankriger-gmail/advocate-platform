@@ -89,7 +89,7 @@ export default async function AdminDashboardPage() {
       title: 'Recompensas',
       value: activeRewards || 0,
       icon: '🎁',
-      href: '/admin/prêmios',
+      href: '/admin/premios',
       color: 'border-l-purple-500',
       description: `${pendingClaims || 0} resgates pendentes`,
     },
@@ -97,7 +97,7 @@ export default async function AdminDashboardPage() {
       title: 'Usuários',
       value: totalUsers || 0,
       icon: '👥',
-      href: '/admin/usuários',
+      href: '/admin/usuarios',
       color: 'border-l-pink-500',
       description: 'Total de usuários',
     },
@@ -113,7 +113,7 @@ export default async function AdminDashboardPage() {
       title: 'Configurações',
       value: 12,
       icon: '⚙️',
-      href: '/admin/configurações',
+      href: '/admin/configuracoes',
       color: 'border-l-gray-500',
       description: 'Nome, descrição, SEO',
     },
@@ -162,7 +162,7 @@ export default async function AdminDashboardPage() {
             <span className="text-sm text-yellow-700 font-medium text-center">Moderar Posts</span>
           </Link>
           <Link
-            href="/admin/prêmios"
+            href="/admin/premios"
             className="flex flex-col items-center gap-2 p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
           >
             <span className="text-2xl">🎁</span>
@@ -176,7 +176,7 @@ export default async function AdminDashboardPage() {
             <span className="text-sm text-indigo-700 font-medium text-center">Leads + AI</span>
           </Link>
           <Link
-            href="/admin/configurações"
+            href="/admin/configuracoes"
             className="flex flex-col items-center gap-2 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
           >
             <span className="text-2xl">⚙️</span>

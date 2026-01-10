@@ -141,7 +141,7 @@ export function Header({ onMenuClick, showMenuButton = false, className, siteNam
                     Meu Perfil
                   </Link>
                   <Link
-                    href="/prêmios"
+                    href="/premios"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                   >
                     Meus Prêmios

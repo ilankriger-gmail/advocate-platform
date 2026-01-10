@@ -1,12 +1,20 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Configuração para permitir imagens do Supabase Storage
+  // Configuração para permitir imagens do Supabase Storage e Google
   images: {
     remotePatterns: [
       {
         protocol: 'https',
         hostname: '*.supabase.co',
         pathname: '/storage/v1/object/public/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.googleusercontent.com',
       },
     ],
   },
@@ -86,7 +94,8 @@ const nextConfig = {
               // data:: Permite data URIs (imagens base64)
               // blob:: Permite blob URLs (usado para preview de uploads)
               // https://*.supabase.co: Permite imagens do Supabase Storage
-              "img-src 'self' data: blob: https://*.supabase.co",
+              // https://*.googleusercontent.com: Permite avatares do Google
+              "img-src 'self' data: blob: https://*.supabase.co https://*.googleusercontent.com",
               // connect-src: Controla para onde a aplicação pode fazer requisições (fetch, XHR, WebSocket)
               // 'self': Requisições para a mesma origem
               // https://*.supabase.co: Permite conexões com API do Supabase
