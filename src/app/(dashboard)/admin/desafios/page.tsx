@@ -118,9 +118,12 @@ function ChallengeAdminCard({ challenge }: ChallengeCardProps) {
     }
   };
 
+  // Só pode excluir se não tiver participantes nem ganhadores
+  const canDelete = challenge.totalParticipants === 0 && challenge.winnersCount === 0;
+
   return (
-    <Link href={`/admin/desafios/${challenge.id}`}>
-      <Card className="p-5 hover:shadow-lg transition-shadow cursor-pointer h-full">
+    <Card className="p-5 hover:shadow-lg transition-shadow h-full">
+      <Link href={`/admin/desafios/${challenge.id}`} className="block">
         <div className="flex items-start gap-4">
           <span className="text-3xl">{challenge.icon}</span>
           <div className="flex-1">
@@ -161,7 +164,18 @@ function ChallengeAdminCard({ challenge }: ChallengeCardProps) {
             </div>
           </div>
         </div>
-      </Card>
-    </Link>
+      </Link>
+
+      {/* Botão de excluir (fora do Link) */}
+      <div className="mt-3 pt-3 border-t">
+        <ChallengeDeleteButton
+          challengeId={challenge.id}
+          challengeName={challenge.title}
+          canDelete={canDelete}
+          participantsCount={challenge.totalParticipants}
+          winnersCount={challenge.winnersCount}
+        />
+      </div>
+    </Card>
   );
 }
