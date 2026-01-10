@@ -118,15 +118,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Logout
   const signOut = useCallback(async () => {
-    const { error } = await supabase.auth.signOut();
+    try {
+      // Limpar sessao em todos os escopos
+      await supabase.auth.signOut({ scope: 'global' });
 
-    if (error) {
+      // Limpar estado local
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+
+      // Pequeno delay para garantir que cookies foram limpos
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Redirecionar para login
+      window.location.href = '/login';
+    } catch (error) {
       console.error('Erro ao fazer logout:', error);
-      throw error;
+      // Mesmo com erro, tentar redirecionar
+      window.location.href = '/login';
     }
-
-    // Redirecionar para login apos logout
-    window.location.href = '/login';
   }, [supabase.auth]);
 
   const value: AuthContextType = {
