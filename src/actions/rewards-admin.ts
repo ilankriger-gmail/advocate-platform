@@ -331,3 +331,56 @@ export async function addCoinsToUser(
     return { error: 'Erro interno do servidor' };
   }
 }
+
+/**
+ * Deletar recompensa (admin)
+ * Só permite deletar se não houver claims pendentes/aprovados/enviados
+ */
+export async function deleteReward(rewardId: string): Promise<ActionResponse> {
+  try {
+    // Verificar autenticação
+    const userCheck = await getAuthenticatedUser();
+    if (userCheck.error) {
+      return userCheck;
+    }
+    const user = userCheck.data!;
+
+    // Verificar se é admin/creator
+    const authCheck = await verifyAdminOrCreator(user.id);
+    if (authCheck.error) {
+      return authCheck;
+    }
+
+    const supabase = await createClient();
+
+    // Verificar se existem claims ativos (pendentes, aprovados ou enviados)
+    const { count: activeClaims } = await supabase
+      .from('reward_claims')
+      .select('*', { count: 'exact', head: true })
+      .eq('reward_id', rewardId)
+      .in('status', ['pending', 'approved', 'shipped']);
+
+    if (activeClaims && activeClaims > 0) {
+      return {
+        error: `Não é possível excluir. Existem ${activeClaims} resgate(s) pendente(s)/em andamento.`
+      };
+    }
+
+    // Deletar a recompensa
+    const { error } = await supabase
+      .from('rewards')
+      .delete()
+      .eq('id', rewardId);
+
+    if (error) {
+      console.error('Error deleting reward:', error);
+      return { error: 'Erro ao excluir recompensa' };
+    }
+
+    revalidatePath('/premios');
+    revalidatePath('/admin/premios');
+    return { success: true };
+  } catch {
+    return { error: 'Erro interno do servidor' };
+  }
+}

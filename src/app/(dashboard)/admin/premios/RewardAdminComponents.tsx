@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, Button, Input, Textarea } from '@/components/ui';
-import { toggleRewardActive, createReward, approveClaim, markClaimShipped, markClaimDelivered, deleteReward } from '@/actions/rewards';
+import { toggleRewardActive, createReward, approveClaim, markClaimShipped, markClaimDelivered, deleteReward } from '@/actions/rewards-admin';
 
 interface RewardActionsProps {
   reward: {
