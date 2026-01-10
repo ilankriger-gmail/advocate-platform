@@ -75,7 +75,7 @@ export const MAIN_NAV = [
   { href: '/desafios', label: 'Desafios', icon: 'Target' },
   { href: '/eventos', label: 'Eventos', icon: 'Calendar' },
   { href: '/ranking', label: 'Ranking', icon: 'Trophy' },
-  { href: '/prêmios', label: 'Meus Prêmios', icon: 'Gift' },
+  { href: '/premios', label: 'Meus Prêmios', icon: 'Gift' },
   { href: '/perfil', label: 'Perfil', icon: 'User' },
 ] as const;
 
@@ -85,12 +85,12 @@ export const CREATOR_NAV = [
   { href: '/admin/posts', label: 'Moderar Posts', icon: 'FileText' },
   { href: '/admin/desafios', label: 'Desafios', icon: 'Target' },
   { href: '/admin/eventos', label: 'Eventos', icon: 'Calendar' },
-  { href: '/admin/prêmios', label: 'Prêmios', icon: 'Gift' },
-  { href: '/admin/usuários', label: 'Usuários', icon: 'Users' },
+  { href: '/admin/premios', label: 'Prêmios', icon: 'Gift' },
+  { href: '/admin/usuarios', label: 'Usuários', icon: 'Users' },
   { href: '/admin/leads', label: 'Leads NPS', icon: 'Chart' },
-  { href: '/admin/notificações', label: 'Notificações', icon: 'Bell' },
+  { href: '/admin/notificacoes', label: 'Notificações', icon: 'Bell' },
   { href: '/admin/emails', label: 'Emails', icon: 'Mail' },
-  { href: '/admin/configurações', label: 'Configurações', icon: 'Settings' },
+  { href: '/admin/configuracoes', label: 'Configurações', icon: 'Settings' },
 ] as const;
 
 // Links de redes sociais
