@@ -15,10 +15,14 @@ import {
   markTaskFailed,
   checkEmailOpened,
   sendApprovalWhatsApp,
+  sendFollowupEmail,
   isMetaWhatsAppConfigured,
+  scheduleWhatsAppFinal,
+  cancelAllLeadTasks,
 } from '@/lib/notifications';
 import { getSiteSettings } from '@/lib/config/site';
-import type { ScheduledTask, TaskProcessingResult, CheckEmailOpenedPayload } from '@/types/notification';
+import { checkLeadConversion, updateLeadSequenceStep } from '@/actions/leads';
+import type { ScheduledTask, TaskProcessingResult } from '@/types/notification';
 
 // Limite de tarefas por execucao
 const TASKS_PER_RUN = 20;
@@ -132,16 +136,208 @@ async function processCheckEmailOpened(task: ScheduledTask): Promise<{
 }
 
 /**
+ * Processa uma tarefa do tipo send_email_2 (Email de follow-up)
+ * Verifica conversao antes de enviar
+ */
+async function processSendEmail2(task: ScheduledTask): Promise<{
+  success: boolean;
+  sentEmail: boolean;
+  converted: boolean;
+  error?: string;
+}> {
+  const leadId = task.lead_id;
+
+  if (!leadId) {
+    return { success: false, sentEmail: false, converted: false, error: 'Lead ID nao encontrado' };
+  }
+
+  try {
+    const supabase = createAdminClient();
+
+    // Verificar se o lead ja converteu
+    const { converted, userId } = await checkLeadConversion(leadId);
+
+    if (converted) {
+      console.log(`[CRON] Lead ${leadId} ja converteu (user ${userId}) - cancelando sequencia`);
+      await cancelAllLeadTasks(leadId);
+      return { success: true, sentEmail: false, converted: true };
+    }
+
+    // Buscar dados do lead
+    const { data: lead, error: leadError } = await supabase
+      .from('nps_leads')
+      .select('id, name, email, phone, sequence_step')
+      .eq('id', leadId)
+      .single();
+
+    if (leadError || !lead) {
+      return { success: false, sentEmail: false, converted: false, error: 'Lead nao encontrado' };
+    }
+
+    // Gerar link de cadastro
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://comunidade.omocodoteamo.com.br';
+    const registrationUrl = `${baseUrl}/registro?email=${encodeURIComponent(lead.email)}`;
+
+    // Enviar Email 2 (follow-up)
+    console.log(`[CRON] Enviando Email 2 para lead ${leadId} (${lead.email})`);
+    const result = await sendFollowupEmail({
+      to: lead.email,
+      name: lead.name,
+      loginUrl: registrationUrl,
+      leadId,
+    });
+
+    if (!result.success) {
+      return { success: false, sentEmail: false, converted: false, error: result.error };
+    }
+
+    // Atualizar sequence_step para 2
+    await updateLeadSequenceStep(leadId, 2);
+
+    // Agendar WhatsApp final para 24h (se tem telefone)
+    if (lead.phone) {
+      await scheduleWhatsAppFinal(leadId, {
+        email: lead.email,
+        lead_name: lead.name,
+        phone: lead.phone,
+      });
+      console.log(`[CRON] WhatsApp final agendado para lead ${leadId}`);
+    }
+
+    console.log(`[CRON] Email 2 enviado com sucesso para lead ${leadId}`);
+    return { success: true, sentEmail: true, converted: false };
+  } catch (error) {
+    console.error(`[CRON] Erro ao processar Email 2 para lead ${leadId}:`, error);
+    return { success: false, sentEmail: false, converted: false, error: 'Erro interno' };
+  }
+}
+
+/**
+ * Processa uma tarefa do tipo send_whatsapp_final
+ * Verifica conversao antes de enviar
+ */
+async function processSendWhatsAppFinal(task: ScheduledTask): Promise<{
+  success: boolean;
+  sentWhatsApp: boolean;
+  converted: boolean;
+  error?: string;
+}> {
+  const leadId = task.lead_id;
+
+  if (!leadId) {
+    return { success: false, sentWhatsApp: false, converted: false, error: 'Lead ID nao encontrado' };
+  }
+
+  try {
+    const supabase = createAdminClient();
+
+    // Verificar se o lead ja converteu
+    const { converted, userId } = await checkLeadConversion(leadId);
+
+    if (converted) {
+      console.log(`[CRON] Lead ${leadId} ja converteu (user ${userId}) - cancelando sequencia`);
+      await cancelAllLeadTasks(leadId);
+      return { success: true, sentWhatsApp: false, converted: true };
+    }
+
+    // Buscar dados do lead
+    const { data: lead, error: leadError } = await supabase
+      .from('nps_leads')
+      .select('id, name, email, phone, whatsapp_opted_in')
+      .eq('id', leadId)
+      .single();
+
+    if (leadError || !lead) {
+      return { success: false, sentWhatsApp: false, converted: false, error: 'Lead nao encontrado' };
+    }
+
+    // Verificar se tem telefone
+    if (!lead.phone) {
+      console.log(`[CRON] Lead ${leadId} nao tem telefone - finalizando sequencia`);
+      await updateLeadSequenceStep(leadId, 3);
+      return { success: true, sentWhatsApp: false, converted: false };
+    }
+
+    // Verificar se WhatsApp Meta esta configurado
+    if (!isMetaWhatsAppConfigured()) {
+      console.warn('[CRON] WhatsApp Meta nao configurado - pulando envio');
+      await updateLeadSequenceStep(leadId, 3);
+      return { success: true, sentWhatsApp: false, converted: false };
+    }
+
+    // Buscar configuracoes do site
+    const settings = await getSiteSettings(['site_name']);
+    const siteName = settings.site_name;
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://comunidade.omocodoteamo.com.br';
+    const registrationUrl = `${baseUrl}/registro?email=${encodeURIComponent(lead.email)}`;
+
+    // Enviar WhatsApp final
+    console.log(`[CRON] Enviando WhatsApp final para lead ${leadId} (${lead.phone})`);
+    const result = await sendApprovalWhatsApp({
+      to: lead.phone,
+      name: lead.name,
+      siteName,
+      registrationUrl,
+      leadId,
+    });
+
+    if (!result.success) {
+      return { success: false, sentWhatsApp: false, converted: false, error: result.error };
+    }
+
+    // Atualizar lead com sequence_step = 3 e whatsapp_sent
+    await supabase
+      .from('nps_leads')
+      .update({
+        sequence_step: 3,
+        whatsapp_sent: true,
+        whatsapp_sent_at: new Date().toISOString(),
+      })
+      .eq('id', leadId);
+
+    console.log(`[CRON] WhatsApp final enviado com sucesso para lead ${leadId}`);
+    return { success: true, sentWhatsApp: true, converted: false };
+  } catch (error) {
+    console.error(`[CRON] Erro ao processar WhatsApp final para lead ${leadId}:`, error);
+    return { success: false, sentWhatsApp: false, converted: false, error: 'Erro interno' };
+  }
+}
+
+/**
  * Processa uma tarefa agendada
  */
 async function processTask(task: ScheduledTask): Promise<{
   success: boolean;
   sentWhatsApp: boolean;
+  sentEmail?: boolean;
+  converted?: boolean;
   error?: string;
 }> {
   switch (task.type) {
     case 'check_email_opened':
+      // Legado - mantido para compatibilidade com tarefas antigas
       return processCheckEmailOpened(task);
+
+    case 'send_email_2':
+      // Novo sistema de sequencia - enviar Email 2
+      const email2Result = await processSendEmail2(task);
+      return {
+        success: email2Result.success,
+        sentWhatsApp: false,
+        sentEmail: email2Result.sentEmail,
+        converted: email2Result.converted,
+        error: email2Result.error,
+      };
+
+    case 'send_whatsapp_final':
+      // Novo sistema de sequencia - enviar WhatsApp final
+      const whatsappResult = await processSendWhatsAppFinal(task);
+      return {
+        success: whatsappResult.success,
+        sentWhatsApp: whatsappResult.sentWhatsApp,
+        converted: whatsappResult.converted,
+        error: whatsappResult.error,
+      };
 
     case 'send_reminder':
       // TODO: Implementar lembretes
@@ -167,9 +363,11 @@ export async function GET(request: NextRequest) {
 
   const startTime = Date.now();
 
-  const result: TaskProcessingResult = {
+  const result: TaskProcessingResult & { sent_email_2: number; converted: number } = {
     processed: 0,
     sent_whatsapp: 0,
+    sent_email_2: 0,
+    converted: 0,
     skipped: 0,
     failed: 0,
     errors: [],
@@ -216,8 +414,12 @@ export async function GET(request: NextRequest) {
           await markTaskCompleted(task.id);
           result.processed++;
 
-          if (taskResult.sentWhatsApp) {
+          if (taskResult.converted) {
+            result.converted++;
+          } else if (taskResult.sentWhatsApp) {
             result.sent_whatsapp++;
+          } else if (taskResult.sentEmail) {
+            result.sent_email_2++;
           } else {
             result.skipped++;
           }
@@ -237,7 +439,8 @@ export async function GET(request: NextRequest) {
     const duration = Date.now() - startTime;
     console.log(
       `[CRON] Concluido em ${duration}ms: ` +
-      `${result.processed} processadas, ${result.sent_whatsapp} WhatsApps enviados, ` +
+      `${result.processed} processadas, ${result.sent_email_2} Email2 enviados, ` +
+      `${result.sent_whatsapp} WhatsApps enviados, ${result.converted} convertidos, ` +
       `${result.skipped} puladas, ${result.failed} falhas`
     );
 

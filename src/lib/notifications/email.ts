@@ -29,6 +29,7 @@ interface LogEmailNotificationParams {
   leadId: string;
   messageId: string;
   status?: 'pending' | 'sent' | 'delivered' | 'opened' | 'failed' | 'cancelled';
+  sequenceStep?: number; // 1 = email 1, 2 = email 2
 }
 
 /**
@@ -38,23 +39,22 @@ export async function logEmailNotification({
   leadId,
   messageId,
   status = 'sent',
+  sequenceStep = 1,
 }: LogEmailNotificationParams): Promise<{ success: boolean; error?: string }> {
   try {
     const supabase = createAdminClient();
 
     const { error } = await supabase
       .from('notifications_log')
-      .upsert(
-        {
-          lead_id: leadId,
-          channel: 'email',
-          status,
-          external_id: messageId,
-          sent_at: new Date().toISOString(),
-          metadata: { opened: false },
-        },
-        { onConflict: 'lead_id,channel' }
-      );
+      .insert({
+        lead_id: leadId,
+        channel: 'email',
+        status,
+        external_id: messageId,
+        sent_at: new Date().toISOString(),
+        metadata: { opened: false },
+        sequence_step: sequenceStep,
+      });
 
     if (error) {
       console.error('[Email] Erro ao registrar notificacao:', error);
@@ -239,12 +239,13 @@ export async function sendApprovalEmail({
 
     const messageId = data?.id;
 
-    // Se temos leadId, registrar a notificacao no banco
+    // Se temos leadId, registrar a notificacao no banco (como step 1)
     if (leadId && messageId) {
       await logEmailNotification({
         leadId,
         messageId,
         status: 'sent',
+        sequenceStep: 1,
       });
     }
 
@@ -252,6 +253,163 @@ export async function sendApprovalEmail({
   } catch (err) {
     console.error('[Email] Erro ao enviar:', err);
     return { success: false, error: 'Erro ao enviar email' };
+  }
+}
+
+/**
+ * Envia email de follow-up (Email 2) para o lead que nao converteu
+ * Usa template diferente do email de aprovacao
+ */
+export async function sendFollowupEmail({
+  to,
+  name,
+  loginUrl,
+  leadId,
+}: SendApprovalEmailParams): Promise<EmailSendResult> {
+  // Gerar link de cadastro com email pre-preenchido
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://comunidade.omocodoteamo.com.br';
+  const registrationUrl = loginUrl || `${baseUrl}/registro?email=${encodeURIComponent(to)}`;
+
+  try {
+    const resend = getResendClient();
+
+    if (!resend) {
+      console.warn('Resend not configured - skipping email');
+      return { success: false, error: 'Servico de email nao configurado' };
+    }
+
+    // Buscar configuracoes do site e email de follow-up
+    const settings = await getSiteSettings([
+      'site_name',
+      'email_from_name',
+      'email_followup_subject',
+      'email_followup_greeting',
+      'email_followup_message',
+      'email_followup_benefits',
+      'email_followup_cta',
+      'email_followup_footer',
+    ]);
+
+    const siteName = settings.site_name;
+    const fromName = settings.email_from_name;
+
+    // Funcao para substituir variaveis
+    const replaceVars = (text: string) =>
+      text
+        .replace(/\{\{site_name\}\}/g, siteName)
+        .replace(/\{\{name\}\}/g, name)
+        .replace(/\{\{email\}\}/g, to);
+
+    // Configuracoes do email com variaveis substituidas
+    const subject = replaceVars(settings.email_followup_subject);
+    const greeting = replaceVars(settings.email_followup_greeting);
+    const message = replaceVars(settings.email_followup_message);
+    const benefits = settings.email_followup_benefits.split(',').map(b => b.trim());
+    const ctaText = settings.email_followup_cta;
+    const footer = settings.email_followup_footer;
+
+    const fromEmail = process.env.RESEND_FROM_EMAIL || 'noreply@omocodoteamo.com.br';
+
+    // Gerar lista de beneficios em HTML
+    const benefitsHtml = benefits.map(b => `<li>${b}</li>`).join('\n                        ');
+
+    const { data, error } = await resend.emails.send({
+      from: `${fromName} <${fromEmail}>`,
+      to: [to],
+      subject,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f9fafb;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9fafb; padding: 40px 20px;">
+            <tr>
+              <td align="center">
+                <table width="100%" max-width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                  <!-- Header com urgencia -->
+                  <tr>
+                    <td style="background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%); padding: 40px 30px; text-align: center;">
+                      <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: bold;">${siteName}</h1>
+                      <p style="color: #ffffff; margin: 10px 0 0; font-size: 14px; opacity: 0.9;">Ultima chance!</p>
+                    </td>
+                  </tr>
+
+                  <!-- Content -->
+                  <tr>
+                    <td style="padding: 40px 30px;">
+                      <h2 style="color: #111827; margin: 0 0 20px; font-size: 24px;">${greeting}</h2>
+
+                      <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 20px;">
+                        ${message}
+                      </p>
+
+                      <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 30px;">
+                        Veja o que voce esta perdendo:
+                      </p>
+
+                      <ul style="color: #374151; font-size: 16px; line-height: 1.8; margin: 0 0 30px; padding-left: 20px;">
+                        ${benefitsHtml}
+                      </ul>
+
+                      <!-- CTA Button com urgencia -->
+                      <table width="100%" cellpadding="0" cellspacing="0">
+                        <tr>
+                          <td align="center">
+                            <a href="${registrationUrl}" style="display: inline-block; background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 12px; font-size: 16px; font-weight: bold;">
+                              ${ctaText}
+                            </a>
+                          </td>
+                        </tr>
+                      </table>
+
+                      <p style="color: #6b7280; font-size: 14px; line-height: 1.6; margin: 30px 0 0; text-align: center;">
+                        Use o email <strong>${to}</strong> para criar sua conta.
+                      </p>
+                    </td>
+                  </tr>
+
+                  <!-- Footer -->
+                  <tr>
+                    <td style="background-color: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+                      <p style="color: #9ca3af; font-size: 14px; margin: 0;">
+                        ${footer}<br>
+                        <strong style="color: #f59e0b;">Equipe ${siteName}</strong>
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
+      `,
+    });
+
+    if (error) {
+      console.error('[Email] Erro ao enviar follow-up:', error);
+      return { success: false, error: error.message };
+    }
+
+    const messageId = data?.id;
+
+    // Se temos leadId, registrar a notificacao no banco (como step 2)
+    if (leadId && messageId) {
+      await logEmailNotification({
+        leadId,
+        messageId,
+        status: 'sent',
+        sequenceStep: 2,
+      });
+    }
+
+    return { success: true, message_id: messageId };
+  } catch (err) {
+    console.error('[Email] Erro ao enviar follow-up:', err);
+    return { success: false, error: 'Erro ao enviar email de follow-up' };
   }
 }
 

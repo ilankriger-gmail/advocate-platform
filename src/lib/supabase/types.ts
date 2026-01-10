@@ -528,6 +528,11 @@ export interface NpsLead {
   ai_strengths: string[] | null;
   ai_concerns: string[] | null;
   ai_analyzed_at: string | null;
+  // Campos de sequencia de emails
+  sequence_step: number;
+  converted: boolean;
+  converted_at: string | null;
+  converted_user_id: string | null;
 }
 
 export interface NpsLeadInsert {
@@ -577,7 +582,7 @@ export type NotificationStatus = 'pending' | 'sent' | 'delivered' | 'opened' | '
 /**
  * Tipo da tarefa agendada
  */
-export type ScheduledTaskType = 'check_email_opened' | 'send_reminder' | 'cleanup';
+export type ScheduledTaskType = 'check_email_opened' | 'send_reminder' | 'cleanup' | 'send_email_2' | 'send_whatsapp_final';
 
 /**
  * Status da tarefa agendada
@@ -597,6 +602,7 @@ export interface NotificationLogRow {
   created_at: string;
   updated_at: string;
   sent_at: string | null;
+  sequence_step: number;
 }
 
 /**

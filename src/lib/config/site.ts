@@ -29,7 +29,14 @@ export type SiteSettingKey =
   | 'email_approval_benefits'
   | 'email_approval_cta'
   | 'email_approval_footer'
-  | 'favicon_url';
+  | 'favicon_url'
+  // Email 2 (follow-up)
+  | 'email_followup_subject'
+  | 'email_followup_greeting'
+  | 'email_followup_message'
+  | 'email_followup_benefits'
+  | 'email_followup_cta'
+  | 'email_followup_footer';
 
 /**
  * Tipo para uma configuração do site
@@ -77,6 +84,13 @@ const DEFAULT_VALUES: Record<SiteSettingKey, string> = {
   email_approval_footer: 'Te esperamos la!',
   // Favicon
   favicon_url: '/favicon.svg',
+  // Email 2 (follow-up)
+  email_followup_subject: 'Ainda da tempo de entrar no {{site_name}}!',
+  email_followup_greeting: 'Ola {{name}}!',
+  email_followup_message: 'Percebemos que voce ainda nao criou sua conta na nossa comunidade. Essa e sua ultima chance de garantir acesso a conteudos exclusivos, desafios e premios incriveis!',
+  email_followup_benefits: 'Conteudos exclusivos do criador,Desafios com premios reais,Comunidade engajada,Acesso antecipado a novidades',
+  email_followup_cta: 'Criar Minha Conta Agora',
+  email_followup_footer: 'Nao perca essa oportunidade unica!',
 };
 
 /**

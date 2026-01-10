@@ -314,3 +314,122 @@ export async function getTaskStats(): Promise<{
     return { pending: 0, processing: 0, completed: 0, failed: 0, cancelled: 0 };
   }
 }
+
+// ============ SEQUENCIA DE EMAILS ============
+
+/**
+ * Agenda o envio do Email 2 (follow-up)
+ * Por padrao, agenda para 24 horas apos o Email 1
+ */
+export async function scheduleEmail2(
+  leadId: string,
+  payload?: { email: string; lead_name: string },
+  delayMs: number = DEFAULT_EMAIL_CHECK_DELAY
+): Promise<{ success: boolean; taskId?: string; error?: string }> {
+  try {
+    const supabase = createAdminClient();
+
+    const scheduledFor = new Date(Date.now() + delayMs).toISOString();
+
+    const taskData: ScheduledTaskInsert = {
+      type: 'send_email_2' as ScheduledTaskType,
+      lead_id: leadId,
+      scheduled_for: scheduledFor,
+      payload: payload || {},
+    };
+
+    const { data, error } = await supabase
+      .from('scheduled_tasks')
+      .insert(taskData)
+      .select('id')
+      .single();
+
+    if (error) {
+      console.error('[Scheduler] Erro ao agendar Email 2:', error);
+      return { success: false, error: error.message };
+    }
+
+    console.log(`[Scheduler] Email 2 agendado para ${scheduledFor} (lead ${leadId})`);
+    return { success: true, taskId: data.id };
+  } catch (err) {
+    console.error('[Scheduler] Erro ao agendar Email 2:', err);
+    return { success: false, error: 'Erro ao agendar Email 2' };
+  }
+}
+
+/**
+ * Agenda o envio do WhatsApp final
+ * Por padrao, agenda para 24 horas apos o Email 2
+ */
+export async function scheduleWhatsAppFinal(
+  leadId: string,
+  payload?: { email: string; lead_name: string; phone: string },
+  delayMs: number = DEFAULT_EMAIL_CHECK_DELAY
+): Promise<{ success: boolean; taskId?: string; error?: string }> {
+  try {
+    const supabase = createAdminClient();
+
+    const scheduledFor = new Date(Date.now() + delayMs).toISOString();
+
+    const taskData: ScheduledTaskInsert = {
+      type: 'send_whatsapp_final' as ScheduledTaskType,
+      lead_id: leadId,
+      scheduled_for: scheduledFor,
+      payload: payload || {},
+    };
+
+    const { data, error } = await supabase
+      .from('scheduled_tasks')
+      .insert(taskData)
+      .select('id')
+      .single();
+
+    if (error) {
+      console.error('[Scheduler] Erro ao agendar WhatsApp final:', error);
+      return { success: false, error: error.message };
+    }
+
+    console.log(`[Scheduler] WhatsApp final agendado para ${scheduledFor} (lead ${leadId})`);
+    return { success: true, taskId: data.id };
+  } catch (err) {
+    console.error('[Scheduler] Erro ao agendar WhatsApp final:', err);
+    return { success: false, error: 'Erro ao agendar WhatsApp final' };
+  }
+}
+
+/**
+ * Cancela todas as tarefas pendentes de um lead
+ * Usado quando o lead converte antes de completar a sequencia
+ */
+export async function cancelAllLeadTasks(
+  leadId: string
+): Promise<{ success: boolean; cancelled: number; error?: string }> {
+  try {
+    const supabase = createAdminClient();
+
+    const { data, error } = await supabase
+      .from('scheduled_tasks')
+      .update({
+        status: 'cancelled' as ScheduledTaskStatus,
+        completed_at: new Date().toISOString(),
+      })
+      .eq('lead_id', leadId)
+      .eq('status', 'pending')
+      .select('id');
+
+    if (error) {
+      console.error('[Scheduler] Erro ao cancelar tarefas do lead:', error);
+      return { success: false, cancelled: 0, error: error.message };
+    }
+
+    const cancelled = data?.length || 0;
+    if (cancelled > 0) {
+      console.log(`[Scheduler] ${cancelled} tarefa(s) cancelada(s) para lead ${leadId}`);
+    }
+
+    return { success: true, cancelled };
+  } catch (err) {
+    console.error('[Scheduler] Erro ao cancelar tarefas do lead:', err);
+    return { success: false, cancelled: 0, error: 'Erro ao cancelar tarefas' };
+  }
+}

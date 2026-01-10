@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { NotificationStats } from './NotificationStats';
 import { NotificationsList } from './NotificationsList';
+import { SequenceStats } from './SequenceStats';
+import { getSequenceStats } from '@/actions/leads';
 
 export const metadata = {
   title: 'Notificacoes | Admin',
@@ -56,6 +58,18 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
     .select('id')
     .eq('status', 'pending');
 
+  // Buscar estatisticas da sequencia de conversao
+  const sequenceResult = await getSequenceStats();
+  const sequenceStats = sequenceResult.data || {
+    totalApproved: 0,
+    email1Sent: 0,
+    email2Sent: 0,
+    whatsappSent: 0,
+    converted: 0,
+    conversionRate: 0,
+    funnel: [],
+  };
+
   // Calcular estatisticas
   const stats = {
     totalEmails: emailStats?.length || 0,
@@ -104,8 +118,14 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
         </div>
       </div>
 
-      {/* Estatisticas */}
-      <NotificationStats stats={stats} />
+      {/* Estatisticas de Sequencia */}
+      <SequenceStats stats={sequenceStats} />
+
+      {/* Estatisticas de Envio */}
+      <div className="pt-4">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Estatisticas de Envio</h2>
+        <NotificationStats stats={stats} />
+      </div>
 
       {/* Lista de Notificacoes */}
       <NotificationsList

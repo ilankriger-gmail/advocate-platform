@@ -123,12 +123,20 @@ export async function updateMultipleSiteSettings(
   let updatedCount = 0;
   const errors: string[] = [];
 
-  // Atualizar cada configuração
+  // Atualizar ou criar cada configuração
   for (const setting of settings) {
     const { error } = await supabase
       .from('site_settings')
-      .update({ value: setting.value })
-      .eq('key', setting.key);
+      .upsert(
+        {
+          key: setting.key,
+          value: setting.value,
+          label: setting.key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+          description: '',
+          field_type: 'text',
+        },
+        { onConflict: 'key' }
+      );
 
     if (error) {
       errors.push(`Erro ao atualizar '${setting.key}': ${error.message}`);
@@ -142,6 +150,7 @@ export async function updateMultipleSiteSettings(
   revalidatePath('/login');
   revalidatePath('/seja-arena');
   revalidatePath('/admin/configuracoes');
+  revalidatePath('/admin/emails');
 
   if (errors.length > 0) {
     return {

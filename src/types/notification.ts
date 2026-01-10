@@ -92,9 +92,11 @@ export interface NotificationLogUpdate {
  * Tipo da tarefa agendada
  */
 export type ScheduledTaskType =
-  | 'check_email_opened'  // Verificar se email foi aberto
-  | 'send_reminder'       // Enviar lembrete
-  | 'cleanup';            // Limpeza de dados antigos
+  | 'check_email_opened'    // Verificar se email foi aberto (legado)
+  | 'send_reminder'         // Enviar lembrete
+  | 'cleanup'               // Limpeza de dados antigos
+  | 'send_email_2'          // Enviar Email 2 (follow-up)
+  | 'send_whatsapp_final';  // Enviar WhatsApp final
 
 /**
  * Status da tarefa agendada

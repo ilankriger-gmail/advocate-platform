@@ -5,6 +5,7 @@
 // Email (Resend)
 export {
   sendApprovalEmail,
+  sendFollowupEmail,
   logEmailNotification,
   updateEmailNotificationStatus,
   checkEmailOpened,
@@ -24,7 +25,10 @@ export {
 // Scheduler
 export {
   scheduleEmailCheck,
+  scheduleEmail2,
+  scheduleWhatsAppFinal,
   cancelScheduledTask,
+  cancelAllLeadTasks,
   getNextPendingTasks,
   markTaskProcessing,
   markTaskCompleted,

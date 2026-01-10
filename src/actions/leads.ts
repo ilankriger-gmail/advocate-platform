@@ -8,6 +8,7 @@ import {
   sendApprovalEmail,
   sendApprovalWhatsApp,
   scheduleEmailCheck,
+  scheduleEmail2,
 } from '@/lib/notifications';
 import { getSiteSettings } from '@/lib/config/site';
 import { analyzeLeadWithAI } from '@/lib/ai';
@@ -285,25 +286,23 @@ export async function sendLeadEmailNotification(leadId: string): Promise<ActionR
       return { error: result.error || 'Erro ao enviar email' };
     }
 
-    // Atualizar registro
+    // Atualizar registro com sequence_step = 1
     await supabase
       .from('nps_leads')
       .update({
         email_sent: true,
         email_sent_at: new Date().toISOString(),
         whatsapp_opted_in: lead.phone ? true : false,
+        sequence_step: 1,
       })
       .eq('id', leadId);
 
-    // Agendar verificacao de abertura para 24h (se tem telefone)
-    let taskScheduled = false;
-    if (lead.phone) {
-      const scheduleResult = await scheduleEmailCheck(lead.id, {
-        email: lead.email,
-        lead_name: lead.name,
-      });
-      taskScheduled = scheduleResult.success;
-    }
+    // Agendar Email 2 para 24h (sempre agenda, mesmo sem telefone)
+    const scheduleResult = await scheduleEmail2(lead.id, {
+      email: lead.email,
+      lead_name: lead.name,
+    });
+    const taskScheduled = scheduleResult.success;
 
     revalidatePath('/admin/leads');
     return { success: true, data: { emailSent: true, taskScheduled } };
@@ -487,26 +486,24 @@ export async function bulkApproveAndNotify(leadIds: string[]): Promise<ActionRes
       if (emailResult.success) {
         emailsSent++;
 
-        // Atualizar lead com email_sent
+        // Atualizar lead com email_sent e sequence_step = 1
         await supabase
           .from('nps_leads')
           .update({
             email_sent: true,
             email_sent_at: new Date().toISOString(),
+            sequence_step: 1,
           })
           .eq('id', lead.id);
 
-        // Agendar verificacao de abertura do email para 24h
-        // O CRON ira enviar WhatsApp se o email nao for aberto
-        if (lead.phone && lead.whatsapp_opted_in !== false) {
-          const scheduleResult = await scheduleEmailCheck(lead.id, {
-            email: lead.email,
-            lead_name: lead.name,
-          });
+        // Agendar Email 2 para 24h (novo sistema de sequencia)
+        const scheduleResult = await scheduleEmail2(lead.id, {
+          email: lead.email,
+          lead_name: lead.name,
+        });
 
-          if (scheduleResult.success) {
-            tasksScheduled++;
-          }
+        if (scheduleResult.success) {
+          tasksScheduled++;
         }
       }
     }
@@ -600,17 +597,16 @@ export async function sendAllNotifications(leadId: string): Promise<ActionRespon
             email_sent: true,
             email_sent_at: new Date().toISOString(),
             whatsapp_opted_in: lead.phone ? true : false,
+            sequence_step: 1,
           })
           .eq('id', leadId);
 
-        // Agendar verificacao de abertura para 24h
-        if (lead.phone) {
-          const scheduleResult = await scheduleEmailCheck(lead.id, {
-            email: lead.email,
-            lead_name: lead.name,
-          });
-          results.taskScheduled = scheduleResult.success;
-        }
+        // Agendar Email 2 para 24h
+        const scheduleResult = await scheduleEmail2(lead.id, {
+          email: lead.email,
+          lead_name: lead.name,
+        });
+        results.taskScheduled = scheduleResult.success;
       }
     } else {
       results.email = true; // Ja foi enviado
@@ -618,6 +614,167 @@ export async function sendAllNotifications(leadId: string): Promise<ActionRespon
 
     revalidatePath('/admin/leads');
     return { success: true, data: results };
+  } catch {
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+// ============ CONVERSAO ============
+
+/**
+ * Verificar se um lead converteu (criou conta e fez primeiro login)
+ * Usado pelo CRON para decidir se envia proximo email da sequencia
+ */
+export async function checkLeadConversion(leadId: string): Promise<{
+  converted: boolean;
+  userId?: string;
+}> {
+  try {
+    const supabase = await createClient();
+
+    // Buscar lead
+    const { data: lead, error: leadError } = await supabase
+      .from('nps_leads')
+      .select('email, converted, converted_user_id')
+      .eq('id', leadId)
+      .single();
+
+    if (leadError || !lead) {
+      return { converted: false };
+    }
+
+    // Se ja esta marcado como convertido, retornar
+    if (lead.converted && lead.converted_user_id) {
+      return { converted: true, userId: lead.converted_user_id };
+    }
+
+    // Buscar usuario pelo email
+    const { data: user } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', lead.email)
+      .single();
+
+    if (!user) {
+      return { converted: false };
+    }
+
+    // Usuario existe - marcar lead como convertido
+    await supabase
+      .from('nps_leads')
+      .update({
+        converted: true,
+        converted_at: new Date().toISOString(),
+        converted_user_id: user.id,
+      })
+      .eq('id', leadId);
+
+    return { converted: true, userId: user.id };
+  } catch {
+    return { converted: false };
+  }
+}
+
+/**
+ * Atualizar sequence_step do lead
+ */
+export async function updateLeadSequenceStep(
+  leadId: string,
+  step: number
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await createClient();
+
+    const { error } = await supabase
+      .from('nps_leads')
+      .update({ sequence_step: step })
+      .eq('id', leadId);
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch {
+    return { success: false, error: 'Erro ao atualizar sequence_step' };
+  }
+}
+
+/**
+ * Buscar estatisticas da sequencia de emails
+ */
+export async function getSequenceStats(): Promise<ActionResponse<{
+  totalApproved: number;
+  email1Sent: number;
+  email2Sent: number;
+  whatsappSent: number;
+  converted: number;
+  conversionRate: number;
+  funnel: Array<{
+    step: number;
+    name: string;
+    count: number;
+    convertedCount: number;
+  }>;
+}>> {
+  try {
+    const supabase = await createClient();
+
+    const auth = await verifyAdmin(supabase);
+    if ('error' in auth) {
+      return { error: auth.error };
+    }
+
+    // Buscar todos os leads aprovados
+    const { data: leads, error } = await supabase
+      .from('nps_leads')
+      .select('sequence_step, converted')
+      .eq('status', 'approved');
+
+    if (error) {
+      return { error: 'Erro ao buscar estatisticas' };
+    }
+
+    const totalApproved = leads?.length || 0;
+    const email1Sent = leads?.filter(l => l.sequence_step >= 1).length || 0;
+    const email2Sent = leads?.filter(l => l.sequence_step >= 2).length || 0;
+    const whatsappSent = leads?.filter(l => l.sequence_step >= 3).length || 0;
+    const converted = leads?.filter(l => l.converted).length || 0;
+
+    const conversionRate = totalApproved > 0
+      ? Math.round((converted / totalApproved) * 100 * 10) / 10
+      : 0;
+
+    // Funil por etapa
+    const funnel = [
+      { step: 0, name: 'Aguardando', count: 0, convertedCount: 0 },
+      { step: 1, name: 'Email 1 Enviado', count: 0, convertedCount: 0 },
+      { step: 2, name: 'Email 2 Enviado', count: 0, convertedCount: 0 },
+      { step: 3, name: 'WhatsApp Enviado', count: 0, convertedCount: 0 },
+    ];
+
+    leads?.forEach(lead => {
+      const step = lead.sequence_step || 0;
+      if (step >= 0 && step <= 3) {
+        funnel[step].count++;
+        if (lead.converted) {
+          funnel[step].convertedCount++;
+        }
+      }
+    });
+
+    return {
+      success: true,
+      data: {
+        totalApproved,
+        email1Sent,
+        email2Sent,
+        whatsappSent,
+        converted,
+        conversionRate,
+        funnel,
+      },
+    };
   } catch {
     return { error: 'Erro interno do servidor' };
   }
