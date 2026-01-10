@@ -124,6 +124,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       console.error('Erro ao fazer logout:', error);
       throw error;
     }
+
+    // Redirecionar para login apos logout
+    window.location.href = '/login';
   }, [supabase.auth]);
 
   const value: AuthContextType = {
