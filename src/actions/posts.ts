@@ -153,9 +153,10 @@ export async function createPost(data: CreatePostData): Promise<ActionResponse<P
     if (moderationScore !== null) {
       await supabase.from('moderation_logs').insert({
         post_id: post.id,
-        decision: postStatus === 'pending' ? 'pending_review' : 'approved',
+        decision: moderationDecision,
         score: moderationScore,
         flags: moderationFlags || {},
+        blocked_reasons: blockedReasons,
       });
     }
 
@@ -163,12 +164,34 @@ export async function createPost(data: CreatePostData): Promise<ActionResponse<P
     revalidatePath('/feed');
     revalidatePath('/dashboard');
     revalidatePath('/perfil');
+    revalidatePath('/admin/moderacao');
 
-    // Retornar com mensagem de moderação se houver
-    if (moderationMessage) {
-      return { success: true, data: post, message: moderationMessage };
+    // Estrutura de resposta com informações de moderação
+    const response: ActionResponse<Post> & {
+      moderationStatus?: 'approved' | 'pending_review' | 'blocked';
+      contentCategory?: 'normal' | 'help_request';
+      blockedReasons?: string[];
+    } = {
+      success: true,
+      data: post,
+      moderationStatus: moderationDecision,
+      contentCategory,
+    };
+
+    // Adicionar mensagem e razões se bloqueado
+    if (postStatus === 'blocked') {
+      response.message = moderationMessage || undefined;
+      response.blockedReasons = blockedReasons;
+    } else if (moderationMessage) {
+      response.message = moderationMessage;
     }
-    return { success: true, data: post };
+
+    // Mensagem especial para help_request
+    if (contentCategory === 'help_request' && postStatus !== 'blocked') {
+      response.message = 'Sua publicação aparecerá na aba "Pedidos de Ajuda" do feed.';
+    }
+
+    return response;
   } catch {
     return { error: 'Erro interno do servidor' };
   }
