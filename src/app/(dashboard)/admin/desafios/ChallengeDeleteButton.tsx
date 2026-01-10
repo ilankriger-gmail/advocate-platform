@@ -26,16 +26,25 @@ export function ChallengeDeleteButton({
   const [error, setError] = useState<string | null>(null);
 
   const handleDelete = async () => {
+    console.log('ChallengeDeleteButton: Iniciando delete do desafio', challengeId);
     setIsDeleting(true);
     setError(null);
 
-    const result = await deleteChallenge(challengeId);
+    try {
+      const result = await deleteChallenge(challengeId);
+      console.log('ChallengeDeleteButton: Resultado do delete:', result);
 
-    if (result.success) {
-      setShowConfirm(false);
-      router.refresh();
-    } else {
-      setError(result.error || 'Erro ao excluir');
+      if (result.success) {
+        console.log('ChallengeDeleteButton: Delete bem sucedido, atualizando pagina');
+        setShowConfirm(false);
+        router.refresh();
+      } else {
+        console.log('ChallengeDeleteButton: Delete falhou:', result.error);
+        setError(result.error || 'Erro ao excluir');
+      }
+    } catch (err) {
+      console.error('ChallengeDeleteButton: Erro inesperado:', err);
+      setError('Erro inesperado ao excluir');
     }
 
     setIsDeleting(false);

@@ -337,46 +337,61 @@ export async function addCoinsToUser(
  * Só permite deletar se não houver claims pendentes/aprovados/enviados
  */
 export async function deleteReward(rewardId: string): Promise<ActionResponse> {
+  console.log('deleteReward: Iniciando para rewardId:', rewardId);
+
   try {
     // Verificar autenticação
     const userCheck = await getAuthenticatedUser();
+    console.log('deleteReward: userCheck:', userCheck);
+
     if (userCheck.error) {
+      console.log('deleteReward: Usuario nao autenticado');
       return userCheck;
     }
     const user = userCheck.data!;
 
     // Verificar se é admin/creator
     const authCheck = await verifyAdminOrCreator(user.id);
+    console.log('deleteReward: authCheck:', authCheck);
+
     if (authCheck.error) {
+      console.log('deleteReward: Acesso nao autorizado');
       return authCheck;
     }
 
     const supabase = await createClient();
 
     // Verificar se existem claims ativos (pendentes, aprovados ou enviados)
-    const { count: activeClaims } = await supabase
+    const { count: activeClaims, error: claimsError } = await supabase
       .from('reward_claims')
       .select('*', { count: 'exact', head: true })
       .eq('reward_id', rewardId)
       .in('status', ['pending', 'approved', 'shipped']);
 
+    console.log('deleteReward: activeClaims:', activeClaims, 'Error:', claimsError);
+
     if (activeClaims && activeClaims > 0) {
+      console.log('deleteReward: Bloqueado por claims ativos');
       return {
         error: `Não é possível excluir. Existem ${activeClaims} resgate(s) pendente(s)/em andamento.`
       };
     }
 
     // Deletar a recompensa
-    const { error } = await supabase
+    console.log('deleteReward: Executando delete...');
+    const { error, count } = await supabase
       .from('rewards')
       .delete()
       .eq('id', rewardId);
+
+    console.log('deleteReward: Resultado delete - Error:', error, 'Count:', count);
 
     if (error) {
       console.error('Error deleting reward:', error);
       return { error: 'Erro ao excluir recompensa' };
     }
 
+    console.log('deleteReward: Sucesso! Revalidando paths...');
     revalidatePath('/premios');
     revalidatePath('/admin/premios');
     return { success: true };

@@ -30,15 +30,27 @@ export function RewardActions({ reward }: RewardActionsProps) {
   };
 
   const handleDelete = async () => {
+    console.log('RewardActions: Iniciando delete do premio', reward.id);
     setIsDeleting(true);
     setDeleteError(null);
-    const result = await deleteReward(reward.id);
-    if (result.success) {
-      setShowDeleteConfirm(false);
-      router.refresh();
-    } else {
-      setDeleteError(result.error || 'Erro ao excluir');
+
+    try {
+      const result = await deleteReward(reward.id);
+      console.log('RewardActions: Resultado do delete:', result);
+
+      if (result.success) {
+        console.log('RewardActions: Delete bem sucedido, atualizando pagina');
+        setShowDeleteConfirm(false);
+        router.refresh();
+      } else {
+        console.log('RewardActions: Delete falhou:', result.error);
+        setDeleteError(result.error || 'Erro ao excluir');
+      }
+    } catch (err) {
+      console.error('RewardActions: Erro inesperado:', err);
+      setDeleteError('Erro inesperado ao excluir');
     }
+
     setIsDeleting(false);
   };
 

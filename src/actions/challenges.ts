@@ -552,60 +552,78 @@ export async function registerWinner(data: {
  * Só permite deletar se não houver participantes ou ganhadores
  */
 export async function deleteChallenge(challengeId: string): Promise<ActionResponse> {
+  console.log('deleteChallenge: Iniciando para challengeId:', challengeId);
+
   try {
     const supabase = await createClient();
 
     const { data: { user } } = await supabase.auth.getUser();
+    console.log('deleteChallenge: Usuario autenticado:', user?.id);
+
     if (!user) {
+      console.log('deleteChallenge: Usuario nao autenticado');
       return { error: 'Usuário não autenticado' };
     }
 
     // Verificar se e admin/creator
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from('users')
       .select('role, is_creator')
       .eq('id', user.id)
       .single();
 
+    console.log('deleteChallenge: Profile:', profile, 'Error:', profileError);
+
     if (!profile || (profile.role !== 'admin' && !profile.is_creator)) {
+      console.log('deleteChallenge: Acesso nao autorizado');
       return { error: 'Acesso não autorizado' };
     }
 
     // Verificar se existem participantes
-    const { count: participantsCount } = await supabase
+    const { count: participantsCount, error: partError } = await supabase
       .from('challenge_participants')
       .select('*', { count: 'exact', head: true })
       .eq('challenge_id', challengeId);
 
+    console.log('deleteChallenge: Participantes:', participantsCount, 'Error:', partError);
+
     if (participantsCount && participantsCount > 0) {
+      console.log('deleteChallenge: Bloqueado por participantes');
       return {
         error: `Não é possível excluir. Existem ${participantsCount} participante(s) vinculado(s).`
       };
     }
 
     // Verificar se existem ganhadores
-    const { count: winnersCount } = await supabase
+    const { count: winnersCount, error: winnersError } = await supabase
       .from('challenge_winners')
       .select('*', { count: 'exact', head: true })
       .eq('challenge_id', challengeId);
 
+    console.log('deleteChallenge: Ganhadores:', winnersCount, 'Error:', winnersError);
+
     if (winnersCount && winnersCount > 0) {
+      console.log('deleteChallenge: Bloqueado por ganhadores');
       return {
         error: `Não é possível excluir. Existem ${winnersCount} ganhador(es) vinculado(s).`
       };
     }
 
     // Deletar o desafio
-    const { error } = await supabase
+    console.log('deleteChallenge: Executando delete...');
+    const { error, count } = await supabase
       .from('challenges')
       .delete()
       .eq('id', challengeId);
+
+    console.log('deleteChallenge: Resultado delete - Error:', error, 'Count:', count);
 
     if (error) {
       console.error('Error deleting challenge:', error);
       return { error: 'Erro ao excluir desafio' };
     }
 
+    console.log('deleteChallenge: Sucesso! Revalidando paths...');
     revalidatePath('/desafios');
     revalidatePath('/admin/desafios');
     return { success: true };
