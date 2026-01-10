@@ -22,7 +22,7 @@ const HIDDEN_HEADER_ROUTES = ['/seja-arena', '/login', '/registro'];
 const COMECE_DOMAIN = 'comece.omocodoteamo.com.br';
 
 export function Header({ onMenuClick, showMenuButton = false, className, siteName = 'Arena Te Amo' }: HeaderProps) {
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, isLoading } = useAuth();
   const pathname = usePathname();
   const [isComeceDomain, setIsComeceDomain] = useState(false);
 
@@ -88,7 +88,10 @@ export function Header({ onMenuClick, showMenuButton = false, className, siteNam
 
           {/* Right: User menu or Login */}
           <div className="flex items-center gap-3">
-            {user ? (
+            {isLoading ? (
+              /* Skeleton enquanto carrega */
+              <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
+            ) : user ? (
               <div className="relative group">
                 <button className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100">
                   <Avatar
