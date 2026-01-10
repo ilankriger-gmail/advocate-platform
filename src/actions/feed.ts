@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import type { PostWithAuthor, PaginatedFeedResponse } from '@/types/post';
 
 export type FeedSortType = 'new' | 'top' | 'hot';
-export type FeedType = 'creator' | 'community' | 'all';
+export type FeedType = 'creator' | 'community' | 'all' | 'help_request';
 
 /**
  * Cursor composto para ordenação 'top'
@@ -141,9 +141,19 @@ export async function getFeedPosts({
     `)
     .eq('status', 'approved');
 
-  // Filtrar por tipo
-  if (type !== 'all') {
-    query = query.eq('type', type);
+  // Filtrar por tipo ou categoria
+  if (type === 'help_request') {
+    // Pedidos de ajuda - filtrar por content_category
+    query = query.eq('content_category', 'help_request');
+  } else if (type !== 'all') {
+    // Filtrar posts normais por tipo (creator/community)
+    // e excluir pedidos de ajuda do feed normal
+    query = query
+      .eq('type', type)
+      .or('content_category.is.null,content_category.eq.normal');
+  } else {
+    // Feed 'all' - excluir pedidos de ajuda (eles têm seu próprio tab)
+    query = query.or('content_category.is.null,content_category.eq.normal');
   }
 
   // Aplicar ordenação e paginação por cursor

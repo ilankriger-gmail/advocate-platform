@@ -18,7 +18,10 @@ export type UserRole = 'creator' | 'fan';
 export type PostType = 'creator' | 'community';
 
 // Status de post
-export type PostStatus = 'pending' | 'approved' | 'rejected';
+export type PostStatus = 'pending' | 'approved' | 'rejected' | 'blocked';
+
+// Categoria de conteúdo do post
+export type ContentCategory = 'normal' | 'help_request';
 
 // Tipo de mídia do post
 export type MediaType = 'none' | 'image' | 'carousel' | 'youtube' | 'instagram';
@@ -88,6 +91,7 @@ export interface Database {
           instagram_url: string | null
           type: PostType
           status: PostStatus
+          content_category: ContentCategory
           likes_count: number
           comments_count: number
           vote_score: number
@@ -109,6 +113,7 @@ export interface Database {
           instagram_url?: string | null
           type?: PostType
           status?: PostStatus
+          content_category?: ContentCategory
           likes_count?: number
           comments_count?: number
           vote_score?: number
@@ -130,6 +135,7 @@ export interface Database {
           instagram_url?: string | null
           type?: PostType
           status?: PostStatus
+          content_category?: ContentCategory
           likes_count?: number
           comments_count?: number
           vote_score?: number

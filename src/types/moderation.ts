@@ -45,10 +45,10 @@ export interface ToxicityAnalysisResult {
 }
 
 // ============================================
-// Categoria de Conteúdo (simplificado)
+// Categoria de Conteúdo
 // ============================================
 
-export type ContentCategory = 'normal';
+export type ContentCategory = 'normal' | 'help_request';
 
 // ============================================
 // Engine de Decisão

@@ -26,6 +26,15 @@ export function useRealtimeFeed({ type, enabled = true }: UseRealtimeFeedOptions
 
     const supabase = createClient();
 
+    // Determinar filtro baseado no tipo de feed
+    // Para help_request, filtrar por content_category
+    // Para creator/community, filtrar por type
+    const getFilter = () => {
+      if (type === 'all') return undefined;
+      if (type === 'help_request') return `content_category=eq.help_request`;
+      return `type=eq.${type}`;
+    };
+
     // Configurar subscription para novos posts
     const channel = supabase
       .channel('feed-realtime')
@@ -35,7 +44,7 @@ export function useRealtimeFeed({ type, enabled = true }: UseRealtimeFeedOptions
           event: 'INSERT',
           schema: 'public',
           table: 'posts',
-          filter: type !== 'all' ? `type=eq.${type}` : undefined,
+          filter: getFilter(),
         },
         (payload) => {
           // Verificar se é um post aprovado
@@ -56,13 +65,18 @@ export function useRealtimeFeed({ type, enabled = true }: UseRealtimeFeedOptions
         },
         (payload) => {
           // Post foi aprovado
-          const updatedPost = payload.new as { id: string; status: string; type: string };
+          const updatedPost = payload.new as { id: string; status: string; type: string; content_category?: string };
           const oldPost = payload.old as { status: string };
+
+          // Verificar se o post corresponde ao tipo de feed atual
+          const matchesFeed = type === 'all'
+            || (type === 'help_request' && updatedPost.content_category === 'help_request')
+            || (type !== 'help_request' && updatedPost.type === type);
 
           if (
             oldPost.status !== 'approved' &&
             updatedPost.status === 'approved' &&
-            (type === 'all' || updatedPost.type === type) &&
+            matchesFeed &&
             updatedPost.id !== lastPostId
           ) {
             setNewPostsCount((prev) => prev + 1);

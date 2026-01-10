@@ -12,15 +12,20 @@ import type { PostWithAuthor } from '@/types/post';
 interface FeedTabsProps {
   initialCreatorPosts?: PostWithAuthor[];
   initialCommunityPosts?: PostWithAuthor[];
+  initialHelpRequestPosts?: PostWithAuthor[];
 }
 
-export function FeedTabs({ initialCreatorPosts, initialCommunityPosts }: FeedTabsProps) {
-  const [activeTab, setActiveTab] = useState<'novidades' | 'comunidade'>('novidades');
+export function FeedTabs({ initialCreatorPosts, initialCommunityPosts, initialHelpRequestPosts }: FeedTabsProps) {
+  const [activeTab, setActiveTab] = useState<'novidades' | 'comunidade' | 'ajuda'>('novidades');
   const [sort, setSort] = useState<FeedSortType>('new');
   const queryClient = useQueryClient();
 
   // Realtime para novos posts
-  const feedType = activeTab === 'novidades' ? 'creator' : 'community';
+  const feedType = activeTab === 'novidades'
+    ? 'creator'
+    : activeTab === 'comunidade'
+      ? 'community'
+      : 'help_request';
   const { newPostsCount, resetCount } = useRealtimeFeed({
     type: feedType,
     enabled: sort === 'new', // Só mostrar indicador na ordenação "Novos"
@@ -37,7 +42,7 @@ export function FeedTabs({ initialCreatorPosts, initialCommunityPosts }: FeedTab
   }, [queryClient, feedType, sort, resetCount]);
 
   // Handler para trocar de tab
-  const handleTabChange = (tab: 'novidades' | 'comunidade') => {
+  const handleTabChange = (tab: 'novidades' | 'comunidade' | 'ajuda') => {
     setActiveTab(tab);
     resetCount(); // Resetar contador ao trocar de tab
   };
@@ -71,6 +76,16 @@ export function FeedTabs({ initialCreatorPosts, initialCommunityPosts }: FeedTab
           >
             Comunidade
           </button>
+          <button
+            onClick={() => handleTabChange('ajuda')}
+            className={`flex-1 py-3 text-center font-semibold text-sm transition-colors ${
+              activeTab === 'ajuda'
+                ? 'text-purple-600 border-b-2 border-purple-600'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Pedidos de Ajuda
+          </button>
         </div>
 
         {/* Sort Selector */}
@@ -81,19 +96,28 @@ export function FeedTabs({ initialCreatorPosts, initialCommunityPosts }: FeedTab
 
       {/* Feed com Infinite Scroll */}
       <div className="mt-4">
-        {activeTab === 'novidades' ? (
+        {activeTab === 'novidades' && (
           <InfiniteFeed
             key={`creator-${sort}`}
             type="creator"
             sort={sort}
             initialPosts={sort === 'new' ? initialCreatorPosts : undefined}
           />
-        ) : (
+        )}
+        {activeTab === 'comunidade' && (
           <InfiniteFeed
             key={`community-${sort}`}
             type="community"
             sort={sort}
             initialPosts={sort === 'new' ? initialCommunityPosts : undefined}
+          />
+        )}
+        {activeTab === 'ajuda' && (
+          <InfiniteFeed
+            key={`help_request-${sort}`}
+            type="help_request"
+            sort={sort}
+            initialPosts={sort === 'new' ? initialHelpRequestPosts : undefined}
           />
         )}
       </div>

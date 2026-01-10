@@ -10,11 +10,13 @@
 
 import { analyzeImages } from './image-analysis';
 import { analyzeTextContent } from './toxicity-analysis';
+import { detectHelpRequest, getContentCategory } from './help-request-detector';
 import type {
   ModerationResult,
   ModerationDecision,
   ModerationInput,
   ModerationConfig,
+  ContentCategory,
 } from '@/types/moderation';
 
 // Configuração padrão
@@ -95,10 +97,17 @@ export async function moderatePost(
     decision = 'approved';
   }
 
+  // Detectar se é um pedido de ajuda (apenas para conteúdo não bloqueado)
+  let content_category: ContentCategory = 'normal';
+  if (decision !== 'blocked') {
+    const helpDetection = detectHelpRequest(input.title, input.content);
+    content_category = getContentCategory(helpDetection);
+  }
+
   return {
     decision,
     overall_score: maxScore,
-    content_category: 'normal', // Simplificado sem Gemini
+    content_category,
     image_result: imageResult?.combined,
     toxicity_result: toxicityResult,
     blocked_reasons,

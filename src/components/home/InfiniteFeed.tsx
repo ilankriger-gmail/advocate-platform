@@ -11,7 +11,7 @@ import type { PostWithAuthor } from '@/types/post';
  * Props do componente InfiniteFeed
  */
 interface InfiniteFeedProps {
-  /** Tipo de feed: 'creator', 'community' ou 'all' */
+  /** Tipo de feed: 'creator', 'community', 'all' ou 'help_request' */
   type: FeedType;
   /** Ordenação: 'new', 'top' ou 'hot' (padrão: 'new') */
   sort?: FeedSortType;
@@ -211,12 +211,17 @@ export function InfiniteFeed({ type, sort = 'new', initialPosts }: InfiniteFeedP
 
   // Estado vazio
   if (posts.length === 0) {
+    const emptyMessage = {
+      creator: 'Nenhuma novidade do criador ainda.',
+      community: 'Nenhum post da comunidade ainda.',
+      all: 'Nenhum post ainda.',
+      help_request: 'Nenhum pedido de ajuda no momento.',
+    };
+
     return (
       <Card className="p-8 text-center">
         <p className="text-gray-500">
-          {type === 'creator'
-            ? 'Nenhuma novidade do criador ainda.'
-            : 'Nenhum post da comunidade ainda.'}
+          {emptyMessage[type]}
         </p>
       </Card>
     );

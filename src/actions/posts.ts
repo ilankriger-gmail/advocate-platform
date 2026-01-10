@@ -71,10 +71,13 @@ export async function createPost(data: CreatePostData): Promise<ActionResponse<P
     // MODERAÇÃO AUTOMÁTICA COM IA
     // Sightengine (imagens) + Perspective API (texto)
     // ============================================
-    let postStatus: 'approved' | 'pending' = isCreator ? 'approved' : 'pending';
+    let postStatus: 'approved' | 'pending' | 'blocked' = isCreator ? 'approved' : 'pending';
     let moderationScore: number | null = null;
     let moderationFlags: Record<string, unknown> | null = null;
     let moderationMessage: string | null = null;
+    let moderationDecision: 'approved' | 'pending_review' | 'blocked' = 'approved';
+    let blockedReasons: string[] = [];
+    let contentCategory: 'normal' | 'help_request' = 'normal';
 
     // Executar moderação para todos os posts (incluindo criadores)
     try {
@@ -88,20 +91,26 @@ export async function createPost(data: CreatePostData): Promise<ActionResponse<P
       moderationFlags = {
         image: moderationResult.image_result?.flags || null,
         toxicity: moderationResult.toxicity_result?.scores || null,
+        blocked_reasons: moderationResult.blocked_reasons,
       };
+      moderationDecision = moderationResult.decision;
+      blockedReasons = moderationResult.blocked_reasons;
+
+      // Capturar categoria de conteúdo (normal ou help_request)
+      contentCategory = moderationResult.content_category;
 
       console.log('[Moderation] Resultado:', {
         decision: moderationResult.decision,
         score: moderationScore,
         blocked_reasons: moderationResult.blocked_reasons,
+        content_category: contentCategory,
       });
 
       // Aplicar decisão da moderação
       if (moderationResult.decision === 'blocked') {
-        // Conteúdo bloqueado - não publicar
-        return {
-          error: getBlockedMessage(moderationResult.blocked_reasons),
-        };
+        // Conteúdo bloqueado - salvar com status 'blocked' para revisão admin
+        postStatus = 'blocked';
+        moderationMessage = getBlockedMessage(moderationResult.blocked_reasons);
       } else if (moderationResult.decision === 'pending_review') {
         // Precisa revisão manual - mesmo criadores
         postStatus = 'pending';
@@ -130,6 +139,7 @@ export async function createPost(data: CreatePostData): Promise<ActionResponse<P
         status: postStatus,
         moderation_score: moderationScore,
         moderation_flags: moderationFlags,
+        content_category: contentCategory,
       })
       .select()
       .single();
