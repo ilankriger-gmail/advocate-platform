@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Flames behind the heart -->
+  <defs>
+    <linearGradient id="flameGradient" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#ff4500"/>
+      <stop offset="50%" style="stop-color:#ff8c00"/>
+      <stop offset="100%" style="stop-color:#ffd700"/>
+    </linearGradient>
+    <linearGradient id="heartGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ec4899"/>
+      <stop offset="100%" style="stop-color:#be185d"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Flames -->
+  <path d="M32 4 C28 12, 20 14, 22 24 C24 20, 28 18, 30 22 C28 16, 32 10, 32 4" fill="url(#flameGradient)" opacity="0.9"/>
+  <path d="M32 4 C36 12, 44 14, 42 24 C40 20, 36 18, 34 22 C36 16, 32 10, 32 4" fill="url(#flameGradient)" opacity="0.9"/>
+  <path d="M24 8 C20 16, 14 18, 18 28 C20 24, 24 22, 25 26 C23 20, 26 14, 24 8" fill="url(#flameGradient)" opacity="0.7"/>
+  <path d="M40 8 C44 16, 50 18, 46 28 C44 24, 40 22, 39 26 C41 20, 38 14, 40 8" fill="url(#flameGradient)" opacity="0.7"/>
+
+  <!-- Heart -->
+  <path d="M32 56 C32 56, 8 40, 8 26 C8 18, 14 12, 22 12 C26 12, 30 14, 32 18 C34 14, 38 12, 42 12 C50 12, 56 18, 56 26 C56 40, 32 56, 32 56Z" fill="url(#heartGradient)"/>
+
+  <!-- Heart highlight -->
+  <path d="M22 18 C18 18, 14 22, 14 26 C14 28, 15 30, 16 32" stroke="rgba(255,255,255,0.4)" stroke-width="2" fill="none" stroke-linecap="round"/>
+</svg>

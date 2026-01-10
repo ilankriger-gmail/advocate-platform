@@ -14,6 +14,11 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: settings.meta_title,
     description: settings.meta_description,
+    icons: {
+      icon: '/favicon.svg',
+      shortcut: '/favicon.svg',
+      apple: '/favicon.svg',
+    },
   };
 }
 
