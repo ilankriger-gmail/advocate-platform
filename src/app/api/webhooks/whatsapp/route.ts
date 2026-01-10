@@ -59,7 +59,7 @@ function verifyMetaSignature(payload: string, signature: string | null): boolean
   const appSecret = process.env.WHATSAPP_APP_SECRET;
 
   if (!appSecret) {
-    console.warn('[Webhook WhatsApp] App secret nao configurado - aceitando em dev');
+    console.warn('[Webhook WhatsApp] App secret não configurado - aceitando em dev');
     return process.env.NODE_ENV !== 'production';
   }
 
@@ -172,7 +172,7 @@ export async function POST(request: NextRequest) {
           }
         }
 
-        // Processar mensagens recebidas (opcional - para respostas dos usuarios)
+        // Processar mensagens recebidas (opcional - para respostas dos usuários)
         if (value.messages) {
           for (const message of value.messages) {
             console.log(
@@ -192,7 +192,7 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * GET - Verificacao do webhook (desafio da Meta)
+ * GET - Verificação do webhook (desafio da Meta)
  * A Meta envia um GET com hub.mode, hub.verify_token e hub.challenge
  */
 export async function GET(request: NextRequest) {
@@ -202,15 +202,15 @@ export async function GET(request: NextRequest) {
 
   const verifyToken = process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN;
 
-  // Verificar se e uma requisicao de verificacao da Meta
+  // Verificar se é uma requisição de verificação da Meta
   if (mode === 'subscribe' && token === verifyToken) {
-    console.log('[Webhook WhatsApp] Verificacao bem-sucedida');
+    console.log('[Webhook WhatsApp] Verificação bem-sucedida');
     return new NextResponse(challenge, {
       status: 200,
       headers: { 'Content-Type': 'text/plain' },
     });
   }
 
-  // Se nao for verificacao, retornar status
+  // Se nao for verificação, retornar status
   return NextResponse.json({ status: 'Webhook WhatsApp ativo' });
 }

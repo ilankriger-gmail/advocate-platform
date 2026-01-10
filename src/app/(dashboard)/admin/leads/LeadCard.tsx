@@ -199,10 +199,10 @@ export function LeadCard({ lead }: LeadCardProps) {
           </div>
         )}
 
-        {/* Notificacoes enviadas e acoes */}
+        {/* Notificações enviadas e acoes */}
         {lead.status === 'approved' && (
           <div className="space-y-2">
-            {/* Status das notificacoes */}
+            {/* Status das notificações */}
             <div className="flex gap-2">
               {lead.email_sent && (
                 <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full">

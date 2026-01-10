@@ -97,7 +97,7 @@ export function PostModerationCard({ post, profile, status }: PostModerationCard
                 </div>
               )}
               <div>
-                <p className="font-medium text-gray-900">{profile?.full_name || 'Usuario'}</p>
+                <p className="font-medium text-gray-900">{profile?.full_name || 'Usuário'}</p>
                 {profile?.instagram_username && (
                   <p className="text-sm text-gray-500">@{profile.instagram_username}</p>
                 )}
@@ -109,7 +109,7 @@ export function PostModerationCard({ post, profile, status }: PostModerationCard
             </div>
           </div>
 
-          {/* Titulo */}
+          {/* Título */}
           {post.title && (
             <h3 className="font-bold text-gray-900 mb-2">{post.title}</h3>
           )}

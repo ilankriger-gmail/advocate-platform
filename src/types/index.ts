@@ -14,7 +14,7 @@ export * from './profile';
 // Tipos de Analytics
 export * from './analytics';
 
-// Tipos de Notificacoes
+// Tipos de Notificações
 export * from './notification';
 
 // Re-export tipos do Supabase

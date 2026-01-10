@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
-import { analyzeVideoChallenge, type AIVerdict } from '@/lib/gemini';
+import { analyzeVídeoChallenge, type AIVerdict } from '@/lib/gemini';
 import { ActionResponse } from '@/types/action';
 import type { Challenge, ChallengeParticipant, ChallengeWinner, ParticipationWithChallenge } from '@/lib/supabase/types';
 
@@ -12,7 +12,7 @@ import type { Challenge, ChallengeParticipant, ChallengeWinner, ParticipationWit
 export async function participateInChallenge(data: {
   challengeId: string;
   resultValue: number;
-  videoProofUrl?: string;
+  vídeoProofUrl?: string;
   socialMediaUrl?: string;
 }): Promise<ActionResponse<ChallengeParticipant>> {
   try {
@@ -20,7 +20,7 @@ export async function participateInChallenge(data: {
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      return { error: 'Usuario nao autenticado' };
+      return { error: 'Usuário não autenticado' };
     }
 
     // Verificar se o desafio existe e esta ativo
@@ -33,14 +33,14 @@ export async function participateInChallenge(data: {
       .single();
 
     if (challengeError || !challenge) {
-      return { error: 'Desafio nao encontrado ou encerrado' };
+      return { error: 'Desafio não encontrado ou encerrado' };
     }
 
     if (challenge.type !== 'fisico') {
-      return { error: 'Este desafio nao aceita participacoes diretas' };
+      return { error: 'Este desafio não aceita participações diretas' };
     }
 
-    // Verificar se ja participou
+    // Verificar se já participou
     const { data: existingParticipation } = await supabase
       .from('challenge_participants')
       .select('id')
@@ -49,14 +49,14 @@ export async function participateInChallenge(data: {
       .single();
 
     if (existingParticipation) {
-      return { error: 'Voce ja participou deste desafio' };
+      return { error: 'Você já participou deste desafio' };
     }
 
-    // Analisar video com IA (se tiver URL)
+    // Analisar vídeo com IA (se tiver URL)
     let aiVerdict: AIVerdict | null = null;
-    if (data.videoProofUrl) {
-      aiVerdict = await analyzeVideoChallenge(
-        data.videoProofUrl,
+    if (data.vídeoProofUrl) {
+      aiVerdict = await analyzeVídeoChallenge(
+        data.vídeoProofUrl,
         challenge.goal_type,
         challenge.goal_value,
         challenge.title
@@ -70,7 +70,7 @@ export async function participateInChallenge(data: {
         challenge_id: data.challengeId,
         user_id: user.id,
         result_value: data.resultValue,
-        video_proof_url: data.videoProofUrl || null,
+        vídeo_proof_url: data.vídeoProofUrl || null,
         social_media_url: data.socialMediaUrl || null,
         status: 'pending',
         coins_earned: 0,
@@ -97,7 +97,7 @@ export async function participateInChallenge(data: {
  */
 type ChallengeParticipantUpdate = {
   result_value?: number;
-  video_proof_url?: string;
+  vídeo_proof_url?: string;
   social_media_url?: string;
 };
 
@@ -107,7 +107,7 @@ type ChallengeParticipantUpdate = {
 export async function updateParticipation(data: {
   participationId: string;
   resultValue?: number;
-  videoProofUrl?: string;
+  vídeoProofUrl?: string;
   socialMediaUrl?: string;
 }): Promise<ActionResponse> {
   try {
@@ -115,10 +115,10 @@ export async function updateParticipation(data: {
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      return { error: 'Usuario nao autenticado' };
+      return { error: 'Usuário não autenticado' };
     }
 
-    // Verificar se a participacao pertence ao usuario e esta pendente
+    // Verificar se a participacao pertence ao usuário e esta pendente
     const { data: participation } = await supabase
       .from('challenge_participants')
       .select('*')
@@ -128,12 +128,12 @@ export async function updateParticipation(data: {
       .single();
 
     if (!participation) {
-      return { error: 'Participacao nao encontrada ou ja foi avaliada' };
+      return { error: 'Participacao nao encontrada ou já foi avaliada' };
     }
 
     const updateData: ChallengeParticipantUpdate = {};
     if (data.resultValue !== undefined) updateData.result_value = data.resultValue;
-    if (data.videoProofUrl !== undefined) updateData.video_proof_url = data.videoProofUrl;
+    if (data.vídeoProofUrl !== undefined) updateData.vídeo_proof_url = data.vídeoProofUrl;
     if (data.socialMediaUrl !== undefined) updateData.social_media_url = data.socialMediaUrl;
 
     const { error } = await supabase
@@ -163,7 +163,7 @@ export async function approveParticipation(participationId: string, customCoins?
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      return { error: 'Usuario nao autenticado' };
+      return { error: 'Usuário não autenticado' };
     }
 
     // Verificar se e admin/creator
@@ -174,7 +174,7 @@ export async function approveParticipation(participationId: string, customCoins?
       .single();
 
     if (!profile || (profile.role !== 'admin' && !profile.is_creator)) {
-      return { error: 'Acesso nao autorizado' };
+      return { error: 'Acesso não autorizado' };
     }
 
     // Buscar participacao e desafio
@@ -205,7 +205,7 @@ export async function approveParticipation(participationId: string, customCoins?
       return { error: 'Erro ao aprovar participacao' };
     }
 
-    // Adicionar moedas ao usuario
+    // Adicionar moedas ao usuário
     if (coinsReward > 0) {
       // Atualizar saldo
       const { error: coinsError } = await supabase.rpc('add_user_coins', {
@@ -213,7 +213,7 @@ export async function approveParticipation(participationId: string, customCoins?
         p_amount: coinsReward,
       });
 
-      // Fallback se a funcao RPC nao existir
+      // Fallback se a função RPC nao existir
       if (coinsError) {
         await supabase
           .from('user_coins')
@@ -256,7 +256,7 @@ export async function rejectParticipation(
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      return { error: 'Usuario nao autenticado' };
+      return { error: 'Usuário não autenticado' };
     }
 
     // Verificar se e admin/creator
@@ -267,7 +267,7 @@ export async function rejectParticipation(
       .single();
 
     if (!profile || (profile.role !== 'admin' && !profile.is_creator)) {
-      return { error: 'Acesso nao autorizado' };
+      return { error: 'Acesso não autorizado' };
     }
 
     const { error } = await supabase
@@ -303,7 +303,7 @@ export async function toggleChallengeActive(
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      return { error: 'Usuario nao autenticado' };
+      return { error: 'Usuário não autenticado' };
     }
 
     // Verificar se e admin/creator
@@ -314,7 +314,7 @@ export async function toggleChallengeActive(
       .single();
 
     if (!profile || (profile.role !== 'admin' && !profile.is_creator)) {
-      return { error: 'Acesso nao autorizado' };
+      return { error: 'Acesso não autorizado' };
     }
 
     const { error } = await supabase
@@ -335,7 +335,7 @@ export async function toggleChallengeActive(
 }
 
 /**
- * Marcar premio como pago (admin)
+ * Marcar prêmio como pago (admin)
  */
 export async function markWinnerPaid(winnerId: string): Promise<ActionResponse> {
   try {
@@ -343,7 +343,7 @@ export async function markWinnerPaid(winnerId: string): Promise<ActionResponse> 
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      return { error: 'Usuario nao autenticado' };
+      return { error: 'Usuário não autenticado' };
     }
 
     // Verificar se e admin/creator
@@ -354,7 +354,7 @@ export async function markWinnerPaid(winnerId: string): Promise<ActionResponse> 
       .single();
 
     if (!profile || (profile.role !== 'admin' && !profile.is_creator)) {
-      return { error: 'Acesso nao autorizado' };
+      return { error: 'Acesso não autorizado' };
     }
 
     const { error } = await supabase
@@ -363,7 +363,7 @@ export async function markWinnerPaid(winnerId: string): Promise<ActionResponse> 
       .eq('id', winnerId);
 
     if (error) {
-      return { error: 'Erro ao marcar premio como pago' };
+      return { error: 'Erro ao marcar prêmio como pago' };
     }
 
     revalidatePath('/admin/desafios');
@@ -389,7 +389,7 @@ export async function createChallenge(data: {
   // Para fisico
   goal_type?: 'repetitions' | 'time' | null;
   goal_value?: number | null;
-  record_video_url?: string | null;
+  record_vídeo_url?: string | null;
   hashtag?: string | null;
   profile_to_tag?: string | null;
   // Controle
@@ -401,7 +401,7 @@ export async function createChallenge(data: {
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      return { error: 'Usuario nao autenticado' };
+      return { error: 'Usuário não autenticado' };
     }
 
     // Verificar se e admin/creator
@@ -412,7 +412,7 @@ export async function createChallenge(data: {
       .single();
 
     if (!profile || (profile.role !== 'admin' && !profile.is_creator)) {
-      return { error: 'Acesso nao autorizado' };
+      return { error: 'Acesso não autorizado' };
     }
 
     const { data: challenge, error } = await supabase
@@ -432,7 +432,7 @@ export async function createChallenge(data: {
         // Fisico
         goal_type: data.goal_type || null,
         goal_value: data.goal_value || null,
-        record_video_url: data.record_video_url || null,
+        record_vídeo_url: data.record_vídeo_url || null,
         hashtag: data.hashtag || null,
         profile_to_tag: data.profile_to_tag || null,
         // Controle
@@ -464,7 +464,7 @@ export async function closeChallenge(challengeId: string): Promise<ActionRespons
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      return { error: 'Usuario nao autenticado' };
+      return { error: 'Usuário não autenticado' };
     }
 
     // Verificar se e admin/creator
@@ -475,7 +475,7 @@ export async function closeChallenge(challengeId: string): Promise<ActionRespons
       .single();
 
     if (!profile || (profile.role !== 'admin' && !profile.is_creator)) {
-      return { error: 'Acesso nao autorizado' };
+      return { error: 'Acesso não autorizado' };
     }
 
     const { error } = await supabase
@@ -509,7 +509,7 @@ export async function registerWinner(data: {
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      return { error: 'Usuario nao autenticado' };
+      return { error: 'Usuário não autenticado' };
     }
 
     // Verificar se e admin/creator
@@ -520,7 +520,7 @@ export async function registerWinner(data: {
       .single();
 
     if (!profile || (profile.role !== 'admin' && !profile.is_creator)) {
-      return { error: 'Acesso nao autorizado' };
+      return { error: 'Acesso não autorizado' };
     }
 
     const { data: winner, error } = await supabase

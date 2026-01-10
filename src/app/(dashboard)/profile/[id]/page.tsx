@@ -34,10 +34,10 @@ export default async function PublicProfilePage({ params }: PageProps) {
   // Buscar estatisticas publicas
   const stats = await getUserStats(id);
 
-  // Buscar posts aprovados do usuario
+  // Buscar posts aprovados do usuário
   const posts = await getPosts({ userId: id, status: 'approved' });
 
-  const name = profile.full_name || 'Usuario';
+  const name = profile.full_name || 'Usuário';
   const isCreator = profile.is_creator || false;
 
   return (
@@ -132,7 +132,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
 
             {posts.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
-                <p>Este usuario ainda nao tem posts aprovados.</p>
+                <p>Este usuário ainda não tem posts aprovados.</p>
               </div>
             ) : (
               <div className="space-y-4">

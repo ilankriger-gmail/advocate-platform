@@ -12,12 +12,12 @@ import type {
   CheckEmailOpenedPayload,
 } from '@/types/notification';
 
-// Delay padrao para verificar abertura de email (24 horas em ms)
+// Delay padrão para verificar abertura de email (24 horas em ms)
 const DEFAULT_EMAIL_CHECK_DELAY = 24 * 60 * 60 * 1000;
 
 /**
  * Agenda uma tarefa para verificar se o email foi aberto
- * Por padrao, agenda para 24 horas apos o envio
+ * Por padrão, agenda para 24 horas após o envio
  */
 export async function scheduleEmailCheck(
   leadId: string,
@@ -128,7 +128,7 @@ export async function markTaskProcessing(
   try {
     const supabase = createAdminClient();
 
-    // Nota: O incremento de tentativas e feito pela funcao incrementTaskAttempts
+    // Nota: O incremento de tentativas e feito pela função incrementTaskAttempts
     const { error } = await supabase
       .from('scheduled_tasks')
       .update({
@@ -242,7 +242,7 @@ export async function markTaskFailed(
       return { success: false, error: 'Tarefa nao encontrada' };
     }
 
-    // Se ainda ha tentativas disponiveis, voltar para pending
+    // Se ainda ha tentativas disponíveis, voltar para pending
     const shouldRetry = (task.attempts || 0) < (task.max_attempts || 3);
     const newStatus: ScheduledTaskStatus = shouldRetry ? 'pending' : 'failed';
 
@@ -263,7 +263,7 @@ export async function markTaskFailed(
     if (shouldRetry) {
       console.log(`[Scheduler] Tarefa ${taskId} voltou para pending (${task.attempts}/${task.max_attempts} tentativas)`);
     } else {
-      console.log(`[Scheduler] Tarefa ${taskId} falhou apos ${task.max_attempts} tentativas: ${errorMessage}`);
+      console.log(`[Scheduler] Tarefa ${taskId} falhou após ${task.max_attempts} tentativas: ${errorMessage}`);
     }
 
     return { success: true };
@@ -319,7 +319,7 @@ export async function getTaskStats(): Promise<{
 
 /**
  * Agenda o envio do Email 2 (follow-up)
- * Por padrao, agenda para 24 horas apos o Email 1
+ * Por padrão, agenda para 24 horas após o Email 1
  */
 export async function scheduleEmail2(
   leadId: string,
@@ -359,7 +359,7 @@ export async function scheduleEmail2(
 
 /**
  * Agenda o envio do WhatsApp final
- * Por padrao, agenda para 24 horas apos o Email 2
+ * Por padrão, agenda para 24 horas após o Email 2
  */
 export async function scheduleWhatsAppFinal(
   leadId: string,
@@ -399,7 +399,7 @@ export async function scheduleWhatsAppFinal(
 
 /**
  * Cancela todas as tarefas pendentes de um lead
- * Usado quando o lead converte antes de completar a sequencia
+ * Usado quando o lead converte antes de completar a sequência
  */
 export async function cancelAllLeadTasks(
   leadId: string

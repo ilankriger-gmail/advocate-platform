@@ -3,7 +3,7 @@
  */
 
 /**
- * Resposta padrao para Server Actions
+ * Resposta padrão para Server Actions
  *
  * @template T - Tipo dos dados retornados (default: void para acoes que nao retornam dados)
  *

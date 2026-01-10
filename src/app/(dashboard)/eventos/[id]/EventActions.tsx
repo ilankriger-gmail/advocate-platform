@@ -71,12 +71,12 @@ export function EventActions({
             disabled={isLoading}
             className="w-full"
           >
-            {isLoading ? 'Cancelando...' : 'Cancelar Inscricao'}
+            {isLoading ? 'Cancelando...' : 'Cancelar Inscrição'}
           </Button>
         </div>
       ) : !canRegister ? (
         <div className="py-3 px-4 bg-gray-100 text-gray-500 text-center rounded-lg">
-          Inscricao indisponivel
+          Inscrição indisponível
         </div>
       ) : (
         <Button

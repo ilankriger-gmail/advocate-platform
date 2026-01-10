@@ -29,7 +29,7 @@ export default function NovoEventoPage() {
     setError(null);
 
     if (!formData.title || !formData.starts_at) {
-      setError('Titulo e data de inicio sao obrigatorios');
+      setError('Título e data de início sao obrigatorios');
       return;
     }
 
@@ -70,7 +70,7 @@ export default function NovoEventoPage() {
           <h2 className="font-bold text-gray-900 mb-4">Tipo de Evento</h2>
           <div className="grid grid-cols-3 gap-3">
             {[
-              { value: 'virtual', label: 'Virtual', icon: '💻', desc: 'Online via video' },
+              { value: 'virtual', label: 'Virtual', icon: '💻', desc: 'Online via vídeo' },
               { value: 'presencial', label: 'Presencial', icon: '📍', desc: 'Encontro fisico' },
               { value: 'hibrido', label: 'Hibrido', icon: '🔄', desc: 'Online e presencial' },
             ].map((type) => (
@@ -97,7 +97,7 @@ export default function NovoEventoPage() {
           <h2 className="font-bold text-gray-900">Informacoes Basicas</h2>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Titulo *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Título *</label>
             <Input
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -107,7 +107,7 @@ export default function NovoEventoPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Descricao</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
             <Textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -135,7 +135,7 @@ export default function NovoEventoPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Inicio *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Início *</label>
               <Input
                 type="datetime-local"
                 value={formData.starts_at}
@@ -144,7 +144,7 @@ export default function NovoEventoPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Termino</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Término</label>
               <Input
                 type="datetime-local"
                 value={formData.ends_at}
@@ -164,7 +164,7 @@ export default function NovoEventoPage() {
               <Input
                 value={formData.location}
                 onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                placeholder="Rua, numero, cidade..."
+                placeholder="Rua, número, cidade..."
               />
             </div>
           )}
@@ -184,13 +184,13 @@ export default function NovoEventoPage() {
           )}
         </Card>
 
-        {/* Configuracoes */}
+        {/* Configurações */}
         <Card className="p-5 space-y-4">
-          <h2 className="font-bold text-gray-900">Configuracoes</h2>
+          <h2 className="font-bold text-gray-900">Configurações</h2>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Numero Maximo de Participantes
+              Número Máximo de Participantes
             </label>
             <Input
               type="number"

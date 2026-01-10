@@ -16,9 +16,9 @@ export function UserSearch({ initialSearch }: UserSearchProps) {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (search.trim()) {
-      router.push(`/admin/usuarios?q=${encodeURIComponent(search.trim())}`);
+      router.push(`/admin/usuários?q=${encodeURIComponent(search.trim())}`);
     } else {
-      router.push('/admin/usuarios');
+      router.push('/admin/usuários');
     }
   };
 
@@ -38,7 +38,7 @@ export function UserSearch({ initialSearch }: UserSearchProps) {
           variant="outline"
           onClick={() => {
             setSearch('');
-            router.push('/admin/usuarios');
+            router.push('/admin/usuários');
           }}
         >
           Limpar
@@ -118,7 +118,7 @@ export function AddCoinsButton({ userId, userName }: AddCoinsButtonProps) {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Descricao (opcional)
+                  Descrição (opcional)
                 </label>
                 <Input
                   value={description}

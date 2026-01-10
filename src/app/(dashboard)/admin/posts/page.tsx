@@ -50,7 +50,7 @@ export default async function AdminPostsPage({ searchParams }: PageProps) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Moderacao de Posts</h1>
-          <p className="text-gray-500 text-sm mt-1">Aprove ou rejeite posts dos usuarios</p>
+          <p className="text-gray-500 text-sm mt-1">Aprove ou rejeite posts dos usuários</p>
         </div>
       </div>
 

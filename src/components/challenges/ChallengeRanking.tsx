@@ -158,7 +158,7 @@ export function ChallengeRankingFromData({
 
   const entries: RankingEntry[] = approvedParticipants.map((p) => ({
     user_id: p.user_id,
-    user_name: p.profiles?.full_name || 'Usuario',
+    user_name: p.profiles?.full_name || 'Usuário',
     user_avatar: p.profiles?.avatar_url || undefined,
     result_value: p.result_value || 0,
     approved_at: p.approved_at,

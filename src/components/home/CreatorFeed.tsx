@@ -54,7 +54,7 @@ function CreatorPostCard({ post, featured }: { post: PostWithAuthor; featured?: 
     return (
       <Card className="overflow-hidden group cursor-pointer hover:shadow-lg transition-shadow">
         {/* Featured image */}
-        <div className="relative aspect-video bg-gray-100">
+        <div className="relative aspect-vídeo bg-gray-100">
           <img
             src={post.media_url![0]}
             alt={post.title}

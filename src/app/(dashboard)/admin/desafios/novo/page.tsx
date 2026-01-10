@@ -26,7 +26,7 @@ export default function NovoChallengeDesafioPage() {
     // Campos para fisico
     goal_type: 'repetitions' as GoalType,
     goal_value: '',
-    record_video_url: '',
+    record_vídeo_url: '',
     hashtag: '',
     profile_to_tag: '',
     // Datas
@@ -50,7 +50,7 @@ export default function NovoChallengeDesafioPage() {
       num_winners: formData.num_winners ? parseInt(formData.num_winners) : null,
       goal_type: formData.type === 'fisico' ? formData.goal_type : null,
       goal_value: formData.goal_value ? parseInt(formData.goal_value) : null,
-      record_video_url: formData.record_video_url || null,
+      record_vídeo_url: formData.record_vídeo_url || null,
       hashtag: formData.hashtag || null,
       profile_to_tag: formData.profile_to_tag || null,
       starts_at: formData.starts_at || null,
@@ -84,7 +84,7 @@ export default function NovoChallengeDesafioPage() {
             {[
               { value: 'fisico', label: 'Fisico', icon: '💪', desc: 'Exercicios e metas' },
               { value: 'engajamento', label: 'Engajamento', icon: '💬', desc: 'Comentar/curtir posts' },
-              { value: 'participe', label: 'Participe', icon: '🎁', desc: 'Sorteios e premios' },
+              { value: 'participe', label: 'Participe', icon: '🎁', desc: 'Sorteios e prêmios' },
             ].map((type) => (
               <button
                 key={type.value}
@@ -129,7 +129,7 @@ export default function NovoChallengeDesafioPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Titulo *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Título *</label>
             <Input
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -139,7 +139,7 @@ export default function NovoChallengeDesafioPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Descricao</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
             <Textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -165,7 +165,7 @@ export default function NovoChallengeDesafioPage() {
         {/* Campos especificos para Engajamento/Participe */}
         {(formData.type === 'engajamento' || formData.type === 'participe') && (
           <Card className="p-5 space-y-4">
-            <h2 className="font-bold text-gray-900">Configuracoes do Sorteio</h2>
+            <h2 className="font-bold text-gray-900">Configurações do Sorteio</h2>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -182,7 +182,7 @@ export default function NovoChallengeDesafioPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Valor do Premio (R$)
+                  Valor do Prêmio (R$)
                 </label>
                 <Input
                   type="number"
@@ -194,7 +194,7 @@ export default function NovoChallengeDesafioPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Numero de Ganhadores
+                  Número de Ganhadores
                 </label>
                 <Input
                   type="number"
@@ -211,7 +211,7 @@ export default function NovoChallengeDesafioPage() {
         {/* Campos especificos para Fisico */}
         {formData.type === 'fisico' && (
           <Card className="p-5 space-y-4">
-            <h2 className="font-bold text-gray-900">Configuracoes do Desafio Fisico</h2>
+            <h2 className="font-bold text-gray-900">Configurações do Desafio Fisico</h2>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -239,12 +239,12 @@ export default function NovoChallengeDesafioPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Link do Video de Recorde (opcional)
+                Link do Vídeo de Recorde (opcional)
               </label>
               <Input
                 type="url"
-                value={formData.record_video_url}
-                onChange={(e) => setFormData({ ...formData, record_video_url: e.target.value })}
+                value={formData.record_vídeo_url}
+                onChange={(e) => setFormData({ ...formData, record_vídeo_url: e.target.value })}
                 placeholder="https://youtube.com/..."
               />
             </div>
@@ -276,7 +276,7 @@ export default function NovoChallengeDesafioPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Data de Inicio</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Data de Início</label>
               <Input
                 type="datetime-local"
                 value={formData.starts_at}
@@ -284,7 +284,7 @@ export default function NovoChallengeDesafioPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Data de Termino</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Data de Término</label>
               <Input
                 type="datetime-local"
                 value={formData.ends_at}

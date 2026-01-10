@@ -109,7 +109,7 @@ describe('Date Formatting Functions', () => {
       return new Date(now.getTime() - secondsAgo * 1000);
     };
 
-    it('should return "agora mesmo" for times less than 60 seconds ago', () => {
+    it('should return "agora mesmo" for timês less than 60 seconds ago', () => {
       const date = createRelativeDate(30);
       const result = formatRelativeTime(date);
 
@@ -301,17 +301,17 @@ describe('String Utility Functions', () => {
       expect(result).toBe('?');
     });
 
-    it('should handle names with extra spaces', () => {
+    it('should handle namês with extra spaces', () => {
       const result = getInitials('João  Silva');
       expect(result).toBe('JS');
     });
 
-    it('should handle names with leading/trailing spaces', () => {
+    it('should handle namês with leading/trailing spaces', () => {
       const result = getInitials('  João Silva  ');
       expect(result).toBe('JS');
     });
 
-    it('should handle names with special characters', () => {
+    it('should handle namês with special characters', () => {
       const result = getInitials('José-Maria Silva');
       expect(result).toBe('JS');
     });

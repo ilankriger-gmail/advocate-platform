@@ -6,7 +6,7 @@ import { Card, Button, Input, Skeleton } from '@/components/ui';
 import { fetchAllSiteSettings, updateMultipleSiteSettings } from '@/actions/settings';
 import type { SiteSetting, SiteSettingKey } from '@/lib/config/site';
 
-// Configuracoes do Email 1 (aprovacao)
+// Configurações do Email 1 (aprovação)
 const EMAIL_1_KEYS = [
   'email_approval_subject',
   'email_approval_greeting',
@@ -16,7 +16,7 @@ const EMAIL_1_KEYS = [
   'email_approval_footer',
 ];
 
-// Configuracoes do Email 2 (follow-up)
+// Configurações do Email 2 (follow-up)
 const EMAIL_2_KEYS = [
   'email_followup_subject',
   'email_followup_greeting',
@@ -26,7 +26,7 @@ const EMAIL_2_KEYS = [
   'email_followup_footer',
 ];
 
-// Todas as configuracoes de email
+// Todas as configurações de email
 const ALL_EMAIL_KEYS = ['email_from_name', ...EMAIL_1_KEYS, ...EMAIL_2_KEYS];
 
 // Labels amigaveis para cada campo
@@ -37,26 +37,26 @@ const FIELD_LABELS: Record<string, { label: string; description: string; placeho
     description: 'Nome que aparece como remetente do email',
     placeholder: 'Arena Te Amo',
   },
-  // Email 1 - Aprovacao
+  // Email 1 - Aprovação
   email_approval_subject: {
     label: 'Assunto do Email',
     description: 'Use {{site_name}} para inserir o nome do site',
     placeholder: 'Voce foi aprovado para o {{site_name}}!',
   },
   email_approval_greeting: {
-    label: 'Saudacao',
+    label: 'Saudação',
     description: 'Use {{name}} para inserir o nome da pessoa',
     placeholder: 'Ola {{name}}!',
   },
   email_approval_message: {
     label: 'Mensagem Principal',
-    description: 'Texto principal do email de aprovacao',
-    placeholder: 'Sua solicitacao foi aprovada!',
+    description: 'Texto principal do email de aprovação',
+    placeholder: 'Sua solicitação foi aprovada!',
   },
   email_approval_benefits: {
     label: 'Lista de Beneficios',
     description: 'Separe os itens por virgula',
-    placeholder: 'Desafios exclusivos,Eventos especiais,Premios incriveis',
+    placeholder: 'Desafios exclusivos,Eventos especiais,Prêmios incríveis',
   },
   email_approval_cta: {
     label: 'Texto do Botao',
@@ -66,7 +66,7 @@ const FIELD_LABELS: Record<string, { label: string; description: string; placeho
   email_approval_footer: {
     label: 'Texto do Rodape',
     description: 'Mensagem de encerramento do email',
-    placeholder: 'Te esperamos la!',
+    placeholder: 'Te esperamos lá!',
   },
   // Email 2 - Follow-up
   email_followup_subject: {
@@ -75,19 +75,19 @@ const FIELD_LABELS: Record<string, { label: string; description: string; placeho
     placeholder: 'Ainda da tempo de entrar no {{site_name}}!',
   },
   email_followup_greeting: {
-    label: 'Saudacao',
+    label: 'Saudação',
     description: 'Use {{name}} para inserir o nome da pessoa',
     placeholder: 'Ola {{name}}!',
   },
   email_followup_message: {
     label: 'Mensagem Principal',
-    description: 'Texto de urgencia para quem ainda nao se cadastrou',
-    placeholder: 'Percebemos que voce ainda nao criou sua conta...',
+    description: 'Texto de urgencia para quem ainda não se cadastrou',
+    placeholder: 'Percebemos que você ainda não criou sua conta...',
   },
   email_followup_benefits: {
     label: 'Lista de Beneficios',
     description: 'Separe os itens por virgula',
-    placeholder: 'Ultimas vagas,Beneficios exclusivos,Comunidade ativa',
+    placeholder: 'Últimas vagas,Beneficios exclusivos,Comunidade ativa',
   },
   email_followup_cta: {
     label: 'Texto do Botao',
@@ -97,7 +97,7 @@ const FIELD_LABELS: Record<string, { label: string; description: string; placeho
   email_followup_footer: {
     label: 'Texto do Rodape',
     description: 'Mensagem de encerramento do email',
-    placeholder: 'Nao perca essa oportunidade!',
+    placeholder: 'Não perca essa oportunidade!',
   },
 };
 
@@ -116,13 +116,13 @@ export default function AdminEmailsPage() {
 
   useEffect(() => {
     async function loadData() {
-      // Carregar configuracoes (auth ja verificada pelo AdminAuthCheck no layout)
+      // Carregar configurações (auth já verificada pelo AdminAuthCheck no layout)
       const result = await fetchAllSiteSettings();
 
       if (result.error) {
         setError(result.error);
       } else if (result.data) {
-        // Filtrar apenas as configuracoes de email
+        // Filtrar apenas as configurações de email
         const emailSettings = result.data.filter(s => ALL_EMAIL_KEYS.includes(s.key));
         setSettings(emailSettings);
 
@@ -157,7 +157,7 @@ export default function AdminEmailsPage() {
     setError(null);
     setSuccess(null);
 
-    // Verificar alteracoes em configuracoes existentes
+    // Verificar alterações em configurações existentes
     const changedExisting = settings
       .filter(setting => editedValues[setting.key] !== setting.value)
       .map(setting => ({
@@ -165,7 +165,7 @@ export default function AdminEmailsPage() {
         value: editedValues[setting.key],
       }));
 
-    // Verificar configuracoes novas (que nao existem no banco)
+    // Verificar configurações novas (que nao existem no banco)
     const existingKeys = settings.map(s => s.key);
     const newSettings = ALL_EMAIL_KEYS
       .filter(key => !existingKeys.includes(key) && editedValues[key])
@@ -194,14 +194,14 @@ export default function AdminEmailsPage() {
           }))
         );
       } else {
-        setError(result.error || 'Erro ao salvar configuracoes');
+        setError(result.error || 'Erro ao salvar configurações');
       }
 
       setSaving(false);
     });
   };
 
-  // Verificar se ha alteracoes (existentes ou novas)
+  // Verificar se ha alterações (existentes ou novas)
   const existingKeys = settings.map(s => s.key);
   const hasExistingChanges = settings.some(
     setting => editedValues[setting.key] !== setting.value
@@ -211,7 +211,7 @@ export default function AdminEmailsPage() {
   );
   const hasChanges = hasExistingChanges || hasNewSettings;
 
-  // Funcao para substituir variaveis no preview
+  // Função para substituir variaveis no preview
   const replaceVariables = (text: string) => {
     return text
       .replace(/\{\{site_name\}\}/g, siteName)
@@ -259,7 +259,7 @@ export default function AdminEmailsPage() {
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
-            📧 Email 1 - Aprovacao
+            📧 Email 1 - Aprovação
           </button>
           <button
             onClick={() => setActiveTab('email2')}
@@ -291,12 +291,12 @@ export default function AdminEmailsPage() {
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Formulario de edicao */}
+        {/* Formulario de edição */}
         <div className="space-y-6">
           {activeTab === 'email1' ? (
             <Card className="p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                Email de Aprovacao
+                Email de Aprovação
               </h2>
               <p className="text-sm text-gray-500 mb-6">
                 Enviado quando um lead e aprovado para fazer parte da comunidade.
@@ -341,7 +341,7 @@ export default function AdminEmailsPage() {
                 Email de Follow-up
               </h2>
               <p className="text-sm text-gray-500 mb-6">
-                Enviado 24h depois do Email 1, se o lead ainda nao criou a conta.
+                Enviado 24h depois do Email 1, se o lead ainda não criou a conta.
               </p>
               <div className="space-y-4">
                 {EMAIL_2_KEYS.map(key => {
@@ -387,7 +387,7 @@ export default function AdminEmailsPage() {
               isLoading={saving || isPending}
               disabled={!hasChanges || saving || isPending}
             >
-              {hasChanges ? 'Salvar Alteracoes' : 'Sem alteracoes'}
+              {hasChanges ? 'Salvar Alteracoes' : 'Sem alterações'}
             </Button>
           </div>
         </div>
@@ -399,7 +399,7 @@ export default function AdminEmailsPage() {
           </h3>
 
           {activeTab === 'email1' ? (
-            /* Preview Email 1 - Aprovacao */
+            /* Preview Email 1 - Aprovação */
             <div className="border rounded-lg overflow-hidden shadow-lg">
               <div className="bg-gradient-to-r from-pink-500 to-purple-500 p-6 text-center">
                 <h1 className="text-white text-xl font-bold">{siteName}</h1>
@@ -416,7 +416,7 @@ export default function AdminEmailsPage() {
                   {replaceVariables(editedValues['email_approval_message'] || '')}
                 </p>
                 <p className="text-gray-700">
-                  Agora voce pode criar sua conta na plataforma e participar de:
+                  Agora você pode criar sua conta na plataforma e participar de:
                 </p>
                 <ul className="list-disc list-inside text-gray-700 space-y-1">
                   {(editedValues['email_approval_benefits'] || '').split(',').map((benefit, i) => (
@@ -434,7 +434,7 @@ export default function AdminEmailsPage() {
               </div>
               <div className="bg-gray-50 p-4 text-center border-t">
                 <p className="text-gray-500 text-sm">
-                  {editedValues['email_approval_footer'] || 'Te esperamos la!'}<br />
+                  {editedValues['email_approval_footer'] || 'Te esperamos lá!'}<br />
                   <strong className="text-pink-500">Equipe {siteName}</strong>
                 </p>
               </div>
@@ -444,7 +444,7 @@ export default function AdminEmailsPage() {
             <div className="border border-orange-200 rounded-lg overflow-hidden shadow-lg">
               <div className="bg-gradient-to-r from-orange-500 to-red-500 p-6 text-center">
                 <h1 className="text-white text-xl font-bold">{siteName}</h1>
-                <p className="text-orange-100 text-sm mt-1">Nao perca essa oportunidade!</p>
+                <p className="text-orange-100 text-sm mt-1">Não perca essa oportunidade!</p>
               </div>
               <div className="bg-white p-6 space-y-4">
                 <p className="text-sm text-gray-500">
@@ -459,7 +459,7 @@ export default function AdminEmailsPage() {
                 </p>
                 <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
                   <p className="text-orange-800 font-medium mb-2">
-                    O que voce esta perdendo:
+                    O que você está perdendo:
                   </p>
                   <ul className="list-disc list-inside text-orange-700 space-y-1">
                     {(editedValues['email_followup_benefits'] || '').split(',').map((benefit, i) => (
@@ -478,7 +478,7 @@ export default function AdminEmailsPage() {
               </div>
               <div className="bg-orange-50 p-4 text-center border-t border-orange-200">
                 <p className="text-orange-700 text-sm">
-                  {editedValues['email_followup_footer'] || 'Nao perca essa oportunidade!'}<br />
+                  {editedValues['email_followup_footer'] || 'Não perca essa oportunidade!'}<br />
                   <strong className="text-orange-600">Equipe {siteName}</strong>
                 </p>
               </div>

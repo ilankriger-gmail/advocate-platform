@@ -32,8 +32,8 @@ export default async function ObrigadoPage() {
           Seu cadastro foi enviado com sucesso.
         </p>
         <p className="text-gray-500 mb-8">
-          Nossa equipe ira analisar sua solicitacao e em breve entraremos em contato
-          para informar se voce foi aprovado para a comunidade {settings.site_name}.
+          Nossa equipe ira analisar sua solicitação e em breve entraremos em contato
+          para informar se você foi aprovado para a comunidade {settings.site_name}.
         </p>
 
         {/* Icones de contato */}
@@ -60,7 +60,7 @@ export default async function ObrigadoPage() {
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
-          Voltar ao inicio
+          Voltar ao início
         </Link>
       </div>
 

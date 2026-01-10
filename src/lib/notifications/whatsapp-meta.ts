@@ -1,5 +1,5 @@
 /**
- * Servico de WhatsApp via Meta Cloud API
+ * Serviço de WhatsApp via Meta Cloud API
  * Envia mensagens usando templates aprovados no Meta Business
  */
 
@@ -30,7 +30,7 @@ function getMetaConfig(): MetaWhatsAppConfig | null {
 }
 
 interface SendTemplateMessageParams {
-  to: string; // Numero no formato internacional sem + (ex: 5511999999999)
+  to: string; // Número no formato internacional sem + (ex: 5511999999999)
   templateName: string;
   templateLanguage?: string;
   components?: TemplateComponent[];
@@ -42,7 +42,7 @@ interface TemplateComponent {
 }
 
 interface TemplateParameter {
-  type: 'text' | 'image' | 'document' | 'video';
+  type: 'text' | 'image' | 'document' | 'vídeo';
   text?: string;
   image?: { link: string };
 }
@@ -64,11 +64,11 @@ interface MetaApiError {
 }
 
 /**
- * Formata numero de telefone para o formato da API Meta
- * Remove caracteres especiais e adiciona codigo do pais se necessario
+ * Formata número de telefone para o formato da API Meta
+ * Remove caracteres especiais e adiciona código do país se necessario
  */
 export function formatPhoneNumber(phone: string): string {
-  // Remove tudo que nao e digito
+  // Remove tudo que não é dígito
   let cleaned = phone.replace(/\D/g, '');
 
   // Se comeca com 0, remove
@@ -76,7 +76,7 @@ export function formatPhoneNumber(phone: string): string {
     cleaned = cleaned.substring(1);
   }
 
-  // Se nao tem codigo do pais (Brasil = 55), adiciona
+  // Se não tem código do país (Brasil = 55), adiciona
   if (cleaned.length === 10 || cleaned.length === 11) {
     cleaned = '55' + cleaned;
   }
@@ -97,7 +97,7 @@ export async function sendTemplateMessage({
 
   if (!config) {
     console.warn('[WhatsApp] Meta API nao configurada - pulando envio');
-    return { success: false, error: 'WhatsApp nao configurado' };
+    return { success: false, error: 'WhatsApp não configurado' };
   }
 
   const formattedPhone = formatPhoneNumber(to);
@@ -161,7 +161,7 @@ interface SendApprovalWhatsAppParams {
 }
 
 /**
- * Envia mensagem de aprovacao via WhatsApp
+ * Envia mensagem de aprovação via WhatsApp
  * Usa o template "candidate_approved"
  */
 export async function sendApprovalWhatsApp({
@@ -304,7 +304,7 @@ export function verifyMetaWebhookSignature(
   const appSecret = process.env.WHATSAPP_APP_SECRET;
 
   if (!appSecret) {
-    console.warn('[WhatsApp] App secret nao configurado');
+    console.warn('[WhatsApp] App secret não configurado');
     return false;
   }
 

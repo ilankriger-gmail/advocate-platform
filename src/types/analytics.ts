@@ -33,25 +33,25 @@ export type InsightType =
 
 /**
  * Dados de um cohort especifico
- * Representa um grupo de usuarios que se registraram no mesmo periodo
+ * Representa um grupo de usuários que se registraram no mesmo periodo
  */
 export interface CohortData {
   /** Identificador do cohort (ex: "2024-W01", "2024-M01") */
   cohort_id: string;
 
-  /** Data de inicio do cohort */
+  /** Data de início do cohort */
   cohort_date: string;
 
   /** Label legivel do cohort (ex: "Semana 1 - Jan 2024") */
   cohort_label: string;
 
-  /** Numero total de usuarios no cohort */
+  /** Número total de usuários no cohort */
   size: number;
 
-  /** Taxa de retencao por periodo (indice = numero de periodos desde registro) */
+  /** Taxa de retencao por periodo (indice = número de periodos desde registro) */
   retention_rates: number[];
 
-  /** Usuarios ativos por periodo */
+  /** Usuários ativos por periodo */
   active_users: number[];
 }
 
@@ -68,7 +68,7 @@ export interface CohortAnalysis {
   /** Data da analise */
   analyzed_at: string;
 
-  /** Numero total de periodos analisados */
+  /** Número total de periodos analisados */
   total_periods: number;
 
   /** Taxa media de retencao no primeiro periodo */
@@ -88,7 +88,7 @@ export interface FunnelStage {
   /** Label legivel do estagio */
   label: string;
 
-  /** Numero de usuarios neste estagio */
+  /** Número de usuários neste estagio */
   count: number;
 
   /** Percentual em relacao ao estagio anterior */
@@ -105,7 +105,7 @@ export interface EngagementFunnel {
   /** Estagios do funil em ordem */
   stages: FunnelStage[];
 
-  /** Taxa de conversao total (view → return) */
+  /** Taxa de conversão total (view → return) */
   overall_conversion_rate: number;
 
   /** Estagio com maior drop-off */
@@ -122,16 +122,16 @@ export interface EngagementFunnel {
 }
 
 /**
- * Usuario com risco de churn
+ * Usuário com risco de churn
  */
 export interface ChurnRiskUser {
-  /** ID do usuario */
+  /** ID do usuário */
   user_id: string;
 
-  /** Nome do usuario */
+  /** Nome do usuário */
   full_name: string | null;
 
-  /** Avatar do usuario */
+  /** Avatar do usuário */
   avatar_url: string | null;
 
   /** Nivel de risco */
@@ -146,19 +146,19 @@ export interface ChurnRiskUser {
   /** Dias desde o ultimo login */
   days_since_login: number;
 
-  /** Data da ultima atividade (post, comment, like, etc) */
+  /** Data da última atividade (post, comment, like, etc) */
   last_activity_at: string | null;
 
-  /** Dias desde a ultima atividade */
+  /** Dias desde a última atividade */
   days_since_activity: number;
 
   /** Tendencia de engajamento (percentual de mudanca) */
   engagement_trend: number;
 
-  /** Numero de atividades no periodo recente */
+  /** Número de atividades no periodo recente */
   recent_activity_count: number;
 
-  /** Numero de atividades no periodo anterior */
+  /** Número de atividades no periodo anterior */
   previous_activity_count: number;
 }
 
@@ -166,22 +166,22 @@ export interface ChurnRiskUser {
  * Indicadores de churn
  */
 export interface ChurnIndicators {
-  /** Usuarios em risco */
+  /** Usuários em risco */
   at_risk_users: ChurnRiskUser[];
 
-  /** Total de usuarios analisados */
+  /** Total de usuários analisados */
   total_users: number;
 
-  /** Numero de usuarios em alto risco */
+  /** Número de usuários em alto risco */
   high_risk_count: number;
 
-  /** Numero de usuarios em medio risco */
+  /** Número de usuários em medio risco */
   medium_risk_count: number;
 
-  /** Numero de usuarios em baixo risco */
+  /** Número de usuários em baixo risco */
   low_risk_count: number;
 
-  /** Percentual de usuarios em risco (medio + alto) */
+  /** Percentual de usuários em risco (medio + alto) */
   overall_risk_percentage: number;
 
   /** Data da analise */
@@ -224,10 +224,10 @@ export interface BenchmarkComparison {
   /** Metricas comparadas */
   metrics: BenchmarkMetric[];
 
-  /** Numero de metricas acima da media */
+  /** Número de metricas acima da media */
   above_average_count: number;
 
-  /** Numero de metricas abaixo da media */
+  /** Número de metricas abaixo da media */
   below_average_count: number;
 
   /** Ranking geral (percentil, ex: "Top 25%") */
@@ -244,10 +244,10 @@ export interface AutomatedInsight {
   /** Tipo do insight */
   type: InsightType;
 
-  /** Titulo do insight */
+  /** Título do insight */
   title: string;
 
-  /** Descricao detalhada */
+  /** Descrição detalhada */
   description: string;
 
   /** Nivel de importancia (1-5) */
@@ -276,7 +276,7 @@ export interface InsightReport {
   /** Periodo do relatorio */
   period: TimePeriod;
 
-  /** Data de inicio do periodo */
+  /** Data de início do periodo */
   period_start: string;
 
   /** Data de fim do periodo */
@@ -334,7 +334,7 @@ export interface ReportGenerationParams {
   /** Periodo do relatorio */
   period: TimePeriod;
 
-  /** Data de inicio customizada (opcional) */
+  /** Data de início customizada (opcional) */
   start_date?: string;
 
   /** Data de fim customizada (opcional) */
@@ -354,7 +354,7 @@ export interface ReportGenerationParams {
 }
 
 /**
- * Configuracoes de email de relatorio
+ * Configurações de email de relatorio
  */
 export interface ReportEmailSettings {
   /** Email habilitado */
@@ -366,7 +366,7 @@ export interface ReportEmailSettings {
   /** Dia da semana para envio (1-7, 1 = Segunda) */
   day_of_week?: number;
 
-  /** Dia do mes para envio (1-31) */
+  /** Dia do mês para envio (1-31) */
   day_of_month?: number;
 
   /** Lista de emails destinatarios */

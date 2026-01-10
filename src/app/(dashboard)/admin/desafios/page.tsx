@@ -5,7 +5,7 @@ import { Card, Button, Badge } from '@/components/ui';
 export default async function AdminDesafiosPage() {
   const supabase = await createClient();
 
-  // Buscar desafios com contagem de participacoes
+  // Buscar desafios com contagem de participações
   const { data: challenges } = await supabase
     .from('challenges')
     .select(`
@@ -40,7 +40,7 @@ export default async function AdminDesafiosPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Gerenciar Desafios</h1>
-          <p className="text-gray-500 text-sm mt-1">Crie e gerencie desafios para seus usuarios</p>
+          <p className="text-gray-500 text-sm mt-1">Crie e gerencie desafios para seus usuários</p>
         </div>
         <Link href="/admin/desafios/novo">
           <Button>+ Novo Desafio</Button>
@@ -129,7 +129,7 @@ function ChallengeAdminCard({ challenge }: ChallengeCardProps) {
             </div>
 
             <p className="text-sm text-gray-500 line-clamp-2 mb-3">
-              {challenge.description || 'Sem descricao'}
+              {challenge.description || 'Sem descrição'}
             </p>
 
             <div className="flex flex-wrap gap-2 text-xs">

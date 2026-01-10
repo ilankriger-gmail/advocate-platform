@@ -1,10 +1,10 @@
 /**
- * Integracao com Google Gemini para verificacao de videos de desafios
+ * Integracao com Google Gemini para verificação de vídeos de desafios
  *
  * Fluxo:
- * 1. Usuario envia link do video
+ * 1. Usuário envia link do vídeo
  * 2. Gemini analisa o conteudo
- * 3. Retorna veredito (valido/invalido + confianca + motivo)
+ * 3. Retorna veredito (válido/inválido + confianca + motivo)
  * 4. Admin ve o veredito e decide aprovar/rejeitar
  */
 
@@ -22,33 +22,33 @@ interface GeminiAnalysisResult {
 }
 
 /**
- * Analisa um video de desafio usando Gemini
+ * Analisa um vídeo de desafio usando Gemini
  *
- * @param videoUrl URL do video (YouTube, Instagram, TikTok)
+ * @param vídeoUrl URL do vídeo (YouTube, Instagram, TikTok)
  * @param challengeType Tipo do desafio (repetitions ou time)
  * @param goalValue Meta a ser atingida
- * @param challengeTitle Titulo do desafio para contexto
+ * @param challengeTitle Título do desafio para contexto
  */
-export async function analyzeVideoChallenge(
-  videoUrl: string,
+export async function analyzeVídeoChallenge(
+  vídeoUrl: string,
   challengeType: 'repetitions' | 'time' | null,
   goalValue: number | null,
   challengeTitle: string
 ): Promise<AIVerdict> {
   const apiKey = process.env.GEMINI_API_KEY;
 
-  // Se nao tem API key, retorna verificacao manual
+  // Se não tem API key, retorna verificação manual
   if (!apiKey || apiKey === 'your-gemini-api-key') {
     return {
       isValid: false,
       confidence: 0,
-      reason: 'API Gemini nao configurada - verificacao manual necessaria',
+      reason: 'API Gemini nao configurada - verificação manual necessaria',
       analyzedAt: new Date().toISOString(),
     };
   }
 
   try {
-    const prompt = buildAnalysisPrompt(videoUrl, challengeType, goalValue, challengeTitle);
+    const prompt = buildAnalysisPrompt(vídeoUrl, challengeType, goalValue, challengeTitle);
 
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
@@ -95,18 +95,18 @@ export async function analyzeVideoChallenge(
       analyzedAt: new Date().toISOString(),
     };
   } catch (error) {
-    console.error('Error analyzing video:', error);
+    console.error('Error analyzing vídeo:', error);
     return {
       isValid: false,
       confidence: 0,
-      reason: 'Erro ao analisar video',
+      reason: 'Erro ao analisar vídeo',
       analyzedAt: new Date().toISOString(),
     };
   }
 }
 
 function buildAnalysisPrompt(
-  videoUrl: string,
+  vídeoUrl: string,
   challengeType: 'repetitions' | 'time' | null,
   goalValue: number | null,
   challengeTitle: string
@@ -115,18 +115,18 @@ function buildAnalysisPrompt(
     ? `${goalValue} segundos`
     : `${goalValue} repeticoes`;
 
-  return `Voce e um verificador de desafios fisicos. Analise a URL do video abaixo e determine se o participante completou o desafio de forma legitima.
+  return `Voce e um verificador de desafios fisicos. Analise a URL do vídeo abaixo e determine se o participante completou o desafio de forma legitima.
 
 DESAFIO: ${challengeTitle}
 META: ${goalValue ? goalDescription : 'Nao especificada'}
-URL DO VIDEO: ${videoUrl}
+URL DO VIDEO: ${vídeoUrl}
 
 Avalie os seguintes criterios:
-1. O video parece ser de uma plataforma legitima (YouTube, Instagram, TikTok)?
+1. O vídeo parece ser de uma plataforma legitima (YouTube, Instagram, TikTok)?
 2. A URL parece valida e acessivel?
-3. O formato da URL corresponde a um video de exercicio/desafio?
+3. O formato da URL corresponde a um vídeo de exercicio/desafio?
 
-IMPORTANTE: Voce NAO pode assistir ao video diretamente, entao faca uma analise baseada na URL.
+IMPORTANTE: Voce NAO pode assistir ao vídeo diretamente, entao faca uma analise baseada na URL.
 - URLs de Instagram (instagram.com/reel/, instagram.com/p/) sao validas
 - URLs de YouTube (youtube.com/watch, youtu.be/) sao validas
 - URLs de TikTok (tiktok.com/@, vm.tiktok.com/) sao validas
@@ -152,7 +152,7 @@ function parseGeminiResponse(text: string): GeminiAnalysisResult {
       return {
         isValid: false,
         confidence: 0,
-        reason: 'Resposta da IA nao foi possivel interpretar',
+        reason: 'Resposta da IA não foi possível interpretar',
       };
     }
 
@@ -173,16 +173,16 @@ function parseGeminiResponse(text: string): GeminiAnalysisResult {
 }
 
 /**
- * Verifica se uma URL e de uma plataforma de video valida
+ * Verifica se uma URL e de uma plataforma de vídeo valida
  */
-export function isValidVideoUrl(url: string): boolean {
+export function isValidVídeoUrl(url: string): boolean {
   const patterns = [
     /instagram\.com\/(p|reel|reels|tv)\//,
     /youtube\.com\/watch/,
     /youtu\.be\//,
     /tiktok\.com\/@/,
     /vm\.tiktok\.com\//,
-    /facebook\.com\/.*\/videos/,
+    /facebook\.com\/.*\/vídeos/,
     /fb\.watch\//,
   ];
 
@@ -192,7 +192,7 @@ export function isValidVideoUrl(url: string): boolean {
 /**
  * Extrai o tipo de plataforma da URL
  */
-export function getVideoPlatform(url: string): string | null {
+export function getVídeoPlatform(url: string): string | null {
   if (/instagram\.com/.test(url)) return 'Instagram';
   if (/youtube\.com|youtu\.be/.test(url)) return 'YouTube';
   if (/tiktok\.com/.test(url)) return 'TikTok';

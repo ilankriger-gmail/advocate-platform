@@ -393,7 +393,7 @@ export function TabsTrigger({
  * @example
  * // TabsContent com padding customizado
  * <TabsContent value="preview" className="p-0">
- *   <div className="aspect-video bg-gray-100 rounded">
+ *   <div className="aspect-vídeo bg-gray-100 rounded">
  *     <ImagePreview src={imageUrl} />
  *   </div>
  * </TabsContent>

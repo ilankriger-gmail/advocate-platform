@@ -59,7 +59,7 @@ export const LIMITS = {
 export const PROTECTED_ROUTES = [
   '/dashboard',
   '/desafios',
-  '/premios',
+  '/prêmios',
   '/perfil',
 ] as const;
 
@@ -71,11 +71,11 @@ export const CREATOR_ROUTES = ['/admin', '/moderation'] as const;
 
 // Navegação principal (usuário logado)
 export const MAIN_NAV = [
-  { href: '/', label: 'Inicio', icon: 'Home' },
+  { href: '/', label: 'Início', icon: 'Home' },
   { href: '/desafios', label: 'Desafios', icon: 'Target' },
   { href: '/eventos', label: 'Eventos', icon: 'Calendar' },
   { href: '/ranking', label: 'Ranking', icon: 'Trophy' },
-  { href: '/premios', label: 'Meus Premios', icon: 'Gift' },
+  { href: '/prêmios', label: 'Meus Prêmios', icon: 'Gift' },
   { href: '/perfil', label: 'Perfil', icon: 'User' },
 ] as const;
 
@@ -85,12 +85,12 @@ export const CREATOR_NAV = [
   { href: '/admin/posts', label: 'Moderar Posts', icon: 'FileText' },
   { href: '/admin/desafios', label: 'Desafios', icon: 'Target' },
   { href: '/admin/eventos', label: 'Eventos', icon: 'Calendar' },
-  { href: '/admin/premios', label: 'Premios', icon: 'Gift' },
-  { href: '/admin/usuarios', label: 'Usuarios', icon: 'Users' },
+  { href: '/admin/prêmios', label: 'Prêmios', icon: 'Gift' },
+  { href: '/admin/usuários', label: 'Usuários', icon: 'Users' },
   { href: '/admin/leads', label: 'Leads NPS', icon: 'Chart' },
-  { href: '/admin/notificacoes', label: 'Notificacoes', icon: 'Bell' },
+  { href: '/admin/notificações', label: 'Notificações', icon: 'Bell' },
   { href: '/admin/emails', label: 'Emails', icon: 'Mail' },
-  { href: '/admin/configuracoes', label: 'Configuracoes', icon: 'Settings' },
+  { href: '/admin/configurações', label: 'Configurações', icon: 'Settings' },
 ] as const;
 
 // Links de redes sociais
@@ -117,11 +117,11 @@ export const SOCIAL_LINKS = {
   },
 } as const;
 
-// Configuracoes de upload
+// Configurações de upload
 export const UPLOAD_CONFIG = {
   maxFileSize: 5 * 1024 * 1024, // 5MB
   acceptedImageTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
-  acceptedVideoTypes: ['video/mp4', 'video/webm'],
+  acceptedVídeoTypes: ['vídeo/mp4', 'vídeo/webm'],
 } as const;
 
 // Status de campanhas (mantido para compatibilidade)

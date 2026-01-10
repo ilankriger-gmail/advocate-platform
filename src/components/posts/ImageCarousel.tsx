@@ -6,7 +6,7 @@ import Image from 'next/image';
 interface ImageCarouselProps {
   images: string[];
   alt?: string;
-  aspectRatio?: 'square' | 'video' | 'portrait' | 'auto';
+  aspectRatio?: 'square' | 'vídeo' | 'portrait' | 'auto';
 }
 
 export default function ImageCarousel({
@@ -35,7 +35,7 @@ export default function ImageCarousel({
     return (
       <div className={`relative w-full overflow-hidden rounded-lg bg-gray-100 ${
         aspectRatio === 'square' ? 'aspect-square' :
-        aspectRatio === 'video' ? 'aspect-video' :
+        aspectRatio === 'vídeo' ? 'aspect-vídeo' :
         aspectRatio === 'portrait' ? 'aspect-[4/5]' :
         'aspect-auto'
       }`}>
@@ -55,7 +55,7 @@ export default function ImageCarousel({
       {/* Container da imagem */}
       <div className={`relative w-full overflow-hidden rounded-lg bg-gray-100 ${
         aspectRatio === 'square' ? 'aspect-square' :
-        aspectRatio === 'video' ? 'aspect-video' :
+        aspectRatio === 'vídeo' ? 'aspect-vídeo' :
         aspectRatio === 'portrait' ? 'aspect-[4/5]' :
         'aspect-auto min-h-[200px]'
       }`}>

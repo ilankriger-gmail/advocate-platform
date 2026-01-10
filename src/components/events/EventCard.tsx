@@ -105,7 +105,7 @@ export function EventCard({
           )}
         </div>
 
-        {/* Status inscricao */}
+        {/* Status inscrição */}
         {isRegistered && (
           <div className="absolute top-3 right-3">
             <Badge className="bg-green-600 text-white">
@@ -116,7 +116,7 @@ export function EventCard({
       </div>
 
       <div className="p-4 space-y-3">
-        {/* Titulo */}
+        {/* Título */}
         <h3 className="font-bold text-lg text-gray-900 line-clamp-2">
           {event.title}
         </h3>
@@ -157,7 +157,7 @@ export function EventCard({
           </div>
         )}
 
-        {/* Descricao */}
+        {/* Descrição */}
         <p className="text-sm text-gray-500 line-clamp-2">
           {event.description}
         </p>

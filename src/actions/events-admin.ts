@@ -186,7 +186,7 @@ export async function confirmEventRegistration(
       .eq('user_id', userId);
 
     if (error) {
-      return { error: 'Erro ao confirmar inscricao' };
+      return { error: 'Erro ao confirmar inscrição' };
     }
 
     revalidatePath('/admin/eventos');

@@ -6,12 +6,12 @@ interface PageProps {
   searchParams: Promise<{ q?: string }>;
 }
 
-export default async function AdminUsuariosPage({ searchParams }: PageProps) {
+export default async function AdminUsuáriosPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const search = params.q || '';
   const supabase = await createClient();
 
-  // Buscar usuarios com saldo de coracoes
+  // Buscar usuários com saldo de coracoes
   let query = supabase
     .from('users')
     .select(`
@@ -44,8 +44,8 @@ export default async function AdminUsuariosPage({ searchParams }: PageProps) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gerenciar Usuarios</h1>
-          <p className="text-gray-500 text-sm mt-1">Visualize e gerencie os usuarios da plataforma</p>
+          <h1 className="text-2xl font-bold text-gray-900">Gerenciar Usuários</h1>
+          <p className="text-gray-500 text-sm mt-1">Visualize e gerencie os usuários da plataforma</p>
         </div>
       </div>
 
@@ -53,7 +53,7 @@ export default async function AdminUsuariosPage({ searchParams }: PageProps) {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="p-4 text-center">
           <p className="text-2xl font-bold text-gray-900">{totalUsers || 0}</p>
-          <p className="text-sm text-gray-500">Total de Usuarios</p>
+          <p className="text-sm text-gray-500">Total de Usuários</p>
         </Card>
         <Card className="p-4 text-center">
           <p className="text-2xl font-bold text-pink-500">{totalCoins}</p>
@@ -64,7 +64,7 @@ export default async function AdminUsuariosPage({ searchParams }: PageProps) {
       {/* Busca */}
       <UserSearch initialSearch={search} />
 
-      {/* Lista de Usuarios */}
+      {/* Lista de Usuários */}
       {users && users.length > 0 ? (
         <div className="grid grid-cols-1 gap-4">
           {users.map((user) => {
@@ -111,7 +111,7 @@ export default async function AdminUsuariosPage({ searchParams }: PageProps) {
                       <p className="text-xs text-gray-500">coracoes</p>
                     </div>
 
-                    <AddCoinsButton userId={user.id} userName={user.full_name || 'Usuario'} />
+                    <AddCoinsButton userId={user.id} userName={user.full_name || 'Usuário'} />
                   </div>
                 </div>
 
@@ -133,10 +133,10 @@ export default async function AdminUsuariosPage({ searchParams }: PageProps) {
         <Card className="p-12 text-center">
           <div className="text-5xl mb-4">👥</div>
           <h2 className="text-xl font-bold text-gray-900 mb-2">
-            {search ? 'Nenhum usuario encontrado' : 'Nenhum usuario'}
+            {search ? 'Nenhum usuário encontrado' : 'Nenhum usuário'}
           </h2>
           <p className="text-gray-500">
-            {search ? 'Tente uma busca diferente' : 'Ainda nao ha usuarios cadastrados'}
+            {search ? 'Tente uma busca diferente' : 'Ainda não há usuários cadastrados'}
           </p>
         </Card>
       )}

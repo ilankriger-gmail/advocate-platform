@@ -153,7 +153,7 @@ function getBackgroundColor(name: string): string {
  * Componente Avatar para exibir foto de perfil do usuário
  *
  * Exibe a imagem do usuário ou fallback com iniciais se a imagem não estiver
- * disponível. Suporta indicador de status e múltiplos tamanhos.
+ * disponível. Suporta indicador de status é múltiplos tamanhos.
  * A cor do fallback é gerada automaticamente baseada no nome do usuário.
  *
  * @component

@@ -26,7 +26,7 @@ jest.mock('next/cache', () => ({
 
 // Mock do módulo Gemini AI
 jest.mock('@/lib/gemini', () => ({
-  analyzeVideoChallenge: jest.fn(() => Promise.resolve({
+  analyzeVídeoChallenge: jest.fn(() => Promise.resolve({
     isValid: true,
     achievedValue: 10,
     confidence: 0.95,
@@ -52,7 +52,7 @@ describe('participateInChallenge', () => {
       });
 
       // Assert
-      expect(result.error).toBe('Usuario nao autenticado');
+      expect(result.error).toBe('Usuário não autenticado');
       expect(result.success).toBeUndefined();
     });
 
@@ -68,7 +68,7 @@ describe('participateInChallenge', () => {
       });
 
       // Assert
-      expect(result.error).toBe('Desafio nao encontrado ou encerrado');
+      expect(result.error).toBe('Desafio não encontrado ou encerrado');
       expect(result.success).toBeUndefined();
     });
 
@@ -88,7 +88,7 @@ describe('participateInChallenge', () => {
       });
 
       // Assert
-      expect(result.error).toBe('Desafio nao encontrado ou encerrado');
+      expect(result.error).toBe('Desafio não encontrado ou encerrado');
       expect(result.success).toBeUndefined();
     });
 
@@ -108,7 +108,7 @@ describe('participateInChallenge', () => {
       });
 
       // Assert
-      expect(result.error).toBe('Desafio nao encontrado ou encerrado');
+      expect(result.error).toBe('Desafio não encontrado ou encerrado');
       expect(result.success).toBeUndefined();
     });
 
@@ -129,7 +129,7 @@ describe('participateInChallenge', () => {
       });
 
       // Assert
-      expect(result.error).toBe('Este desafio nao aceita participacoes diretas');
+      expect(result.error).toBe('Este desafio não aceita participações diretas');
       expect(result.success).toBeUndefined();
     });
 
@@ -150,7 +150,7 @@ describe('participateInChallenge', () => {
       });
 
       // Assert
-      expect(result.error).toBe('Este desafio nao aceita participacoes diretas');
+      expect(result.error).toBe('Este desafio não aceita participações diretas');
       expect(result.success).toBeUndefined();
     });
 
@@ -178,7 +178,7 @@ describe('participateInChallenge', () => {
       });
 
       // Assert
-      expect(result.error).toBe('Voce ja participou deste desafio');
+      expect(result.error).toBe('Você já participou deste desafio');
       expect(result.success).toBeUndefined();
     });
 
@@ -206,7 +206,7 @@ describe('participateInChallenge', () => {
       });
 
       // Assert
-      expect(result.error).toBe('Voce ja participou deste desafio');
+      expect(result.error).toBe('Você já participou deste desafio');
       expect(result.success).toBeUndefined();
     });
 
@@ -222,7 +222,7 @@ describe('participateInChallenge', () => {
       });
 
       // Assert: Deve falhar na autenticação, não no desafio
-      expect(result.error).toBe('Usuario nao autenticado');
+      expect(result.error).toBe('Usuário não autenticado');
     });
 
     it('deve validar existência do desafio antes de tipo', async () => {
@@ -237,7 +237,7 @@ describe('participateInChallenge', () => {
       });
 
       // Assert: Deve falhar ao buscar desafio
-      expect(result.error).toBe('Desafio nao encontrado ou encerrado');
+      expect(result.error).toBe('Desafio não encontrado ou encerrado');
     });
 
     it('deve validar tipo de desafio antes de participação duplicada', async () => {
@@ -263,7 +263,7 @@ describe('participateInChallenge', () => {
       });
 
       // Assert: Deve falhar no tipo de desafio antes de verificar duplicação
-      expect(result.error).toBe('Este desafio nao aceita participacoes diretas');
+      expect(result.error).toBe('Este desafio não aceita participações diretas');
     });
 
     it('deve aceitar participação quando todas as validações passam', async () => {
@@ -338,7 +338,7 @@ describe('participateInChallenge', () => {
       const result = await participateInChallenge({
         challengeId: challenge.id,
         resultValue: 15,
-        videoProofUrl: 'https://example.com/video.mp4',
+        vídeoProofUrl: 'https://example.com/vídeo.mp4',
         socialMediaUrl: 'https://instagram.com/p/abc123',
       });
 
@@ -357,7 +357,7 @@ describe('participateInChallenge', () => {
       expect(participation.challenge_id).toBe(challenge.id);
       expect(participation.status).toBe('pending');
       expect(participation.result_value).toBe(15);
-      expect(participation.video_proof_url).toBe('https://example.com/video.mp4');
+      expect(participation.vídeo_proof_url).toBe('https://example.com/vídeo.mp4');
       expect(participation.social_media_url).toBe('https://instagram.com/p/abc123');
       expect(participation.coins_earned).toBe(0);
       expect(participation.created_at).toBeDefined();
@@ -374,7 +374,7 @@ describe('participateInChallenge', () => {
       setMockData('challenges', [challenge]);
       setMockData('challenge_participants', []);
 
-      // Act: Participar sem video_proof_url nem social_media_url
+      // Act: Participar sem vídeo_proof_url nem social_media_url
       const result = await participateInChallenge({
         challengeId: challenge.id,
         resultValue: 25,
@@ -390,7 +390,7 @@ describe('participateInChallenge', () => {
       const participation = participations[0];
       expect(participation.user_id).toBe(user.id);
       expect(participation.result_value).toBe(25);
-      expect(participation.video_proof_url).toBeNull();
+      expect(participation.vídeo_proof_url).toBeNull();
       expect(participation.social_media_url).toBeNull();
       expect(participation.status).toBe('pending');
     });
@@ -420,7 +420,7 @@ describe('participateInChallenge', () => {
       expect(participations[0].result_value).toBe(100);
     });
 
-    it('deve incluir veredicto da IA quando video é fornecido', async () => {
+    it('deve incluir veredicto da IA quando vídeo é fornecido', async () => {
       // Arrange: Usuário autenticado e desafio válido
       const user = setupAuthenticatedUser({ coinBalance: 500 });
       const challenge = createMockChallenge({
@@ -435,7 +435,7 @@ describe('participateInChallenge', () => {
       const result = await participateInChallenge({
         challengeId: challenge.id,
         resultValue: 30,
-        videoProofUrl: 'https://example.com/proof.mp4',
+        vídeoProofUrl: 'https://example.com/proof.mp4',
       });
 
       // Assert: Veredicto da IA incluído na participação
@@ -466,7 +466,7 @@ describe('approveParticipation', () => {
       const result = await approveParticipation(participation.id);
 
       // Assert
-      expect(result.error).toBe('Usuario nao autenticado');
+      expect(result.error).toBe('Usuário não autenticado');
       expect(result.success).toBeUndefined();
     });
 
@@ -480,7 +480,7 @@ describe('approveParticipation', () => {
       const result = await approveParticipation(participation.id);
 
       // Assert
-      expect(result.error).toBe('Acesso nao autorizado');
+      expect(result.error).toBe('Acesso não autorizado');
       expect(result.success).toBeUndefined();
     });
 
@@ -769,7 +769,7 @@ describe('approveParticipation', () => {
         challenge_id: challenge.id,
         status: 'pending',
         result_value: 25,
-        video_proof_url: 'https://example.com/video.mp4',
+        vídeo_proof_url: 'https://example.com/vídeo.mp4',
         social_media_url: 'https://instagram.com/p/abc123',
       });
 
@@ -795,7 +795,7 @@ describe('approveParticipation', () => {
       );
 
       expect(updatedParticipation.result_value).toBe(25);
-      expect(updatedParticipation.video_proof_url).toBe('https://example.com/video.mp4');
+      expect(updatedParticipation.vídeo_proof_url).toBe('https://example.com/vídeo.mp4');
       expect(updatedParticipation.social_media_url).toBe('https://instagram.com/p/abc123');
       expect(updatedParticipation.user_id).toBe(user.id);
       expect(updatedParticipation.challenge_id).toBe(challenge.id);
@@ -818,7 +818,7 @@ describe('rejectParticipation', () => {
       const result = await rejectParticipation(participation.id);
 
       // Assert
-      expect(result.error).toBe('Usuario nao autenticado');
+      expect(result.error).toBe('Usuário não autenticado');
       expect(result.success).toBeUndefined();
     });
 
@@ -832,7 +832,7 @@ describe('rejectParticipation', () => {
       const result = await rejectParticipation(participation.id);
 
       // Assert
-      expect(result.error).toBe('Acesso nao autorizado');
+      expect(result.error).toBe('Acesso não autorizado');
       expect(result.success).toBeUndefined();
     });
 
@@ -983,7 +983,7 @@ describe('rejectParticipation', () => {
         challenge_id: challenge.id,
         status: 'pending',
         result_value: 25,
-        video_proof_url: 'https://example.com/video.mp4',
+        vídeo_proof_url: 'https://example.com/vídeo.mp4',
         social_media_url: 'https://instagram.com/p/abc123',
         coins_earned: 0,
       });
@@ -1010,7 +1010,7 @@ describe('rejectParticipation', () => {
       );
 
       expect(updatedParticipation.result_value).toBe(25);
-      expect(updatedParticipation.video_proof_url).toBe('https://example.com/video.mp4');
+      expect(updatedParticipation.vídeo_proof_url).toBe('https://example.com/vídeo.mp4');
       expect(updatedParticipation.social_media_url).toBe('https://instagram.com/p/abc123');
       expect(updatedParticipation.user_id).toBe(user.id);
       expect(updatedParticipation.challenge_id).toBe(challenge.id);
@@ -1151,7 +1151,7 @@ describe('rejectParticipation', () => {
         challenge_id: challenge.id,
         status: 'pending',
         ai_verdict: aiVerdict,
-        video_proof_url: 'https://example.com/proof.mp4',
+        vídeo_proof_url: 'https://example.com/proof.mp4',
       });
 
       setMockData('challenges', [challenge]);
@@ -1177,7 +1177,7 @@ describe('rejectParticipation', () => {
 
       expect(updatedParticipation.status).toBe('rejected');
       expect(updatedParticipation.ai_verdict).toEqual(aiVerdict);
-      expect(updatedParticipation.video_proof_url).toBe('https://example.com/proof.mp4');
+      expect(updatedParticipation.vídeo_proof_url).toBe('https://example.com/proof.mp4');
     });
 
     it('deve aceitar rejeição com motivo opcional', async () => {
@@ -1235,7 +1235,7 @@ describe('rejectParticipation', () => {
       const result = await rejectParticipation(participation.id);
 
       // Assert: Deve falhar na autenticação primeiro
-      expect(result.error).toBe('Usuario nao autenticado');
+      expect(result.error).toBe('Usuário não autenticado');
     });
 
     it('deve validar permissões antes de processar rejeição', async () => {
@@ -1248,7 +1248,7 @@ describe('rejectParticipation', () => {
       const result = await rejectParticipation(participation.id);
 
       // Assert: Deve falhar na autorização
-      expect(result.error).toBe('Acesso nao autorizado');
+      expect(result.error).toBe('Acesso não autorizado');
     });
   });
 });

@@ -14,7 +14,7 @@ export async function claimReward(rewardId: string): Promise<ActionResponse<Rewa
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      return { error: 'Usuario nao autenticado' };
+      return { error: 'Usuário não autenticado' };
     }
 
     // Buscar recompensa
@@ -34,7 +34,7 @@ export async function claimReward(rewardId: string): Promise<ActionResponse<Rewa
       return { error: 'Estoque esgotado' };
     }
 
-    // Buscar saldo do usuario
+    // Buscar saldo do usuário
     const { data: userCoins } = await supabase
       .from('user_coins')
       .select('balance')
@@ -95,7 +95,7 @@ export async function claimReward(rewardId: string): Promise<ActionResponse<Rewa
       })
       .eq('id', rewardId);
 
-    revalidatePath('/premios');
+    revalidatePath('/prêmios');
     revalidatePath('/dashboard');
     return { success: true, data: claim };
   } catch {
@@ -112,7 +112,7 @@ export async function cancelClaim(claimId: string): Promise<ActionResponse> {
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      return { error: 'Usuario nao autenticado' };
+      return { error: 'Usuário não autenticado' };
     }
 
     // Buscar resgate
@@ -125,7 +125,7 @@ export async function cancelClaim(claimId: string): Promise<ActionResponse> {
       .single() as { data: ClaimWithReward | null };
 
     if (!claim) {
-      return { error: 'Resgate nao encontrado ou nao pode ser cancelado' };
+      return { error: 'Resgate não encontrado ou não pode ser cancelado' };
     }
 
     // Atualizar status
@@ -169,7 +169,7 @@ export async function cancelClaim(claimId: string): Promise<ActionResponse> {
     // Devolver ao estoque
     await supabase.rpc('increment_reward_stock', { reward_id: claim.reward_id });
 
-    revalidatePath('/premios');
+    revalidatePath('/prêmios');
     revalidatePath('/dashboard');
     return { success: true };
   } catch {
@@ -191,7 +191,7 @@ export async function toggleRewardActive(
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      return { error: 'Usuario nao autenticado' };
+      return { error: 'Usuário não autenticado' };
     }
 
     // Verificar se e admin/creator
@@ -202,7 +202,7 @@ export async function toggleRewardActive(
       .single();
 
     if (!profile || (profile.role !== 'admin' && !profile.is_creator)) {
-      return { error: 'Acesso nao autorizado' };
+      return { error: 'Acesso não autorizado' };
     }
 
     const { error } = await supabase
@@ -214,8 +214,8 @@ export async function toggleRewardActive(
       return { error: 'Erro ao atualizar recompensa' };
     }
 
-    revalidatePath('/premios');
-    revalidatePath('/admin/premios');
+    revalidatePath('/prêmios');
+    revalidatePath('/admin/prêmios');
     return { success: true };
   } catch {
     return { error: 'Erro interno do servidor' };
@@ -231,7 +231,7 @@ export async function approveClaim(claimId: string): Promise<ActionResponse> {
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      return { error: 'Usuario nao autenticado' };
+      return { error: 'Usuário não autenticado' };
     }
 
     // Verificar se e admin/creator
@@ -242,7 +242,7 @@ export async function approveClaim(claimId: string): Promise<ActionResponse> {
       .single();
 
     if (!profile || (profile.role !== 'admin' && !profile.is_creator)) {
-      return { error: 'Acesso nao autorizado' };
+      return { error: 'Acesso não autorizado' };
     }
 
     const { error } = await supabase
@@ -254,7 +254,7 @@ export async function approveClaim(claimId: string): Promise<ActionResponse> {
       return { error: 'Erro ao aprovar resgate' };
     }
 
-    revalidatePath('/admin/premios');
+    revalidatePath('/admin/prêmios');
     return { success: true };
   } catch {
     return { error: 'Erro interno do servidor' };
@@ -270,7 +270,7 @@ export async function markClaimShipped(claimId: string): Promise<ActionResponse>
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      return { error: 'Usuario nao autenticado' };
+      return { error: 'Usuário não autenticado' };
     }
 
     // Verificar se e admin/creator
@@ -281,7 +281,7 @@ export async function markClaimShipped(claimId: string): Promise<ActionResponse>
       .single();
 
     if (!profile || (profile.role !== 'admin' && !profile.is_creator)) {
-      return { error: 'Acesso nao autorizado' };
+      return { error: 'Acesso não autorizado' };
     }
 
     const { error } = await supabase
@@ -293,7 +293,7 @@ export async function markClaimShipped(claimId: string): Promise<ActionResponse>
       return { error: 'Erro ao atualizar status' };
     }
 
-    revalidatePath('/admin/premios');
+    revalidatePath('/admin/prêmios');
     return { success: true };
   } catch {
     return { error: 'Erro interno do servidor' };
@@ -309,7 +309,7 @@ export async function markClaimDelivered(claimId: string): Promise<ActionRespons
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      return { error: 'Usuario nao autenticado' };
+      return { error: 'Usuário não autenticado' };
     }
 
     // Verificar se e admin/creator
@@ -320,7 +320,7 @@ export async function markClaimDelivered(claimId: string): Promise<ActionRespons
       .single();
 
     if (!profile || (profile.role !== 'admin' && !profile.is_creator)) {
-      return { error: 'Acesso nao autorizado' };
+      return { error: 'Acesso não autorizado' };
     }
 
     const { error } = await supabase
@@ -332,7 +332,7 @@ export async function markClaimDelivered(claimId: string): Promise<ActionRespons
       return { error: 'Erro ao atualizar status' };
     }
 
-    revalidatePath('/admin/premios');
+    revalidatePath('/admin/prêmios');
     return { success: true };
   } catch {
     return { error: 'Erro interno do servidor' };
@@ -355,7 +355,7 @@ export async function createReward(data: {
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      return { error: 'Usuario nao autenticado' };
+      return { error: 'Usuário não autenticado' };
     }
 
     // Verificar se e admin/creator
@@ -366,7 +366,7 @@ export async function createReward(data: {
       .single();
 
     if (!profile || (profile.role !== 'admin' && !profile.is_creator)) {
-      return { error: 'Acesso nao autorizado' };
+      return { error: 'Acesso não autorizado' };
     }
 
     const { data: reward, error } = await supabase
@@ -388,8 +388,8 @@ export async function createReward(data: {
       return { error: 'Erro ao criar recompensa' };
     }
 
-    revalidatePath('/premios');
-    revalidatePath('/admin/premios');
+    revalidatePath('/prêmios');
+    revalidatePath('/admin/prêmios');
     return { success: true, data: reward };
   } catch {
     return { error: 'Erro interno do servidor' };
@@ -427,7 +427,7 @@ export async function updateReward(
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      return { error: 'Usuario nao autenticado' };
+      return { error: 'Usuário não autenticado' };
     }
 
     // Verificar se e admin
@@ -438,7 +438,7 @@ export async function updateReward(
       .single();
 
     if (!profile || profile.role !== 'admin') {
-      return { error: 'Acesso nao autorizado' };
+      return { error: 'Acesso não autorizado' };
     }
 
     const updateData: RewardUpdate = {};
@@ -458,8 +458,8 @@ export async function updateReward(
       return { error: 'Erro ao atualizar recompensa' };
     }
 
-    revalidatePath('/premios');
-    revalidatePath('/admin/premios');
+    revalidatePath('/prêmios');
+    revalidatePath('/admin/prêmios');
     return { success: true };
   } catch {
     return { error: 'Erro interno do servidor' };
@@ -467,7 +467,7 @@ export async function updateReward(
 }
 
 /**
- * Adicionar moedas a um usuario (admin)
+ * Adicionar moedas a um usuário (admin)
  */
 export async function addCoinsToUser(
   userId: string,
@@ -479,7 +479,7 @@ export async function addCoinsToUser(
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      return { error: 'Usuario nao autenticado' };
+      return { error: 'Usuário não autenticado' };
     }
 
     // Verificar se e admin/creator
@@ -490,7 +490,7 @@ export async function addCoinsToUser(
       .single();
 
     if (!profile || (profile.role !== 'admin' && !profile.is_creator)) {
-      return { error: 'Acesso nao autorizado' };
+      return { error: 'Acesso não autorizado' };
     }
 
     if (amount <= 0) {
@@ -533,7 +533,7 @@ export async function addCoinsToUser(
         description: description,
       });
 
-    revalidatePath('/admin/usuarios');
+    revalidatePath('/admin/usuários');
     return { success: true };
   } catch {
     return { error: 'Erro interno do servidor' };

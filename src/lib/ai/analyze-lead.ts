@@ -73,9 +73,9 @@ IMPORTANTE:
 - Feedback generico ou muito curto sugere menor engajamento
 - Tom agressivo, reclamacoes excessivas ou negatividade toxica = preocupacao
 
-Retorne APENAS um JSON valido (sem markdown, sem explicacoes) no formato:
+Retorne APENAS um JSON válido (sem markdown, sem explicacoes) no formato:
 {
-  "score": <numero de 0 a 100 indicando probabilidade de ser bom membro>,
+  "score": <número de 0 a 100 indicando probabilidade de ser bom membro>,
   "sentiment": "<positivo|neutro|negativo>",
   "recommendation": "<aprovar|analisar|rejeitar>",
   "summary": "<resumo da analise em 1-2 frases curtas>",
@@ -93,7 +93,7 @@ Se nao houver pontos fortes claros, retorne pelo menos um item generico.`;
         {
           role: 'system',
           content:
-            'Voce e um assistente que analisa leads e retorna apenas JSON valido, sem formatacao markdown.',
+            'Voce e um assistente que analisa leads e retorna apenas JSON válido, sem formatacao markdown.',
         },
         { role: 'user', content: prompt },
       ],

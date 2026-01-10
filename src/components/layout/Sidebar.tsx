@@ -91,7 +91,7 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
   const { user, profile } = useAuth();
 
   // Mostrar menu admin se tiver role='admin' OU is_creator=true
-  // Verificacao agora feita via perfil do Supabase em vez de localStorage inseguro
+  // Verificação agora feita via perfil do Supabase em vez de localStorage inseguro
   const showAdminMenu = profile?.role === 'admin' || profile?.is_creator === true;
 
   return (

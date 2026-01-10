@@ -39,7 +39,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const supabase = createClient();
 
-  // Funcao para buscar dados do perfil do usuario
+  // Função para buscar dados do perfil do usuário
   const fetchProfile = useCallback(async (userId: string) => {
     try {
       const { data } = await supabase
@@ -63,7 +63,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setSession(initialSession);
         setUser(initialSession?.user ?? null);
 
-        // Buscar dados do perfil se usuario autenticado
+        // Buscar dados do perfil se usuário autenticado
         if (initialSession?.user) {
           await fetchProfile(initialSession.user.id);
         } else {
@@ -84,7 +84,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
 
-        // Buscar dados do perfil quando usuario faz login
+        // Buscar dados do perfil quando usuário faz login
         if (currentSession?.user) {
           await fetchProfile(currentSession.user.id);
         } else {

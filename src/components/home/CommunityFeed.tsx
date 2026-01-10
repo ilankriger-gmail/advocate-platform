@@ -60,7 +60,7 @@ function CommunityPostCard({ post }: { post: PostWithAuthor }) {
   return (
     <Card className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer">
       {hasMedia && (
-        <div className="aspect-video bg-gray-100">
+        <div className="aspect-vídeo bg-gray-100">
           <img
             src={post.media_url![0]}
             alt={post.title}
@@ -73,12 +73,12 @@ function CommunityPostCard({ post }: { post: PostWithAuthor }) {
         <div className="flex items-center gap-2 mb-3">
           <Avatar
             src={author?.avatar_url || undefined}
-            name={author?.full_name || 'Usuario'}
+            name={author?.full_name || 'Usuário'}
             size="sm"
           />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-gray-900 truncate">
-              {author?.full_name || 'Usuario'}
+              {author?.full_name || 'Usuário'}
             </p>
             <p className="text-xs text-gray-500">{formatRelativeTime(post.created_at)}</p>
           </div>

@@ -99,7 +99,7 @@ export default function RegisterForm({ prefilledEmail }: RegisterFormProps) {
         </div>
         {emailFromUrl && (
           <p className="mt-1 text-xs text-gray-500">
-            Este email foi aprovado para cadastro e nao pode ser alterado.
+            Este email foi aprovado para cadastro e não pode ser alterado.
           </p>
         )}
       </div>

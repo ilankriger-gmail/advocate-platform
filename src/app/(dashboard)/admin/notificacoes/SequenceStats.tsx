@@ -28,11 +28,11 @@ export function SequenceStats({ stats }: SequenceStatsProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header da Sequencia */}
+      {/* Header da Sequência */}
       <div className="bg-gradient-to-r from-pink-500 via-orange-500 to-emerald-500 rounded-xl p-6 text-white">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
-            <h3 className="text-lg font-semibold">Sequencia de Conversao</h3>
+            <h3 className="text-lg font-semibold">Sequência de Conversão</h3>
             <p className="text-sm text-white/80 mt-1">
               Dia 1: Email 1 → Dia 2: Email 2 → Dia 3: WhatsApp
             </p>
@@ -48,7 +48,7 @@ export function SequenceStats({ stats }: SequenceStatsProps) {
             </div>
             <div className="text-center">
               <p className="text-3xl font-bold">{stats.conversionRate}%</p>
-              <p className="text-xs text-white/70">Taxa de conversao</p>
+              <p className="text-xs text-white/70">Taxa de conversão</p>
             </div>
           </div>
         </div>
@@ -109,7 +109,7 @@ export function SequenceStats({ stats }: SequenceStatsProps) {
               <p className="text-sm text-emerald-700">Convertidos</p>
               <p className="text-2xl font-bold text-emerald-600">{stats.converted}</p>
               <p className="text-xs text-emerald-500">
-                {stats.conversionRate}% de conversao
+                {stats.conversionRate}% de conversão
               </p>
             </div>
           </div>
@@ -118,7 +118,7 @@ export function SequenceStats({ stats }: SequenceStatsProps) {
 
       {/* Funil Visual */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h4 className="font-semibold text-gray-900 mb-4">Funil de Conversao</h4>
+        <h4 className="font-semibold text-gray-900 mb-4">Funil de Conversão</h4>
         <div className="space-y-3">
           {stats.funnel.map((step, index) => {
             const color = stepColors[index] || stepColors[0];
@@ -167,12 +167,12 @@ export function SequenceStats({ stats }: SequenceStatsProps) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <div className="text-sm text-blue-700">
-            <p className="font-medium">Como funciona a sequencia:</p>
+            <p className="font-medium">Como funciona a sequência:</p>
             <ul className="mt-1 list-disc list-inside space-y-1 text-blue-600">
               <li><strong>Email 1:</strong> Enviado ao aprovar o lead</li>
               <li><strong>Email 2:</strong> Enviado 24h depois se nao converteu</li>
-              <li><strong>WhatsApp:</strong> Enviado 24h apos Email 2 se ainda nao converteu</li>
-              <li><strong>Conversao:</strong> Quando o lead cria a conta e faz login</li>
+              <li><strong>WhatsApp:</strong> Enviado 24h após Email 2 se ainda não converteu</li>
+              <li><strong>Conversão:</strong> Quando o lead cria a conta e faz login</li>
             </ul>
           </div>
         </div>

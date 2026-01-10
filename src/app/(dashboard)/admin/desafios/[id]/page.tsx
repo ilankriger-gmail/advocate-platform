@@ -25,7 +25,7 @@ export default async function AdminDesafioDetalhesPage({ params }: PageProps) {
     notFound();
   }
 
-  // Buscar participacoes
+  // Buscar participações
   const { data: participations } = await supabase
     .from('challenge_participants')
     .select(`
@@ -142,7 +142,7 @@ export default async function AdminDesafioDetalhesPage({ params }: PageProps) {
                     <div className="flex items-center gap-3">
                       <span className="text-2xl">🏆</span>
                       <div>
-                        <p className="font-medium text-gray-900">{profile?.full_name || 'Usuario'}</p>
+                        <p className="font-medium text-gray-900">{profile?.full_name || 'Usuário'}</p>
                         {winner.instagram_username && (
                           <p className="text-sm text-gray-500">@{winner.instagram_username}</p>
                         )}
@@ -172,12 +172,12 @@ export default async function AdminDesafioDetalhesPage({ params }: PageProps) {
         </Card>
       )}
 
-      {/* Participacoes Pendentes */}
+      {/* Participações Pendentes */}
       {pendingParticipations.length > 0 && (
         <Card className="p-5">
           <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
             <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
-            Participacoes Pendentes ({pendingParticipations.length})
+            Participações Pendentes ({pendingParticipations.length})
           </h2>
 
           <div className="space-y-4">
@@ -193,12 +193,12 @@ export default async function AdminDesafioDetalhesPage({ params }: PageProps) {
         </Card>
       )}
 
-      {/* Participacoes Aprovadas */}
+      {/* Participações Aprovadas */}
       {approvedParticipations.length > 0 && (
         <Card className="p-5">
           <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
             <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-            Participacoes Aprovadas ({approvedParticipations.length})
+            Participações Aprovadas ({approvedParticipations.length})
           </h2>
 
           <div className="space-y-3">
@@ -211,7 +211,7 @@ export default async function AdminDesafioDetalhesPage({ params }: PageProps) {
                   <div className="flex items-center gap-3">
                     <span>✅</span>
                     <div>
-                      <p className="font-medium text-gray-900">{profile?.full_name || 'Usuario'}</p>
+                      <p className="font-medium text-gray-900">{profile?.full_name || 'Usuário'}</p>
                       <p className="text-sm text-gray-500">
                         Resultado: {p.result_value}{unit}
                       </p>
@@ -225,12 +225,12 @@ export default async function AdminDesafioDetalhesPage({ params }: PageProps) {
         </Card>
       )}
 
-      {/* Sem participacoes */}
+      {/* Sem participações */}
       {(!participations || participations.length === 0) && (
         <Card className="p-12 text-center">
           <div className="text-5xl mb-4">📭</div>
           <h2 className="text-xl font-bold text-gray-900 mb-2">Nenhuma participacao</h2>
-          <p className="text-gray-500">Ainda nao ha participacoes neste desafio</p>
+          <p className="text-gray-500">Ainda não há participações neste desafio</p>
         </Card>
       )}
     </div>
@@ -248,7 +248,7 @@ interface ParticipationCardProps {
   participation: {
     id: string;
     result_value: number | null;
-    video_proof_url: string | null;
+    vídeo_proof_url: string | null;
     social_media_url: string | null;
     created_at: string;
     profiles: unknown;
@@ -287,7 +287,7 @@ function ParticipationCard({ participation, goalType, coinsReward }: Participati
             </div>
           )}
           <div>
-            <p className="font-medium text-gray-900">{profile?.full_name || 'Usuario'}</p>
+            <p className="font-medium text-gray-900">{profile?.full_name || 'Usuário'}</p>
             {profile?.instagram_username && (
               <p className="text-sm text-gray-500">@{profile.instagram_username}</p>
             )}
@@ -312,9 +312,9 @@ function ParticipationCard({ participation, goalType, coinsReward }: Participati
           <div className="flex items-center justify-between mb-1">
             <span className="text-sm font-medium flex items-center gap-1">
               {participation.ai_verdict.isValid ? (
-                <><span className="text-green-600">IA: Valido</span></>
+                <><span className="text-green-600">IA: Válido</span></>
               ) : (
-                <><span className="text-red-600">IA: Invalido</span></>
+                <><span className="text-red-600">IA: Inválido</span></>
               )}
             </span>
             <span className={`text-sm font-bold ${
@@ -332,9 +332,9 @@ function ParticipationCard({ participation, goalType, coinsReward }: Participati
       )}
 
       <div className="flex flex-wrap gap-2 mb-4">
-        {participation.video_proof_url && (
+        {participation.vídeo_proof_url && (
           <a
-            href={participation.video_proof_url}
+            href={participation.vídeo_proof_url}
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-indigo-600 hover:text-indigo-700 flex items-center gap-1"
@@ -342,7 +342,7 @@ function ParticipationCard({ participation, goalType, coinsReward }: Participati
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
             </svg>
-            Ver Video
+            Ver Vídeo
           </a>
         )}
         {participation.social_media_url && (

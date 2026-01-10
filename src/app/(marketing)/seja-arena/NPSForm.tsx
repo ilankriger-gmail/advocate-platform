@@ -41,7 +41,7 @@ export function NPSForm() {
     }
 
     if (!email || !email.includes('@')) {
-      newErrors.email = 'Email invalido';
+      newErrors.email = 'Email inválido';
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -92,7 +92,7 @@ export function NPSForm() {
           htmlFor="reason"
           className="block text-sm font-medium text-gray-700 mb-1.5"
         >
-          Por que voce deu a nota {score !== null ? score : '...'}?
+          Por que você deu a nota {score !== null ? score : '...'}?
         </label>
         <textarea
           id="reason"
@@ -169,7 +169,7 @@ export function NPSForm() {
       </Button>
 
       <p className="text-xs text-gray-500 text-center">
-        Ao enviar, voce concorda com nossa politica de privacidade.
+        Ao enviar, você concorda com nossa política de privacidade.
       </p>
     </form>
   );

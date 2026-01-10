@@ -27,28 +27,28 @@ interface SendApprovalWhatsAppParams {
 }
 
 /**
- * Formata numero de telefone para WhatsApp
+ * Formata número de telefone para WhatsApp
  * Aceita formatos: (11) 99999-9999, 11999999999, +5511999999999
  */
 function formatPhoneNumber(phone: string): string {
-  // Remove tudo que nao e numero
+  // Remove tudo que não é número
   const digits = phone.replace(/\D/g, '');
 
-  // Se ja tem codigo do pais (55), usa direto
+  // Se já tem código do país (55), usa direto
   if (digits.startsWith('55') && digits.length >= 12) {
     return `whatsapp:+${digits}`;
   }
 
-  // Se nao tem codigo do pais, adiciona +55
+  // Se não tem código do país, adiciona +55
   if (digits.length >= 10) {
     return `whatsapp:+55${digits}`;
   }
 
-  throw new Error('Numero de telefone invalido');
+  throw new Error('Número de telefone inválido');
 }
 
 /**
- * Envia mensagem de aprovacao via WhatsApp
+ * Envia mensagem de aprovação via WhatsApp
  */
 export async function sendApprovalWhatsApp({
   to,
@@ -62,10 +62,10 @@ export async function sendApprovalWhatsApp({
 
     if (!client) {
       console.warn('Twilio client not configured - skipping WhatsApp');
-      return { success: false, error: 'Servico de WhatsApp nao configurado' };
+      return { success: false, error: 'Serviço de WhatsApp não configurado' };
     }
 
-    // Buscar configuracoes do site
+    // Buscar configurações do site
     const settings = await getSiteSettings(['site_name']);
     const siteName = settings.site_name;
 
@@ -80,11 +80,11 @@ export async function sendApprovalWhatsApp({
     const message = await client.messages.create({
       body: `Oi ${name}! 🎉
 
-Temos uma noticia incrivel: sua solicitacao para o ${siteName} foi *APROVADA*!
+Temos uma notícia incrivel: sua solicitação para o ${siteName} foi *APROVADA*!
 
-Agora voce pode criar sua conta e participar de:
+Agora você pode criar sua conta e participar de:
 ✨ Desafios exclusivos
-🎁 Premios incriveis
+🎁 Prêmios incríveis
 🎉 Eventos especiais
 
 Clique aqui para criar sua conta: ${registrationUrl}

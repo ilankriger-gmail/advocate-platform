@@ -28,7 +28,7 @@ import type { ScheduledTask, TaskProcessingResult } from '@/types/notification';
 const TASKS_PER_RUN = 20;
 
 /**
- * Verifica se a requisicao e do Vercel Cron
+ * Verifica se a requisição é do Vercel Cron
  */
 function isValidCronRequest(request: NextRequest): boolean {
   // Em producao, verificar o header de autorizacao do Vercel
@@ -61,7 +61,7 @@ async function processCheckEmailOpened(task: ScheduledTask): Promise<{
   const leadId = task.lead_id;
 
   if (!leadId) {
-    return { success: false, sentWhatsApp: false, error: 'Lead ID nao encontrado' };
+    return { success: false, sentWhatsApp: false, error: 'Lead ID não encontrado' };
   }
 
   try {
@@ -75,7 +75,7 @@ async function processCheckEmailOpened(task: ScheduledTask): Promise<{
       return { success: true, sentWhatsApp: false };
     }
 
-    // Email nao foi aberto - verificar se o lead tem WhatsApp opt-in
+    // Email não foi aberto - verificar se o lead tem WhatsApp opt-in
     const { data: lead, error: leadError } = await supabase
       .from('nps_leads')
       .select('id, name, email, phone, whatsapp_opted_in')
@@ -83,22 +83,22 @@ async function processCheckEmailOpened(task: ScheduledTask): Promise<{
       .single();
 
     if (leadError || !lead) {
-      return { success: false, sentWhatsApp: false, error: 'Lead nao encontrado' };
+      return { success: false, sentWhatsApp: false, error: 'Lead não encontrado' };
     }
 
     // Verificar se tem telefone e optou por WhatsApp
     if (!lead.phone || !lead.whatsapp_opted_in) {
-      console.log(`[CRON] Lead ${leadId} nao tem telefone ou nao optou por WhatsApp`);
+      console.log(`[CRON] Lead ${leadId} não tem telefone ou nao optou por WhatsApp`);
       return { success: true, sentWhatsApp: false };
     }
 
     // Verificar se WhatsApp Meta esta configurado
     if (!isMetaWhatsAppConfigured()) {
-      console.warn('[CRON] WhatsApp Meta nao configurado - pulando envio');
+      console.warn('[CRON] WhatsApp Meta não configurado - pulando envio');
       return { success: true, sentWhatsApp: false };
     }
 
-    // Buscar configuracoes do site
+    // Buscar configurações do site
     const settings = await getSiteSettings(['site_name']);
     const siteName = settings.site_name;
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://comunidade.omocodoteamo.com.br';
@@ -137,7 +137,7 @@ async function processCheckEmailOpened(task: ScheduledTask): Promise<{
 
 /**
  * Processa uma tarefa do tipo send_email_2 (Email de follow-up)
- * Verifica conversao antes de enviar
+ * Verifica conversão antes de enviar
  */
 async function processSendEmail2(task: ScheduledTask): Promise<{
   success: boolean;
@@ -148,17 +148,17 @@ async function processSendEmail2(task: ScheduledTask): Promise<{
   const leadId = task.lead_id;
 
   if (!leadId) {
-    return { success: false, sentEmail: false, converted: false, error: 'Lead ID nao encontrado' };
+    return { success: false, sentEmail: false, converted: false, error: 'Lead ID não encontrado' };
   }
 
   try {
     const supabase = createAdminClient();
 
-    // Verificar se o lead ja converteu
+    // Verificar se o lead já converteu
     const { converted, userId } = await checkLeadConversion(leadId);
 
     if (converted) {
-      console.log(`[CRON] Lead ${leadId} ja converteu (user ${userId}) - cancelando sequencia`);
+      console.log(`[CRON] Lead ${leadId} já converteu (user ${userId}) - cancelando sequência`);
       await cancelAllLeadTasks(leadId);
       return { success: true, sentEmail: false, converted: true };
     }
@@ -171,7 +171,7 @@ async function processSendEmail2(task: ScheduledTask): Promise<{
       .single();
 
     if (leadError || !lead) {
-      return { success: false, sentEmail: false, converted: false, error: 'Lead nao encontrado' };
+      return { success: false, sentEmail: false, converted: false, error: 'Lead não encontrado' };
     }
 
     // Gerar link de cadastro
@@ -214,7 +214,7 @@ async function processSendEmail2(task: ScheduledTask): Promise<{
 
 /**
  * Processa uma tarefa do tipo send_whatsapp_final
- * Verifica conversao antes de enviar
+ * Verifica conversão antes de enviar
  */
 async function processSendWhatsAppFinal(task: ScheduledTask): Promise<{
   success: boolean;
@@ -225,17 +225,17 @@ async function processSendWhatsAppFinal(task: ScheduledTask): Promise<{
   const leadId = task.lead_id;
 
   if (!leadId) {
-    return { success: false, sentWhatsApp: false, converted: false, error: 'Lead ID nao encontrado' };
+    return { success: false, sentWhatsApp: false, converted: false, error: 'Lead ID não encontrado' };
   }
 
   try {
     const supabase = createAdminClient();
 
-    // Verificar se o lead ja converteu
+    // Verificar se o lead já converteu
     const { converted, userId } = await checkLeadConversion(leadId);
 
     if (converted) {
-      console.log(`[CRON] Lead ${leadId} ja converteu (user ${userId}) - cancelando sequencia`);
+      console.log(`[CRON] Lead ${leadId} já converteu (user ${userId}) - cancelando sequência`);
       await cancelAllLeadTasks(leadId);
       return { success: true, sentWhatsApp: false, converted: true };
     }
@@ -248,24 +248,24 @@ async function processSendWhatsAppFinal(task: ScheduledTask): Promise<{
       .single();
 
     if (leadError || !lead) {
-      return { success: false, sentWhatsApp: false, converted: false, error: 'Lead nao encontrado' };
+      return { success: false, sentWhatsApp: false, converted: false, error: 'Lead não encontrado' };
     }
 
     // Verificar se tem telefone
     if (!lead.phone) {
-      console.log(`[CRON] Lead ${leadId} nao tem telefone - finalizando sequencia`);
+      console.log(`[CRON] Lead ${leadId} não tem telefone - finalizando sequência`);
       await updateLeadSequenceStep(leadId, 3);
       return { success: true, sentWhatsApp: false, converted: false };
     }
 
     // Verificar se WhatsApp Meta esta configurado
     if (!isMetaWhatsAppConfigured()) {
-      console.warn('[CRON] WhatsApp Meta nao configurado - pulando envio');
+      console.warn('[CRON] WhatsApp Meta não configurado - pulando envio');
       await updateLeadSequenceStep(leadId, 3);
       return { success: true, sentWhatsApp: false, converted: false };
     }
 
-    // Buscar configuracoes do site
+    // Buscar configurações do site
     const settings = await getSiteSettings(['site_name']);
     const siteName = settings.site_name;
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://comunidade.omocodoteamo.com.br';
@@ -319,7 +319,7 @@ async function processTask(task: ScheduledTask): Promise<{
       return processCheckEmailOpened(task);
 
     case 'send_email_2':
-      // Novo sistema de sequencia - enviar Email 2
+      // Novo sistema de sequência - enviar Email 2
       const email2Result = await processSendEmail2(task);
       return {
         success: email2Result.success,
@@ -330,7 +330,7 @@ async function processTask(task: ScheduledTask): Promise<{
       };
 
     case 'send_whatsapp_final':
-      // Novo sistema de sequencia - enviar WhatsApp final
+      // Novo sistema de sequência - enviar WhatsApp final
       const whatsappResult = await processSendWhatsAppFinal(task);
       return {
         success: whatsappResult.success,
@@ -355,9 +355,9 @@ async function processTask(task: ScheduledTask): Promise<{
 }
 
 export async function GET(request: NextRequest) {
-  // Validar que e uma requisicao legitima do CRON
+  // Validar que é uma requisição legitima do CRON
   if (!isValidCronRequest(request)) {
-    console.error('[CRON] Requisicao nao autorizada');
+    console.error('[CRON] Requisição nao autorizada');
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -462,7 +462,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Tambem aceitar POST para compatibilidade
+// Também aceitar POST para compatibilidade
 export async function POST(request: NextRequest) {
   return GET(request);
 }

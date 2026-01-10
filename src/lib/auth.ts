@@ -1,13 +1,13 @@
 /**
  * Utilitarios de autenticacao e autorizacao
- * Centraliza a logica de verificacao de permissoes para admin/creator
+ * Centraliza a logica de verificação de permissoes para admin/creator
  */
 
 import { createClient } from '@/lib/supabase/server';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 /**
- * Dados do perfil do usuario autenticado
+ * Dados do perfil do usuário autenticado
  */
 export interface UserProfile {
   id: string;
@@ -17,7 +17,7 @@ export interface UserProfile {
 
 /**
  * Resultado de autenticacao bem-sucedida
- * Inclui o usuario autenticado, seus dados de perfil e o cliente Supabase para uso posterior
+ * Inclui o usuário autenticado, seus dados de perfil e o cliente Supabase para uso posterior
  */
 export interface AuthResult {
   user: {
@@ -36,7 +36,7 @@ export interface AuthError {
 
 /**
  * Tipo de retorno das funcoes de autorizacao
- * Retorna ou os dados do usuario autenticado ou um erro
+ * Retorna ou os dados do usuário autenticado ou um erro
  */
 export type AuthResponse = AuthResult | AuthError;
 
@@ -48,11 +48,11 @@ export function isAuthError(response: AuthResponse): response is AuthError {
 }
 
 /**
- * Funcao base de autenticacao
- * Retorna o usuario autenticado com seus dados de perfil ou erro
- * Esta funcao NAO verifica permissoes, apenas autentica o usuario
+ * Função base de autenticacao
+ * Retorna o usuário autenticado com seus dados de perfil ou erro
+ * Esta função NAO verifica permissoes, apenas autentica o usuário
  *
- * @returns AuthResult com usuario, perfil e cliente Supabase, ou AuthError
+ * @returns AuthResult com usuário, perfil e cliente Supabase, ou AuthError
  *
  * @example
  * const auth = await requireAuth();
@@ -67,7 +67,7 @@ export async function requireAuth(): Promise<AuthResponse> {
   // Verificar autenticacao
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-    return { error: 'Usuario nao autenticado' };
+    return { error: 'Usuário não autenticado' };
   }
 
   // Buscar dados do perfil
@@ -78,7 +78,7 @@ export async function requireAuth(): Promise<AuthResponse> {
     .single();
 
   if (!profile) {
-    return { error: 'Perfil de usuario nao encontrado' };
+    return { error: 'Perfil de usuário não encontrado' };
   }
 
   return {
@@ -95,22 +95,22 @@ export async function requireAuth(): Promise<AuthResponse> {
 }
 
 /**
- * Verifica se o usuario autenticado tem permissoes de admin OU creator
- * Esta e a funcao de autorizacao mais comum usada em 16+ lugares
- * Retorna o usuario autenticado com seus dados de perfil ou erro
+ * Verifica se o usuário autenticado tem permissoes de admin OU creator
+ * Esta e a função de autorizacao mais comum usada em 16+ lugares
+ * Retorna o usuário autenticado com seus dados de perfil ou erro
  *
- * @returns AuthResult com usuario, perfil e cliente Supabase, ou AuthError
+ * @returns AuthResult com usuário, perfil e cliente Supabase, ou AuthError
  *
  * @example
  * const auth = await requireAdminOrCreator();
  * if (isAuthError(auth)) {
  *   return auth; // retorna o erro
  * }
- * // usuario e admin ou creator, pode prosseguir
+ * // usuário e admin ou creator, pode prosseguir
  * // usar auth.user, auth.profile, auth.supabase
  */
 export async function requireAdminOrCreator(): Promise<AuthResponse> {
-  // Primeiro autentica o usuario
+  // Primeiro autentica o usuário
   const auth = await requireAuth();
 
   // Se houve erro na autenticacao, retorna o erro
@@ -120,30 +120,30 @@ export async function requireAdminOrCreator(): Promise<AuthResponse> {
 
   // Verifica se tem permissao de admin ou creator
   if (auth.profile.role !== 'admin' && !auth.profile.is_creator) {
-    return { error: 'Acesso nao autorizado' };
+    return { error: 'Acesso não autorizado' };
   }
 
-  // Usuario tem permissao, retorna os dados
+  // Usuário tem permissao, retorna os dados
   return auth;
 }
 
 /**
- * Verifica se o usuario autenticado tem permissoes de admin APENAS
- * Esta funcao e usada em 5 lugares onde e necessario acesso exclusivo de admin
- * Retorna o usuario autenticado com seus dados de perfil ou erro
+ * Verifica se o usuário autenticado tem permissoes de admin APENAS
+ * Esta função e usada em 5 lugares onde e necessario acesso exclusivo de admin
+ * Retorna o usuário autenticado com seus dados de perfil ou erro
  *
- * @returns AuthResult com usuario, perfil e cliente Supabase, ou AuthError
+ * @returns AuthResult com usuário, perfil e cliente Supabase, ou AuthError
  *
  * @example
  * const auth = await requireAdmin();
  * if (isAuthError(auth)) {
  *   return auth; // retorna o erro
  * }
- * // usuario e admin, pode prosseguir
+ * // usuário e admin, pode prosseguir
  * // usar auth.user, auth.profile, auth.supabase
  */
 export async function requireAdmin(): Promise<AuthResponse> {
-  // Primeiro autentica o usuario
+  // Primeiro autentica o usuário
   const auth = await requireAuth();
 
   // Se houve erro na autenticacao, retorna o erro
@@ -153,9 +153,9 @@ export async function requireAdmin(): Promise<AuthResponse> {
 
   // Verifica se tem permissao de admin
   if (auth.profile.role !== 'admin') {
-    return { error: 'Acesso nao autorizado' };
+    return { error: 'Acesso não autorizado' };
   }
 
-  // Usuario tem permissao, retorna os dados
+  // Usuário tem permissao, retorna os dados
   return auth;
 }

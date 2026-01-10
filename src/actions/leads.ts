@@ -16,7 +16,7 @@ import { analyzeLeadWithAI } from '@/lib/ai';
 // ============ ACOES PUBLICAS ============
 
 /**
- * Submeter formulario NPS (publico - sem autenticacao)
+ * Submeter formulario NPS (público - sem autenticacao)
  */
 export async function submitNpsLead(data: NpsLeadInsert): Promise<ActionResponse> {
   try {
@@ -32,14 +32,14 @@ export async function submitNpsLead(data: NpsLeadInsert): Promise<ActionResponse
     }
 
     if (!data.email || !data.email.includes('@')) {
-      return { error: 'Email invalido' };
+      return { error: 'Email inválido' };
     }
 
     if (!data.reason || data.reason.trim().length < 3) {
       return { error: 'Por favor, explique o motivo da sua nota' };
     }
 
-    // Inserir lead (sem select, pois usuario anonimo nao tem permissao de leitura)
+    // Inserir lead (sem select, pois usuário anonimo não tem permissao de leitura)
     const { error } = await supabase
       .from('nps_leads')
       .insert({
@@ -68,12 +68,12 @@ export async function submitNpsLead(data: NpsLeadInsert): Promise<ActionResponse
 // ============ ACOES ADMIN ============
 
 /**
- * Verificar se usuario e admin/creator
+ * Verificar se usuário e admin/creator
  */
 async function verifyAdmin(supabase: Awaited<ReturnType<typeof createClient>>) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-    return { error: 'Usuario nao autenticado' };
+    return { error: 'Usuário não autenticado' };
   }
 
   const { data: profile } = await supabase
@@ -83,7 +83,7 @@ async function verifyAdmin(supabase: Awaited<ReturnType<typeof createClient>>) {
     .single();
 
   if (!profile || (profile.role !== 'admin' && !profile.is_creator)) {
-    return { error: 'Acesso nao autorizado' };
+    return { error: 'Acesso não autorizado' };
   }
 
   return { user, profile };
@@ -240,7 +240,7 @@ export async function getLeadStats(): Promise<ActionResponse<{
 
 /**
  * Enviar notificacao por email para lead aprovado
- * Sistema Hibrido: Envia email + agenda verificacao de abertura para WhatsApp
+ * Sistema Hibrido: Envia email + agenda verificação de abertura para WhatsApp
  */
 export async function sendLeadEmailNotification(leadId: string): Promise<ActionResponse<{
   emailSent: boolean;
@@ -263,11 +263,11 @@ export async function sendLeadEmailNotification(leadId: string): Promise<ActionR
       .single();
 
     if (leadError || !lead) {
-      return { error: 'Lead nao encontrado ou nao esta aprovado' };
+      return { error: 'Lead não encontrado ou não está aprovado' };
     }
 
     if (lead.email_sent) {
-      return { error: 'Email ja foi enviado para este lead' };
+      return { error: 'Email já foi enviado para este lead' };
     }
 
     // Gerar link de cadastro com email pre-preenchido
@@ -333,18 +333,18 @@ export async function sendLeadWhatsAppNotification(leadId: string): Promise<Acti
       .single();
 
     if (leadError || !lead) {
-      return { error: 'Lead nao encontrado ou nao esta aprovado' };
+      return { error: 'Lead não encontrado ou não está aprovado' };
     }
 
     if (!lead.phone) {
-      return { error: 'Lead nao possui telefone cadastrado' };
+      return { error: 'Lead não possui telefone cadastrado' };
     }
 
     if (lead.whatsapp_sent) {
-      return { error: 'WhatsApp ja foi enviado para este lead' };
+      return { error: 'WhatsApp já foi enviado para este lead' };
     }
 
-    // Buscar configuracoes do site
+    // Buscar configurações do site
     const settings = await getSiteSettings(['site_name']);
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://comunidade.omocodoteamo.com.br';
     const registrationUrl = `${baseUrl}/registro?email=${encodeURIComponent(lead.email)}`;
@@ -424,8 +424,8 @@ export async function bulkApproveLeads(leadIds: string[]): Promise<ActionRespons
 }
 
 /**
- * Aprovar multiplos leads em massa e enviar notificacoes
- * Sistema Hibrido: Envia email 100%, agenda verificacao de abertura para 24h
+ * Aprovar multiplos leads em massa e enviar notificações
+ * Sistema Hibrido: Envia email 100%, agenda verificação de abertura para 24h
  * Se o email nao for aberto em 24h + lead tem WhatsApp, envia WhatsApp via CRON
  */
 export async function bulkApproveAndNotify(leadIds: string[]): Promise<ActionResponse<{
@@ -467,11 +467,11 @@ export async function bulkApproveAndNotify(leadIds: string[]): Promise<ActionRes
     let emailsSent = 0;
     let tasksScheduled = 0;
 
-    // Buscar configuracoes do site
+    // Buscar configurações do site
     const settings = await getSiteSettings(['site_name']);
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://comunidade.omocodoteamo.com.br';
 
-    // Enviar notificacoes para cada lead aprovado
+    // Enviar notificações para cada lead aprovado
     for (const lead of approvedLeads || []) {
       const registrationUrl = `${baseUrl}/registro?email=${encodeURIComponent(lead.email)}`;
 
@@ -496,7 +496,7 @@ export async function bulkApproveAndNotify(leadIds: string[]): Promise<ActionRes
           })
           .eq('id', lead.id);
 
-        // Agendar Email 2 para 24h (novo sistema de sequencia)
+        // Agendar Email 2 para 24h (novo sistema de sequência)
         const scheduleResult = await scheduleEmail2(lead.id, {
           email: lead.email,
           lead_name: lead.name,
@@ -543,8 +543,8 @@ export async function checkEmailApproved(email: string): Promise<ActionResponse<
 }
 
 /**
- * Enviar todas as notificacoes para lead aprovado
- * Sistema Hibrido: Envia email + agenda verificacao de abertura
+ * Enviar todas as notificações para lead aprovado
+ * Sistema Hibrido: Envia email + agenda verificação de abertura
  */
 export async function sendAllNotifications(leadId: string): Promise<ActionResponse<{
   email: boolean;
@@ -567,7 +567,7 @@ export async function sendAllNotifications(leadId: string): Promise<ActionRespon
       .single();
 
     if (leadError || !lead) {
-      return { error: 'Lead nao encontrado ou nao esta aprovado' };
+      return { error: 'Lead não encontrado ou não está aprovado' };
     }
 
     const results = {
@@ -575,12 +575,12 @@ export async function sendAllNotifications(leadId: string): Promise<ActionRespon
       taskScheduled: false,
     };
 
-    // Buscar configuracoes do site
+    // Buscar configurações do site
     const settings = await getSiteSettings(['site_name']);
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://comunidade.omocodoteamo.com.br';
     const registrationUrl = `${baseUrl}/registro?email=${encodeURIComponent(lead.email)}`;
 
-    // Enviar email se ainda nao foi enviado
+    // Enviar email se ainda não foi enviado
     if (!lead.email_sent) {
       const emailResult = await sendApprovalEmail({
         to: lead.email,
@@ -623,7 +623,7 @@ export async function sendAllNotifications(leadId: string): Promise<ActionRespon
 
 /**
  * Verificar se um lead converteu (criou conta e fez primeiro login)
- * Usado pelo CRON para decidir se envia proximo email da sequencia
+ * Usado pelo CRON para decidir se envia próximo email da sequência
  */
 export async function checkLeadConversion(leadId: string): Promise<{
   converted: boolean;
@@ -643,12 +643,12 @@ export async function checkLeadConversion(leadId: string): Promise<{
       return { converted: false };
     }
 
-    // Se ja esta marcado como convertido, retornar
+    // Se já está marcado como convertido, retornar
     if (lead.converted && lead.converted_user_id) {
       return { converted: true, userId: lead.converted_user_id };
     }
 
-    // Buscar usuario pelo email
+    // Buscar usuário pelo email
     const { data: user } = await supabase
       .from('users')
       .select('id')
@@ -659,7 +659,7 @@ export async function checkLeadConversion(leadId: string): Promise<{
       return { converted: false };
     }
 
-    // Usuario existe - marcar lead como convertido
+    // Usuário existe - marcar lead como convertido
     await supabase
       .from('nps_leads')
       .update({
@@ -701,7 +701,7 @@ export async function updateLeadSequenceStep(
 }
 
 /**
- * Buscar estatisticas da sequencia de emails
+ * Buscar estatisticas da sequência de emails
  */
 export async function getSequenceStats(): Promise<ActionResponse<{
   totalApproved: number;

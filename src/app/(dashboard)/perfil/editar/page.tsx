@@ -118,7 +118,7 @@ export default function EditarPerfilPage() {
                 onChange={handleChange}
                 rows={3}
                 placeholder="Conte um pouco sobre voce..."
-                hint="Opcional - maximo 160 caracteres"
+                hint="Opcional - máximo 160 caracteres"
                 maxLength={160}
               />
 

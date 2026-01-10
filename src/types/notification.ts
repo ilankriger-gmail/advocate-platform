@@ -1,5 +1,5 @@
 /**
- * Tipos para o Sistema de Notificacoes Hibrido
+ * Tipos para o Sistema de Notificações Hibrido
  * Email + WhatsApp Fallback
  */
 
@@ -166,7 +166,7 @@ export interface ScheduledTaskUpdate {
 // ============ ESTATISTICAS ============
 
 /**
- * Estatisticas de notificacoes
+ * Estatisticas de notificações
  */
 export interface NotificationStats {
   total_emails_sent: number;

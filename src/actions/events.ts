@@ -14,7 +14,7 @@ export async function registerForEvent(eventId: string): Promise<ActionResponse>
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      return { error: 'Usuario nao autenticado' };
+      return { error: 'Usuário não autenticado' };
     }
 
     // Verificar se o evento existe e esta ativo
@@ -26,15 +26,15 @@ export async function registerForEvent(eventId: string): Promise<ActionResponse>
       .single();
 
     if (eventError || !event) {
-      return { error: 'Evento nao encontrado' };
+      return { error: 'Evento não encontrado' };
     }
 
-    // Verificar se o evento ja passou
+    // Verificar se o evento já passou
     if (new Date(event.end_time) < new Date()) {
-      return { error: 'Este evento ja foi encerrado' };
+      return { error: 'Este evento já foi encerrado' };
     }
 
-    // Verificar nivel do usuario
+    // Verificar nivel do usuário
     const { data: userProfile } = await supabase
       .from('users')
       .select('advocate_level')
@@ -42,10 +42,10 @@ export async function registerForEvent(eventId: string): Promise<ActionResponse>
       .single();
 
     if (userProfile && event.required_level > (userProfile.advocate_level || 1)) {
-      return { error: `Nivel minimo requerido: ${event.required_level}` };
+      return { error: `Nivel mínimo requerido: ${event.required_level}` };
     }
 
-    // Verificar se ja esta inscrito
+    // Verificar se já está inscrito
     const { data: existingReg } = await supabase
       .from('event_registrations')
       .select('id, status')
@@ -54,10 +54,10 @@ export async function registerForEvent(eventId: string): Promise<ActionResponse>
       .single();
 
     if (existingReg && existingReg.status !== 'cancelled') {
-      return { error: 'Voce ja esta inscrito neste evento' };
+      return { error: 'Você já esta inscrito neste evento' };
     }
 
-    // Verificar vagas disponiveis
+    // Verificar vagas disponíveis
     if (event.max_participants) {
       const { count } = await supabase
         .from('event_registrations')
@@ -66,11 +66,11 @@ export async function registerForEvent(eventId: string): Promise<ActionResponse>
         .neq('status', 'cancelled');
 
       if ((count || 0) >= event.max_participants) {
-        return { error: 'Nao ha mais vagas disponiveis' };
+        return { error: 'Nao ha mais vagas disponíveis' };
       }
     }
 
-    // Criar inscricao ou reativar inscricao cancelada
+    // Criar inscrição ou reativar inscrição cancelada
     if (existingReg) {
       const { error } = await supabase
         .from('event_registrations')
@@ -78,7 +78,7 @@ export async function registerForEvent(eventId: string): Promise<ActionResponse>
         .eq('id', existingReg.id);
 
       if (error) {
-        return { error: 'Erro ao reativar inscricao' };
+        return { error: 'Erro ao reativar inscrição' };
       }
     } else {
       const { error } = await supabase
@@ -90,7 +90,7 @@ export async function registerForEvent(eventId: string): Promise<ActionResponse>
         });
 
       if (error) {
-        return { error: 'Erro ao realizar inscricao' };
+        return { error: 'Erro ao realizar inscrição' };
       }
     }
 
@@ -103,7 +103,7 @@ export async function registerForEvent(eventId: string): Promise<ActionResponse>
 }
 
 /**
- * Cancelar inscricao em um evento
+ * Cancelar inscrição em um evento
  */
 export async function cancelEventRegistration(eventId: string): Promise<ActionResponse> {
   try {
@@ -111,7 +111,7 @@ export async function cancelEventRegistration(eventId: string): Promise<ActionRe
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      return { error: 'Usuario nao autenticado' };
+      return { error: 'Usuário não autenticado' };
     }
 
     const { error } = await supabase
@@ -121,7 +121,7 @@ export async function cancelEventRegistration(eventId: string): Promise<ActionRe
       .eq('user_id', user.id);
 
     if (error) {
-      return { error: 'Erro ao cancelar inscricao' };
+      return { error: 'Erro ao cancelar inscrição' };
     }
 
     revalidatePath('/eventos');
@@ -141,7 +141,7 @@ export async function checkInEvent(eventId: string): Promise<ActionResponse> {
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      return { error: 'Usuario nao autenticado' };
+      return { error: 'Usuário não autenticado' };
     }
 
     const { error } = await supabase
@@ -176,11 +176,11 @@ export async function submitEventFeedback(
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      return { error: 'Usuario nao autenticado' };
+      return { error: 'Usuário não autenticado' };
     }
 
     if (!feedback.trim()) {
-      return { error: 'Feedback nao pode ser vazio' };
+      return { error: 'Feedback não pode ser vazio' };
     }
 
     const { error } = await supabase
@@ -221,7 +221,7 @@ export async function createEvent(data: {
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      return { error: 'Usuario nao autenticado' };
+      return { error: 'Usuário não autenticado' };
     }
 
     // Verificar se e admin/creator
@@ -232,7 +232,7 @@ export async function createEvent(data: {
       .single();
 
     if (!profile || (profile.role !== 'admin' && !profile.is_creator)) {
-      return { error: 'Acesso nao autorizado' };
+      return { error: 'Acesso não autorizado' };
     }
 
     const { data: event, error } = await supabase
@@ -277,7 +277,7 @@ export async function toggleEventActive(
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      return { error: 'Usuario nao autenticado' };
+      return { error: 'Usuário não autenticado' };
     }
 
     // Verificar se e admin/creator
@@ -288,7 +288,7 @@ export async function toggleEventActive(
       .single();
 
     if (!profile || (profile.role !== 'admin' && !profile.is_creator)) {
-      return { error: 'Acesso nao autorizado' };
+      return { error: 'Acesso não autorizado' };
     }
 
     const { error } = await supabase
@@ -332,7 +332,7 @@ export async function updateEvent(
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      return { error: 'Usuario nao autenticado' };
+      return { error: 'Usuário não autenticado' };
     }
 
     // Verificar se e admin
@@ -343,7 +343,7 @@ export async function updateEvent(
       .single();
 
     if (!profile || profile.role !== 'admin') {
-      return { error: 'Acesso nao autorizado' };
+      return { error: 'Acesso não autorizado' };
     }
 
     const { error } = await supabase
@@ -364,7 +364,7 @@ export async function updateEvent(
 }
 
 /**
- * Confirmar inscricao de participante (admin)
+ * Confirmar inscrição de participante (admin)
  */
 export async function confirmEventRegistration(
   eventId: string,
@@ -375,7 +375,7 @@ export async function confirmEventRegistration(
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      return { error: 'Usuario nao autenticado' };
+      return { error: 'Usuário não autenticado' };
     }
 
     // Verificar se e admin
@@ -386,7 +386,7 @@ export async function confirmEventRegistration(
       .single();
 
     if (!profile || profile.role !== 'admin') {
-      return { error: 'Acesso nao autorizado' };
+      return { error: 'Acesso não autorizado' };
     }
 
     const { error } = await supabase
@@ -396,7 +396,7 @@ export async function confirmEventRegistration(
       .eq('user_id', userId);
 
     if (error) {
-      return { error: 'Erro ao confirmar inscricao' };
+      return { error: 'Erro ao confirmar inscrição' };
     }
 
     revalidatePath('/admin/eventos');

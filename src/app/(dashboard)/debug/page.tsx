@@ -26,7 +26,7 @@ export default function DebugPage() {
               }, null, 2)}
             </pre>
           ) : (
-            <p className="text-red-600">Nenhum usuario logado</p>
+            <p className="text-red-600">Nenhum usuário logado</p>
           )}
         </div>
 

@@ -2,7 +2,7 @@ import { getSiteSettings } from '@/lib/config/site';
 import LoginForm from './LoginForm';
 
 export default async function LoginPage() {
-  // Buscar configuracoes do site
+  // Buscar configurações do site
   const settings = await getSiteSettings(['login_title', 'login_subtitle']);
 
   return (

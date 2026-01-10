@@ -28,7 +28,7 @@ export interface PostWithAuthor extends Post {
   } | null;
 }
 
-// Post completo com autor e interacoes do usuario
+// Post completo com autor e interacoes do usuário
 export interface PostWithDetails extends PostWithAuthor {
   is_liked?: boolean;
   comments?: CommentWithAuthor[];

@@ -21,14 +21,14 @@ export default async function EventosPage() {
     .gte('end_time', new Date().toISOString())
     .order('start_time', { ascending: true });
 
-  // Buscar inscricoes do usuario
+  // Buscar inscricoes do usuário
   const { data: registrations } = await supabase
     .from('event_registrations')
     .select('event_id, status')
     .eq('user_id', user.id)
     .neq('status', 'cancelled');
 
-  // Buscar perfil do usuario para verificar nivel
+  // Buscar perfil do usuário para verificar nivel
   const { data: profile } = await supabase
     .from('users')
     .select('advocate_level')
@@ -51,7 +51,7 @@ export default async function EventosPage() {
     return new Date(e.start_time) <= now && new Date(e.end_time) >= now;
   });
 
-  // Buscar eventos passados que o usuario participou
+  // Buscar eventos passados que o usuário participou
   const { data: pastRegistrations } = await supabase
     .from('event_registrations')
     .select('*, events(*)')
@@ -88,11 +88,11 @@ export default async function EventosPage() {
         </div>
       )}
 
-      {/* Proximos eventos */}
+      {/* Próximos eventos */}
       {upcomingEvents.length > 0 && (
         <div>
           <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-            Proximos Eventos
+            Próximos Eventos
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {upcomingEvents.map((event) => (
@@ -146,7 +146,7 @@ export default async function EventosPage() {
         <Card className="p-12 text-center">
           <div className="text-6xl mb-4">📅</div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Nenhum evento disponivel
+            Nenhum evento disponível
           </h2>
           <p className="text-gray-500">
             Novos eventos serao anunciados em breve!

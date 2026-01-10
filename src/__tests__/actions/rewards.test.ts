@@ -40,7 +40,7 @@ describe('claimReward', () => {
       const result = await claimReward(reward.id);
 
       // Assert
-      expect(result.error).toBe('Usuario nao autenticado');
+      expect(result.error).toBe('Usuário não autenticado');
       expect(result.success).toBeUndefined();
     });
 
@@ -154,7 +154,7 @@ describe('claimReward', () => {
       const result = await claimReward(nonExistentRewardId);
 
       // Assert: Deve falhar na autenticação, não na recompensa
-      expect(result.error).toBe('Usuario nao autenticado');
+      expect(result.error).toBe('Usuário não autenticado');
     });
 
     it('deve validar estoque antes de saldo', async () => {
@@ -262,7 +262,7 @@ describe('cancelClaim', () => {
       const result = await cancelClaim(claim.id);
 
       // Assert
-      expect(result.error).toBe('Usuario nao autenticado');
+      expect(result.error).toBe('Usuário não autenticado');
       expect(result.success).toBeUndefined();
     });
 
@@ -275,7 +275,7 @@ describe('cancelClaim', () => {
       const result = await cancelClaim(nonExistentClaimId);
 
       // Assert
-      expect(result.error).toBe('Resgate nao encontrado ou nao pode ser cancelado');
+      expect(result.error).toBe('Resgate não encontrado ou não pode ser cancelado');
       expect(result.success).toBeUndefined();
     });
 
@@ -299,7 +299,7 @@ describe('cancelClaim', () => {
       const result = await cancelClaim(claim.id);
 
       // Assert
-      expect(result.error).toBe('Resgate nao encontrado ou nao pode ser cancelado');
+      expect(result.error).toBe('Resgate não encontrado ou não pode ser cancelado');
       expect(result.success).toBeUndefined();
     });
 
@@ -321,7 +321,7 @@ describe('cancelClaim', () => {
       const result = await cancelClaim(approvedClaim.id);
 
       // Assert
-      expect(result.error).toBe('Resgate nao encontrado ou nao pode ser cancelado');
+      expect(result.error).toBe('Resgate não encontrado ou não pode ser cancelado');
       expect(result.success).toBeUndefined();
     });
 
@@ -343,7 +343,7 @@ describe('cancelClaim', () => {
       const result = await cancelClaim(shippedClaim.id);
 
       // Assert
-      expect(result.error).toBe('Resgate nao encontrado ou nao pode ser cancelado');
+      expect(result.error).toBe('Resgate não encontrado ou não pode ser cancelado');
       expect(result.success).toBeUndefined();
     });
 
@@ -365,7 +365,7 @@ describe('cancelClaim', () => {
       const result = await cancelClaim(deliveredClaim.id);
 
       // Assert
-      expect(result.error).toBe('Resgate nao encontrado ou nao pode ser cancelado');
+      expect(result.error).toBe('Resgate não encontrado ou não pode ser cancelado');
       expect(result.success).toBeUndefined();
     });
 
@@ -387,7 +387,7 @@ describe('cancelClaim', () => {
       const result = await cancelClaim(cancelledClaim.id);
 
       // Assert
-      expect(result.error).toBe('Resgate nao encontrado ou nao pode ser cancelado');
+      expect(result.error).toBe('Resgate não encontrado ou não pode ser cancelado');
       expect(result.success).toBeUndefined();
     });
   });
@@ -677,7 +677,7 @@ describe('addCoinsToUser', () => {
       const result = await addCoinsToUser(targetUser.id, amount, description);
 
       // Assert
-      expect(result.error).toBe('Usuario nao autenticado');
+      expect(result.error).toBe('Usuário não autenticado');
       expect(result.success).toBeUndefined();
     });
 
@@ -692,7 +692,7 @@ describe('addCoinsToUser', () => {
       const result = await addCoinsToUser(targetUser.id, amount, description);
 
       // Assert
-      expect(result.error).toBe('Acesso nao autorizado');
+      expect(result.error).toBe('Acesso não autorizado');
       expect(result.success).toBeUndefined();
     });
 
@@ -713,7 +713,7 @@ describe('addCoinsToUser', () => {
       const result = await addCoinsToUser(targetUser.id, amount, description);
 
       // Assert
-      expect(result.error).toBe('Acesso nao autorizado');
+      expect(result.error).toBe('Acesso não autorizado');
       expect(result.success).toBeUndefined();
     });
 
@@ -758,7 +758,7 @@ describe('addCoinsToUser', () => {
       const result = await addCoinsToUser(targetUser.id, amount, description);
 
       // Assert: Deve falhar na autenticação, não no amount
-      expect(result.error).toBe('Usuario nao autenticado');
+      expect(result.error).toBe('Usuário não autenticado');
     });
 
     it('deve validar permissões antes de amount', async () => {
@@ -772,7 +772,7 @@ describe('addCoinsToUser', () => {
       const result = await addCoinsToUser(targetUser.id, amount, description);
 
       // Assert: Deve falhar na autorização antes de validar amount
-      expect(result.error).toBe('Acesso nao autorizado');
+      expect(result.error).toBe('Acesso não autorizado');
     });
   });
 

@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, Badge } from '@/components/ui';
 
-export default async function PremiosPage() {
+export default async function PrêmiosPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -18,14 +18,14 @@ export default async function PremiosPage() {
     .eq('user_id', user.id)
     .single();
 
-  // Buscar premios disponiveis
+  // Buscar prêmios disponíveis
   const { data: rewards } = await supabase
     .from('rewards')
     .select('*')
     .eq('is_active', true)
     .order('coins_required', { ascending: true });
 
-  // Buscar resgates do usuario
+  // Buscar resgates do usuário
   const { data: claims } = await supabase
     .from('reward_claims')
     .select('*, rewards(name)')
@@ -52,7 +52,7 @@ export default async function PremiosPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Meus Premios" />
+      <PageHeader title="Meus Prêmios" />
 
       {/* Saldo de Moedas */}
       <Card className="p-6 bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
@@ -65,14 +65,14 @@ export default async function PremiosPage() {
         </div>
       </Card>
 
-      {/* Premios Disponiveis */}
+      {/* Prêmios Disponiveis */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Premios Disponiveis</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Prêmios Disponiveis</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {rewards && rewards.length > 0 ? (
             rewards.map((reward) => (
               <Card key={reward.id} className="p-4">
-                <div className="aspect-video bg-gray-100 rounded-lg mb-3 flex items-center justify-center text-4xl">
+                <div className="aspect-vídeo bg-gray-100 rounded-lg mb-3 flex items-center justify-center text-4xl">
                   🎁
                 </div>
                 <h3 className="font-semibold text-gray-900">{reward.name}</h3>
@@ -92,14 +92,14 @@ export default async function PremiosPage() {
                 </div>
                 {reward.quantity_available !== null && reward.quantity_available <= 10 && (
                   <p className="text-xs text-orange-500 mt-2">
-                    Apenas {reward.quantity_available} disponiveis!
+                    Apenas {reward.quantity_available} disponíveis!
                   </p>
                 )}
               </Card>
             ))
           ) : (
             <Card className="p-8 text-center col-span-full">
-              <p className="text-gray-500">Nenhum premio disponivel no momento.</p>
+              <p className="text-gray-500">Nenhum prêmio disponível no momento.</p>
             </Card>
           )}
         </div>
@@ -114,7 +114,7 @@ export default async function PremiosPage() {
               <div key={claim.id} className="p-4 flex items-center justify-between">
                 <div>
                   <p className="font-medium text-gray-900">
-                    {(claim.rewards as { name: string })?.name || 'Premio'}
+                    {(claim.rewards as { name: string })?.name || 'Prêmio'}
                   </p>
                   <p className="text-sm text-gray-500">
                     {new Date(claim.created_at).toLocaleDateString('pt-BR')}
@@ -130,7 +130,7 @@ export default async function PremiosPage() {
             ))
           ) : (
             <div className="p-8 text-center text-gray-500">
-              Voce ainda nao resgatou nenhum premio.
+              Você ainda não resgatou nenhum prêmio.
             </div>
           )}
         </Card>

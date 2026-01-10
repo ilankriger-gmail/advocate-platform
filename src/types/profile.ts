@@ -1,5 +1,5 @@
 /**
- * Tipos relacionados a Perfil de Usuario
+ * Tipos relacionados a Perfil de Usuário
  */
 
 import { Database } from '@/lib/supabase/types';
@@ -9,10 +9,10 @@ export type User = Database['public']['Tables']['users']['Row'];
 export type UserInsert = Database['public']['Tables']['users']['Insert'];
 export type UserUpdate = Database['public']['Tables']['users']['Update'];
 
-// Role do usuario
+// Role do usuário
 export type UserRole = 'creator' | 'fan';
 
-// Perfil publico (sem dados sensiveis)
+// Perfil público (sem dados sensiveis)
 export interface PublicProfile {
   id: string;
   full_name: string | null;
@@ -28,7 +28,7 @@ export interface PublicProfile {
   created_at: string;
 }
 
-// Estatisticas do usuario
+// Estatisticas do usuário
 export interface UserStats {
   total_posts: number;
   approved_posts: number;
@@ -52,7 +52,7 @@ export interface UpdateProfileData {
   website_url?: string;
 }
 
-// Badges de usuario
+// Badges de usuário
 export const USER_BADGES = [
   { value: 'new', label: 'Novato', icon: 'Sprout', color: 'green' },
   { value: 'active', label: 'Ativo', icon: 'Flame', color: 'orange' },

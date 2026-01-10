@@ -10,7 +10,7 @@ import type { UpdateProfileData } from '@/types/profile';
  *
  * Este hook fornece uma interface para atualizar dados do perfil do usuário,
  * gerenciando automaticamente estados de carregamento, erros e atualização da UI.
- * Utiliza React transitions para transições suaves na interface.
+ * Utiliza React transitions para transições suavês na interface.
  *
  * @returns {Object} Objeto contendo estados e métodos para gerenciar o perfil
  * @returns {boolean} isPending - Indica se há uma operação de atualização em andamento (transição do React)

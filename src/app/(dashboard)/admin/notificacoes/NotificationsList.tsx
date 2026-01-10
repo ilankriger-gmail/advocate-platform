@@ -64,7 +64,7 @@ export function NotificationsList({
     } else {
       params.set(key, value);
     }
-    router.push(`/admin/notificacoes?${params.toString()}`);
+    router.push(`/admin/notificações?${params.toString()}`);
   };
 
   return (

@@ -147,7 +147,7 @@ export interface PromptModalProps {
  *
  * Ideal para:
  * - Solicitar motivo de rejeição ou cancelamento
- * - Editar URLs ou nomes de itens
+ * - Editar URLs ou nomês de itens
  * - Adicionar tags ou categorias
  * - Qualquer input de texto simples que requeira confirmação
  *

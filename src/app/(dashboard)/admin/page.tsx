@@ -75,7 +75,7 @@ export default async function AdminDashboardPage() {
       icon: '🎯',
       href: '/admin/desafios',
       color: 'border-l-blue-500',
-      description: `${pendingParticipations || 0} participacoes pendentes`,
+      description: `${pendingParticipations || 0} participações pendentes`,
     },
     {
       title: 'Eventos',
@@ -83,23 +83,23 @@ export default async function AdminDashboardPage() {
       icon: '📅',
       href: '/admin/eventos',
       color: 'border-l-green-500',
-      description: `${upcomingEvents || 0} proximos eventos`,
+      description: `${upcomingEvents || 0} próximos eventos`,
     },
     {
       title: 'Recompensas',
       value: activeRewards || 0,
       icon: '🎁',
-      href: '/admin/premios',
+      href: '/admin/prêmios',
       color: 'border-l-purple-500',
       description: `${pendingClaims || 0} resgates pendentes`,
     },
     {
-      title: 'Usuarios',
+      title: 'Usuários',
       value: totalUsers || 0,
       icon: '👥',
-      href: '/admin/usuarios',
+      href: '/admin/usuários',
       color: 'border-l-pink-500',
-      description: 'Total de usuarios',
+      description: 'Total de usuários',
     },
     {
       title: 'Leads NPS',
@@ -110,12 +110,12 @@ export default async function AdminDashboardPage() {
       description: `${pendingLeads || 0} pendentes · ${analyzedLeads || 0} analisados por AI`,
     },
     {
-      title: 'Configuracoes',
+      title: 'Configurações',
       value: 12,
       icon: '⚙️',
-      href: '/admin/configuracoes',
+      href: '/admin/configurações',
       color: 'border-l-gray-500',
-      description: 'Nome, descricao, SEO',
+      description: 'Nome, descrição, SEO',
     },
     {
       title: 'Templates de Email',
@@ -162,11 +162,11 @@ export default async function AdminDashboardPage() {
             <span className="text-sm text-yellow-700 font-medium text-center">Moderar Posts</span>
           </Link>
           <Link
-            href="/admin/premios"
+            href="/admin/prêmios"
             className="flex flex-col items-center gap-2 p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
           >
             <span className="text-2xl">🎁</span>
-            <span className="text-sm text-purple-700 font-medium text-center">Gerenciar Premios</span>
+            <span className="text-sm text-purple-700 font-medium text-center">Gerenciar Prêmios</span>
           </Link>
           <Link
             href="/admin/leads"
@@ -176,11 +176,11 @@ export default async function AdminDashboardPage() {
             <span className="text-sm text-indigo-700 font-medium text-center">Leads + AI</span>
           </Link>
           <Link
-            href="/admin/configuracoes"
+            href="/admin/configurações"
             className="flex flex-col items-center gap-2 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
           >
             <span className="text-2xl">⚙️</span>
-            <span className="text-sm text-gray-700 font-medium text-center">Configuracoes</span>
+            <span className="text-sm text-gray-700 font-medium text-center">Configurações</span>
           </Link>
           <Link
             href="/admin/emails"
@@ -205,10 +205,10 @@ export default async function AdminDashboardPage() {
           <RecentPendingPosts />
         </Card>
 
-        {/* Participacoes Recentes */}
+        {/* Participações Recentes */}
         <Card className="p-5">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-gray-900">Participacoes Pendentes</h2>
+            <h2 className="text-lg font-bold text-gray-900">Participações Pendentes</h2>
             <Link href="/admin/desafios" className="text-sm text-indigo-600 hover:text-indigo-700">
               Ver todos
             </Link>
@@ -257,7 +257,7 @@ async function RecentPendingPosts() {
               {profile?.full_name?.[0] || '?'}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900">{profile?.full_name || 'Usuario'}</p>
+              <p className="text-sm font-medium text-gray-900">{profile?.full_name || 'Usuário'}</p>
               <p className="text-sm text-gray-500 truncate">{post.content}</p>
             </div>
           </div>
@@ -308,7 +308,7 @@ async function RecentPendingParticipations() {
         return (
           <div key={p.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900">{profile?.full_name || 'Usuario'}</p>
+              <p className="text-sm font-medium text-gray-900">{profile?.full_name || 'Usuário'}</p>
               <p className="text-xs text-gray-500">{challenge?.title}</p>
             </div>
             <div className="text-right">

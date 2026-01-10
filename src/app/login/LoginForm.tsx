@@ -54,14 +54,14 @@ export default function LoginForm({ siteName, subtitle }: LoginFormProps) {
   const router = useRouter();
   const [isSigningIn, setIsSigningIn] = useState(false);
 
-  // Redireciona se ja autenticado
+  // Redireciona se já autenticado
   useEffect(() => {
     if (user && !isLoading) {
       router.push('/dashboard');
     }
   }, [user, isLoading, router]);
 
-  // Funcao para lidar com o login
+  // Função para lidar com o login
   async function handleGoogleSignIn() {
     setIsSigningIn(true);
     try {
@@ -77,7 +77,7 @@ export default function LoginForm({ siteName, subtitle }: LoginFormProps) {
     return <LoadingSpinner />;
   }
 
-  // Se ja esta autenticado, mostra loading enquanto redireciona
+  // Se já está autenticado, mostra loading enquanto redireciona
   if (user) {
     return <LoadingSpinner />;
   }
@@ -85,7 +85,7 @@ export default function LoginForm({ siteName, subtitle }: LoginFormProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-100 via-white to-gray-100 flex items-center justify-center p-4">
       <div className="bg-white p-8 sm:p-10 rounded-2xl shadow-xl max-w-md w-full">
-        {/* Logo / Titulo */}
+        {/* Logo / Título */}
         <div className="text-center mb-8">
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-700 mb-2">
             {siteName}
@@ -98,7 +98,7 @@ export default function LoginForm({ siteName, subtitle }: LoginFormProps) {
         {/* Aviso de acesso restrito */}
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
           <p className="text-sm text-gray-600 text-center">
-            Apenas usuarios aprovados podem acessar a plataforma.
+            Apenas usuários aprovados podem acessar a plataforma.
           </p>
         </div>
 
@@ -155,13 +155,13 @@ export default function LoginForm({ siteName, subtitle }: LoginFormProps) {
 
         {/* Texto de rodape */}
         <p className="mt-4 text-center text-xs text-gray-400">
-          Ao entrar, voce concorda com nossos{' '}
+          Ao entrar, você concorda com nossos{' '}
           <a href="/termos" className="text-gray-500 hover:text-gray-600">
             Termos de Uso
           </a>{' '}
           e{' '}
           <a href="/privacidade" className="text-gray-500 hover:text-gray-600">
-            Politica de Privacidade
+            Política de Privacidade
           </a>
         </p>
       </div>

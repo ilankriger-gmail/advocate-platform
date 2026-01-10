@@ -33,7 +33,7 @@ interface LogEmailNotificationParams {
 }
 
 /**
- * Registra uma notificacao de email no banco de dados
+ * Registra uma notificação de email no banco de dados
  */
 export async function logEmailNotification({
   leadId,
@@ -57,19 +57,19 @@ export async function logEmailNotification({
       });
 
     if (error) {
-      console.error('[Email] Erro ao registrar notificacao:', error);
+      console.error('[Email] Erro ao registrar notificação:', error);
       return { success: false, error: error.message };
     }
 
     return { success: true };
   } catch (err) {
-    console.error('[Email] Erro ao registrar notificacao:', err);
-    return { success: false, error: 'Erro ao registrar notificacao' };
+    console.error('[Email] Erro ao registrar notificação:', err);
+    return { success: false, error: 'Erro ao registrar notificação' };
   }
 }
 
 /**
- * Atualiza o status de uma notificacao de email
+ * Atualiza o status de uma notificação de email
  */
 export async function updateEmailNotificationStatus(
   messageId: string,
@@ -102,7 +102,7 @@ export async function updateEmailNotificationStatus(
 }
 
 /**
- * Envia email de aprovacao para o lead com link de cadastro
+ * Envia email de aprovação para o lead com link de cadastro
  * Retorna message_id para rastreamento de abertura
  */
 export async function sendApprovalEmail({
@@ -119,10 +119,10 @@ export async function sendApprovalEmail({
 
     if (!resend) {
       console.warn('Resend not configured - skipping email');
-      return { success: false, error: 'Servico de email nao configurado' };
+      return { success: false, error: 'Serviço de email não configurado' };
     }
 
-    // Buscar configuracoes do site e email
+    // Buscar configurações do site e email
     const settings = await getSiteSettings([
       'site_name',
       'email_from_name',
@@ -137,14 +137,14 @@ export async function sendApprovalEmail({
     const siteName = settings.site_name;
     const fromName = settings.email_from_name;
 
-    // Funcao para substituir variaveis
+    // Função para substituir variáveis
     const replaceVars = (text: string) =>
       text
         .replace(/\{\{site_name\}\}/g, siteName)
         .replace(/\{\{name\}\}/g, name)
         .replace(/\{\{email\}\}/g, to);
 
-    // Configuracoes do email com variaveis substituidas
+    // Configurações do email com variáveis substituídas
     const subject = replaceVars(settings.email_approval_subject);
     const greeting = replaceVars(settings.email_approval_greeting);
     const message = replaceVars(settings.email_approval_message);
@@ -154,7 +154,7 @@ export async function sendApprovalEmail({
 
     const fromEmail = process.env.RESEND_FROM_EMAIL || 'noreply@omocodoteamo.com.br';
 
-    // Gerar lista de beneficios em HTML
+    // Gerar lista de benefícios em HTML
     const benefitsHtml = benefits.map(b => `<li>${b}</li>`).join('\n                        ');
 
     const { data, error } = await resend.emails.send({
@@ -190,7 +190,7 @@ export async function sendApprovalEmail({
                       </p>
 
                       <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 30px;">
-                        Agora voce pode criar sua conta na plataforma e participar de:
+                        Agora você pode criar sua conta na plataforma e participar de:
                       </p>
 
                       <ul style="color: #374151; font-size: 16px; line-height: 1.8; margin: 0 0 30px; padding-left: 20px;">
@@ -239,7 +239,7 @@ export async function sendApprovalEmail({
 
     const messageId = data?.id;
 
-    // Se temos leadId, registrar a notificacao no banco (como step 1)
+    // Se temos leadId, registrar a notificação no banco (como step 1)
     if (leadId && messageId) {
       await logEmailNotification({
         leadId,
@@ -257,8 +257,8 @@ export async function sendApprovalEmail({
 }
 
 /**
- * Envia email de follow-up (Email 2) para o lead que nao converteu
- * Usa template diferente do email de aprovacao
+ * Envia email de follow-up (Email 2) para o lead que não converteu
+ * Usa template diferente do email de aprovação
  */
 export async function sendFollowupEmail({
   to,
@@ -275,10 +275,10 @@ export async function sendFollowupEmail({
 
     if (!resend) {
       console.warn('Resend not configured - skipping email');
-      return { success: false, error: 'Servico de email nao configurado' };
+      return { success: false, error: 'Serviço de email não configurado' };
     }
 
-    // Buscar configuracoes do site e email de follow-up
+    // Buscar configurações do site e email de follow-up
     const settings = await getSiteSettings([
       'site_name',
       'email_from_name',
@@ -293,14 +293,14 @@ export async function sendFollowupEmail({
     const siteName = settings.site_name;
     const fromName = settings.email_from_name;
 
-    // Funcao para substituir variaveis
+    // Função para substituir variáveis
     const replaceVars = (text: string) =>
       text
         .replace(/\{\{site_name\}\}/g, siteName)
         .replace(/\{\{name\}\}/g, name)
         .replace(/\{\{email\}\}/g, to);
 
-    // Configuracoes do email com variaveis substituidas
+    // Configurações do email com variáveis substituídas
     const subject = replaceVars(settings.email_followup_subject);
     const greeting = replaceVars(settings.email_followup_greeting);
     const message = replaceVars(settings.email_followup_message);
@@ -310,7 +310,7 @@ export async function sendFollowupEmail({
 
     const fromEmail = process.env.RESEND_FROM_EMAIL || 'noreply@omocodoteamo.com.br';
 
-    // Gerar lista de beneficios em HTML
+    // Gerar lista de benefícios em HTML
     const benefitsHtml = benefits.map(b => `<li>${b}</li>`).join('\n                        ');
 
     const { data, error } = await resend.emails.send({
@@ -329,11 +329,11 @@ export async function sendFollowupEmail({
             <tr>
               <td align="center">
                 <table width="100%" max-width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-                  <!-- Header com urgencia -->
+                  <!-- Header com urgência -->
                   <tr>
                     <td style="background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%); padding: 40px 30px; text-align: center;">
                       <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: bold;">${siteName}</h1>
-                      <p style="color: #ffffff; margin: 10px 0 0; font-size: 14px; opacity: 0.9;">Ultima chance!</p>
+                      <p style="color: #ffffff; margin: 10px 0 0; font-size: 14px; opacity: 0.9;">Última chance!</p>
                     </td>
                   </tr>
 
@@ -347,14 +347,14 @@ export async function sendFollowupEmail({
                       </p>
 
                       <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 30px;">
-                        Veja o que voce esta perdendo:
+                        Veja o que você está perdendo:
                       </p>
 
                       <ul style="color: #374151; font-size: 16px; line-height: 1.8; margin: 0 0 30px; padding-left: 20px;">
                         ${benefitsHtml}
                       </ul>
 
-                      <!-- CTA Button com urgencia -->
+                      <!-- CTA Button com urgência -->
                       <table width="100%" cellpadding="0" cellspacing="0">
                         <tr>
                           <td align="center">
@@ -396,7 +396,7 @@ export async function sendFollowupEmail({
 
     const messageId = data?.id;
 
-    // Se temos leadId, registrar a notificacao no banco (como step 2)
+    // Se temos leadId, registrar a notificação no banco (como step 2)
     if (leadId && messageId) {
       await logEmailNotification({
         leadId,
@@ -431,7 +431,7 @@ export async function checkEmailOpened(leadId: string): Promise<boolean> {
       return false;
     }
 
-    // Verificar se status e 'opened' ou se metadata.opened e true
+    // Verificar se status é 'opened' ou se metadata.opened é true
     const metadata = data.metadata as Record<string, unknown> | null;
     return data.status === 'opened' || metadata?.opened === true;
   } catch {

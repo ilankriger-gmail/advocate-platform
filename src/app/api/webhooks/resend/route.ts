@@ -50,7 +50,7 @@ function verifyResendSignature(
   const webhookSecret = process.env.RESEND_WEBHOOK_SECRET;
 
   if (!webhookSecret) {
-    console.warn('[Webhook Resend] Secret nao configurado - aceitando requisicao');
+    console.warn('[Webhook Resend] Secret não configurado - aceitando requisição');
     return true; // Em desenvolvimento, aceitar sem validacao
   }
 
@@ -59,7 +59,7 @@ function verifyResendSignature(
   }
 
   try {
-    // Verificar se o timestamp nao e muito antigo (5 minutos)
+    // Verificar se o timestamp não é muito antigo (5 minutos)
     const timestampDate = new Date(timestamp);
     const now = new Date();
     const diffMinutes = (now.getTime() - timestampDate.getTime()) / (1000 * 60);
@@ -216,7 +216,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Endpoint de verificacao (GET) para configuracao do webhook
+// Endpoint de verificação (GET) para configuracao do webhook
 export async function GET(request: NextRequest) {
   const challenge = request.nextUrl.searchParams.get('challenge');
 

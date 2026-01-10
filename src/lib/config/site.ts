@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { cache } from 'react';
 
 /**
- * Chaves de configuração disponíveis no sistema
+ * Chavês de configuração disponíveis no sistema
  */
 export type SiteSettingKey =
   | 'site_name'
@@ -68,29 +68,29 @@ const DEFAULT_VALUES: Record<SiteSettingKey, string> = {
   meta_description: 'Comunidade oficial de O Moço do Te Amo | NextlevelDJ',
   email_from_name: 'Arena Te Amo',
   footer_text: 'O Moço do Te Amo - Arena Te Amo',
-  // Chaves de API (sem valor padrao - devem ser configuradas no banco)
+  // Chavês de API (sem valor padrão - devem ser configuradas no banco)
   openai_api_key: '',
   resend_api_key: '',
   meta_pixel_id: '',
   meta_access_token: '',
   whatsapp_phone_number_id: '',
   whatsapp_access_token: '',
-  // Email de aprovacao
-  email_approval_subject: 'Voce foi aprovado para o {{site_name}}!',
-  email_approval_greeting: 'Ola {{name}}!',
-  email_approval_message: 'Temos uma otima noticia! Sua solicitacao para fazer parte da comunidade foi APROVADA!',
-  email_approval_benefits: 'Desafios exclusivos,Eventos especiais,Premios incriveis,Conteudos exclusivos',
+  // Email de aprovação
+  email_approval_subject: 'Você foi aprovado para o {{site_name}}!',
+  email_approval_greeting: 'Olá {{name}}!',
+  email_approval_message: 'Temos uma ótima notícia! Sua solicitação para fazer parte da comunidade foi APROVADA!',
+  email_approval_benefits: 'Desafios exclusivos,Eventos especiais,Prêmios incríveis,Conteúdos exclusivos',
   email_approval_cta: 'Criar Minha Conta',
-  email_approval_footer: 'Te esperamos la!',
+  email_approval_footer: 'Te esperamos lá!',
   // Favicon
   favicon_url: '/favicon.svg',
   // Email 2 (follow-up)
-  email_followup_subject: 'Ainda da tempo de entrar no {{site_name}}!',
-  email_followup_greeting: 'Ola {{name}}!',
-  email_followup_message: 'Percebemos que voce ainda nao criou sua conta na nossa comunidade. Essa e sua ultima chance de garantir acesso a conteudos exclusivos, desafios e premios incriveis!',
-  email_followup_benefits: 'Conteudos exclusivos do criador,Desafios com premios reais,Comunidade engajada,Acesso antecipado a novidades',
+  email_followup_subject: 'Ainda dá tempo de entrar no {{site_name}}!',
+  email_followup_greeting: 'Olá {{name}}!',
+  email_followup_message: 'Percebemos que você ainda não criou sua conta na nossa comunidade. Essa é sua última chance de garantir acesso a conteúdos exclusivos, desafios e prêmios incríveis!',
+  email_followup_benefits: 'Conteúdos exclusivos do criador,Desafios com prêmios reais,Comunidade engajada,Acesso antecipado a novidades',
   email_followup_cta: 'Criar Minha Conta Agora',
-  email_followup_footer: 'Nao perca essa oportunidade unica!',
+  email_followup_footer: 'Não perca essa oportunidade única!',
 };
 
 /**
@@ -120,7 +120,7 @@ export const getSiteSetting = cache(async (key: SiteSettingKey): Promise<string>
 
     return data.value;
   } catch {
-    // Durante build estatico, cookies nao estao disponiveis
+    // Durante build estático, cookies não estão disponíveis
     return getDefaultValue(key);
   }
 });
@@ -144,7 +144,7 @@ export const getAllSiteSettings = cache(async (): Promise<SiteSetting[]> => {
 
     return (data as SiteSetting[]) || [];
   } catch {
-    // Durante build estatico, cookies nao estao disponiveis
+    // Durante build estático, cookies não estão disponíveis
     return [];
   }
 });
@@ -155,7 +155,7 @@ export const getAllSiteSettings = cache(async (): Promise<SiteSetting[]> => {
  * Retorna valores padrão durante build estático (sem cookies)
  */
 export const getSiteSettings = cache(async (keys: SiteSettingKey[]): Promise<Record<SiteSettingKey, string>> => {
-  // Retorna defaults - durante build ou se nao houver banco
+  // Retorna defaults - durante build ou se não houver banco
   const getDefaults = () => keys.reduce((acc, key) => {
     acc[key] = getDefaultValue(key);
     return acc;
@@ -182,8 +182,8 @@ export const getSiteSettings = cache(async (keys: SiteSettingKey[]): Promise<Rec
 
     return result;
   } catch {
-    // Durante build estatico, cookies nao estao disponiveis
-    // Retorna valores padrao silenciosamente
+    // Durante build estático, cookies não estão disponíveis
+    // Retorna valores padrão silenciosamente
     return getDefaults();
   }
 });

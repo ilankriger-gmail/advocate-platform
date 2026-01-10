@@ -62,7 +62,7 @@ export function LeadsList({ leads, currentStatus }: LeadsListProps) {
     router.refresh();
   };
 
-  // Aprovar e enviar notificacoes
+  // Aprovar e enviar notificações
   const handleBulkApproveAndNotify = async () => {
     setIsLoading(true);
     const result = await bulkApproveAndNotify(Array.from(selectedIds));
@@ -188,7 +188,7 @@ export function LeadsList({ leads, currentStatus }: LeadsListProps) {
         </div>
       )}
 
-      {/* Modal de confirmacao */}
+      {/* Modal de confirmação */}
       {showConfirmModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl p-6 w-full max-w-md">
@@ -199,7 +199,7 @@ export function LeadsList({ leads, currentStatus }: LeadsListProps) {
             </h3>
             <p className="text-sm text-gray-600 mb-4">
               {showConfirmModal === 'approveNotify'
-                ? `Voce esta prestes a aprovar ${selectedIds.size} lead(s) e enviar notificacoes de boas-vindas por email e WhatsApp. Deseja continuar?`
+                ? `Voce esta prestes a aprovar ${selectedIds.size} lead(s) e enviar notificações de boas-vindas por email e WhatsApp. Deseja continuar?`
                 : `Voce esta prestes a aprovar ${selectedIds.size} lead(s). Deseja continuar?`}
             </p>
 
@@ -207,7 +207,7 @@ export function LeadsList({ leads, currentStatus }: LeadsListProps) {
               <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 mb-4">
                 <p className="text-xs text-blue-700">
                   <strong>Nota:</strong> Os leads receberao um email com link para cadastro na plataforma.
-                  Se tiverem telefone cadastrado, tambem receberao uma mensagem no WhatsApp.
+                  Se tiverem telefone cadastrado, também receberao uma mensagem no WhatsApp.
                 </p>
               </div>
             )}

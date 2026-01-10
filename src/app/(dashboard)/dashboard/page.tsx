@@ -18,7 +18,7 @@ export default async function DashboardPage() {
     redirect('/login');
   }
 
-  // Buscar perfil do usuario
+  // Buscar perfil do usuário
   const { data: profile } = await supabase
     .from('users')
     .select('*')
@@ -31,8 +31,8 @@ export default async function DashboardPage() {
     getUserPosts(user.id, 3),
   ]);
 
-  // Dados do usuario
-  const name = profile?.full_name || user.user_metadata?.full_name || 'Usuario';
+  // Dados do usuário
+  const name = profile?.full_name || user.user_metadata?.full_name || 'Usuário';
   const email = user.email;
   const avatarUrl = profile?.avatar_url || user.user_metadata?.avatar_url;
   const isCreator = profile?.is_creator || false;

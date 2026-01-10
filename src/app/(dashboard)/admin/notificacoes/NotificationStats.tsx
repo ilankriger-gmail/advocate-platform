@@ -95,7 +95,7 @@ export function NotificationStats({ stats }: NotificationStatsProps) {
       <div className="col-span-2 sm:col-span-4 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl p-4 text-white">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h3 className="font-semibold">Sistema de Notificacoes Hibrido</h3>
+            <h3 className="font-semibold">Sistema de Notificações Hibrido</h3>
             <p className="text-sm text-white/80 mt-1">
               Email enviado 100% | WhatsApp apenas se email nao abrir em 24h
             </p>

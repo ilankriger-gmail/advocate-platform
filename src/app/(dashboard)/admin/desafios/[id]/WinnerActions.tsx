@@ -51,7 +51,7 @@ export function WinnerActions({ challengeId, prizeAmount }: WinnerActionsProps) 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Usuario do Instagram *
+                  Usuário do Instagram *
                 </label>
                 <Input
                   value={formData.instagramUsername}
@@ -63,7 +63,7 @@ export function WinnerActions({ challengeId, prizeAmount }: WinnerActionsProps) 
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Valor do Premio (R$)
+                  Valor do Prêmio (R$)
                 </label>
                 <Input
                   type="number"

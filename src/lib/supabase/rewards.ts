@@ -228,7 +228,7 @@ export async function canClaimReward(rewardId: string): Promise<{ canClaim: bool
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-    return { canClaim: false, reason: 'Usuario nao autenticado' };
+    return { canClaim: false, reason: 'Usuário não autenticado' };
   }
 
   const [rewardResult, coinsResult] = await Promise.all([
@@ -244,7 +244,7 @@ export async function canClaimReward(rewardId: string): Promise<{ canClaim: bool
   }
 
   if (!reward.is_active) {
-    return { canClaim: false, reason: 'Recompensa nao disponivel' };
+    return { canClaim: false, reason: 'Recompensa não disponível' };
   }
 
   if (reward.quantity_available <= 0) {

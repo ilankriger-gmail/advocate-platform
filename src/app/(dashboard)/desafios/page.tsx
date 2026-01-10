@@ -16,7 +16,7 @@ type Challenge = {
   num_winners?: number;
   goal_type?: 'repetitions' | 'time';
   goal_value?: number;
-  record_video_url?: string;
+  record_vídeo_url?: string;
   hashtag?: string;
   profile_to_tag?: string;
   coins_reward: number;
@@ -60,7 +60,7 @@ export default async function DesafiosPage() {
     .select('*')
     .order('created_at', { ascending: false });
 
-  // Buscar participacoes do usuario
+  // Buscar participações do usuário
   const { data: participations } = await supabase
     .from('challenge_participants')
     .select('challenge_id, status, result_value, coins_earned')
@@ -75,7 +75,7 @@ export default async function DesafiosPage() {
 
   const balance = userCoins?.balance || 0;
 
-  // Mapa de participacoes
+  // Mapa de participações
   const participationMap = new Map(
     (participations || []).map(p => [p.challenge_id, p])
   );
@@ -172,7 +172,7 @@ export default async function DesafiosPage() {
 
                     {challenge.ends_at && (
                       <div className="flex items-center gap-2 text-sm text-gray-500">
-                        📅 Valido ate: <strong>{formatDate(challenge.ends_at)}</strong>
+                        📅 Válido até: <strong>{formatDate(challenge.ends_at)}</strong>
                       </div>
                     )}
 
@@ -205,7 +205,7 @@ export default async function DesafiosPage() {
                                 <span>🎉</span>
                                 <div>
                                   <p className="font-medium text-gray-900 text-sm">
-                                    @{winner.instagram_username || 'Usuario'}
+                                    @{winner.instagram_username || 'Usuário'}
                                   </p>
                                   <p className="text-xs text-green-600">
                                     R$ {winner.prize_amount?.toFixed(2)}
@@ -258,7 +258,7 @@ export default async function DesafiosPage() {
         <Card className="p-12 text-center">
           <div className="text-5xl mb-4">🎯</div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Nenhum desafio disponivel
+            Nenhum desafio disponível
           </h2>
           <p className="text-gray-500">
             Novos desafios serao adicionados em breve!

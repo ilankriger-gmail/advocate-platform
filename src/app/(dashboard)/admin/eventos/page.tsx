@@ -72,11 +72,11 @@ export default async function AdminEventosPage() {
         </div>
       )}
 
-      {/* Proximos Eventos */}
+      {/* Próximos Eventos */}
       <div>
         <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
           <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-          Proximos Eventos ({upcomingEvents.length})
+          Próximos Eventos ({upcomingEvents.length})
         </h2>
 
         {upcomingEvents.length > 0 ? (
@@ -180,7 +180,7 @@ function EventAdminCard({ event }: EventAdminCardProps) {
       </div>
 
       <p className="text-sm text-gray-500 line-clamp-2 mb-3">
-        {event.description || 'Sem descricao'}
+        {event.description || 'Sem descrição'}
       </p>
 
       <div className="space-y-2 text-sm mb-4">

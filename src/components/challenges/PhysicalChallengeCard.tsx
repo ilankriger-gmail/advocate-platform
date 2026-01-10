@@ -11,7 +11,7 @@ interface Challenge {
   icon: string;
   goal_type: 'repetitions' | 'time' | null;
   goal_value: number | null;
-  record_video_url: string | null;
+  record_vídeo_url: string | null;
   hashtag: string | null;
   profile_to_tag: string | null;
   coins_reward: number;
@@ -96,10 +96,10 @@ export function PhysicalChallengeCard({
               </div>
             )}
 
-            {/* Link do video de recorde */}
-            {challenge.record_video_url && (
+            {/* Link do vídeo de recorde */}
+            {challenge.record_vídeo_url && (
               <a
-                href={challenge.record_video_url}
+                href={challenge.record_vídeo_url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 mt-3 text-sm text-indigo-600 hover:text-indigo-700"
@@ -108,7 +108,7 @@ export function PhysicalChallengeCard({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                Ver video do recorde
+                Ver vídeo do recorde
               </a>
             )}
 

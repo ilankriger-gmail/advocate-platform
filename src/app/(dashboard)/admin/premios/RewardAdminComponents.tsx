@@ -216,7 +216,7 @@ export function NewRewardForm() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Descricao</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
           <Textarea
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}

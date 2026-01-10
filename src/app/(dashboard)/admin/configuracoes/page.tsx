@@ -10,7 +10,7 @@ import { getSiteSetting } from '@/lib/config/site';
 import type { SiteSetting, SiteSettingKey } from '@/lib/config/site';
 import Image from 'next/image';
 
-export default function AdminConfiguracoesPage() {
+export default function AdminConfiguraçõesPage() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [loading, setLoading] = useState(true);
@@ -147,8 +147,8 @@ export default function AdminConfiguracoesPage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        title="Configuracoes do Site"
-        description="Personalize o nome, descricao e textos da sua comunidade"
+        title="Configurações do Site"
+        description="Personalize o nome, descrição e textos da sua comunidade"
       />
 
       {/* Mensagens de feedback */}
@@ -241,7 +241,7 @@ export default function AdminConfiguracoesPage() {
           APIs e Integracoes
         </h2>
         <p className="text-sm text-amber-700 mb-4">
-          Chaves de API para servicos externos. Mantenha essas informacoes seguras.
+          Chavês de API para serviços externos. Mantenha essas informações seguras.
         </p>
         <div className="space-y-4">
           {groupedSettings.apis.map(setting => (
@@ -281,7 +281,7 @@ export default function AdminConfiguracoesPage() {
           isLoading={saving || isPending}
           disabled={!hasChanges || saving || isPending}
         >
-          {hasChanges ? 'Salvar Alteracoes' : 'Sem alteracoes'}
+          {hasChanges ? 'Salvar Alteracoes' : 'Sem alterações'}
         </Button>
       </div>
     </div>
@@ -414,7 +414,7 @@ function FaviconUploader() {
 
     if (result.success) {
       setCurrentFavicon('/favicon.svg');
-      setMessage({ type: 'success', text: 'Favicon restaurado para o padrao!' });
+      setMessage({ type: 'success', text: 'Favicon restaurado para o padrão!' });
     } else {
       setMessage({ type: 'error', text: result.error || 'Erro ao restaurar favicon' });
     }
@@ -464,7 +464,7 @@ function FaviconUploader() {
             )}
           </div>
           <span className="text-xs text-gray-500">
-            {isCustomFavicon ? 'Personalizado' : 'Padrao'}
+            {isCustomFavicon ? 'Personalizado' : 'Padrão'}
           </span>
         </div>
 
@@ -525,7 +525,7 @@ function FaviconUploader() {
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
-                  Restaurar padrao
+                  Restaurar padrão
                 </>
               )}
             </button>

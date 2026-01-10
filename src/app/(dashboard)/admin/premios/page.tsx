@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { Card, Badge } from '@/components/ui';
 import { RewardActions, ClaimActions, NewRewardForm } from './RewardAdminComponents';
 
-export default async function AdminPremiosPage() {
+export default async function AdminPrêmiosPage() {
   const supabase = await createClient();
 
   // Buscar recompensas
@@ -44,7 +44,7 @@ export default async function AdminPremiosPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Gerenciar Recompensas</h1>
-          <p className="text-gray-500 text-sm mt-1">Gerencie premios e resgates dos usuarios</p>
+          <p className="text-gray-500 text-sm mt-1">Gerencie prêmios e resgates dos usuários</p>
         </div>
       </div>
 
@@ -90,7 +90,7 @@ export default async function AdminPremiosPage() {
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <p className="font-medium text-gray-900">{profile?.full_name || 'Usuario'}</p>
+                          <p className="font-medium text-gray-900">{profile?.full_name || 'Usuário'}</p>
                           <Badge
                             className={
                               claim.status === 'pending'
@@ -212,7 +212,7 @@ function RewardCard({ reward }: RewardCardProps) {
         </div>
 
         <p className="text-sm text-gray-500 line-clamp-2 mb-3">
-          {reward.description || 'Sem descricao'}
+          {reward.description || 'Sem descrição'}
         </p>
 
         <div className="flex items-center justify-between">

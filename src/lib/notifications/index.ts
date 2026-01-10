@@ -1,5 +1,5 @@
 /**
- * Exportacoes centralizadas do sistema de notificacoes
+ * Exportacoes centralizadas do sistema de notificações
  */
 
 // Email (Resend)

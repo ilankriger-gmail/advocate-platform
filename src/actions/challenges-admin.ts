@@ -206,7 +206,7 @@ export async function markWinnerPaid(winnerId: string): Promise<ActionResponse> 
       .eq('id', winnerId);
 
     if (error) {
-      return { error: 'Erro ao marcar premio como pago' };
+      return { error: 'Erro ao marcar prêmio como pago' };
     }
 
     revalidatePath('/admin/desafios');
@@ -232,7 +232,7 @@ export async function createChallenge(data: {
   // Para físico
   goal_type?: 'repetitions' | 'time' | null;
   goal_value?: number | null;
-  record_video_url?: string | null;
+  record_vídeo_url?: string | null;
   hashtag?: string | null;
   profile_to_tag?: string | null;
   // Controle
@@ -272,7 +272,7 @@ export async function createChallenge(data: {
         // Físico
         goal_type: data.goal_type || null,
         goal_value: data.goal_value || null,
-        record_video_url: data.record_video_url || null,
+        record_vídeo_url: data.record_vídeo_url || null,
         hashtag: data.hashtag || null,
         profile_to_tag: data.profile_to_tag || null,
         // Controle
@@ -412,7 +412,7 @@ export async function markPrizeSent(
       .eq('id', winnerId);
 
     if (error) {
-      return { error: 'Erro ao marcar premio como enviado' };
+      return { error: 'Erro ao marcar prêmio como enviado' };
     }
 
     revalidatePath('/admin/desafios');

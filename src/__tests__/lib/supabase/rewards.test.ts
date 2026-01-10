@@ -35,7 +35,7 @@ describe('canClaimReward', () => {
 
       // Assert
       expect(result.canClaim).toBe(false);
-      expect(result.reason).toBe('Usuario nao autenticado');
+      expect(result.reason).toBe('Usuário não autenticado');
     });
 
     it('deve retornar false quando recompensa não existe', async () => {
@@ -66,7 +66,7 @@ describe('canClaimReward', () => {
 
       // Assert
       expect(result.canClaim).toBe(false);
-      expect(result.reason).toBe('Recompensa nao disponivel');
+      expect(result.reason).toBe('Recompensa não disponível');
     });
 
     it('deve retornar false quando estoque está esgotado', async () => {
@@ -172,7 +172,7 @@ describe('canClaimReward', () => {
 
       // Assert: Deve falhar na autenticação, não na recompensa
       expect(result.canClaim).toBe(false);
-      expect(result.reason).toBe('Usuario nao autenticado');
+      expect(result.reason).toBe('Usuário não autenticado');
     });
 
     it('deve validar estoque antes de saldo', async () => {
@@ -208,7 +208,7 @@ describe('canClaimReward', () => {
 
       // Assert: Deve falhar no status antes de verificar estoque
       expect(result.canClaim).toBe(false);
-      expect(result.reason).toBe('Recompensa nao disponivel');
+      expect(result.reason).toBe('Recompensa não disponível');
     });
   });
 

@@ -318,7 +318,7 @@ export interface Challenge {
   // Para físico
   goal_type: 'repetitions' | 'time' | null;
   goal_value: number | null;
-  record_video_url: string | null;
+  record_vídeo_url: string | null;
   hashtag: string | null;
   profile_to_tag: string | null;
   coins_reward: number;
@@ -334,7 +334,7 @@ export interface ChallengeParticipant {
   challenge_id: string;
   user_id: string;
   result_value: number | null;
-  video_proof_url: string | null;
+  vídeo_proof_url: string | null;
   social_media_url: string | null;
   status: ParticipationStatus;
   approved_by: string | null;
@@ -528,7 +528,7 @@ export interface NpsLead {
   ai_strengths: string[] | null;
   ai_concerns: string[] | null;
   ai_analyzed_at: string | null;
-  // Campos de sequencia de emails
+  // Campos de sequência de emails
   sequence_step: number;
   converted: boolean;
   converted_at: string | null;

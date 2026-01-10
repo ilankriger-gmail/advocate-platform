@@ -31,7 +31,7 @@ export function ChallengeParticipationModal({
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     resultValue: '',
-    videoProofUrl: '',
+    vídeoProofUrl: '',
     socialMediaUrl: '',
   });
 
@@ -41,7 +41,7 @@ export function ChallengeParticipationModal({
 
     const resultValue = parseInt(formData.resultValue);
     if (isNaN(resultValue) || resultValue <= 0) {
-      setError('Informe um valor valido');
+      setError('Informe um valor válido');
       return;
     }
 
@@ -50,7 +50,7 @@ export function ChallengeParticipationModal({
     const result = await participateInChallenge({
       challengeId: challenge.id,
       resultValue,
-      videoProofUrl: formData.videoProofUrl || undefined,
+      vídeoProofUrl: formData.vídeoProofUrl || undefined,
       socialMediaUrl: formData.socialMediaUrl || undefined,
     });
 
@@ -98,19 +98,19 @@ export function ChallengeParticipationModal({
           />
         </div>
 
-        {/* Link do video */}
+        {/* Link do vídeo */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Link do video (YouTube, Instagram, TikTok)
+            Link do vídeo (YouTube, Instagram, TikTok)
           </label>
           <Input
             type="url"
-            value={formData.videoProofUrl}
-            onChange={(e) => setFormData({ ...formData, videoProofUrl: e.target.value })}
+            value={formData.vídeoProofUrl}
+            onChange={(e) => setFormData({ ...formData, vídeoProofUrl: e.target.value })}
             placeholder="https://..."
           />
           <p className="text-xs text-gray-500 mt-1">
-            Cole o link do video onde voce gravou o desafio
+            Cole o link do vídeo onde você gravou o desafio
           </p>
         </div>
 

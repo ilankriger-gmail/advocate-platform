@@ -45,7 +45,7 @@ export function Header({ onMenuClick, showMenuButton = false, className, siteNam
     return null;
   }
 
-  const userName = user?.user_metadata?.full_name || 'Usuario';
+  const userName = user?.user_metadata?.full_name || 'Usuário';
   const userAvatar = user?.user_metadata?.avatar_url;
 
   return (
@@ -108,16 +108,16 @@ export function Header({ onMenuClick, showMenuButton = false, className, siteNam
                     Meu Perfil
                   </Link>
                   <Link
-                    href="/premios"
+                    href="/prêmios"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                   >
-                    Meus Premios
+                    Meus Prêmios
                   </Link>
                   <Link
                     href="/perfil/editar"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                   >
-                    Configuracoes
+                    Configurações
                   </Link>
                   {showAdminLink && (
                     <>

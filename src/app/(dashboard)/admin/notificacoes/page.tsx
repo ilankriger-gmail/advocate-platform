@@ -6,8 +6,8 @@ import { SequenceStats } from './SequenceStats';
 import { getSequenceStats } from '@/actions/leads';
 
 export const metadata = {
-  title: 'Notificacoes | Admin',
-  description: 'Dashboard de notificacoes do sistema hibrido',
+  title: 'Notificações | Admin',
+  description: 'Dashboard de notificações do sistema hibrido',
 };
 
 interface NotificationsPageProps {
@@ -58,7 +58,7 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
     .select('id')
     .eq('status', 'pending');
 
-  // Buscar estatisticas da sequencia de conversao
+  // Buscar estatisticas da sequência de conversão
   const sequenceResult = await getSequenceStats();
   const sequenceStats = sequenceResult.data || {
     totalApproved: 0,
@@ -81,7 +81,7 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
     pendingTasks: pendingTasks?.length || 0,
   };
 
-  // Buscar notificacoes recentes
+  // Buscar notificações recentes
   let query = supabase
     .from('notifications_log')
     .select(`
@@ -111,14 +111,14 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Notificacoes</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Notificações</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Dashboard do sistema de notificacoes hibrido (Email + WhatsApp)
+            Dashboard do sistema de notificações hibrido (Email + WhatsApp)
           </p>
         </div>
       </div>
 
-      {/* Estatisticas de Sequencia */}
+      {/* Estatisticas de Sequência */}
       <SequenceStats stats={sequenceStats} />
 
       {/* Estatisticas de Envio */}
@@ -127,7 +127,7 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
         <NotificationStats stats={stats} />
       </div>
 
-      {/* Lista de Notificacoes */}
+      {/* Lista de Notificações */}
       <NotificationsList
         notifications={notifications || []}
         channelFilter={channelFilter}

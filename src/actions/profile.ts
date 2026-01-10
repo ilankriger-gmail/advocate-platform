@@ -6,7 +6,7 @@ import { ActionResponse } from '@/types/action';
 import type { UpdateProfileData } from '@/types/profile';
 
 /**
- * Atualizar perfil do usuario
+ * Atualizar perfil do usuário
  */
 export async function updateProfile(data: UpdateProfileData): Promise<ActionResponse> {
   try {
@@ -14,7 +14,7 @@ export async function updateProfile(data: UpdateProfileData): Promise<ActionResp
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      return { error: 'Usuario nao autenticado' };
+      return { error: 'Usuário não autenticado' };
     }
 
     const { error } = await supabase
@@ -38,7 +38,7 @@ export async function updateProfile(data: UpdateProfileData): Promise<ActionResp
 }
 
 /**
- * Buscar perfil atual do usuario
+ * Buscar perfil atual do usuário
  */
 export async function getCurrentProfile() {
   try {
@@ -64,7 +64,7 @@ export async function getCurrentProfile() {
 }
 
 /**
- * Buscar estatisticas do usuario
+ * Buscar estatisticas do usuário
  */
 export async function getProfileStats() {
   try {
@@ -96,7 +96,7 @@ export async function getProfileStats() {
 }
 
 /**
- * Buscar perfil publico de um usuario
+ * Buscar perfil público de um usuário
  */
 export async function getPublicProfile(userId: string) {
   try {

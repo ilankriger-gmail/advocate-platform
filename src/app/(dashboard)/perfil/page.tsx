@@ -32,10 +32,10 @@ export default async function PerfilPage() {
   // Buscar estatisticas
   const stats = await getUserStats(user.id);
 
-  // Buscar posts do usuario
+  // Buscar posts do usuário
   const posts = await getPosts({ userId: user.id });
 
-  const name = profile?.full_name || user.user_metadata?.full_name || 'Usuario';
+  const name = profile?.full_name || user.user_metadata?.full_name || 'Usuário';
   const avatarUrl = profile?.avatar_url || user.user_metadata?.avatar_url;
   const isCreator = profile?.is_creator || false;
   const balance = userCoins?.balance || 0;
@@ -156,7 +156,7 @@ export default async function PerfilPage() {
                   <p className="text-indigo-100 text-sm">Seus corações</p>
                   <p className="text-2xl font-bold">{balance} ❤️</p>
                 </div>
-                <Link href="/premios" className="text-white/80 hover:text-white text-sm underline">
+                <Link href="/prêmios" className="text-white/80 hover:text-white text-sm underline">
                   Ver prêmios
                 </Link>
               </div>
