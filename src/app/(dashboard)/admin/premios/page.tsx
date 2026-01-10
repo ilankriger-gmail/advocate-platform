@@ -149,7 +149,7 @@ export default async function AdminPrêmiosPage() {
         </h2>
 
         {activeRewards.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="space-y-4">
             {activeRewards.map((reward) => (
               <RewardCard key={reward.id} reward={reward} />
             ))}
@@ -169,7 +169,7 @@ export default async function AdminPrêmiosPage() {
             Recompensas Inativas ({inactiveRewards.length})
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="space-y-4">
             {inactiveRewards.map((reward) => (
               <RewardCard key={reward.id} reward={reward} />
             ))}

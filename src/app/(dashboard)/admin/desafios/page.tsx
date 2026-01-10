@@ -56,7 +56,7 @@ export default async function AdminDesafiosPage() {
         </h2>
 
         {activeChallenges.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-4">
             {activeChallenges.map((challenge) => (
               <ChallengeAdminCard key={challenge.id} challenge={challenge} />
             ))}
@@ -76,7 +76,7 @@ export default async function AdminDesafiosPage() {
             Desafios Inativos ({inactiveChallenges.length})
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-4">
             {inactiveChallenges.map((challenge) => (
               <ChallengeAdminCard key={challenge.id} challenge={challenge} />
             ))}
