@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { Card, Button, Badge } from '@/components/ui';
+import { ChallengeDeleteButton } from './ChallengeDeleteButton';
 
 export default async function AdminDesafiosPage() {
   const supabase = await createClient();

@@ -546,3 +546,70 @@ export async function registerWinner(data: {
     return { error: 'Erro interno do servidor' };
   }
 }
+
+/**
+ * Deletar desafio (admin)
+ * Só permite deletar se não houver participantes ou ganhadores
+ */
+export async function deleteChallenge(challengeId: string): Promise<ActionResponse> {
+  try {
+    const supabase = await createClient();
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return { error: 'Usuário não autenticado' };
+    }
+
+    // Verificar se e admin/creator
+    const { data: profile } = await supabase
+      .from('users')
+      .select('role, is_creator')
+      .eq('id', user.id)
+      .single();
+
+    if (!profile || (profile.role !== 'admin' && !profile.is_creator)) {
+      return { error: 'Acesso não autorizado' };
+    }
+
+    // Verificar se existem participantes
+    const { count: participantsCount } = await supabase
+      .from('challenge_participants')
+      .select('*', { count: 'exact', head: true })
+      .eq('challenge_id', challengeId);
+
+    if (participantsCount && participantsCount > 0) {
+      return {
+        error: `Não é possível excluir. Existem ${participantsCount} participante(s) vinculado(s).`
+      };
+    }
+
+    // Verificar se existem ganhadores
+    const { count: winnersCount } = await supabase
+      .from('challenge_winners')
+      .select('*', { count: 'exact', head: true })
+      .eq('challenge_id', challengeId);
+
+    if (winnersCount && winnersCount > 0) {
+      return {
+        error: `Não é possível excluir. Existem ${winnersCount} ganhador(es) vinculado(s).`
+      };
+    }
+
+    // Deletar o desafio
+    const { error } = await supabase
+      .from('challenges')
+      .delete()
+      .eq('id', challengeId);
+
+    if (error) {
+      console.error('Error deleting challenge:', error);
+      return { error: 'Erro ao excluir desafio' };
+    }
+
+    revalidatePath('/desafios');
+    revalidatePath('/admin/desafios');
+    return { success: true };
+  } catch {
+    return { error: 'Erro interno do servidor' };
+  }
+}
