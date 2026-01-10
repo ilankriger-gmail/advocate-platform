@@ -10,12 +10,43 @@ interface LeadCardProps {
   lead: NpsLead;
 }
 
+// Tipos de feedback
+type FeedbackType = 'success' | 'error' | null;
+
 export function LeadCard({ lead }: LeadCardProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const [expanded, setExpanded] = useState(false);
+  const [feedback, setFeedback] = useState<{ type: FeedbackType; message: string } | null>(null);
+
+  // Mostrar feedback temporario
+  const showFeedback = (type: FeedbackType, message: string) => {
+    setFeedback({ type, message });
+    setTimeout(() => setFeedback(null), 4000);
+  };
+
+  // Formatar data/hora
+  const formatDateTime = (date: string | null) => {
+    if (!date) return null;
+    return new Date(date).toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  // Obter nome do email baseado no sequence_step
+  const getEmailStepName = (step: number | null) => {
+    switch (step) {
+      case 1: return 'Email 1 (Aprovacao)';
+      case 2: return 'Email 2 (Follow-up)';
+      case 3: return 'WhatsApp';
+      default: return 'Nenhum';
+    }
+  };
 
   // Cor do badge baseada no score NPS
   const getScoreBadgeColor = (score: number) => {
@@ -199,28 +230,94 @@ export function LeadCard({ lead }: LeadCardProps) {
           </div>
         )}
 
+        {/* Feedback de sucesso/erro */}
+        {feedback && (
+          <div className={`mb-3 p-3 rounded-lg text-sm flex items-center gap-2 ${
+            feedback.type === 'success'
+              ? 'bg-green-50 border border-green-200 text-green-700'
+              : 'bg-red-50 border border-red-200 text-red-700'
+          }`}>
+            {feedback.type === 'success' ? (
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+            ) : (
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+            )}
+            {feedback.message}
+          </div>
+        )}
+
         {/* Notificações enviadas e acoes */}
         {lead.status === 'approved' && (
           <div className="space-y-2">
-            {/* Status das notificações */}
-            <div className="flex gap-2">
-              {lead.email_sent && (
-                <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full">
-                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                  Email enviado
-                </span>
-              )}
-              {lead.whatsapp_sent && (
-                <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-50 text-green-700 text-xs rounded-full">
-                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                  WhatsApp enviado
-                </span>
-              )}
-            </div>
+            {/* Status detalhado das notificações */}
+            {(lead.email_sent || lead.whatsapp_sent || lead.sequence_step) && (
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 space-y-2">
+                <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  Status da Sequencia
+                </div>
+
+                {/* Etapa atual */}
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-gray-600">Etapa atual:</span>
+                  <span className="font-medium text-gray-900">{getEmailStepName(lead.sequence_step)}</span>
+                </div>
+
+                {/* Email enviado */}
+                {lead.email_sent && (
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full">
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                      Email enviado
+                    </span>
+                    {lead.email_sent_at && (
+                      <span className="text-xs text-gray-500">
+                        em {formatDateTime(lead.email_sent_at)}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {/* WhatsApp enviado */}
+                {lead.whatsapp_sent && (
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-50 text-green-700 text-xs rounded-full">
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                      WhatsApp enviado
+                    </span>
+                    {lead.whatsapp_sent_at && (
+                      <span className="text-xs text-gray-500">
+                        em {formatDateTime(lead.whatsapp_sent_at)}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {/* Conversao */}
+                {lead.converted && (
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-purple-50 text-purple-700 text-xs rounded-full">
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      Convertido
+                    </span>
+                    {lead.converted_at && (
+                      <span className="text-xs text-gray-500">
+                        em {formatDateTime(lead.converted_at)}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Botoes de notificacao */}
             {(!lead.email_sent || (!lead.whatsapp_sent && lead.phone)) && (
@@ -234,8 +331,9 @@ export function LeadCard({ lead }: LeadCardProps) {
                       const result = await sendLeadEmailNotification(lead.id);
                       setIsLoading(false);
                       if (result.error) {
-                        alert(result.error);
+                        showFeedback('error', result.error);
                       } else {
+                        showFeedback('success', 'Email 1 (Aprovacao) enviado com sucesso!');
                         router.refresh();
                       }
                     }}
@@ -245,7 +343,7 @@ export function LeadCard({ lead }: LeadCardProps) {
                     <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
-                    Enviar Email
+                    Enviar Email 1
                   </Button>
                 )}
                 {!lead.whatsapp_sent && lead.phone && (
@@ -257,8 +355,9 @@ export function LeadCard({ lead }: LeadCardProps) {
                       const result = await sendLeadWhatsAppNotification(lead.id);
                       setIsLoading(false);
                       if (result.error) {
-                        alert(result.error);
+                        showFeedback('error', result.error);
                       } else {
+                        showFeedback('success', 'WhatsApp enviado com sucesso!');
                         router.refresh();
                       }
                     }}

@@ -88,11 +88,16 @@ const icons: Record<string, React.ReactNode> = {
 
 export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
   const pathname = usePathname();
-  const { user, profile } = useAuth();
+  const { user, profile, isLoading } = useAuth();
 
-  // Mostrar menu admin se tiver role='admin' OU is_creator=true
-  // Verificação agora feita via perfil do Supabase em vez de localStorage inseguro
-  const showAdminMenu = profile?.role === 'admin' || profile?.is_creator === true;
+  // Verificar se está em rota de admin (usado para manter menu visível durante carregamento)
+  const isInAdminRoute = pathname?.startsWith('/admin');
+
+  // Mostrar menu admin se:
+  // 1. Tem role='admin' OU is_creator=true (via profile)
+  // 2. OU se está em rota de admin (já foi autorizado pelo middleware/AdminAuthCheck)
+  // 3. OU se ainda está carregando e está em rota admin (evita flash)
+  const showAdminMenu = profile?.role === 'admin' || profile?.is_creator === true || isInAdminRoute;
 
   return (
     <>
