@@ -2,10 +2,12 @@
 
 import { useState } from 'react';
 import { Card, Button, Textarea, Input, Select } from '@/components/ui';
+import { useToastHelpers } from '@/components/ui/Toast';
 import { usePosts } from '@/hooks';
 
 export function CreatePostForm() {
   const { create, isPending, error } = usePosts();
+  const toast = useToastHelpers();
   const [isExpanded, setIsExpanded] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
@@ -25,8 +27,33 @@ export function CreatePostForm() {
     });
 
     if (result.success) {
-      setFormData({ title: '', content: '', media_url: '', type: 'community' });
-      setIsExpanded(false);
+      // Mostrar toast baseado no status de moderação
+      if (result.moderationStatus === 'blocked') {
+        toast.error(
+          'Publicação não permitida',
+          result.message || 'Conteúdo viola nossas diretrizes.'
+        );
+      } else if (result.contentCategory === 'help_request') {
+        toast.info(
+          'Pedido de Ajuda',
+          'Sua publicação aparecerá na aba "Pedidos de Ajuda" do feed.'
+        );
+        setFormData({ title: '', content: '', media_url: '', type: 'community' });
+        setIsExpanded(false);
+      } else if (result.moderationStatus === 'pending_review') {
+        toast.info(
+          'Em revisão',
+          result.message || 'Sua publicação será analisada e publicada em breve.'
+        );
+        setFormData({ title: '', content: '', media_url: '', type: 'community' });
+        setIsExpanded(false);
+      } else {
+        toast.success('Publicado!', 'Sua publicação foi criada com sucesso.');
+        setFormData({ title: '', content: '', media_url: '', type: 'community' });
+        setIsExpanded(false);
+      }
+    } else if (result.error) {
+      toast.error('Erro', result.error);
     }
   };
 

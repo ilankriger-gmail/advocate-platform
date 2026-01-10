@@ -396,6 +396,51 @@ export async function rejectPost(postId: string, reason: string): Promise<Action
     }
 
     revalidatePath('/feed');
+    revalidatePath('/admin/moderacao');
+    return { success: true };
+  } catch {
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+/**
+ * Aprovar post bloqueado pela moderacao automatica (apenas admin)
+ * Usado para liberar falsos positivos da moderacao com IA
+ */
+export async function approveBlockedPost(postId: string): Promise<ActionResponse> {
+  try {
+    const supabase = await createClient();
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return { error: 'Usuário não autenticado' };
+    }
+
+    // Atualizar post para aprovado
+    const { error } = await supabase
+      .from('posts')
+      .update({
+        status: 'approved',
+        approved_by: user.id,
+        approved_at: new Date().toISOString(),
+        moderation_reviewed_at: new Date().toISOString(),
+      })
+      .eq('id', postId);
+
+    if (error) {
+      return { error: 'Erro ao aprovar post' };
+    }
+
+    // Atualizar log de moderacao
+    await supabase
+      .from('moderation_logs')
+      .update({
+        decision: 'approved',
+      })
+      .eq('post_id', postId);
+
+    revalidatePath('/feed');
+    revalidatePath('/admin/moderacao');
     return { success: true };
   } catch {
     return { error: 'Erro interno do servidor' };

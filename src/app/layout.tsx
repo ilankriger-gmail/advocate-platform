@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { QueryProvider } from '@/providers/QueryProvider';
+import { ToastProvider } from '@/components/ui/Toast';
 import { Header } from '@/components/layout/Header';
 import { getSiteSettings } from '@/lib/config/site';
 
@@ -39,10 +40,12 @@ export default async function RootLayout({
       <body className={inter.className}>
         <QueryProvider>
           <AuthProvider>
-            <Header logoUrl={logoUrl} siteName={siteName} />
-            <main>
-              {children}
-            </main>
+            <ToastProvider>
+              <Header logoUrl={logoUrl} siteName={siteName} />
+              <main>
+                {children}
+              </main>
+            </ToastProvider>
           </AuthProvider>
         </QueryProvider>
       </body>

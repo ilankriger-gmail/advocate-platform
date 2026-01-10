@@ -125,7 +125,15 @@ export function usePosts() {
       router.refresh();
     });
 
-    return { success: true, data: result.data };
+    // Retornar informações completas de moderação para o componente usar Toast
+    return {
+      success: true,
+      data: result.data,
+      message: result.message,
+      moderationStatus: result.moderationStatus,
+      contentCategory: result.contentCategory,
+      blockedReasons: result.blockedReasons,
+    };
   }, [router]);
 
   /**

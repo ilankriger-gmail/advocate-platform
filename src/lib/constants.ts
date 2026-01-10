@@ -38,6 +38,7 @@ export const POST_STATUS = {
   pending: { label: 'Pendente', color: 'yellow', bgColor: 'bg-yellow-100', textColor: 'text-yellow-700' },
   approved: { label: 'Aprovado', color: 'green', bgColor: 'bg-green-100', textColor: 'text-green-700' },
   rejected: { label: 'Rejeitado', color: 'red', bgColor: 'bg-red-100', textColor: 'text-red-700' },
+  blocked: { label: 'Bloqueado', color: 'red', bgColor: 'bg-red-100', textColor: 'text-red-700' },
 } as const;
 
 // Tipos de post
@@ -82,6 +83,7 @@ export const MAIN_NAV = [
 // Navegação do criador/admin (adicional)
 export const CREATOR_NAV = [
   { href: '/admin', label: 'Painel Admin', icon: 'Shield' },
+  { href: '/admin/moderacao', label: 'Moderação', icon: 'Shield' },
   { href: '/admin/posts', label: 'Moderar Posts', icon: 'FileText' },
   { href: '/admin/desafios', label: 'Desafios', icon: 'Target' },
   { href: '/admin/eventos', label: 'Eventos', icon: 'Calendar' },
