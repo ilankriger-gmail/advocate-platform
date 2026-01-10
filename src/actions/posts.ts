@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { ActionResponse } from '@/types/action';
 import type { CreatePostData, UpdatePostData } from '@/types/post';
 import type { Post, PostComment } from '@/lib/supabase/types';
+import { moderatePost, getBlockedMessage, getPendingReviewMessage } from '@/lib/moderation';
 
 /**
  * Remove links clicáveis do HTML, mantendo apenas o texto
@@ -61,14 +62,62 @@ export async function createPost(data: CreatePostData): Promise<ActionResponse<P
       return { error: 'Apenas criadores podem adicionar embeds de YouTube e Instagram' };
     }
 
-    // Criadores têm posts auto-aprovados
-    const postStatus = isCreator ? 'approved' : 'pending';
-    console.log('createPost - postStatus:', postStatus);
-
     // Remover links do conteúdo se não for criador (segurança adicional)
     const finalContent = isCreator
       ? (data.content || null)
       : stripLinks(data.content || '') || null;
+
+    // ============================================
+    // MODERAÇÃO AUTOMÁTICA COM IA
+    // ============================================
+    let postStatus: 'approved' | 'pending' = isCreator ? 'approved' : 'pending';
+    let moderationScore: number | null = null;
+    let moderationFlags: Record<string, unknown> | null = null;
+    let contentCategory: 'normal' | 'money_request' = 'normal';
+    let moderationMessage: string | null = null;
+
+    // Executar moderação para todos os posts (incluindo criadores)
+    try {
+      const moderationResult = await moderatePost({
+        title: data.title || '',
+        content: finalContent || '',
+        images: Array.isArray(data.media_url) ? data.media_url : data.media_url ? [data.media_url] : undefined,
+      });
+
+      moderationScore = moderationResult.overall_score;
+      contentCategory = moderationResult.content_category;
+      moderationFlags = {
+        image: moderationResult.image_result?.flags || null,
+        toxicity: moderationResult.toxicity_result?.scores || null,
+        classification: moderationResult.classification_result || null,
+      };
+
+      console.log('[Moderation] Resultado:', {
+        decision: moderationResult.decision,
+        score: moderationScore,
+        category: contentCategory,
+        blocked_reasons: moderationResult.blocked_reasons,
+      });
+
+      // Aplicar decisão da moderação
+      if (moderationResult.decision === 'blocked') {
+        // Conteúdo bloqueado - não publicar
+        return {
+          error: getBlockedMessage(moderationResult.blocked_reasons),
+        };
+      } else if (moderationResult.decision === 'pending_review') {
+        // Precisa revisão manual - mesmo criadores
+        postStatus = 'pending';
+        moderationMessage = getPendingReviewMessage();
+      }
+      // Se 'approved', mantém o status original (approved para criadores, pending para comunidade)
+
+    } catch (moderationError) {
+      // Em caso de erro na moderação, continua com fluxo normal
+      console.error('[Moderation] Erro:', moderationError);
+    }
+
+    console.log('createPost - postStatus:', postStatus, 'contentCategory:', contentCategory);
 
     const { data: post, error } = await supabase
       .from('posts')
@@ -82,6 +131,9 @@ export async function createPost(data: CreatePostData): Promise<ActionResponse<P
         instagram_url: data.instagram_url || null,
         type: data.type,
         status: postStatus,
+        moderation_score: moderationScore,
+        moderation_flags: moderationFlags,
+        content_category: contentCategory,
       })
       .select()
       .single();
@@ -91,10 +143,26 @@ export async function createPost(data: CreatePostData): Promise<ActionResponse<P
       return { error: 'Erro ao criar post' };
     }
 
+    // Registrar log de moderação
+    if (moderationScore !== null) {
+      await supabase.from('moderation_logs').insert({
+        post_id: post.id,
+        decision: postStatus === 'pending' ? 'pending_review' : 'approved',
+        score: moderationScore,
+        flags: moderationFlags || {},
+        content_category: contentCategory,
+      });
+    }
+
     revalidatePath('/');
     revalidatePath('/feed');
     revalidatePath('/dashboard');
     revalidatePath('/perfil');
+
+    // Retornar com mensagem de moderação se houver
+    if (moderationMessage) {
+      return { success: true, data: post, message: moderationMessage };
+    }
     return { success: true, data: post };
   } catch {
     return { error: 'Erro interno do servidor' };

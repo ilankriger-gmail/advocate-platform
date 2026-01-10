@@ -29,9 +29,12 @@ export type ActionResponse<T = void> = {
   /** Mensagem de erro, quando houver falha */
   error?: string;
 
-  /** Indicador de sucesso da operacao */
+  /** Indicador de sucesso da operação */
   success?: boolean;
 
-  /** Dados retornados pela acao (tipados conforme T) */
+  /** Dados retornados pela ação (tipados conforme T) */
   data?: T;
+
+  /** Mensagem informativa (ex: moderação pendente) */
+  message?: string;
 };
