@@ -10,7 +10,7 @@ export default function AdminLayout({
     <AdminAuthCheck>
       <div className="space-y-6">
         {/* Header Admin */}
-        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl p-4 text-white">
+        <div className="bg-gradient-to-r from-gray-700 to-gray-800 rounded-xl p-4 text-white">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-white/20 rounded-lg">
@@ -21,12 +21,12 @@ export default function AdminLayout({
               </div>
               <div>
                 <h1 className="text-xl font-bold">Painel Administrativo</h1>
-                <p className="text-indigo-100 text-sm">Gerencie sua plataforma</p>
+                <p className="text-gray-300 text-sm">Gerencie sua plataforma</p>
               </div>
             </div>
             <Link
               href="/admin/configuracoes"
-              className="text-indigo-100 text-sm hover:text-white bg-white/10 px-3 py-1 rounded-md"
+              className="text-gray-300 text-sm hover:text-white bg-white/10 px-3 py-1 rounded-md"
             >
               Configuracoes
             </Link>

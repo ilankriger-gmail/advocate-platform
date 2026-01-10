@@ -112,7 +112,7 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
           <Link
             href="/perfil/novo-post"
             onClick={onClose}
-            className="flex items-center justify-center gap-2 w-full px-4 py-3 mb-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+            className="flex items-center justify-center gap-2 w-full px-4 py-3 mb-4 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition-colors font-medium"
           >
             {icons.Plus}
             Criar Post
@@ -132,11 +132,11 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
                   className={cn(
                     'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
                     isActive
-                      ? 'bg-indigo-50 text-indigo-700'
+                      ? 'bg-gray-200 text-gray-900'
                       : 'text-gray-700 hover:bg-gray-100'
                   )}
                 >
-                  <span className={isActive ? 'text-indigo-600' : 'text-gray-500'}>
+                  <span className={isActive ? 'text-gray-700' : 'text-gray-500'}>
                     {icons[item.icon]}
                   </span>
                   {item.label}
@@ -164,11 +164,11 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
                       className={cn(
                         'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
                         isActive
-                          ? 'bg-indigo-50 text-indigo-700'
+                          ? 'bg-gray-200 text-gray-900'
                           : 'text-gray-700 hover:bg-gray-100'
                       )}
                     >
-                      <span className={isActive ? 'text-indigo-600' : 'text-gray-500'}>
+                      <span className={isActive ? 'text-gray-700' : 'text-gray-500'}>
                         {icons[item.icon]}
                       </span>
                       {item.label}
