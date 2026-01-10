@@ -122,17 +122,45 @@ export async function sendApprovalEmail({
       return { success: false, error: 'Servico de email nao configurado' };
     }
 
-    // Buscar configuracoes do site
-    const settings = await getSiteSettings(['site_name', 'email_from_name']);
+    // Buscar configuracoes do site e email
+    const settings = await getSiteSettings([
+      'site_name',
+      'email_from_name',
+      'email_approval_subject',
+      'email_approval_greeting',
+      'email_approval_message',
+      'email_approval_benefits',
+      'email_approval_cta',
+      'email_approval_footer',
+    ]);
+
     const siteName = settings.site_name;
     const fromName = settings.email_from_name;
 
+    // Funcao para substituir variaveis
+    const replaceVars = (text: string) =>
+      text
+        .replace(/\{\{site_name\}\}/g, siteName)
+        .replace(/\{\{name\}\}/g, name)
+        .replace(/\{\{email\}\}/g, to);
+
+    // Configuracoes do email com variaveis substituidas
+    const subject = replaceVars(settings.email_approval_subject);
+    const greeting = replaceVars(settings.email_approval_greeting);
+    const message = replaceVars(settings.email_approval_message);
+    const benefits = settings.email_approval_benefits.split(',').map(b => b.trim());
+    const ctaText = settings.email_approval_cta;
+    const footer = settings.email_approval_footer;
+
     const fromEmail = process.env.RESEND_FROM_EMAIL || 'noreply@omocodoteamo.com.br';
+
+    // Gerar lista de beneficios em HTML
+    const benefitsHtml = benefits.map(b => `<li>${b}</li>`).join('\n                        ');
 
     const { data, error } = await resend.emails.send({
       from: `${fromName} <${fromEmail}>`,
       to: [to],
-      subject: `Voce foi aprovado para o ${siteName}!`,
+      subject,
       html: `
         <!DOCTYPE html>
         <html>
@@ -155,10 +183,10 @@ export async function sendApprovalEmail({
                   <!-- Content -->
                   <tr>
                     <td style="padding: 40px 30px;">
-                      <h2 style="color: #111827; margin: 0 0 20px; font-size: 24px;">Ola ${name}!</h2>
+                      <h2 style="color: #111827; margin: 0 0 20px; font-size: 24px;">${greeting}</h2>
 
                       <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 20px;">
-                        Temos uma otima noticia! Sua solicitacao para fazer parte da comunidade <strong>${siteName}</strong> foi <strong style="color: #10b981;">APROVADA</strong>!
+                        ${message}
                       </p>
 
                       <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 30px;">
@@ -166,10 +194,7 @@ export async function sendApprovalEmail({
                       </p>
 
                       <ul style="color: #374151; font-size: 16px; line-height: 1.8; margin: 0 0 30px; padding-left: 20px;">
-                        <li>Desafios exclusivos</li>
-                        <li>Eventos especiais</li>
-                        <li>Premios incriveis</li>
-                        <li>Conteudos exclusivos</li>
+                        ${benefitsHtml}
                       </ul>
 
                       <!-- CTA Button -->
@@ -177,7 +202,7 @@ export async function sendApprovalEmail({
                         <tr>
                           <td align="center">
                             <a href="${registrationUrl}" style="display: inline-block; background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 12px; font-size: 16px; font-weight: bold;">
-                              Criar Minha Conta
+                              ${ctaText}
                             </a>
                           </td>
                         </tr>
@@ -193,7 +218,7 @@ export async function sendApprovalEmail({
                   <tr>
                     <td style="background-color: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb;">
                       <p style="color: #9ca3af; font-size: 14px; margin: 0;">
-                        Te esperamos la!<br>
+                        ${footer}<br>
                         <strong style="color: #ec4899;">Equipe ${siteName}</strong>
                       </p>
                     </td>

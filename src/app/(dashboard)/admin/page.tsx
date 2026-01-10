@@ -117,6 +117,14 @@ export default async function AdminDashboardPage() {
       color: 'border-l-gray-500',
       description: 'Nome, descricao, SEO',
     },
+    {
+      title: 'Templates de Email',
+      value: 1,
+      icon: '📧',
+      href: '/admin/emails',
+      color: 'border-l-indigo-500',
+      description: 'Personalizar emails',
+    },
   ];
 
   return (
@@ -173,6 +181,13 @@ export default async function AdminDashboardPage() {
           >
             <span className="text-2xl">⚙️</span>
             <span className="text-sm text-gray-700 font-medium text-center">Configuracoes</span>
+          </Link>
+          <Link
+            href="/admin/emails"
+            className="flex flex-col items-center gap-2 p-4 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors"
+          >
+            <span className="text-2xl">📧</span>
+            <span className="text-sm text-indigo-700 font-medium text-center">Emails</span>
           </Link>
         </div>
       </Card>

@@ -22,7 +22,13 @@ export type SiteSettingKey =
   | 'meta_pixel_id'
   | 'meta_access_token'
   | 'whatsapp_phone_number_id'
-  | 'whatsapp_access_token';
+  | 'whatsapp_access_token'
+  | 'email_approval_subject'
+  | 'email_approval_greeting'
+  | 'email_approval_message'
+  | 'email_approval_benefits'
+  | 'email_approval_cta'
+  | 'email_approval_footer';
 
 /**
  * Tipo para uma configuração do site
@@ -61,6 +67,13 @@ const DEFAULT_VALUES: Record<SiteSettingKey, string> = {
   meta_access_token: '',
   whatsapp_phone_number_id: '',
   whatsapp_access_token: '',
+  // Email de aprovacao
+  email_approval_subject: 'Voce foi aprovado para o {{site_name}}!',
+  email_approval_greeting: 'Ola {{name}}!',
+  email_approval_message: 'Temos uma otima noticia! Sua solicitacao para fazer parte da comunidade foi APROVADA!',
+  email_approval_benefits: 'Desafios exclusivos,Eventos especiais,Premios incriveis,Conteudos exclusivos',
+  email_approval_cta: 'Criar Minha Conta',
+  email_approval_footer: 'Te esperamos la!',
 };
 
 /**
