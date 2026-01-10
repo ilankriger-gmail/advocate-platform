@@ -45,23 +45,10 @@ export interface ToxicityAnalysisResult {
 }
 
 // ============================================
-// Classificação de Conteúdo (Gemini)
+// Categoria de Conteúdo (simplificado)
 // ============================================
 
-export type ContentCategory = 'normal' | 'money_request';
-
-export type MoneyRequestSubcategory =
-  | 'crowdfunding'   // vaquinha online
-  | 'personal'       // pedido pessoal (tratamento, etc.)
-  | 'charity'        // instituição de caridade
-  | 'pix_request';   // pedido direto de PIX
-
-export interface ContentClassificationResult {
-  category: ContentCategory;
-  confidence: number; // 0-1
-  subcategory?: MoneyRequestSubcategory;
-  details?: string; // explicação da classificação
-}
+export type ContentCategory = 'normal';
 
 // ============================================
 // Engine de Decisão
@@ -78,7 +65,6 @@ export interface ModerationResult {
   content_category: ContentCategory;
   image_result?: ImageAnalysisResult;
   toxicity_result?: ToxicityAnalysisResult;
-  classification_result?: ContentClassificationResult;
   blocked_reasons: string[];
   review_reasons?: string[]; // motivos para revisão manual
   processing_time_ms: number;

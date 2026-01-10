@@ -69,11 +69,11 @@ export async function createPost(data: CreatePostData): Promise<ActionResponse<P
 
     // ============================================
     // MODERAÇÃO AUTOMÁTICA COM IA
+    // Sightengine (imagens) + Perspective API (texto)
     // ============================================
     let postStatus: 'approved' | 'pending' = isCreator ? 'approved' : 'pending';
     let moderationScore: number | null = null;
     let moderationFlags: Record<string, unknown> | null = null;
-    let contentCategory: 'normal' | 'money_request' = 'normal';
     let moderationMessage: string | null = null;
 
     // Executar moderação para todos os posts (incluindo criadores)
@@ -85,17 +85,14 @@ export async function createPost(data: CreatePostData): Promise<ActionResponse<P
       });
 
       moderationScore = moderationResult.overall_score;
-      contentCategory = moderationResult.content_category;
       moderationFlags = {
         image: moderationResult.image_result?.flags || null,
         toxicity: moderationResult.toxicity_result?.scores || null,
-        classification: moderationResult.classification_result || null,
       };
 
       console.log('[Moderation] Resultado:', {
         decision: moderationResult.decision,
         score: moderationScore,
-        category: contentCategory,
         blocked_reasons: moderationResult.blocked_reasons,
       });
 
@@ -117,7 +114,7 @@ export async function createPost(data: CreatePostData): Promise<ActionResponse<P
       console.error('[Moderation] Erro:', moderationError);
     }
 
-    console.log('createPost - postStatus:', postStatus, 'contentCategory:', contentCategory);
+    console.log('createPost - postStatus:', postStatus);
 
     const { data: post, error } = await supabase
       .from('posts')
@@ -133,7 +130,6 @@ export async function createPost(data: CreatePostData): Promise<ActionResponse<P
         status: postStatus,
         moderation_score: moderationScore,
         moderation_flags: moderationFlags,
-        content_category: contentCategory,
       })
       .select()
       .single();
@@ -150,7 +146,6 @@ export async function createPost(data: CreatePostData): Promise<ActionResponse<P
         decision: postStatus === 'pending' ? 'pending_review' : 'approved',
         score: moderationScore,
         flags: moderationFlags || {},
-        content_category: contentCategory,
       });
     }
 

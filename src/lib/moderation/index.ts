@@ -3,15 +3,13 @@
  *
  * Combina análises de:
  * - Sightengine (imagens)
- * - Perspective API (toxicidade)
- * - Gemini (classificação de conteúdo)
+ * - Perspective API (toxicidade de texto) - GRATUITA
  *
  * Retorna decisão unificada: approved | pending_review | blocked
  */
 
 import { analyzeImages } from './image-analysis';
 import { analyzeTextContent } from './toxicity-analysis';
-import { classifyContent, hasMoneyRequestIndicators } from './content-classification';
 import type {
   ModerationResult,
   ModerationDecision,
@@ -54,7 +52,7 @@ export async function moderatePost(
   let maxScore = 0;
 
   // Executar análises em paralelo para performance
-  const [imageResult, toxicityResult, classificationResult] = await Promise.all([
+  const [imageResult, toxicityResult] = await Promise.all([
     // Análise de imagens (se houver)
     input.images && input.images.length > 0
       ? analyzeImages(input.images)
@@ -62,9 +60,6 @@ export async function moderatePost(
 
     // Análise de toxicidade do texto
     analyzeTextContent(input.title, input.content),
-
-    // Classificação de conteúdo (pedido de dinheiro)
-    classifyContent(input.title, input.content),
   ]);
 
   // Processar resultado de imagens
@@ -89,9 +84,6 @@ export async function moderatePost(
     review_reasons.push('Texto pode conter conteúdo inadequado');
   }
 
-  // Determinar categoria do conteúdo
-  const content_category = classificationResult.category;
-
   // Determinar decisão final
   let decision: ModerationDecision;
 
@@ -106,10 +98,9 @@ export async function moderatePost(
   return {
     decision,
     overall_score: maxScore,
-    content_category,
+    content_category: 'normal', // Simplificado sem Gemini
     image_result: imageResult?.combined,
     toxicity_result: toxicityResult,
-    classification_result: classificationResult,
     blocked_reasons,
     review_reasons: review_reasons.length > 0 ? review_reasons : undefined,
     processing_time_ms: Date.now() - startTime,
@@ -142,14 +133,6 @@ export async function moderateImage(
   );
 }
 
-/**
- * Verifica rapidamente se texto tem indicadores de pedido de dinheiro
- * Usado para pré-filtro sem chamar APIs
- */
-export function quickMoneyCheck(title: string, content: string): boolean {
-  const fullText = `${title} ${content}`;
-  return hasMoneyRequestIndicators(fullText);
-}
 
 /**
  * Gera mensagem de bloqueio amigável para o usuário
