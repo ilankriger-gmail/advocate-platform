@@ -38,3 +38,18 @@ export type ActionResponse<T = void> = {
   /** Mensagem informativa (ex: moderação pendente) */
   message?: string;
 };
+
+/**
+ * Resposta específica para criação de post
+ * Inclui informações de moderação para feedback ao usuário
+ */
+export type CreatePostResponse<T = void> = ActionResponse<T> & {
+  /** Status da decisão de moderação */
+  moderationStatus?: 'approved' | 'pending_review' | 'blocked';
+
+  /** Categoria do conteúdo detectada */
+  contentCategory?: 'normal' | 'help_request';
+
+  /** Motivos do bloqueio (quando bloqueado) */
+  blockedReasons?: string[];
+};

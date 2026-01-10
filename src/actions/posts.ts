@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
-import { ActionResponse } from '@/types/action';
+import { ActionResponse, CreatePostResponse } from '@/types/action';
 import type { CreatePostData, UpdatePostData } from '@/types/post';
 import type { Post, PostComment } from '@/lib/supabase/types';
 import { moderatePost, getBlockedMessage, getPendingReviewMessage } from '@/lib/moderation';
@@ -20,7 +20,7 @@ function stripLinks(html: string): string {
 /**
  * Criar novo post
  */
-export async function createPost(data: CreatePostData): Promise<ActionResponse<Post>> {
+export async function createPost(data: CreatePostData): Promise<CreatePostResponse<Post>> {
   try {
     const supabase = await createClient();
 
@@ -167,11 +167,7 @@ export async function createPost(data: CreatePostData): Promise<ActionResponse<P
     revalidatePath('/admin/moderacao');
 
     // Estrutura de resposta com informações de moderação
-    const response: ActionResponse<Post> & {
-      moderationStatus?: 'approved' | 'pending_review' | 'blocked';
-      contentCategory?: 'normal' | 'help_request';
-      blockedReasons?: string[];
-    } = {
+    const response: CreatePostResponse<Post> = {
       success: true,
       data: post,
       moderationStatus: moderationDecision,
