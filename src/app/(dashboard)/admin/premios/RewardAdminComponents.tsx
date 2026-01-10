@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, Button, Input, Textarea } from '@/components/ui';
-import { toggleRewardActive, createReward, approveClaim, markClaimShipped, markClaimDelivered, deleteReward } from '@/actions/rewards-admin';
+import { toggleRewardActive, createReward, approveClaim, markClaimShipped, markClaimDelivered } from '@/actions/rewards-admin';
 
 interface RewardActionsProps {
   reward: {
@@ -16,9 +16,6 @@ interface RewardActionsProps {
 export function RewardActions({ reward }: RewardActionsProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const handleToggle = async () => {
     setIsLoading(true);
@@ -27,31 +24,6 @@ export function RewardActions({ reward }: RewardActionsProps) {
       router.refresh();
     }
     setIsLoading(false);
-  };
-
-  const handleDelete = async () => {
-    console.log('RewardActions: Iniciando delete do premio', reward.id);
-    setIsDeleting(true);
-    setDeleteError(null);
-
-    try {
-      const result = await deleteReward(reward.id);
-      console.log('RewardActions: Resultado do delete:', result);
-
-      if (result.success) {
-        console.log('RewardActions: Delete bem sucedido, atualizando pagina');
-        setShowDeleteConfirm(false);
-        router.refresh();
-      } else {
-        console.log('RewardActions: Delete falhou:', result.error);
-        setDeleteError(result.error || 'Erro ao excluir');
-      }
-    } catch (err) {
-      console.error('RewardActions: Erro inesperado:', err);
-      setDeleteError('Erro inesperado ao excluir');
-    }
-
-    setIsDeleting(false);
   };
 
   return (
@@ -63,47 +35,8 @@ export function RewardActions({ reward }: RewardActionsProps) {
         variant="outline"
         className={reward.is_active ? 'border-red-300 text-red-600 hover:bg-red-50' : 'border-green-300 text-green-600 hover:bg-green-50'}
       >
-        {isLoading ? '...' : reward.is_active ? 'Desativar' : 'Ativar'}
+        {isLoading ? '...' : reward.is_active ? 'Ocultar' : 'Ativar'}
       </Button>
-
-      {/* Botão Excluir */}
-      {!showDeleteConfirm ? (
-        <Button
-          onClick={() => setShowDeleteConfirm(true)}
-          size="sm"
-          variant="outline"
-          className="border-red-300 text-red-600 hover:bg-red-50"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-          </svg>
-        </Button>
-      ) : (
-        <div className="flex flex-col gap-1">
-          <div className="flex gap-1">
-            <Button
-              onClick={handleDelete}
-              disabled={isDeleting}
-              size="sm"
-              className="bg-red-600 hover:bg-red-700 text-white text-xs"
-            >
-              {isDeleting ? '...' : 'Confirmar'}
-            </Button>
-            <Button
-              onClick={() => { setShowDeleteConfirm(false); setDeleteError(null); }}
-              disabled={isDeleting}
-              size="sm"
-              variant="outline"
-              className="text-xs"
-            >
-              Cancelar
-            </Button>
-          </div>
-          {deleteError && (
-            <span className="text-xs text-red-600">{deleteError}</span>
-          )}
-        </div>
-      )}
     </div>
   );
 }
