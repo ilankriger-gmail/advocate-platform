@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { LeadsList } from './LeadsList';
 import { LeadFilters } from './LeadFilters';
+import { CsvImport } from './CsvImport';
 import type { NpsLead, LeadStatus } from '@/lib/supabase/types';
 
 interface PageProps {
@@ -65,9 +66,12 @@ export default async function AdminLeadsPage({ searchParams }: PageProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Leads NPS</h1>
-        <p className="text-gray-500">Gerencie os leads capturados pelo formulario NPS</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Leads NPS</h1>
+          <p className="text-gray-500">Gerencie os leads capturados pelo formulario NPS</p>
+        </div>
+        <CsvImport />
       </div>
 
       {/* Cards de estatisticas */}

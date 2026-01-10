@@ -619,6 +619,101 @@ export async function sendAllNotifications(leadId: string): Promise<ActionRespon
   }
 }
 
+// ============ IMPORTACAO CSV ============
+
+/**
+ * Importar leads de teste via CSV
+ * Formato esperado: name,email,phone,score,reason
+ */
+export async function importLeadsFromCSV(csvData: string): Promise<ActionResponse<{
+  imported: number;
+  errors: string[];
+}>> {
+  try {
+    const supabase = await createClient();
+
+    const auth = await verifyAdmin(supabase);
+    if ('error' in auth) {
+      return { error: auth.error };
+    }
+
+    const lines = csvData.trim().split('\n');
+    if (lines.length < 2) {
+      return { error: 'CSV deve ter pelo menos o header e uma linha de dados' };
+    }
+
+    // Pular header
+    const dataLines = lines.slice(1);
+    const errors: string[] = [];
+    let imported = 0;
+
+    for (let i = 0; i < dataLines.length; i++) {
+      const line = dataLines[i].trim();
+      if (!line) continue;
+
+      // Parse CSV (suporta campos com virgula entre aspas)
+      const fields = line.match(/(?:^|,)("(?:[^"]*(?:""[^"]*)*)"|[^,]*)/g)?.map(f => {
+        let value = f.replace(/^,/, '').trim();
+        if (value.startsWith('"') && value.endsWith('"')) {
+          value = value.slice(1, -1).replace(/""/g, '"');
+        }
+        return value;
+      }) || [];
+
+      if (fields.length < 4) {
+        errors.push(`Linha ${i + 2}: campos insuficientes`);
+        continue;
+      }
+
+      const [name, email, phone, scoreStr, ...reasonParts] = fields;
+      const reason = reasonParts.join(',') || 'Importado via CSV para teste';
+      const score = parseInt(scoreStr, 10);
+
+      // Validacoes
+      if (!name || name.length < 2) {
+        errors.push(`Linha ${i + 2}: nome invalido`);
+        continue;
+      }
+      if (!email || !email.includes('@')) {
+        errors.push(`Linha ${i + 2}: email invalido`);
+        continue;
+      }
+      if (isNaN(score) || score < 0 || score > 10) {
+        errors.push(`Linha ${i + 2}: score deve ser 0-10`);
+        continue;
+      }
+
+      // Inserir lead
+      const { error } = await supabase
+        .from('nps_leads')
+        .insert({
+          name: name.trim(),
+          email: email.trim().toLowerCase(),
+          phone: phone?.trim() || null,
+          score,
+          reason: reason.trim(),
+          status: 'pending',
+        });
+
+      if (error) {
+        if (error.code === '23505') {
+          errors.push(`Linha ${i + 2}: email ja existe`);
+        } else {
+          errors.push(`Linha ${i + 2}: ${error.message}`);
+        }
+        continue;
+      }
+
+      imported++;
+    }
+
+    revalidatePath('/admin/leads');
+    return { success: true, data: { imported, errors } };
+  } catch {
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
 // ============ CONVERSAO ============
 
 /**
