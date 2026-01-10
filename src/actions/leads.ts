@@ -678,13 +678,18 @@ export async function analyzeUnanalyzedLeads(): Promise<ActionResponse<{
   analyzed: number;
   errors: number;
 }>> {
+  console.log('[LEADS] === Iniciando analise em lote ===');
+
   try {
     const supabase = await createClient();
 
     const auth = await verifyAdmin(supabase);
     if ('error' in auth) {
+      console.log('[LEADS] Erro de autenticacao:', auth.error);
       return { error: auth.error };
     }
+
+    console.log('[LEADS] Usuario autenticado, buscando leads sem analise...');
 
     // Buscar leads sem analise AI (maximo 20 por vez para nao sobrecarregar)
     const adminClient = createAdminClient();
@@ -695,17 +700,24 @@ export async function analyzeUnanalyzedLeads(): Promise<ActionResponse<{
       .limit(20);
 
     if (error) {
+      console.error('[LEADS] Erro ao buscar leads:', error);
       return { error: 'Erro ao buscar leads' };
     }
 
+    console.log('[LEADS] Leads encontrados para analise:', leads?.length || 0);
+
     if (!leads || leads.length === 0) {
+      console.log('[LEADS] Nenhum lead para analisar');
       return { success: true, data: { analyzed: 0, errors: 0 } };
     }
 
     let analyzed = 0;
     let errors = 0;
 
-    for (const lead of leads) {
+    for (let i = 0; i < leads.length; i++) {
+      const lead = leads[i];
+      console.log(`[LEADS] Processando lead ${i + 1}/${leads.length}: ${lead.email}`);
+
       try {
         const analysis = await analyzeLeadWithAI({
           name: lead.name,
@@ -714,7 +726,9 @@ export async function analyzeUnanalyzedLeads(): Promise<ActionResponse<{
         });
 
         if (analysis) {
-          await adminClient
+          console.log(`[LEADS] Lead ${lead.email} analisado: score=${analysis.score}, rec=${analysis.recommendation}`);
+
+          const { error: updateError } = await adminClient
             .from('nps_leads')
             .update({
               ai_score: analysis.score,
@@ -727,18 +741,27 @@ export async function analyzeUnanalyzedLeads(): Promise<ActionResponse<{
             })
             .eq('id', lead.id);
 
-          analyzed++;
+          if (updateError) {
+            console.error(`[LEADS] Erro ao salvar analise do lead ${lead.email}:`, updateError);
+            errors++;
+          } else {
+            analyzed++;
+          }
         } else {
+          console.error(`[LEADS] Falha na analise do lead ${lead.email} (retornou null)`);
           errors++;
         }
-      } catch {
+      } catch (err) {
+        console.error(`[LEADS] Excecao ao processar lead ${lead.email}:`, err);
         errors++;
       }
     }
 
+    console.log(`[LEADS] === Analise em lote concluida: ${analyzed} sucesso, ${errors} erros ===`);
     revalidatePath('/admin/leads');
     return { success: true, data: { analyzed, errors } };
-  } catch {
+  } catch (err) {
+    console.error('[LEADS] Erro interno:', err);
     return { error: 'Erro interno do servidor' };
   }
 }

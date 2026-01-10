@@ -4,16 +4,26 @@ import OpenAI from 'openai';
 let openaiClient: OpenAI | null = null;
 
 function getOpenAIClient(): OpenAI | null {
-  if (openaiClient) return openaiClient;
+  if (openaiClient) {
+    console.log('[AI] Usando cliente OpenAI existente');
+    return openaiClient;
+  }
 
   const apiKey = process.env.OPENAI_API_KEY;
 
+  console.log('[AI] Verificando OPENAI_API_KEY...');
+  console.log('[AI] API Key presente:', !!apiKey);
+  console.log('[AI] API Key prefixo:', apiKey ? apiKey.substring(0, 10) + '...' : 'N/A');
+
   if (!apiKey) {
-    console.warn('[AI] OpenAI API key not configured');
+    console.error('[AI] ERRO: OpenAI API key NAO configurada!');
+    console.error('[AI] Variaveis de ambiente disponiveis:', Object.keys(process.env).filter(k => k.includes('OPENAI') || k.includes('API')));
     return null;
   }
 
+  console.log('[AI] Criando novo cliente OpenAI...');
   openaiClient = new OpenAI({ apiKey });
+  console.log('[AI] Cliente OpenAI criado com sucesso');
   return openaiClient;
 }
 
@@ -45,11 +55,17 @@ export interface LeadForAnalysis {
 export async function analyzeLeadWithAI(
   lead: LeadForAnalysis
 ): Promise<LeadAnalysis | null> {
+  console.log('[AI] === Iniciando analise de lead ===');
+  console.log('[AI] Lead:', { name: lead.name, score: lead.score, reasonLength: lead.reason?.length });
+
   const client = getOpenAIClient();
 
   if (!client) {
+    console.error('[AI] ERRO: Cliente OpenAI nao disponivel - abortando analise');
     return null;
   }
+
+  console.log('[AI] Cliente OpenAI obtido, preparando requisicao...');
 
   const prompt = `Voce e um analista de comunidade especializado em avaliar potenciais membros.
 Analise este lead que respondeu uma pesquisa NPS para determinar se seria um bom membro
@@ -87,6 +103,9 @@ Se nao houver preocupacoes, retorne concerns como array vazio [].
 Se nao houver pontos fortes claros, retorne pelo menos um item generico.`;
 
   try {
+    console.log('[AI] Enviando requisicao para OpenAI (modelo: gpt-4o-mini)...');
+    const startTime = Date.now();
+
     const response = await client.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
@@ -102,14 +121,21 @@ Se nao houver pontos fortes claros, retorne pelo menos um item generico.`;
       max_tokens: 500,
     });
 
+    const elapsed = Date.now() - startTime;
+    console.log(`[AI] Resposta recebida em ${elapsed}ms`);
+    console.log('[AI] Usage:', response.usage);
+
     const content = response.choices[0]?.message?.content;
 
     if (!content) {
-      console.error('[AI] Empty response from OpenAI');
+      console.error('[AI] ERRO: Resposta vazia da OpenAI');
       return null;
     }
 
+    console.log('[AI] Conteudo da resposta:', content.substring(0, 200) + '...');
+
     const analysis = JSON.parse(content) as LeadAnalysis;
+    console.log('[AI] Analise parseada:', { score: analysis.score, sentiment: analysis.sentiment, recommendation: analysis.recommendation });
 
     // Validacao basica do resultado
     if (
@@ -117,23 +143,33 @@ Se nao houver pontos fortes claros, retorne pelo menos um item generico.`;
       analysis.score < 0 ||
       analysis.score > 100
     ) {
-      console.error('[AI] Invalid score in response:', analysis.score);
+      console.error('[AI] ERRO: Score invalido:', analysis.score);
       return null;
     }
 
     if (!['positivo', 'neutro', 'negativo'].includes(analysis.sentiment)) {
-      console.error('[AI] Invalid sentiment:', analysis.sentiment);
+      console.error('[AI] ERRO: Sentimento invalido:', analysis.sentiment);
       return null;
     }
 
     if (!['aprovar', 'analisar', 'rejeitar'].includes(analysis.recommendation)) {
-      console.error('[AI] Invalid recommendation:', analysis.recommendation);
+      console.error('[AI] ERRO: Recomendacao invalida:', analysis.recommendation);
       return null;
     }
 
+    console.log('[AI] === Analise concluida com sucesso ===');
     return analysis;
   } catch (error) {
-    console.error('[AI] Error analyzing lead:', error);
+    console.error('[AI] === ERRO NA ANALISE ===');
+    console.error('[AI] Tipo do erro:', error instanceof Error ? error.constructor.name : typeof error);
+    console.error('[AI] Mensagem:', error instanceof Error ? error.message : String(error));
+    if (error instanceof Error && 'status' in error) {
+      console.error('[AI] Status HTTP:', (error as { status: number }).status);
+    }
+    if (error instanceof Error && 'code' in error) {
+      console.error('[AI] Codigo do erro:', (error as { code: string }).code);
+    }
+    console.error('[AI] Erro completo:', error);
     return null;
   }
 }
