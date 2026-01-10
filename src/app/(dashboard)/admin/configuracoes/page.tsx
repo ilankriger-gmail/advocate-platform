@@ -164,8 +164,8 @@ export default function AdminConfiguracoesPage() {
         </Card>
       )}
 
-      {/* Favicon - TODO: implementar FaviconUploader */}
-      {/* <FaviconUploader /> */}
+      {/* Favicon */}
+      <FaviconUploader />
 
       {/* Branding */}
       <Card className="p-6">
