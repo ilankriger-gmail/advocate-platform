@@ -16,12 +16,24 @@ interface HeaderProps {
 // Rotas onde o Header nao deve aparecer
 const HIDDEN_HEADER_ROUTES = ['/seja-arena', '/login', '/registro'];
 
+// Domínio comece onde o Header nunca aparece
+const COMECE_DOMAIN = 'comece.omocodoteamo.com.br';
+
 export function Header({ onMenuClick, showMenuButton = false, className, siteName = 'Arena Te Amo' }: HeaderProps) {
   const { user, profile, signOut } = useAuth();
   const pathname = usePathname();
 
+  // Detectar se estamos no domínio comece (client-side)
+  const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+  const isComeceDomain = hostname === COMECE_DOMAIN;
+
   // Mostrar link admin se tiver role='admin' OU is_creator=true
   const showAdminLink = profile?.role === 'admin' || profile?.is_creator === true;
+
+  // Nao renderizar Header no domínio comece (totalmente público)
+  if (isComeceDomain) {
+    return null;
+  }
 
   // Nao renderizar Header em certas paginas
   if (HIDDEN_HEADER_ROUTES.some(route => pathname?.startsWith(route))) {

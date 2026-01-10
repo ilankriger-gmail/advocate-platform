@@ -40,8 +40,8 @@ function GoogleIcon() {
  */
 function LoadingSpinner() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-white to-purple-100 flex items-center justify-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-100 via-white to-gray-100 flex items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-600"></div>
     </div>
   );
 }
@@ -83,15 +83,22 @@ export default function LoginForm({ siteName, subtitle }: LoginFormProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-white to-purple-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-100 via-white to-gray-100 flex items-center justify-center p-4">
       <div className="bg-white p-8 sm:p-10 rounded-2xl shadow-xl max-w-md w-full">
         {/* Logo / Titulo */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-indigo-600 mb-2">
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-700 mb-2">
             {siteName}
           </h1>
           <p className="text-gray-600">
             {subtitle}
+          </p>
+        </div>
+
+        {/* Aviso de acesso restrito */}
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+          <p className="text-sm text-gray-600 text-center">
+            Apenas usuarios aprovados podem acessar a plataforma.
           </p>
         </div>
 
@@ -135,14 +142,25 @@ export default function LoginForm({ siteName, subtitle }: LoginFormProps) {
           )}
         </button>
 
+        {/* Link para inscrição */}
+        <p className="mt-6 text-center text-sm text-gray-600">
+          Quer fazer parte da comunidade?{' '}
+          <a
+            href="https://comece.omocodoteamo.com.br"
+            className="text-gray-700 font-medium hover:text-gray-900 underline"
+          >
+            Inscreva-se aqui
+          </a>
+        </p>
+
         {/* Texto de rodape */}
-        <p className="mt-8 text-center text-sm text-gray-500">
+        <p className="mt-4 text-center text-xs text-gray-400">
           Ao entrar, voce concorda com nossos{' '}
-          <a href="/termos" className="text-indigo-600 hover:text-indigo-500">
+          <a href="/termos" className="text-gray-500 hover:text-gray-600">
             Termos de Uso
           </a>{' '}
           e{' '}
-          <a href="/privacidade" className="text-indigo-600 hover:text-indigo-500">
+          <a href="/privacidade" className="text-gray-500 hover:text-gray-600">
             Politica de Privacidade
           </a>
         </p>
