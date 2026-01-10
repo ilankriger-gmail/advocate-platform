@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { getSiteSettings } from '@/lib/config/site';
 import { NPSForm } from './NPSForm';
 
@@ -12,9 +13,14 @@ export default async function SejaNextloverPage() {
     <main className="min-h-screen flex flex-col items-center justify-center px-4 py-8">
       {/* Logo/Header */}
       <div className="text-center mb-8">
-        <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
-          {settings.site_name}
-        </h1>
+        <Image
+          src="/logo.png"
+          alt={settings.site_name}
+          width={200}
+          height={70}
+          className="h-20 w-auto mx-auto mb-4"
+          priority
+        />
         <p className="mt-3 text-gray-600 max-w-md leading-relaxed">
           Ganhe produtos, dinheiro e participe de experiencias exclusivas para os maiores fas do {settings.creator_name}
         </p>

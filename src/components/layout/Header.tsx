@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -74,9 +75,14 @@ export function Header({ onMenuClick, showMenuButton = false, className, siteNam
 
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2">
-              <span className="text-lg font-bold text-gray-800">
-                {siteName}
-              </span>
+              <Image
+                src="/logo.png"
+                alt={siteName}
+                width={120}
+                height={40}
+                className="h-10 w-auto"
+                priority
+              />
             </Link>
           </div>
 

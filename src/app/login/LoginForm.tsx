@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -87,9 +88,14 @@ export default function LoginForm({ siteName, subtitle }: LoginFormProps) {
       <div className="bg-white p-8 sm:p-10 rounded-2xl shadow-xl max-w-md w-full">
         {/* Logo / Título */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-700 mb-2">
-            {siteName}
-          </h1>
+          <Image
+            src="/logo.png"
+            alt={siteName}
+            width={180}
+            height={60}
+            className="h-16 w-auto mx-auto mb-4"
+            priority
+          />
           <p className="text-gray-600">
             {subtitle}
           </p>
