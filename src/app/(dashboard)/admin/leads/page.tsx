@@ -4,6 +4,7 @@ import { LeadsList } from './LeadsList';
 import { LeadFilters } from './LeadFilters';
 import { CsvImport } from './CsvImport';
 import { AnalyzeButton } from './AnalyzeButton';
+import { BulkApproveByScore } from './BulkApproveByScore';
 import type { NpsLead, LeadStatus } from '@/lib/supabase/types';
 
 interface PageProps {
@@ -82,7 +83,8 @@ export default async function AdminLeadsPage({ searchParams }: PageProps) {
           <h1 className="text-2xl font-bold text-gray-900">Leads NPS</h1>
           <p className="text-gray-500">Gerencie os leads capturados pelo formulario NPS</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <BulkApproveByScore leads={leads || []} />
           <AnalyzeButton />
           <CsvImport />
         </div>
