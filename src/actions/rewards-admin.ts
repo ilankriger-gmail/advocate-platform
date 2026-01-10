@@ -380,7 +380,8 @@ export async function deleteReward(rewardId: string): Promise<ActionResponse> {
     revalidatePath('/premios');
     revalidatePath('/admin/premios');
     return { success: true };
-  } catch {
+  } catch (err) {
+    console.error('Error in deleteReward:', err);
     return { error: 'Erro interno do servidor' };
   }
 }

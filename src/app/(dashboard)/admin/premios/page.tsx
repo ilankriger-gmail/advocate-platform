@@ -195,7 +195,8 @@ interface RewardCardProps {
 
 function RewardCard({ reward }: RewardCardProps) {
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+      {/* Imagem se existir */}
       {reward.image_url && (
         <img
           src={reward.image_url}
@@ -203,28 +204,35 @@ function RewardCard({ reward }: RewardCardProps) {
           className="w-full h-32 object-cover"
         />
       )}
-      <div className="p-4">
-        <div className="flex items-start justify-between gap-2 mb-2">
-          <h3 className="font-bold text-gray-900">{reward.name}</h3>
-          <Badge className={reward.type === 'physical' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'}>
+
+      {/* Header com gradiente igual ao frontend */}
+      <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-4 text-white">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-bold text-lg">{reward.name}</h3>
+            <p className="text-indigo-100 text-sm">{reward.coins_cost} coracoes</p>
+          </div>
+          <Badge className="bg-white/20 text-white border-0">
             {reward.type === 'physical' ? 'Fisico' : 'Digital'}
           </Badge>
         </div>
+      </div>
 
-        <p className="text-sm text-gray-500 line-clamp-2 mb-3">
+      {/* Content */}
+      <div className="p-4 space-y-3">
+        <p className="text-sm text-gray-600 line-clamp-2">
           {reward.description || 'Sem descrição'}
         </p>
 
-        <div className="flex items-center justify-between">
-          <span className="text-pink-500 font-bold">{reward.coins_cost} coracoes</span>
-          {reward.stock !== null && (
-            <span className={`text-sm ${reward.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {reward.stock > 0 ? `${reward.stock} em estoque` : 'Esgotado'}
-            </span>
-          )}
-        </div>
+        {/* Stock */}
+        {reward.stock !== null && (
+          <p className={`text-sm font-medium ${reward.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
+            {reward.stock > 0 ? `${reward.stock} em estoque` : 'Esgotado'}
+          </p>
+        )}
 
-        <div className="mt-3 pt-3 border-t">
+        {/* Actions */}
+        <div className="pt-2 border-t">
           <RewardActions reward={reward} />
         </div>
       </div>

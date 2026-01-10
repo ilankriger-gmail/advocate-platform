@@ -609,7 +609,8 @@ export async function deleteChallenge(challengeId: string): Promise<ActionRespon
     revalidatePath('/desafios');
     revalidatePath('/admin/desafios');
     return { success: true };
-  } catch {
+  } catch (err) {
+    console.error('Error in deleteChallenge:', err);
     return { error: 'Erro interno do servidor' };
   }
 }

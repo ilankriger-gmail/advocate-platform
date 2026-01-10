@@ -108,13 +108,13 @@ function ChallengeAdminCard({ challenge }: ChallengeCardProps) {
   const getTypeBadge = () => {
     switch (challenge.type) {
       case 'fisico':
-        return <Badge className="bg-blue-100 text-blue-700">Fisico</Badge>;
+        return <Badge className="bg-white/20 text-white border-0">Fisico</Badge>;
       case 'engajamento':
-        return <Badge className="bg-purple-100 text-purple-700">Engajamento</Badge>;
+        return <Badge className="bg-white/20 text-white border-0">Engajamento</Badge>;
       case 'participe':
-        return <Badge className="bg-pink-100 text-pink-700">Participe</Badge>;
+        return <Badge className="bg-white/20 text-white border-0">Participe</Badge>;
       default:
-        return <Badge className="bg-gray-100 text-gray-700">{challenge.type}</Badge>;
+        return <Badge className="bg-white/20 text-white border-0">{challenge.type}</Badge>;
     }
   };
 
@@ -122,52 +122,61 @@ function ChallengeAdminCard({ challenge }: ChallengeCardProps) {
   const canDelete = challenge.totalParticipants === 0 && challenge.winnersCount === 0;
 
   return (
-    <Card className="p-5 hover:shadow-lg transition-shadow h-full">
+    <Card className="overflow-hidden hover:shadow-lg transition-shadow h-full">
       <Link href={`/admin/desafios/${challenge.id}`} className="block">
-        <div className="flex items-start gap-4">
-          <span className="text-3xl">{challenge.icon}</span>
-          <div className="flex-1">
-            <div className="flex items-start justify-between gap-2 mb-2">
-              <h3 className="font-bold text-gray-900">{challenge.title}</h3>
-              {getTypeBadge()}
+        {/* Header com gradiente igual ao frontend */}
+        <div className="bg-gradient-to-r from-pink-500 to-red-500 p-4 text-white">
+          <div className="flex items-center gap-3">
+            <span className="text-3xl">{challenge.icon}</span>
+            <div className="flex-1">
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="text-lg font-bold">{challenge.title}</h3>
+                {getTypeBadge()}
+              </div>
+              <div className="flex items-center gap-3 mt-1">
+                <span className="text-pink-100 text-sm">
+                  +{challenge.coins_reward} coracoes
+                </span>
+                {challenge.prize_amount && (
+                  <span className="text-white/80 text-sm">
+                    R$ {challenge.prize_amount.toFixed(2)}
+                  </span>
+                )}
+              </div>
             </div>
+          </div>
+        </div>
 
-            <p className="text-sm text-gray-500 line-clamp-2 mb-3">
-              {challenge.description || 'Sem descrição'}
-            </p>
+        {/* Content */}
+        <div className="p-4 space-y-3">
+          <p className="text-sm text-gray-600 line-clamp-2">
+            {challenge.description || 'Sem descrição'}
+          </p>
 
-            <div className="flex flex-wrap gap-2 text-xs">
-              <span className="px-2 py-1 bg-gray-100 rounded-full text-gray-600">
-                {challenge.totalParticipants} participantes
+          {/* Stats como pills */}
+          <div className="flex flex-wrap gap-2 text-xs">
+            <span className="px-2 py-1 bg-gray-100 rounded-full text-gray-600">
+              {challenge.totalParticipants} participantes
+            </span>
+            {challenge.pendingCount > 0 && (
+              <span className="px-2 py-1 bg-yellow-100 rounded-full text-yellow-700">
+                {challenge.pendingCount} pendentes
               </span>
-              {challenge.pendingCount > 0 && (
-                <span className="px-2 py-1 bg-yellow-100 rounded-full text-yellow-700">
-                  {challenge.pendingCount} pendentes
-                </span>
-              )}
-              {challenge.type !== 'fisico' && (
-                <span className="px-2 py-1 bg-green-100 rounded-full text-green-700">
-                  {challenge.winnersCount} ganhadores
-                </span>
-              )}
-            </div>
-
-            <div className="mt-3 pt-3 border-t flex items-center justify-between">
-              <span className="text-pink-500 font-bold text-sm">
-                +{challenge.coins_reward} coracoes
+            )}
+            {challenge.type !== 'fisico' && (
+              <span className="px-2 py-1 bg-green-100 rounded-full text-green-700">
+                {challenge.winnersCount} ganhadores
               </span>
-              {challenge.prize_amount && (
-                <span className="text-green-600 font-bold text-sm">
-                  R$ {challenge.prize_amount.toFixed(2)}
-                </span>
-              )}
-            </div>
+            )}
           </div>
         </div>
       </Link>
 
-      {/* Botão de excluir (fora do Link) */}
-      <div className="mt-3 pt-3 border-t">
+      {/* Actions */}
+      <div className="px-4 pb-4 pt-2 border-t flex items-center gap-2">
+        <Link href={`/admin/desafios/${challenge.id}`} className="flex-1">
+          <Button size="sm" className="w-full">Gerenciar</Button>
+        </Link>
         <ChallengeDeleteButton
           challengeId={challenge.id}
           challengeName={challenge.title}
