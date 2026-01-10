@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
 import { ActionResponse } from '@/types/action';
 import type { NpsLead, NpsLeadInsert } from '@/lib/supabase/types';
@@ -14,6 +15,50 @@ import { getSiteSettings } from '@/lib/config/site';
 import { analyzeLeadWithAI } from '@/lib/ai';
 
 // ============ ACOES PUBLICAS ============
+
+/**
+ * Analisa um lead com AI em background (usa admin client para bypassar RLS)
+ * Nao bloqueia a resposta do formulario
+ */
+async function analyzeLeadInBackground(leadEmail: string, leadData: {
+  name: string;
+  score: number;
+  reason: string;
+}) {
+  try {
+    // Analise com OpenAI
+    const analysis = await analyzeLeadWithAI(leadData);
+
+    if (!analysis) {
+      console.log('[AI] Analise nao disponivel (API key nao configurada ou erro)');
+      return;
+    }
+
+    // Usar admin client para atualizar o lead (bypassa RLS)
+    const adminClient = createAdminClient();
+
+    const { error } = await adminClient
+      .from('nps_leads')
+      .update({
+        ai_score: analysis.score,
+        ai_sentiment: analysis.sentiment,
+        ai_recommendation: analysis.recommendation,
+        ai_summary: analysis.summary,
+        ai_strengths: analysis.strengths,
+        ai_concerns: analysis.concerns,
+        ai_analyzed_at: new Date().toISOString(),
+      })
+      .eq('email', leadEmail);
+
+    if (error) {
+      console.error('[AI] Erro ao salvar analise:', error);
+    } else {
+      console.log('[AI] Lead analisado com sucesso:', leadEmail, '- Score:', analysis.score);
+    }
+  } catch (err) {
+    console.error('[AI] Erro na analise em background:', err);
+  }
+}
 
 /**
  * Submeter formulario NPS (público - sem autenticacao)
@@ -39,6 +84,8 @@ export async function submitNpsLead(data: NpsLeadInsert): Promise<ActionResponse
       return { error: 'Por favor, explique o motivo da sua nota' };
     }
 
+    const email = data.email.trim().toLowerCase();
+
     // Inserir lead (sem select, pois usuário anonimo não tem permissao de leitura)
     const { error } = await supabase
       .from('nps_leads')
@@ -46,7 +93,7 @@ export async function submitNpsLead(data: NpsLeadInsert): Promise<ActionResponse
         score: data.score,
         reason: data.reason.trim(),
         name: data.name.trim(),
-        email: data.email.trim().toLowerCase(),
+        email,
         phone: data.phone?.trim() || null,
       });
 
@@ -55,9 +102,12 @@ export async function submitNpsLead(data: NpsLeadInsert): Promise<ActionResponse
       return { error: 'Erro ao enviar formulario. Tente novamente.' };
     }
 
-    // Analise AI em background - buscar lead pelo email (via service role seria ideal, mas por hora desabilitado)
-    // TODO: Implementar analise AI via webhook ou cron job
-    // analyzeLeadWithAI({ name: data.name.trim(), score: data.score, reason: data.reason.trim() })
+    // Analise AI em background (nao bloqueia a resposta)
+    analyzeLeadInBackground(email, {
+      name: data.name.trim(),
+      score: data.score,
+      reason: data.reason.trim(),
+    }).catch(console.error);
 
     return { success: true };
   } catch {
@@ -614,6 +664,80 @@ export async function sendAllNotifications(leadId: string): Promise<ActionRespon
 
     revalidatePath('/admin/leads');
     return { success: true, data: results };
+  } catch {
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+// ============ ANALISE AI ============
+
+/**
+ * Analisar leads pendentes que ainda nao foram analisados pela AI
+ */
+export async function analyzeUnanalyzedLeads(): Promise<ActionResponse<{
+  analyzed: number;
+  errors: number;
+}>> {
+  try {
+    const supabase = await createClient();
+
+    const auth = await verifyAdmin(supabase);
+    if ('error' in auth) {
+      return { error: auth.error };
+    }
+
+    // Buscar leads sem analise AI (maximo 20 por vez para nao sobrecarregar)
+    const adminClient = createAdminClient();
+    const { data: leads, error } = await adminClient
+      .from('nps_leads')
+      .select('id, email, name, score, reason')
+      .is('ai_score', null)
+      .limit(20);
+
+    if (error) {
+      return { error: 'Erro ao buscar leads' };
+    }
+
+    if (!leads || leads.length === 0) {
+      return { success: true, data: { analyzed: 0, errors: 0 } };
+    }
+
+    let analyzed = 0;
+    let errors = 0;
+
+    for (const lead of leads) {
+      try {
+        const analysis = await analyzeLeadWithAI({
+          name: lead.name,
+          score: lead.score,
+          reason: lead.reason,
+        });
+
+        if (analysis) {
+          await adminClient
+            .from('nps_leads')
+            .update({
+              ai_score: analysis.score,
+              ai_sentiment: analysis.sentiment,
+              ai_recommendation: analysis.recommendation,
+              ai_summary: analysis.summary,
+              ai_strengths: analysis.strengths,
+              ai_concerns: analysis.concerns,
+              ai_analyzed_at: new Date().toISOString(),
+            })
+            .eq('id', lead.id);
+
+          analyzed++;
+        } else {
+          errors++;
+        }
+      } catch {
+        errors++;
+      }
+    }
+
+    revalidatePath('/admin/leads');
+    return { success: true, data: { analyzed, errors } };
   } catch {
     return { error: 'Erro interno do servidor' };
   }
