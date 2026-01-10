@@ -28,7 +28,8 @@ export type SiteSettingKey =
   | 'email_approval_message'
   | 'email_approval_benefits'
   | 'email_approval_cta'
-  | 'email_approval_footer';
+  | 'email_approval_footer'
+  | 'favicon_url';
 
 /**
  * Tipo para uma configuração do site
@@ -74,6 +75,8 @@ const DEFAULT_VALUES: Record<SiteSettingKey, string> = {
   email_approval_benefits: 'Desafios exclusivos,Eventos especiais,Premios incriveis,Conteudos exclusivos',
   email_approval_cta: 'Criar Minha Conta',
   email_approval_footer: 'Te esperamos la!',
+  // Favicon
+  favicon_url: '/favicon.svg',
 };
 
 /**

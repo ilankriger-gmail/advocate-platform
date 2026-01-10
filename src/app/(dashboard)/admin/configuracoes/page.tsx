@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useEffect, useTransition } from 'react';
+import { useState, useEffect, useTransition, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, Button, Input, Skeleton } from '@/components/ui';
-import { fetchAllSiteSettings, updateMultipleSiteSettings } from '@/actions/settings';
+import { fetchAllSiteSettings, updateMultipleSiteSettings, uploadFavicon, resetFavicon } from '@/actions/settings';
+import { getSiteSetting } from '@/lib/config/site';
 import type { SiteSetting, SiteSettingKey } from '@/lib/config/site';
+import Image from 'next/image';
 
 export default function AdminConfiguracoesPage() {
   const router = useRouter();
@@ -161,6 +163,9 @@ export default function AdminConfiguracoesPage() {
           <p className="text-green-700">{success}</p>
         </Card>
       )}
+
+      {/* Favicon - TODO: implementar FaviconUploader */}
+      {/* <FaviconUploader /> */}
 
       {/* Branding */}
       <Card className="p-6">
@@ -347,5 +352,186 @@ function SettingField({
         />
       )}
     </div>
+  );
+}
+
+// Componente para upload de favicon
+function FaviconUploader() {
+  const [currentFavicon, setCurrentFavicon] = useState<string>('/favicon.svg');
+  const [uploading, setUploading] = useState(false);
+  const [resetting, setResetting] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Carregar favicon atual
+  useEffect(() => {
+    async function loadFavicon() {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'favicon_url')
+        .single();
+
+      if (data?.value) {
+        setCurrentFavicon(data.value);
+      }
+    }
+    loadFavicon();
+  }, []);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setMessage(null);
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const result = await uploadFavicon(formData);
+
+    if (result.success && result.url) {
+      setCurrentFavicon(result.url);
+      setMessage({ type: 'success', text: 'Favicon atualizado com sucesso!' });
+    } else {
+      setMessage({ type: 'error', text: result.error || 'Erro ao fazer upload' });
+    }
+
+    setUploading(false);
+    // Limpar input
+    if (e.target) {
+      e.target.value = '';
+    }
+  };
+
+  const handleReset = async () => {
+    setResetting(true);
+    setMessage(null);
+
+    const result = await resetFavicon();
+
+    if (result.success) {
+      setCurrentFavicon('/favicon.svg');
+      setMessage({ type: 'success', text: 'Favicon restaurado para o padrao!' });
+    } else {
+      setMessage({ type: 'error', text: result.error || 'Erro ao restaurar favicon' });
+    }
+
+    setResetting(false);
+  };
+
+  const isCustomFavicon = currentFavicon !== '/favicon.svg';
+
+  return (
+    <Card className="p-6">
+      <h2 className="text-lg font-semibold text-gray-900 mb-4">
+        Favicon
+      </h2>
+      <p className="text-sm text-gray-500 mb-4">
+        O icone que aparece na aba do navegador. Aceita SVG, PNG ou ICO (max 500KB).
+      </p>
+
+      {message && (
+        <div className={`mb-4 p-3 rounded-lg ${
+          message.type === 'success'
+            ? 'bg-green-50 text-green-700 border border-green-200'
+            : 'bg-red-50 text-red-700 border border-red-200'
+        }`}>
+          {message.text}
+        </div>
+      )}
+
+      <div className="flex items-center gap-6">
+        {/* Preview do favicon atual */}
+        <div className="flex flex-col items-center gap-2">
+          <div className="w-16 h-16 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50">
+            {currentFavicon.startsWith('/') ? (
+              <Image
+                src={currentFavicon}
+                alt="Favicon atual"
+                width={48}
+                height={48}
+                className="object-contain"
+              />
+            ) : (
+              <img
+                src={currentFavicon}
+                alt="Favicon atual"
+                className="w-12 h-12 object-contain"
+              />
+            )}
+          </div>
+          <span className="text-xs text-gray-500">
+            {isCustomFavicon ? 'Personalizado' : 'Padrao'}
+          </span>
+        </div>
+
+        {/* Botoes de acao */}
+        <div className="flex flex-col gap-2">
+          <label className="cursor-pointer">
+            <input
+              type="file"
+              accept=".svg,.png,.ico,image/svg+xml,image/png,image/x-icon"
+              onChange={handleFileChange}
+              className="hidden"
+              disabled={uploading}
+            />
+            <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              uploading
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-indigo-600 text-white hover:bg-indigo-700 cursor-pointer'
+            }`}>
+              {uploading ? (
+                <>
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Enviando...
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                  </svg>
+                  Enviar novo favicon
+                </>
+              )}
+            </span>
+          </label>
+
+          {isCustomFavicon && (
+            <button
+              onClick={handleReset}
+              disabled={resetting}
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                resetting
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              {resetting ? (
+                <>
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Restaurando...
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Restaurar padrao
+                </>
+              )}
+            </button>
+          )}
+        </div>
+      </div>
+    </Card>
   );
 }

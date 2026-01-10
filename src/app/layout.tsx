@@ -9,15 +9,17 @@ import { getSiteSettings } from '@/lib/config/site';
 const inter = Inter({ subsets: ['latin'] });
 
 export async function generateMetadata(): Promise<Metadata> {
-  const settings = await getSiteSettings(['meta_title', 'meta_description']);
+  const settings = await getSiteSettings(['meta_title', 'meta_description', 'favicon_url']);
+
+  const faviconUrl = settings.favicon_url || '/favicon.svg';
 
   return {
     title: settings.meta_title,
     description: settings.meta_description,
     icons: {
-      icon: '/favicon.svg',
-      shortcut: '/favicon.svg',
-      apple: '/favicon.svg',
+      icon: faviconUrl,
+      shortcut: faviconUrl,
+      apple: faviconUrl,
     },
   };
 }

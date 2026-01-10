@@ -155,6 +155,132 @@ export async function updateMultipleSiteSettings(
 }
 
 /**
+ * Upload de favicon
+ */
+export async function uploadFavicon(formData: FormData): Promise<{
+  success: boolean;
+  error: string | null;
+  url?: string;
+}> {
+  const supabase = await createClient();
+
+  // Verificar se o usuário é admin/creator
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, error: 'Usuário não autenticado' };
+  }
+
+  const { data: profile } = await supabase
+    .from('users')
+    .select('is_creator')
+    .eq('id', user.id)
+    .single();
+
+  if (!profile?.is_creator) {
+    return { success: false, error: 'Acesso negado' };
+  }
+
+  const file = formData.get('file') as File;
+
+  if (!file) {
+    return { success: false, error: 'Nenhum arquivo enviado' };
+  }
+
+  // Validar tipo de arquivo
+  const allowedTypes = ['image/svg+xml', 'image/png', 'image/x-icon', 'image/vnd.microsoft.icon', 'image/ico'];
+  if (!allowedTypes.includes(file.type) && !file.name.endsWith('.ico') && !file.name.endsWith('.svg') && !file.name.endsWith('.png')) {
+    return { success: false, error: 'Tipo de arquivo não permitido. Use SVG, PNG ou ICO.' };
+  }
+
+  // Validar tamanho (max 500KB)
+  if (file.size > 500 * 1024) {
+    return { success: false, error: 'Arquivo muito grande. Máximo 500KB.' };
+  }
+
+  // Upload para o storage
+  const fileExt = file.name.split('.').pop();
+  const fileName = `favicon-${Date.now()}.${fileExt}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from('site-assets')
+    .upload(fileName, file, {
+      contentType: file.type,
+      upsert: true,
+    });
+
+  if (uploadError) {
+    console.error('[Settings] Erro no upload do favicon:', uploadError);
+    return { success: false, error: 'Erro ao fazer upload do favicon' };
+  }
+
+  // Obter URL pública
+  const { data: publicUrl } = supabase.storage
+    .from('site-assets')
+    .getPublicUrl(fileName);
+
+  const faviconUrl = publicUrl.publicUrl;
+
+  // Salvar URL na configuração
+  const { error: updateError } = await supabase
+    .from('site_settings')
+    .upsert({
+      key: 'favicon_url',
+      value: faviconUrl,
+      label: 'Favicon URL',
+      description: 'URL do favicon do site',
+      field_type: 'text',
+    }, { onConflict: 'key' });
+
+  if (updateError) {
+    console.error('[Settings] Erro ao salvar URL do favicon:', updateError);
+    return { success: false, error: 'Erro ao salvar configuração do favicon' };
+  }
+
+  // Revalidar
+  revalidatePath('/', 'layout');
+  revalidatePath('/admin/configuracoes');
+
+  return { success: true, error: null, url: faviconUrl };
+}
+
+/**
+ * Resetar favicon para o padrão
+ */
+export async function resetFavicon(): Promise<{
+  success: boolean;
+  error: string | null;
+}> {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { success: false, error: 'Usuário não autenticado' };
+  }
+
+  const { data: profile } = await supabase
+    .from('users')
+    .select('is_creator')
+    .eq('id', user.id)
+    .single();
+
+  if (!profile?.is_creator) {
+    return { success: false, error: 'Acesso negado' };
+  }
+
+  // Remover configuração do favicon (volta ao padrão)
+  await supabase
+    .from('site_settings')
+    .delete()
+    .eq('key', 'favicon_url');
+
+  revalidatePath('/', 'layout');
+  revalidatePath('/admin/configuracoes');
+
+  return { success: true, error: null };
+}
+
+/**
  * Resetar uma configuração para o valor padrão
  */
 export async function resetSiteSetting(key: SiteSettingKey): Promise<{

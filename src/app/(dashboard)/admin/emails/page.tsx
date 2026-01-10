@@ -1,8 +1,6 @@
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, Button, Input, Skeleton } from '@/components/ui';
 import { fetchAllSiteSettings, updateMultipleSiteSettings } from '@/actions/settings';
@@ -59,7 +57,6 @@ const FIELD_LABELS: Record<string, { label: string; description: string; placeho
 };
 
 export default function AdminEmailsPage() {
-  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -71,27 +68,7 @@ export default function AdminEmailsPage() {
 
   useEffect(() => {
     async function loadData() {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-
-      if (!user) {
-        router.push('/login');
-        return;
-      }
-
-      // Verificar se e admin ou creator
-      const { data: profile } = await supabase
-        .from('users')
-        .select('role, is_creator')
-        .eq('id', user.id)
-        .single();
-
-      if (profile?.role !== 'admin' && !profile?.is_creator) {
-        router.push('/');
-        return;
-      }
-
-      // Carregar configuracoes
+      // Carregar configuracoes (auth ja verificada pelo AdminAuthCheck no layout)
       const result = await fetchAllSiteSettings();
 
       if (result.error) {
@@ -119,7 +96,7 @@ export default function AdminEmailsPage() {
     }
 
     loadData();
-  }, [router]);
+  }, []);
 
   const handleValueChange = (key: string, value: string) => {
     setEditedValues(prev => ({ ...prev, [key]: value }));
