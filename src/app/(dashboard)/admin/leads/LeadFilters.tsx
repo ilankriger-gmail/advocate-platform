@@ -35,6 +35,7 @@ export function LeadFilters({ stats }: LeadFiltersProps) {
   const orderOptions = [
     { key: 'created_at', label: 'Data' },
     { key: 'score', label: 'Nota NPS' },
+    { key: 'ai_score', label: 'Score IA' },
     { key: 'reason_length', label: 'Prolixidade' },
   ];
 

@@ -37,8 +37,9 @@ export default async function AdminLeadsPage({ searchParams }: PageProps) {
   // Buscar estatisticas
   const { data: allLeads } = await supabase
     .from('nps_leads')
-    .select('status, score');
+    .select('status, score, ai_score');
 
+  const analyzedLeads = allLeads?.filter(l => l.ai_score !== null) || [];
   const stats = {
     total: allLeads?.length || 0,
     pending: allLeads?.filter(l => l.status === 'pending').length || 0,
@@ -46,6 +47,10 @@ export default async function AdminLeadsPage({ searchParams }: PageProps) {
     rejected: allLeads?.filter(l => l.status === 'rejected').length || 0,
     avgScore: allLeads?.length
       ? Math.round((allLeads.reduce((sum, l) => sum + l.score, 0) / allLeads.length) * 10) / 10
+      : 0,
+    analyzed: analyzedLeads.length,
+    avgAiScore: analyzedLeads.length
+      ? Math.round(analyzedLeads.reduce((sum, l) => sum + (l.ai_score || 0), 0) / analyzedLeads.length)
       : 0,
   };
 
@@ -60,7 +65,12 @@ export default async function AdminLeadsPage({ searchParams }: PageProps) {
   }
 
   // Ordenacao (sempre desc para mostrar mais recentes/maiores primeiro)
-  query = query.order(orderBy, { ascending: false });
+  // Para ai_score, coloca nulls no final (leads nao analisados)
+  if (orderBy === 'ai_score') {
+    query = query.order(orderBy, { ascending: false, nullsFirst: false });
+  } else {
+    query = query.order(orderBy, { ascending: false });
+  }
 
   const { data: leads } = await query;
 
@@ -79,7 +89,7 @@ export default async function AdminLeadsPage({ searchParams }: PageProps) {
       </div>
 
       {/* Cards de estatisticas */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div className="bg-white rounded-xl border border-gray-200 p-4">
           <p className="text-sm text-gray-500">Total</p>
           <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
@@ -95,6 +105,15 @@ export default async function AdminLeadsPage({ searchParams }: PageProps) {
         <div className="bg-white rounded-xl border-l-4 border-l-pink-500 border border-gray-200 p-4">
           <p className="text-sm text-gray-500">NPS Medio</p>
           <p className="text-2xl font-bold text-pink-600">{stats.avgScore}</p>
+        </div>
+        <div className="bg-white rounded-xl border-l-4 border-l-purple-500 border border-gray-200 p-4">
+          <p className="text-sm text-gray-500">Score IA Medio</p>
+          <p className="text-2xl font-bold text-purple-600">
+            {stats.avgAiScore > 0 ? stats.avgAiScore : '-'}
+            <span className="text-xs font-normal text-gray-400 ml-1">
+              ({stats.analyzed}/{stats.total})
+            </span>
+          </p>
         </div>
       </div>
 
