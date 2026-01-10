@@ -54,6 +54,13 @@ const DEFAULT_VALUES: Record<SiteSettingKey, string> = {
   meta_description: 'Comunidade oficial de O Moço do Te Amo | NextlevelDJ',
   email_from_name: 'Arena Te Amo',
   footer_text: 'O Moço do Te Amo - Arena Te Amo',
+  // Chaves de API (sem valor padrao - devem ser configuradas no banco)
+  openai_api_key: '',
+  resend_api_key: '',
+  meta_pixel_id: '',
+  meta_access_token: '',
+  whatsapp_phone_number_id: '',
+  whatsapp_access_token: '',
 };
 
 /**
