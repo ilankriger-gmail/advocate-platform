@@ -29,14 +29,14 @@ export default function AdminConfiguracoesPage() {
         return;
       }
 
-      // Verificar se é admin
+      // Verificar se é admin ou creator
       const { data: profile } = await supabase
         .from('users')
-        .select('is_creator')
+        .select('role, is_creator')
         .eq('id', user.id)
         .single();
 
-      if (!profile?.is_creator) {
+      if (profile?.role !== 'admin' && !profile?.is_creator) {
         router.push('/');
         return;
       }
