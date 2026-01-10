@@ -221,7 +221,14 @@ export async function uploadPostImages(formData: FormData): Promise<ActionRespon
 
       if (uploadError) {
         console.error('Erro no upload:', uploadError);
-        return { error: 'Erro ao fazer upload da imagem' };
+        // Mensagens mais específicas baseadas no erro
+        if (uploadError.message?.includes('bucket') || uploadError.message?.includes('not found')) {
+          return { error: 'Bucket de imagens não configurado. Contate o administrador.' };
+        }
+        if (uploadError.message?.includes('policy') || uploadError.message?.includes('permission')) {
+          return { error: 'Sem permissão para upload. Contate o administrador.' };
+        }
+        return { error: `Erro ao fazer upload: ${uploadError.message || 'erro desconhecido'}` };
       }
 
       // Obter URL pública
