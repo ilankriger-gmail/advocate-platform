@@ -25,7 +25,8 @@ const rateLimitCache = new Map<string, { count: number; resetAt: number }>();
 if (typeof setInterval !== 'undefined') {
   setInterval(() => {
     const now = Date.now();
-    for (const [key, value] of rateLimitCache.entries()) {
+    const entries = Array.from(rateLimitCache.entries());
+    for (const [key, value] of entries) {
       if (value.resetAt < now) {
         rateLimitCache.delete(key);
       }

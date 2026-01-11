@@ -6,6 +6,7 @@ import { ActionResponse, CreatePostResponse } from '@/types/action';
 import type { CreatePostData, UpdatePostData } from '@/types/post';
 import type { Post, PostComment } from '@/lib/supabase/types';
 import { moderatePost, getBlockedMessage, getPendingReviewMessage } from '@/lib/moderation';
+import { logModerationAction, checkRateLimit, RATE_LIMITS } from '@/lib/security';
 
 /**
  * Remove links clicáveis do HTML, mantendo apenas o texto
@@ -372,6 +373,9 @@ export async function approvePost(postId: string): Promise<ActionResponse> {
       return { error: 'Erro ao aprovar post' };
     }
 
+    // Audit log
+    await logModerationAction('admin.post_approve', user.id, postId);
+
     revalidatePath('/feed');
     return { success: true };
   } catch {
@@ -415,6 +419,9 @@ export async function rejectPost(postId: string, reason: string): Promise<Action
     if (error) {
       return { error: 'Erro ao rejeitar post' };
     }
+
+    // Audit log
+    await logModerationAction('admin.post_reject', user.id, postId, { reason });
 
     revalidatePath('/feed');
     revalidatePath('/admin/moderacao');
@@ -470,6 +477,9 @@ export async function approveBlockedPost(postId: string): Promise<ActionResponse
         decision: 'approved',
       })
       .eq('post_id', postId);
+
+    // Audit log
+    await logModerationAction('admin.post_approve', user.id, postId, { wasBlocked: true });
 
     revalidatePath('/feed');
     revalidatePath('/admin/moderacao');
