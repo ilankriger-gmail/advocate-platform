@@ -26,15 +26,12 @@ export async function verifyAdminOrCreator(
     .eq('id', userId)
     .single();
 
-  console.log('verifyAdminOrCreator:', { userId, profile, error });
-
   if (error || !profile) {
     return { error: 'Erro ao verificar permissões do usuário' };
   }
 
   // Verifica se é creator (role = 'creator' OU is_creator = true)
   if (profile.role !== 'creator' && !profile.is_creator) {
-    console.log('verifyAdminOrCreator: Acesso negado', { role: profile.role, is_creator: profile.is_creator });
     return { error: 'Acesso não autorizado' };
   }
 
@@ -64,15 +61,12 @@ export async function verifyAdmin(
     .eq('id', userId)
     .single();
 
-  console.log('verifyAdmin:', { userId, profile, error });
-
   if (error || !profile) {
     return { error: 'Erro ao verificar permissões do usuário' };
   }
 
   // Verifica se é creator (role = 'creator' OU is_creator = true)
   if (profile.role !== 'creator' && !profile.is_creator) {
-    console.log('verifyAdmin: Acesso negado', { role: profile.role, is_creator: profile.is_creator });
     return { error: 'Acesso não autorizado' };
   }
 

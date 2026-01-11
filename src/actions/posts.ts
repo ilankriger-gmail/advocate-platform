@@ -55,7 +55,6 @@ export async function createPost(data: CreatePostData): Promise<CreatePostRespon
     }
 
     const isCreator = userData?.is_creator ?? false;
-    console.log('createPost - userId:', user.id, 'isCreator:', isCreator, 'userData:', userData);
 
     // Só criadores podem usar YouTube e Instagram embeds
     if (!isCreator && (data.youtube_url || data.instagram_url)) {
@@ -349,6 +348,17 @@ export async function approvePost(postId: string): Promise<ActionResponse> {
       return { error: 'Usuário não autenticado' };
     }
 
+    // Verificar se usuario e admin ou criador
+    const { data: profile } = await supabase
+      .from('users')
+      .select('role, is_creator')
+      .eq('id', user.id)
+      .single();
+
+    if (!profile || (profile.role !== 'admin' && !profile.is_creator)) {
+      return { error: 'Acesso não autorizado. Apenas administradores podem aprovar posts.' };
+    }
+
     const { error } = await supabase
       .from('posts')
       .update({
@@ -379,6 +389,17 @@ export async function rejectPost(postId: string, reason: string): Promise<Action
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return { error: 'Usuário não autenticado' };
+    }
+
+    // Verificar se usuario e admin ou criador
+    const { data: profile } = await supabase
+      .from('users')
+      .select('role, is_creator')
+      .eq('id', user.id)
+      .single();
+
+    if (!profile || (profile.role !== 'admin' && !profile.is_creator)) {
+      return { error: 'Acesso não autorizado. Apenas administradores podem rejeitar posts.' };
     }
 
     const { error } = await supabase
@@ -414,6 +435,17 @@ export async function approveBlockedPost(postId: string): Promise<ActionResponse
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return { error: 'Usuário não autenticado' };
+    }
+
+    // Verificar se usuario e admin ou criador
+    const { data: profile } = await supabase
+      .from('users')
+      .select('role, is_creator')
+      .eq('id', user.id)
+      .single();
+
+    if (!profile || (profile.role !== 'admin' && !profile.is_creator)) {
+      return { error: 'Acesso não autorizado. Apenas administradores podem aprovar posts bloqueados.' };
     }
 
     // Atualizar post para aprovado

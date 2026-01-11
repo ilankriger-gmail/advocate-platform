@@ -1,6 +1,33 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
+// Lista de rotas permitidas para redirect (previne Open Redirect)
+const ALLOWED_REDIRECTS = [
+  '/',
+  '/dashboard',
+  '/perfil',
+  '/desafios',
+  '/eventos',
+  '/ranking',
+  '/premios',
+  '/feed',
+  '/admin',
+];
+
+/**
+ * Valida se o redirect e seguro (previne Open Redirect attacks)
+ */
+function isValidRedirect(path: string): boolean {
+  // Rejeita URLs absolutas ou protocolos
+  if (path.startsWith('//') || path.includes('://') || path.startsWith('javascript:')) {
+    return false;
+  }
+  // Verifica se comeca com uma rota permitida
+  return ALLOWED_REDIRECTS.some(allowed =>
+    path === allowed || path.startsWith(`${allowed}/`)
+  );
+}
+
 /**
  * Rota de callback para autenticação do Supabase
  * Usada para confirmação de email e OAuth
@@ -8,7 +35,10 @@ import { NextResponse } from 'next/server';
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
-  const next = searchParams.get('next') ?? '/dashboard';
+  const requestedNext = searchParams.get('next') ?? '/dashboard';
+
+  // Validar redirect para prevenir Open Redirect
+  const next = isValidRedirect(requestedNext) ? requestedNext : '/dashboard';
 
   if (code) {
     const supabase = await createClient();

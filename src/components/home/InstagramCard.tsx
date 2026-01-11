@@ -1,5 +1,6 @@
 'use client';
 
+import DOMPurify from 'isomorphic-dompurify';
 import { Card, Avatar } from '@/components/ui';
 import {
   VoteButtons,
@@ -12,6 +13,14 @@ import {
 } from '@/components/posts';
 import { formatRelativeTime } from '@/lib/utils';
 import type { PostWithAuthor } from '@/lib/supabase/types';
+
+// Sanitizar HTML para prevenir XSS
+function sanitizeHtml(html: string): string {
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'ol', 'li', 's', 'strike'],
+    ALLOWED_ATTR: ['href', 'target', 'rel', 'class'],
+  });
+}
 
 interface InstagramCardProps {
   post: PostWithAuthor;
@@ -91,7 +100,7 @@ export function InstagramCard({ post }: InstagramCardProps) {
           {post.content && post.content !== '<p></p>' && (
             <div
               className="text-sm text-gray-600 mt-1 line-clamp-3 prose prose-sm max-w-none"
-              dangerouslySetInnerHTML={{ __html: post.content }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content) }}
             />
           )}
         </div>
