@@ -151,8 +151,8 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
               onChange={(newScore) => {
                 setScore(newScore);
                 setErrors({});
-                // Auto-avanca para proximo step apos selecionar
-                setTimeout(() => nextStep(), 300);
+                // Auto-avanca direto para step 2 (evita stale closure com nextStep)
+                setTimeout(() => setCurrentStep(2), 300);
               }}
               error={errors.score}
             />
