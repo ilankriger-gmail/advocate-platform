@@ -184,6 +184,9 @@ function ChallengeAdminCard({ challenge }: ChallengeCardProps) {
         <Link href={`/admin/desafios/${challenge.id}`} className="flex-1">
           <Button size="sm" className="w-full">Gerenciar</Button>
         </Link>
+        <Link href={`/admin/desafios/${challenge.id}/editar`}>
+          <Button size="sm" variant="outline">Editar</Button>
+        </Link>
         <ChallengeToggleButton
           challengeId={challenge.id}
           challengeName={challenge.title}
