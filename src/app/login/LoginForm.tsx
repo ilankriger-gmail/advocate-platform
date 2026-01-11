@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -314,19 +315,29 @@ export default function LoginForm({ siteName, subtitle, logoUrl = '/logo.png' }:
               </button>
             </form>
 
-            <div className="mt-4 flex items-center justify-between text-sm">
-              <button
-                onClick={() => { setAuthMode('select'); setError(''); }}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                Voltar
-              </button>
-              <button
-                onClick={() => { setAuthMode('register'); setError(''); }}
-                className="text-gray-700 font-medium hover:text-gray-900 underline"
-              >
-                Criar conta
-              </button>
+            <div className="mt-4 space-y-3">
+              <div className="text-center">
+                <Link
+                  href="/esqueci-senha"
+                  className="text-sm text-gray-600 hover:text-gray-800 underline"
+                >
+                  Esqueci minha senha
+                </Link>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <button
+                  onClick={() => { setAuthMode('select'); setError(''); }}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  Voltar
+                </button>
+                <button
+                  onClick={() => { setAuthMode('register'); setError(''); }}
+                  className="text-gray-700 font-medium hover:text-gray-900 underline"
+                >
+                  Criar conta
+                </button>
+              </div>
             </div>
           </>
         )}

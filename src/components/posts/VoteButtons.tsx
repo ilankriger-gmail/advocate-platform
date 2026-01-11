@@ -54,10 +54,10 @@ export function VoteButtons({
         onClick={() => handleVote(1)}
         disabled={isPending}
         className={cn(
-          'p-1.5 rounded-lg transition-all hover:bg-gray-100',
+          'p-1.5 rounded-lg transition-all hover:bg-primary-50 press-scale',
           userVote === 1
-            ? 'text-green-600 bg-green-50'
-            : 'text-gray-400 hover:text-green-600'
+            ? 'text-primary-600 bg-primary-50'
+            : 'text-surface-400 hover:text-primary-600'
         )}
         title="Upvote"
       >
@@ -80,9 +80,9 @@ export function VoteButtons({
       <span
         className={cn(
           'text-sm font-semibold min-w-[2rem] text-center',
-          userVote === 1 && 'text-green-600',
-          userVote === -1 && 'text-red-600',
-          !userVote && 'text-gray-600'
+          userVote === 1 && 'text-primary-600',
+          userVote === -1 && 'text-accent-600',
+          !userVote && 'text-surface-600'
         )}
       >
         {score}
@@ -93,10 +93,10 @@ export function VoteButtons({
         onClick={() => handleVote(-1)}
         disabled={isPending}
         className={cn(
-          'p-1.5 rounded-lg transition-all hover:bg-gray-100',
+          'p-1.5 rounded-lg transition-all hover:bg-accent-50 press-scale',
           userVote === -1
-            ? 'text-red-600 bg-red-50'
-            : 'text-gray-400 hover:text-red-600'
+            ? 'text-accent-600 bg-accent-50'
+            : 'text-surface-400 hover:text-accent-600'
         )}
         title="Downvote"
       >

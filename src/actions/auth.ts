@@ -245,3 +245,45 @@ export async function updatePassword(formData: FormData): Promise<AuthResponse> 
 
   redirect('/');
 }
+
+/**
+ * Server Action para definir nova senha (via link de recuperacao)
+ * Usado quando usuario clica no link do email de reset
+ * NAO exige senha atual - depende da sessao de recuperacao valida
+ */
+export async function setNewPassword(formData: FormData): Promise<AuthResponse> {
+  const supabase = await createClient();
+
+  const password = formData.get('password') as string;
+  const confirmPassword = formData.get('confirmPassword') as string;
+
+  if (!password) {
+    return { error: 'Nova senha e obrigatoria' };
+  }
+
+  if (password !== confirmPassword) {
+    return { error: 'As senhas nao coincidem' };
+  }
+
+  // Validacao robusta de senha
+  const passwordValidation = validatePassword(password);
+  if (!passwordValidation.isValid) {
+    return { error: passwordValidation.errors[0] };
+  }
+
+  // Verificar se ha sessao de recuperacao valida
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { error: 'Sessao expirada. Solicite um novo link de recuperacao.' };
+  }
+
+  const { error } = await supabase.auth.updateUser({
+    password,
+  });
+
+  if (error) {
+    return { error: 'Erro ao atualizar senha. Tente novamente.' };
+  }
+
+  return { success: true };
+}

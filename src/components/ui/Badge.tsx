@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
  * - `info`: Badge azul para informações gerais
  * - `primary`: Badge roxo/índigo para destaque ou elementos primários
  */
-type BadgeVariant = 'default' | 'success' | 'warning' | 'error' | 'info' | 'primary';
+type BadgeVariant = 'default' | 'success' | 'warning' | 'error' | 'info' | 'primary' | 'gradient';
 
 /**
  * Tamanhos disponíveis para o badge
@@ -77,12 +77,13 @@ export interface BadgeProps {
 }
 
 const variantStyles = {
-  default: 'bg-gray-100 text-gray-700',
+  default: 'bg-surface-100 text-surface-700',
   success: 'bg-green-100 text-green-700',
   warning: 'bg-yellow-100 text-yellow-700',
   error: 'bg-red-100 text-red-700',
   info: 'bg-blue-100 text-blue-700',
-  primary: 'bg-indigo-100 text-indigo-700',
+  primary: 'bg-primary-100 text-primary-700',
+  gradient: 'bg-gradient-to-r from-primary-500 to-accent-500 text-white',
 };
 
 const sizeStyles = {

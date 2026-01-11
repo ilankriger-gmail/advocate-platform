@@ -16,7 +16,12 @@ const COMUNIDADE_DOMAIN = 'comunidade.omocodoteamo.com.br';
 const COMECE_ALLOWED_ROUTES = ['/', '/seja-arena'];
 
 // Rotas públicas no domínio comunidade (não requerem auth)
-const COMUNIDADE_PUBLIC_ROUTES = ['/login', '/auth/callback'];
+const COMUNIDADE_PUBLIC_ROUTES = [
+  '/login',
+  '/auth/callback',
+  '/auth/reset-password',
+  '/esqueci-senha',
+];
 
 // Rotas que requerem role de admin
 const ADMIN_ROUTES = ['/admin'];

@@ -211,7 +211,7 @@ export function Card({
   const cardStyles = `
     bg-white border border-surface-200 rounded-2xl shadow-soft
     ${paddingStyles[padding]}
-    ${hover ? 'transition-shadow duration-200 hover:shadow-soft-lg' : ''}
+    ${hover ? 'hover-lift' : ''}
     ${className}
   `.trim().replace(/\s+/g, ' ');
 

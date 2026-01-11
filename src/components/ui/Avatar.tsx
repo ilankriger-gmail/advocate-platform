@@ -131,13 +131,13 @@ const statusColors: Record<NonNullable<AvatarProps['status']>, string> = {
 // Cores de fundo para fallback baseadas no nome
 const backgroundColors = [
   'bg-primary-500',
+  'bg-accent-500',
   'bg-emerald-500',
   'bg-amber-500',
-  'bg-rose-500',
   'bg-violet-500',
   'bg-cyan-500',
-  'bg-orange-500',
-  'bg-pink-500',
+  'bg-rose-500',
+  'bg-indigo-500',
 ];
 
 // Função para extrair iniciais do nome

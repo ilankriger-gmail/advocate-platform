@@ -11,7 +11,7 @@ export default function DashboardLayout({
   const { isOpen, close } = useSidebar();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen dashboard-bg">
       {/* Sidebar */}
       <Sidebar isOpen={isOpen} onClose={close} />
 

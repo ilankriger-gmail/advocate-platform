@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, Button, Input, Textarea, Skeleton } from '@/components/ui';
 import { useProfile } from '@/hooks';
 import { createClient } from '@/lib/supabase/client';
+import ChangePasswordSection from '@/components/auth/ChangePasswordSection';
 
 export default function EditarPerfilPage() {
   const router = useRouter();
@@ -185,6 +186,9 @@ export default function EditarPerfilPage() {
           </div>
         </Card>
       </form>
+
+      {/* Secao de Alteracao de Senha */}
+      <ChangePasswordSection />
     </div>
   );
 }

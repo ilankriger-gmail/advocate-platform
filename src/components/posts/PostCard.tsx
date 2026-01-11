@@ -91,23 +91,23 @@ export const PostCard = memo(function PostCard({
 
     return (
       <>
-        <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+        <div className="flex items-start gap-3 p-3 bg-surface-50 rounded-xl hover:bg-surface-100 transition-colors">
           <Avatar
             name={author.full_name || 'Usuário'}
             src={author.avatar_url || undefined}
             size="sm"
           />
           <div className="flex-1 min-w-0">
-            <h4 className="font-medium text-gray-900 truncate">{post.title}</h4>
-            <p className="text-sm text-gray-500 truncate">{textContent}</p>
-            <div className="flex items-center gap-3 mt-1 text-xs text-gray-400">
+            <h4 className="font-medium text-surface-900 truncate">{post.title}</h4>
+            <p className="text-sm text-surface-500 truncate">{textContent}</p>
+            <div className="flex items-center gap-3 mt-1 text-xs text-surface-400">
               <span>{formatRelativeTime(post.created_at)}</span>
               {post.status !== 'approved' && (
                 <Badge variant={post.status === 'pending' ? 'warning' : 'error'} size="sm">
                   {statusConfig.label}
                 </Badge>
               )}
-              <span className="flex items-center gap-1">
+              <span className="flex items-center gap-1 text-primary-600">
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                 </svg>
@@ -117,14 +117,14 @@ export const PostCard = memo(function PostCard({
                 <>
                   <Link
                     href={`/perfil/posts/${post.id}/editar`}
-                    className="text-purple-600 hover:text-purple-800"
+                    className="text-primary-600 hover:text-primary-800 transition-colors"
                   >
                     Editar
                   </Link>
                   <button
                     onClick={handleDelete}
                     disabled={isPending}
-                    className="text-red-500 hover:text-red-700 disabled:opacity-50"
+                    className="text-red-500 hover:text-red-700 disabled:opacity-50 transition-colors"
                   >
                     Excluir
                   </button>
@@ -164,7 +164,7 @@ export const PostCard = memo(function PostCard({
 
   return (
     <>
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden hover-lift animate-fade-in">
       {/* Header */}
       <div className="p-4 flex items-start justify-between">
         <div className="flex items-center gap-3">
@@ -178,11 +178,11 @@ export const PostCard = memo(function PostCard({
           <div>
             <Link
               href={`/profile/${author.id}`}
-              className="font-medium text-gray-900 hover:text-indigo-600 transition-colors"
+              className="font-medium text-surface-900 hover:text-primary-600 transition-colors"
             >
               {author.full_name || 'Usuário'}
             </Link>
-            <div className="flex items-center gap-2 text-sm text-gray-500">
+            <div className="flex items-center gap-2 text-sm text-surface-500">
               <span>{formatRelativeTime(post.created_at)}</span>
               {post.status !== 'approved' && (
                 <Badge
@@ -199,23 +199,23 @@ export const PostCard = memo(function PostCard({
         {/* Menu de opções */}
         {(isOwner || isAdmin) && (
           <div className="relative group">
-            <button className="p-1.5 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100">
+            <button className="p-1.5 rounded-full text-surface-400 hover:text-surface-600 hover:bg-surface-100 transition-colors">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
               </svg>
             </button>
-            <div className="absolute right-0 mt-1 w-32 bg-white rounded-lg shadow-lg border border-gray-200 py-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
+            <div className="absolute right-0 mt-1 w-32 bg-white rounded-xl shadow-lg border border-surface-200 py-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
               {isOwner && (
                 <>
                   <Link
                     href={`/perfil/posts/${post.id}/editar`}
-                    className="block w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+                    className="block w-full text-left px-3 py-1.5 text-sm text-surface-700 hover:bg-primary-50 hover:text-primary-700 transition-colors"
                   >
                     Editar
                   </Link>
                   <button
                     onClick={handleDelete}
-                    className="w-full text-left px-3 py-1.5 text-sm text-red-600 hover:bg-red-50"
+                    className="w-full text-left px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
                   >
                     Excluir
                   </button>
@@ -228,12 +228,12 @@ export const PostCard = memo(function PostCard({
 
       {/* Content */}
       <div className="px-4 pb-3">
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+        <h3 className="text-lg font-semibold text-surface-900 mb-2">
           {post.title}
         </h3>
         {post.content && (
           <div
-            className="prose prose-sm max-w-none text-gray-700 [&_a]:text-purple-600 [&_a]:underline [&_a:hover]:text-purple-800"
+            className="prose prose-sm max-w-none text-surface-700 [&_a]:text-primary-600 [&_a]:underline [&_a:hover]:text-primary-800"
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content) }}
           />
         )}
@@ -273,7 +273,7 @@ export const PostCard = memo(function PostCard({
       {/* Actions */}
       {post.status === 'approved' && (
         <>
-          <div className="px-4 py-3 border-t border-gray-100 flex items-center gap-6">
+          <div className="px-4 py-3 border-t border-surface-100 flex items-center gap-6">
             <VoteButtons
               postId={post.id}
               initialScore={voteScore}
@@ -292,7 +292,7 @@ export const PostCard = memo(function PostCard({
 
       {/* Approval Actions (admin only, pending posts) */}
       {isAdmin && post.status === 'pending' && (
-        <div className="px-4 py-3 border-t border-gray-100 flex items-center gap-3">
+        <div className="px-4 py-3 border-t border-surface-100 flex items-center gap-3 bg-gradient-to-r from-primary-50/50 to-accent-50/50">
           <Button
             variant="primary"
             size="sm"

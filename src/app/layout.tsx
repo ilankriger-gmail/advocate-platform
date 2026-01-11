@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Space_Grotesk } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { SidebarProvider } from '@/contexts/SidebarContext';
@@ -8,7 +8,11 @@ import { ToastProvider } from '@/components/ui/Toast';
 import { Header } from '@/components/layout/Header';
 import { getSiteSettings } from '@/lib/config/site';
 
-const inter = Inter({ subsets: ['latin'] });
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  variable: '--font-space-grotesk',
+  weight: ['300', '400', '500', '600', '700'],
+});
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings(['meta_title', 'meta_description', 'favicon_url']);
@@ -38,7 +42,7 @@ export default async function RootLayout({
 
   return (
     <html lang="pt-BR">
-      <body className={inter.className}>
+      <body className={`${spaceGrotesk.variable} font-sans`}>
         <QueryProvider>
           <AuthProvider>
             <ToastProvider>
