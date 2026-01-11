@@ -86,9 +86,262 @@ describe('File Validation - Magic Bytes', () => {
   });
 
   describe('validateFileMagicBytes - Valid Formats', () => {
-    // Testes para formatos válidos serão implementados no subtask 4.2
-    it('should be implemented in subtask 4.2', () => {
-      expect(true).toBe(true);
+    describe('JPEG format', () => {
+      it('should detect valid JPEG file', async () => {
+        // JPEG magic bytes: FF D8 FF E0
+        const jpegBytes = [
+          0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46,
+          0x49, 0x46, 0x00, 0x01, 0x01, 0x01, 0x00, 0x48,
+        ];
+        const file = createFileFromBytes(jpegBytes, 'test.jpg', 'image/jpeg');
+
+        const result = await validateFileMagicBytes(file);
+
+        expect(result.valid).toBe(true);
+        expect(result.detectedFormat).toBe('jpeg');
+        expect(result.detectedMimeType).toBe('image/jpeg');
+        expect(result.error).toBeUndefined();
+      });
+
+      it('should detect JPEG with alternative MIME type', async () => {
+        const jpegBytes = [
+          0xFF, 0xD8, 0xFF, 0xE1, 0x00, 0x18, 0x45, 0x78,
+          0x69, 0x66, 0x00, 0x00, 0x4D, 0x4D, 0x00, 0x2A,
+        ];
+        const file = createFileFromBytes(jpegBytes, 'photo.jpeg', 'image/jpeg');
+
+        const result = await validateFileMagicBytes(file);
+
+        expect(result.valid).toBe(true);
+        expect(result.detectedFormat).toBe('jpeg');
+        expect(result.detectedMimeType).toBe('image/jpeg');
+      });
+    });
+
+    describe('PNG format', () => {
+      it('should detect valid PNG file', async () => {
+        // PNG magic bytes: 89 50 4E 47 0D 0A 1A 0A
+        const pngBytes = [
+          0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
+          0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52,
+        ];
+        const file = createFileFromBytes(pngBytes, 'test.png', 'image/png');
+
+        const result = await validateFileMagicBytes(file);
+
+        expect(result.valid).toBe(true);
+        expect(result.detectedFormat).toBe('png');
+        expect(result.detectedMimeType).toBe('image/png');
+        expect(result.error).toBeUndefined();
+      });
+
+      it('should detect PNG with full header', async () => {
+        const pngBytes = [
+          0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
+          0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52,
+          0x00, 0x00, 0x00, 0x10,
+        ];
+        const file = createFileFromBytes(pngBytes, 'image.png', 'image/png');
+
+        const result = await validateFileMagicBytes(file);
+
+        expect(result.valid).toBe(true);
+        expect(result.detectedFormat).toBe('png');
+      });
+    });
+
+    describe('GIF format', () => {
+      it('should detect valid GIF87a file', async () => {
+        // GIF87a magic bytes: 47 49 46 38 37 61
+        const gifBytes = [
+          0x47, 0x49, 0x46, 0x38, 0x37, 0x61, // "GIF87a"
+          0x0A, 0x00, 0x0A, 0x00, 0x91, 0x00, 0x00,
+        ];
+        const file = createFileFromBytes(gifBytes, 'test.gif', 'image/gif');
+
+        const result = await validateFileMagicBytes(file);
+
+        expect(result.valid).toBe(true);
+        expect(result.detectedFormat).toBe('gif');
+        expect(result.detectedMimeType).toBe('image/gif');
+        expect(result.error).toBeUndefined();
+      });
+
+      it('should detect valid GIF89a file', async () => {
+        // GIF89a magic bytes: 47 49 46 38 39 61
+        const gifBytes = [
+          0x47, 0x49, 0x46, 0x38, 0x39, 0x61, // "GIF89a"
+          0x0A, 0x00, 0x0A, 0x00, 0xF7, 0x00, 0x00,
+        ];
+        const file = createFileFromBytes(gifBytes, 'animated.gif', 'image/gif');
+
+        const result = await validateFileMagicBytes(file);
+
+        expect(result.valid).toBe(true);
+        expect(result.detectedFormat).toBe('gif');
+        expect(result.detectedMimeType).toBe('image/gif');
+        expect(result.error).toBeUndefined();
+      });
+    });
+
+    describe('WebP format', () => {
+      it('should detect valid WebP file', async () => {
+        // WebP magic bytes: RIFF (52 49 46 46) + WEBP at position 8-11 (57 45 42 50)
+        const webpBytes = [
+          0x52, 0x49, 0x46, 0x46, // "RIFF"
+          0x24, 0x00, 0x00, 0x00, // File size
+          0x57, 0x45, 0x42, 0x50, // "WEBP"
+          0x56, 0x50, 0x38, 0x20, // VP8 format
+        ];
+        const file = createFileFromBytes(webpBytes, 'test.webp', 'image/webp');
+
+        const result = await validateFileMagicBytes(file);
+
+        expect(result.valid).toBe(true);
+        expect(result.detectedFormat).toBe('webp');
+        expect(result.detectedMimeType).toBe('image/webp');
+        expect(result.error).toBeUndefined();
+      });
+
+      it('should detect WebP VP8L format', async () => {
+        const webpBytes = [
+          0x52, 0x49, 0x46, 0x46, // "RIFF"
+          0x2C, 0x00, 0x00, 0x00, // File size
+          0x57, 0x45, 0x42, 0x50, // "WEBP"
+          0x56, 0x50, 0x38, 0x4C, // VP8L format (lossless)
+        ];
+        const file = createFileFromBytes(webpBytes, 'lossless.webp', 'image/webp');
+
+        const result = await validateFileMagicBytes(file);
+
+        expect(result.valid).toBe(true);
+        expect(result.detectedFormat).toBe('webp');
+      });
+    });
+
+    describe('ICO format', () => {
+      it('should detect valid ICO file', async () => {
+        // ICO magic bytes: 00 00 01 00
+        const icoBytes = [
+          0x00, 0x00, 0x01, 0x00, // ICO signature
+          0x01, 0x00, // Number of images
+          0x10, 0x10, // Width and height (16x16)
+          0x00, 0x00, 0x01, 0x00, 0x08, 0x00,
+        ];
+        const file = createFileFromBytes(icoBytes, 'favicon.ico', 'image/x-icon');
+
+        const result = await validateFileMagicBytes(file);
+
+        expect(result.valid).toBe(true);
+        expect(result.detectedFormat).toBe('ico');
+        expect(result.detectedMimeType).toBe('image/x-icon');
+        expect(result.error).toBeUndefined();
+      });
+
+      it('should detect ICO with alternative MIME type', async () => {
+        const icoBytes = [
+          0x00, 0x00, 0x01, 0x00,
+          0x02, 0x00, // 2 images
+          0x20, 0x20, 0x00, 0x00, 0x01, 0x00, 0x20, 0x00,
+        ];
+        const file = createFileFromBytes(icoBytes, 'icon.ico', 'image/vnd.microsoft.icon');
+
+        const result = await validateFileMagicBytes(file);
+
+        expect(result.valid).toBe(true);
+        expect(result.detectedFormat).toBe('ico');
+      });
+    });
+
+    describe('SVG format', () => {
+      it('should detect valid SVG file', async () => {
+        const svgContent = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+  <circle cx="50" cy="50" r="40" fill="red" />
+</svg>`;
+        const file = createTextFile(svgContent, 'test.svg', 'image/svg+xml');
+
+        const result = await validateFileMagicBytes(file);
+
+        expect(result.valid).toBe(true);
+        expect(result.detectedFormat).toBe('svg');
+        expect(result.detectedMimeType).toBe('image/svg+xml');
+        expect(result.error).toBeUndefined();
+      });
+
+      it('should detect SVG without XML declaration', async () => {
+        const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect width="100" height="100" fill="blue" />
+</svg>`;
+        const file = createTextFile(svgContent, 'simple.svg', 'image/svg+xml');
+
+        const result = await validateFileMagicBytes(file);
+
+        expect(result.valid).toBe(true);
+        expect(result.detectedFormat).toBe('svg');
+      });
+
+      it('should detect SVG with whitespace before tag', async () => {
+        const svgContent = `
+  <svg width="50" height="50">
+    <path d="M 10 10 L 40 40" stroke="black" />
+  </svg>`;
+        const file = createTextFile(svgContent, 'path.svg', 'image/svg+xml');
+
+        const result = await validateFileMagicBytes(file);
+
+        expect(result.valid).toBe(true);
+        expect(result.detectedFormat).toBe('svg');
+      });
+
+      it('should detect SVG by file extension when MIME type is not set', async () => {
+        const svgContent = `<svg><rect width="10" height="10"/></svg>`;
+        const file = createTextFile(svgContent, 'icon.svg', 'text/plain');
+
+        const result = await validateFileMagicBytes(file);
+
+        expect(result.valid).toBe(true);
+        expect(result.detectedFormat).toBe('svg');
+      });
+
+      it('should reject SVG with script tags', async () => {
+        const svgContent = `<svg xmlns="http://www.w3.org/2000/svg">
+  <script>alert('XSS')</script>
+  <circle cx="50" cy="50" r="40" />
+</svg>`;
+        const file = createTextFile(svgContent, 'malicious.svg', 'image/svg+xml');
+
+        const result = await validateFileMagicBytes(file);
+
+        expect(result.valid).toBe(false);
+        expect(result.error).toContain('malicioso');
+      });
+
+      it('should reject SVG with inline event handlers', async () => {
+        const svgContent = `<svg xmlns="http://www.w3.org/2000/svg">
+  <circle cx="50" cy="50" r="40" onclick="alert('XSS')" />
+</svg>`;
+        const file = createTextFile(svgContent, 'onclick.svg', 'image/svg+xml');
+
+        const result = await validateFileMagicBytes(file);
+
+        expect(result.valid).toBe(false);
+        expect(result.error).toContain('malicioso');
+      });
+
+      it('should reject SVG with javascript: protocol', async () => {
+        const svgContent = `<svg xmlns="http://www.w3.org/2000/svg">
+  <a href="javascript:alert('XSS')">
+    <text>Click me</text>
+  </a>
+</svg>`;
+        const file = createTextFile(svgContent, 'javascript.svg', 'image/svg+xml');
+
+        const result = await validateFileMagicBytes(file);
+
+        expect(result.valid).toBe(false);
+        expect(result.error).toContain('malicioso');
+      });
     });
   });
 
@@ -164,7 +417,79 @@ describe('File Validation - Magic Bytes', () => {
       expect(mimeType).toBeNull();
     });
 
-    // Testes adicionais serão implementados nos subtasks 4.2 e 4.3
+    it('should return correct MIME type for JPEG', async () => {
+      const jpegBytes = [
+        0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46,
+        0x49, 0x46, 0x00, 0x01, 0x01, 0x01, 0x00, 0x48,
+      ];
+      const file = createFileFromBytes(jpegBytes, 'test.jpg', 'image/jpeg');
+
+      const mimeType = await getFileTypeFromMagicBytes(file);
+
+      expect(mimeType).toBe('image/jpeg');
+    });
+
+    it('should return correct MIME type for PNG', async () => {
+      const pngBytes = [
+        0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
+        0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52,
+      ];
+      const file = createFileFromBytes(pngBytes, 'test.png', 'image/png');
+
+      const mimeType = await getFileTypeFromMagicBytes(file);
+
+      expect(mimeType).toBe('image/png');
+    });
+
+    it('should return correct MIME type for GIF', async () => {
+      const gifBytes = [
+        0x47, 0x49, 0x46, 0x38, 0x39, 0x61,
+        0x0A, 0x00, 0x0A, 0x00, 0xF7, 0x00, 0x00,
+      ];
+      const file = createFileFromBytes(gifBytes, 'test.gif', 'image/gif');
+
+      const mimeType = await getFileTypeFromMagicBytes(file);
+
+      expect(mimeType).toBe('image/gif');
+    });
+
+    it('should return correct MIME type for WebP', async () => {
+      const webpBytes = [
+        0x52, 0x49, 0x46, 0x46,
+        0x24, 0x00, 0x00, 0x00,
+        0x57, 0x45, 0x42, 0x50,
+        0x56, 0x50, 0x38, 0x20,
+      ];
+      const file = createFileFromBytes(webpBytes, 'test.webp', 'image/webp');
+
+      const mimeType = await getFileTypeFromMagicBytes(file);
+
+      expect(mimeType).toBe('image/webp');
+    });
+
+    it('should return correct MIME type for ICO', async () => {
+      const icoBytes = [
+        0x00, 0x00, 0x01, 0x00,
+        0x01, 0x00, 0x10, 0x10,
+        0x00, 0x00, 0x01, 0x00, 0x08, 0x00,
+      ];
+      const file = createFileFromBytes(icoBytes, 'favicon.ico', 'image/x-icon');
+
+      const mimeType = await getFileTypeFromMagicBytes(file);
+
+      expect(mimeType).toBe('image/x-icon');
+    });
+
+    it('should return correct MIME type for SVG', async () => {
+      const svgContent = `<svg xmlns="http://www.w3.org/2000/svg">
+  <circle cx="50" cy="50" r="40" />
+</svg>`;
+      const file = createTextFile(svgContent, 'test.svg', 'image/svg+xml');
+
+      const mimeType = await getFileTypeFromMagicBytes(file);
+
+      expect(mimeType).toBe('image/svg+xml');
+    });
   });
 
   describe('validateMimeTypeMatch', () => {
@@ -180,6 +505,104 @@ describe('File Validation - Magic Bytes', () => {
       expect(isValid).toBe(false);
     });
 
-    // Testes adicionais serão implementados nos subtasks 4.2 e 4.3
+    it('should return true when JPEG content matches declared MIME type', async () => {
+      const jpegBytes = [
+        0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46,
+        0x49, 0x46, 0x00, 0x01, 0x01, 0x01, 0x00, 0x48,
+      ];
+      const file = createFileFromBytes(jpegBytes, 'test.jpg', 'image/jpeg');
+
+      const isValid = await validateMimeTypeMatch(file);
+
+      expect(isValid).toBe(true);
+    });
+
+    it('should return true when PNG content matches declared MIME type', async () => {
+      const pngBytes = [
+        0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
+        0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52,
+      ];
+      const file = createFileFromBytes(pngBytes, 'test.png', 'image/png');
+
+      const isValid = await validateMimeTypeMatch(file);
+
+      expect(isValid).toBe(true);
+    });
+
+    it('should return true when GIF content matches declared MIME type', async () => {
+      const gifBytes = [
+        0x47, 0x49, 0x46, 0x38, 0x39, 0x61,
+        0x0A, 0x00, 0x0A, 0x00, 0xF7, 0x00, 0x00,
+      ];
+      const file = createFileFromBytes(gifBytes, 'test.gif', 'image/gif');
+
+      const isValid = await validateMimeTypeMatch(file);
+
+      expect(isValid).toBe(true);
+    });
+
+    it('should return true when WebP content matches declared MIME type', async () => {
+      const webpBytes = [
+        0x52, 0x49, 0x46, 0x46,
+        0x24, 0x00, 0x00, 0x00,
+        0x57, 0x45, 0x42, 0x50,
+        0x56, 0x50, 0x38, 0x20,
+      ];
+      const file = createFileFromBytes(webpBytes, 'test.webp', 'image/webp');
+
+      const isValid = await validateMimeTypeMatch(file);
+
+      expect(isValid).toBe(true);
+    });
+
+    it('should return true when ICO content matches declared MIME type', async () => {
+      const icoBytes = [
+        0x00, 0x00, 0x01, 0x00,
+        0x01, 0x00, 0x10, 0x10,
+        0x00, 0x00, 0x01, 0x00, 0x08, 0x00,
+      ];
+      const file = createFileFromBytes(icoBytes, 'favicon.ico', 'image/x-icon');
+
+      const isValid = await validateMimeTypeMatch(file);
+
+      expect(isValid).toBe(true);
+    });
+
+    it('should return true when SVG content matches declared MIME type', async () => {
+      const svgContent = `<svg xmlns="http://www.w3.org/2000/svg">
+  <circle cx="50" cy="50" r="40" />
+</svg>`;
+      const file = createTextFile(svgContent, 'test.svg', 'image/svg+xml');
+
+      const isValid = await validateMimeTypeMatch(file);
+
+      expect(isValid).toBe(true);
+    });
+
+    it('should return false when JPEG content has wrong declared MIME type', async () => {
+      const jpegBytes = [
+        0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46,
+        0x49, 0x46, 0x00, 0x01, 0x01, 0x01, 0x00, 0x48,
+      ];
+      // Arquivo JPEG real declarado como PNG
+      const file = createFileFromBytes(jpegBytes, 'fake.png', 'image/png');
+
+      const isValid = await validateMimeTypeMatch(file);
+
+      expect(isValid).toBe(false);
+    });
+
+    it('should return false when PNG content has wrong declared MIME type', async () => {
+      const pngBytes = [
+        0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
+        0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52,
+      ];
+      // Arquivo PNG real declarado como JPEG
+      const file = createFileFromBytes(pngBytes, 'fake.jpg', 'image/jpeg');
+
+      const isValid = await validateMimeTypeMatch(file);
+
+      expect(isValid).toBe(false);
+    });
   });
 });
