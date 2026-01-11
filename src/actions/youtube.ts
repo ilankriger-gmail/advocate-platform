@@ -1,5 +1,10 @@
 'use server';
 
+import { logger, sanitizeError } from '@/lib';
+
+// Logger contextualizado para o módulo de youtube
+const youtubeLogger = logger.withContext('[YouTube]');
+
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
 const CHANNEL_HANDLE = process.env.YOUTUBE_CHANNEL_HANDLE || '@nextleveldj1';
 
@@ -97,7 +102,7 @@ export async function searchYouTubeVideos(query?: string): Promise<{
     const data: YouTubeSearchResponse = await res.json();
 
     if (data.error) {
-      console.error('YouTube API error:', data.error);
+      youtubeLogger.error('Erro na API do YouTube', { error: sanitizeError(data.error) });
       return { error: data.error.message };
     }
 
@@ -152,7 +157,7 @@ export async function searchYouTubeVideos(query?: string): Promise<{
 
     return { videos };
   } catch (error) {
-    console.error('Erro ao buscar vídeos:', error);
+    youtubeLogger.error('Erro ao buscar vídeos', { error: sanitizeError(error) });
     return { error: 'Erro ao buscar vídeos do YouTube' };
   }
 }

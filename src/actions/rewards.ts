@@ -4,6 +4,10 @@ import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { ActionResponse } from '@/types/action';
 import type { Reward, RewardClaim, ClaimWithReward } from '@/lib/supabase/types';
+import { logger, sanitizeError } from '@/lib';
+
+// Logger contextualizado para o módulo de rewards
+const rewardsLogger = logger.withContext('[Rewards]');
 
 /**
  * Resgatar uma recompensa
@@ -384,7 +388,7 @@ export async function createReward(data: {
       .single();
 
     if (error) {
-      console.error('Error creating reward:', error);
+      rewardsLogger.error('Erro ao criar recompensa', { error: sanitizeError(error) });
       return { error: 'Erro ao criar recompensa' };
     }
 
@@ -584,7 +588,7 @@ export async function deleteReward(rewardId: string): Promise<ActionResponse> {
       .eq('id', rewardId);
 
     if (error) {
-      console.error('Error deleting reward:', error);
+      rewardsLogger.error('Erro ao excluir recompensa', { error: sanitizeError(error) });
       return { error: 'Erro ao excluir recompensa' };
     }
 

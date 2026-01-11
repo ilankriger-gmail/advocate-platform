@@ -4,6 +4,10 @@ import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { ActionResponse } from '@/types/action';
 import type { Event } from '@/lib/supabase/types';
+import { logger, sanitizeError } from '@/lib';
+
+// Logger contextualizado para o módulo de events
+const eventsLogger = logger.withContext('[Events]');
 
 /**
  * Inscrever-se em um evento
@@ -253,7 +257,7 @@ export async function createEvent(data: {
       .single();
 
     if (error) {
-      console.error('Error creating event:', error);
+      eventsLogger.error('Erro ao criar evento', { error: sanitizeError(error) });
       return { error: 'Erro ao criar evento' };
     }
 

@@ -3,6 +3,10 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import type { SiteSetting, SiteSettingKey } from '@/lib/config/site';
+import { logger, sanitizeError } from '@/lib';
+
+// Logger contextualizado para o módulo de settings
+const settingsLogger = logger.withContext('[Settings]');
 
 /**
  * Buscar todas as configurações do site (para página de admin)
@@ -36,7 +40,7 @@ export async function fetchAllSiteSettings(): Promise<{
     .order('key');
 
   if (error) {
-    console.error('[Settings] Erro ao buscar configurações:', error);
+    settingsLogger.error('Erro ao buscar configurações', { error: sanitizeError(error) });
     return { data: null, error: 'Erro ao buscar configurações' };
   }
 
@@ -78,7 +82,7 @@ export async function updateSiteSetting(
     .eq('key', key);
 
   if (error) {
-    console.error('[Settings] Erro ao atualizar configuração:', error);
+    settingsLogger.error('Erro ao atualizar configuração', { error: sanitizeError(error) });
     return { success: false, error: 'Erro ao atualizar configuração' };
   }
 
@@ -219,7 +223,7 @@ export async function uploadFavicon(formData: FormData): Promise<{
     });
 
   if (uploadError) {
-    console.error('[Settings] Erro no upload do favicon:', uploadError);
+    settingsLogger.error('Erro no upload do favicon', { error: sanitizeError(uploadError) });
     return { success: false, error: 'Erro ao fazer upload do favicon' };
   }
 
@@ -242,7 +246,7 @@ export async function uploadFavicon(formData: FormData): Promise<{
     }, { onConflict: 'key' });
 
   if (updateError) {
-    console.error('[Settings] Erro ao salvar URL do favicon:', updateError);
+    settingsLogger.error('Erro ao salvar URL do favicon', { error: sanitizeError(updateError) });
     return { success: false, error: 'Erro ao salvar configuração do favicon' };
   }
 
@@ -345,7 +349,7 @@ export async function uploadLogo(formData: FormData): Promise<{
     });
 
   if (uploadError) {
-    console.error('[Settings] Erro no upload da logo:', uploadError);
+    settingsLogger.error('Erro no upload da logo', { error: sanitizeError(uploadError) });
     return { success: false, error: 'Erro ao fazer upload da logo' };
   }
 
@@ -368,7 +372,7 @@ export async function uploadLogo(formData: FormData): Promise<{
     }, { onConflict: 'key' });
 
   if (updateError) {
-    console.error('[Settings] Erro ao salvar URL da logo:', updateError);
+    settingsLogger.error('Erro ao salvar URL da logo', { error: sanitizeError(updateError) });
     return { success: false, error: 'Erro ao salvar configuração da logo' };
   }
 
@@ -453,7 +457,7 @@ export async function resetSiteSetting(key: SiteSettingKey): Promise<{
     .eq('key', key);
 
   if (error) {
-    console.error('[Settings] Erro ao resetar configuração:', error);
+    settingsLogger.error('Erro ao resetar configuração', { error: sanitizeError(error) });
     return { success: false, error: 'Erro ao resetar configuração' };
   }
 

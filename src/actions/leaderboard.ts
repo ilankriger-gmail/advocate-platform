@@ -14,6 +14,10 @@ import type {
   TimePeriod,
   LeaderboardCategory,
 } from '@/lib/supabase/types';
+import { logger, sanitizeError } from '@/lib';
+
+// Logger contextualizado para o módulo de leaderboard
+const leaderboardLogger = logger.withContext('[Leaderboard]');
 
 type ActionResponse<T = any> = {
   error?: string;
@@ -54,7 +58,7 @@ export async function fetchLeaderboard(
 
     return { success: true, data };
   } catch (error) {
-    console.error('Error fetching leaderboard:', error);
+    leaderboardLogger.error('Erro ao buscar leaderboard', { error: sanitizeError(error) });
     return { error: 'Erro ao buscar ranking' };
   }
 }
@@ -91,7 +95,7 @@ export async function fetchUserRank(
 
     return { success: true, data: ranking };
   } catch (error) {
-    console.error('Error fetching user rank:', error);
+    leaderboardLogger.error('Erro ao buscar ranking do usuário', { error: sanitizeError(error) });
     return { error: 'Erro ao buscar seu ranking' };
   }
 }
@@ -109,7 +113,7 @@ export async function fetchCoinsLeaderboard(
     const data = await getCoinsLeaderboard(period, limit);
     return { success: true, data };
   } catch (error) {
-    console.error('Error fetching coins leaderboard:', error);
+    leaderboardLogger.error('Erro ao buscar leaderboard de moedas', { error: sanitizeError(error) });
     return { error: 'Erro ao buscar ranking de moedas' };
   }
 }
@@ -127,7 +131,7 @@ export async function fetchChallengesLeaderboard(
     const data = await getChallengesLeaderboard(period, limit);
     return { success: true, data };
   } catch (error) {
-    console.error('Error fetching challenges leaderboard:', error);
+    leaderboardLogger.error('Erro ao buscar leaderboard de desafios', { error: sanitizeError(error) });
     return { error: 'Erro ao buscar ranking de desafios' };
   }
 }
@@ -145,14 +149,14 @@ export async function fetchEventsLeaderboard(
     const data = await getEventsLeaderboard(period, limit);
     return { success: true, data };
   } catch (error) {
-    console.error('Error fetching events leaderboard:', error);
+    leaderboardLogger.error('Erro ao buscar leaderboard de eventos', { error: sanitizeError(error) });
     return { error: 'Erro ao buscar ranking de eventos' };
   }
 }
 
 /**
  * Buscar leaderboard combinado (ranking geral)
- * @param period - Período: 'weekly', 'monthly', 'all_time'
+ * @param período - Período: 'weekly', 'monthly', 'all_time'
  * @param limit - Número de resultados (padrão: 10)
  */
 export async function fetchCombinedLeaderboard(
@@ -163,7 +167,7 @@ export async function fetchCombinedLeaderboard(
     const data = await getCombinedLeaderboard(period, limit);
     return { success: true, data };
   } catch (error) {
-    console.error('Error fetching combined leaderboard:', error);
+    leaderboardLogger.error('Erro ao buscar leaderboard combinado', { error: sanitizeError(error) });
     return { error: 'Erro ao buscar ranking geral' };
   }
 }

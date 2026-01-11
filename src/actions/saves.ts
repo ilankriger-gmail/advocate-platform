@@ -3,6 +3,10 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import type { PostWithAuthor } from '@/types/post';
+import { logger, sanitizeError } from '@/lib';
+
+// Logger contextualizado para o módulo de saves
+const savesLogger = logger.withContext('[Saves]');
 
 /**
  * Salvar um post nos favoritos do usuário
@@ -28,7 +32,7 @@ export async function savePost(postId: string) {
     if (error.code === '23505') {
       return { success: true, saved: true };
     }
-    console.error('Erro ao salvar post:', error);
+    savesLogger.error('Erro ao salvar post', { error: sanitizeError(error) });
     return { success: false, error: 'Erro ao salvar post' };
   }
 
@@ -57,7 +61,7 @@ export async function unsavePost(postId: string) {
     .eq('user_id', user.id);
 
   if (error) {
-    console.error('Erro ao remover save:', error);
+    savesLogger.error('Erro ao remover save', { error: sanitizeError(error) });
     return { success: false, error: 'Erro ao remover save' };
   }
 
@@ -160,7 +164,7 @@ export async function getSavedPosts(limit = 20, cursor?: string): Promise<{
   const { data, error } = await query;
 
   if (error) {
-    console.error('Erro ao buscar posts salvos:', error);
+    savesLogger.error('Erro ao buscar posts salvos', { error: sanitizeError(error) });
     return { posts: [], nextCursor: null, hasMore: false };
   }
 
@@ -194,7 +198,7 @@ export async function sharePost(postId: string, platform: string = 'copy_link') 
   });
 
   if (error) {
-    console.error('Erro ao registrar share:', error);
+    savesLogger.error('Erro ao registrar share', { error: sanitizeError(error) });
     return { success: false };
   }
 
