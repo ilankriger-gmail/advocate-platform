@@ -316,6 +316,91 @@ export async function createChallenge(data: {
 }
 
 /**
+ * Atualizar desafio (admin)
+ */
+export async function updateChallenge(
+  challengeId: string,
+  data: {
+    title: string;
+    description?: string | null;
+    type: 'engajamento' | 'fisico' | 'participe';
+    icon?: string;
+    coins_reward: number;
+    // Para engajamento/participe
+    instagram_embed_url?: string | null;
+    prize_amount?: number | null;
+    num_winners?: number | null;
+    // Para físico
+    goal_type?: 'repetitions' | 'time' | null;
+    goal_value?: number | null;
+    record_vídeo_url?: string | null;
+    hashtag?: string | null;
+    profile_to_tag?: string | null;
+    // Controle
+    starts_at?: string | null;
+    ends_at?: string | null;
+  }
+): Promise<ActionResponse> {
+  try {
+    // Verificar autenticação
+    const userCheck = await getAuthenticatedUser();
+    if (userCheck.error) {
+      return userCheck;
+    }
+    const user = userCheck.data!;
+
+    // Verificar se é admin/creator
+    const authCheck = await verifyAdminOrCreator(user.id);
+    if (authCheck.error) {
+      return authCheck;
+    }
+
+    const supabase = await createClient();
+
+    // Mapear 'participe' para 'engajamento' no banco
+    const dbType = data.type === 'participe' ? 'engajamento' : data.type;
+
+    const { data: challenge, error } = await supabase
+      .from('challenges')
+      .update({
+        title: data.title,
+        description: data.description || null,
+        type: dbType,
+        icon: data.icon || '🎯',
+        coins_reward: data.coins_reward || 0,
+        // Engajamento/Participe
+        instagram_embed_url: data.instagram_embed_url || null,
+        prize_amount: data.prize_amount || null,
+        num_winners: data.num_winners || 1,
+        // Físico
+        goal_type: data.goal_type || null,
+        goal_value: data.goal_value || null,
+        record_video_url: data.record_vídeo_url || null,
+        hashtag: data.hashtag || null,
+        profile_to_tag: data.profile_to_tag || null,
+        // Controle
+        starts_at: data.starts_at || null,
+        ends_at: data.ends_at || null,
+      })
+      .eq('id', challengeId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('updateChallenge error:', error);
+      return { error: `Erro ao atualizar desafio: ${error.message}` };
+    }
+
+    revalidatePath('/desafios');
+    revalidatePath('/admin/desafios');
+    revalidatePath(`/admin/desafios/${challengeId}`);
+    return { success: true, data: challenge };
+  } catch {
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+/**
  * Encerrar desafio (admin)
  */
 export async function closeChallenge(challengeId: string): Promise<ActionResponse> {

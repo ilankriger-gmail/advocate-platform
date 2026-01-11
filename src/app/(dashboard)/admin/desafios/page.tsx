@@ -156,7 +156,7 @@ function ChallengeAdminCard({ challenge }: ChallengeCardProps) {
 
         {/* Content */}
         <div className="p-4 space-y-3">
-          <p className="text-sm text-gray-600 line-clamp-2">
+          <p className="text-sm text-gray-600 line-clamp-2 whitespace-pre-line">
             {challenge.description || 'Sem descrição'}
           </p>
 

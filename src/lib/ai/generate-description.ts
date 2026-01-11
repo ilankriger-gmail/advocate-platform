@@ -51,7 +51,7 @@ export async function generateChallengeDescription(
     const prompt = buildDescriptionPrompt(input);
 
     const response = await client.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'gpt-4o',
       messages: [
         {
           role: 'system',
@@ -61,7 +61,7 @@ export async function generateChallengeDescription(
         { role: 'user', content: prompt },
       ],
       temperature: 0.7,
-      max_tokens: 300,
+      max_tokens: 1000,
     });
 
     const textResponse = response.choices[0]?.message?.content;
@@ -120,6 +120,37 @@ function buildDescriptionPrompt(input: ChallengeDescriptionInput): string {
     contextDetails += `\n- Recompensa em corações: ${input.coinsReward}`;
   }
 
+  // Instruções específicas por tipo de desafio
+  if (input.type === 'fisico') {
+    return `Crie uma descrição para este desafio físico:
+
+DADOS:
+Título: ${input.title}
+Tipo: ${typeLabels[input.type]}${contextDetails}
+
+ESTRUTURA (use quebras de linha entre cada seção):
+
+Parágrafo 1: Duas frases motivacionais sobre o desafio.
+
+Parágrafo 2: Como participar (gravar vídeo, postar nas redes).
+
+Parágrafo 3: Passo a passo numerado:
+1. Realize o exercício
+2. Grave um vídeo
+3. Poste no Instagram ou TikTok${input.hashtag ? `\n4. Use a hashtag ${input.hashtag}` : ''}${input.profileToTag ? `\n${input.hashtag ? '5' : '4'}. Marque ${input.profileToTag}` : ''}
+${input.hashtag && input.profileToTag ? '6' : input.hashtag || input.profileToTag ? '5' : '4'}. Envie o link aqui na plataforma
+
+Parágrafo 4: Aviso de segurança começando com "IMPORTANTE:" sobre consultar profissional de saúde, respeitar limites, e que a plataforma não se responsabiliza por lesões.
+
+REGRAS OBRIGATÓRIAS:
+- PROIBIDO usar emojis (nenhum emoji!)
+- PROIBIDO usar formatação markdown (nada de ** ou * ou #)
+- PROIBIDO usar traços ou bullets
+- Use apenas texto simples com quebras de linha
+- Tom profissional e motivador`;
+  }
+
+  // Instruções para outros tipos (engajamento/participe)
   return `Crie uma descrição para este desafio:
 
 DADOS DO DESAFIO:

@@ -1,19 +1,19 @@
 'use client';
 
-import { useState } from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
+import { useSidebar } from '@/contexts/SidebarContext';
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { isOpen, close } = useSidebar();
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Sidebar */}
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar isOpen={isOpen} onClose={close} />
 
       {/* Main content */}
       <main className="lg:ml-64 pt-4">

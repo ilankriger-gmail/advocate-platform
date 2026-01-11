@@ -65,7 +65,7 @@ export function PhysicalChallengeCard({
               {getStatusBadge()}
             </div>
 
-            <p className="text-gray-500 text-sm mt-1">{challenge.description}</p>
+            <p className="text-gray-500 text-sm mt-1 whitespace-pre-line">{challenge.description}</p>
 
             {challenge.goal_value && (
               <div className="mt-3 p-3 bg-blue-50 rounded-lg">

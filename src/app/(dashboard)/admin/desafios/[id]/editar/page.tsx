@@ -1,18 +1,23 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import { Card, Button, Input, Textarea } from '@/components/ui';
-import { createChallenge } from '@/actions/challenges-admin';
+import { updateChallenge } from '@/actions/challenges-admin';
 import { AIDescriptionGenerator } from '@/components/admin/AIDescriptionGenerator';
 import { YouTubeVideoPicker, SelectedYouTubeVideo } from '@/components/youtube/YouTubeVideoPicker';
+import { createClient } from '@/lib/supabase/client';
 
 type ChallengeType = 'fisico' | 'engajamento' | 'participe';
 type GoalType = 'repetitions' | 'time';
 
-export default function NovoChallengeDesafioPage() {
+export default function EditarDesafioPage() {
   const router = useRouter();
+  const params = useParams();
+  const challengeId = params.id as string;
+
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [selectedIconCategory, setSelectedIconCategory] = useState('Fitness');
@@ -24,28 +29,79 @@ export default function NovoChallengeDesafioPage() {
     type: 'fisico' as ChallengeType,
     icon: '💪',
     coins_reward: 10,
-    // Campos para engajamento/participe
     instagram_embed_url: '',
     prize_amount: '',
     num_winners: '',
-    // Campos para fisico
     goal_type: 'repetitions' as GoalType,
     goal_value: '',
     record_vídeo_url: '',
     hashtag: '',
     profile_to_tag: '',
-    // Datas
     starts_at: '',
     ends_at: '',
-    noEndDate: false, // Desafio permanente/sem data de término
+    noEndDate: false,
   });
+
+  // Carregar dados do desafio
+  useEffect(() => {
+    async function loadChallenge() {
+      const supabase = createClient();
+      const { data: challenge, error } = await supabase
+        .from('challenges')
+        .select('*')
+        .eq('id', challengeId)
+        .single();
+
+      if (error || !challenge) {
+        setError('Desafio não encontrado');
+        setIsLoadingData(false);
+        return;
+      }
+
+      // Preencher formulário com dados existentes
+      setFormData({
+        title: challenge.title || '',
+        description: challenge.description || '',
+        type: challenge.type as ChallengeType,
+        icon: challenge.icon || '💪',
+        coins_reward: challenge.coins_reward || 10,
+        instagram_embed_url: challenge.instagram_embed_url || '',
+        prize_amount: challenge.prize_amount ? String(challenge.prize_amount) : '',
+        num_winners: challenge.num_winners ? String(challenge.num_winners) : '',
+        goal_type: (challenge.goal_type as GoalType) || 'repetitions',
+        goal_value: challenge.goal_value ? String(challenge.goal_value) : '',
+        record_vídeo_url: challenge.record_video_url || '',
+        hashtag: challenge.hashtag || '',
+        profile_to_tag: challenge.profile_to_tag || '',
+        starts_at: challenge.starts_at ? challenge.starts_at.slice(0, 16) : '',
+        ends_at: challenge.ends_at ? challenge.ends_at.slice(0, 16) : '',
+        noEndDate: !challenge.starts_at && !challenge.ends_at,
+      });
+
+      // Se tem video URL, criar preview
+      if (challenge.record_video_url) {
+        const videoId = challenge.record_video_url.match(/[?&]v=([^&]+)/)?.[1];
+        if (videoId) {
+          setSelectedVideo({
+            url: challenge.record_video_url,
+            title: 'Video atual',
+            thumbnail: `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`,
+          });
+        }
+      }
+
+      setIsLoadingData(false);
+    }
+
+    loadChallenge();
+  }, [challengeId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setIsLoading(true);
 
-    const result = await createChallenge({
+    const result = await updateChallenge(challengeId, {
       title: formData.title,
       description: formData.description || null,
       type: formData.type,
@@ -69,7 +125,7 @@ export default function NovoChallengeDesafioPage() {
       return;
     }
 
-    router.push('/admin/desafios');
+    router.push(`/admin/desafios/${challengeId}`);
     router.refresh();
   };
 
@@ -82,11 +138,20 @@ export default function NovoChallengeDesafioPage() {
     'Geral': ['🎯', '⭐', '🏆', '🎁', '❤️', '📸', '🎬', '💬', '🎉', '✨', '👏', '🙌'],
   };
 
+  if (isLoadingData) {
+    return (
+      <div className="max-w-2xl mx-auto py-12 text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+        <p className="text-gray-500 mt-4">Carregando desafio...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Criar Novo Desafio</h1>
-        <p className="text-gray-500 text-sm mt-1">Preencha os campos para criar um novo desafio</p>
+        <h1 className="text-2xl font-bold text-gray-900">Editar Desafio</h1>
+        <p className="text-gray-500 text-sm mt-1">Altere os campos para atualizar o desafio</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -124,7 +189,6 @@ export default function NovoChallengeDesafioPage() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Icone</label>
 
-            {/* Abas de categorias */}
             <div className="flex flex-wrap gap-1 mb-3">
               {Object.keys(iconCategories).map((category) => (
                 <button
@@ -142,7 +206,6 @@ export default function NovoChallengeDesafioPage() {
               ))}
             </div>
 
-            {/* Grid de ícones da categoria selecionada */}
             <div className="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-lg">
               {iconCategories[selectedIconCategory].map((icon) => (
                 <button
@@ -160,7 +223,6 @@ export default function NovoChallengeDesafioPage() {
               ))}
             </div>
 
-            {/* Ícone selecionado */}
             <p className="text-sm text-gray-500 mt-2">
               Selecionado: <span className="text-2xl">{formData.icon}</span>
             </p>
@@ -358,7 +420,6 @@ export default function NovoChallengeDesafioPage() {
         <Card className="p-5 space-y-4">
           <h2 className="font-bold text-gray-900">Periodo de Validade (opcional)</h2>
 
-          {/* Opção de desafio permanente */}
           <label className="flex items-center gap-3 cursor-pointer">
             <input
               type="checkbox"
@@ -400,7 +461,7 @@ export default function NovoChallengeDesafioPage() {
 
           {formData.noEndDate && (
             <div className="p-3 bg-green-50 rounded-lg text-green-700 text-sm">
-              ✓ Este desafio estará sempre ativo, sem limite de datas.
+              Este desafio estará sempre ativo, sem limite de datas.
             </div>
           )}
         </Card>
@@ -428,7 +489,7 @@ export default function NovoChallengeDesafioPage() {
             disabled={isLoading}
             className="flex-1"
           >
-            {isLoading ? 'Criando...' : 'Criar Desafio'}
+            {isLoading ? 'Salvando...' : 'Salvar Alterações'}
           </Button>
         </div>
       </form>

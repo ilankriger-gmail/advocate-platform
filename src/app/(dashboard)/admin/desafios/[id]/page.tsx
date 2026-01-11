@@ -87,7 +87,7 @@ export default async function AdminDesafioDetalhesPage({ params }: PageProps) {
                 <Badge className="bg-gray-100 text-gray-600">Inativo</Badge>
               )}
             </div>
-            <p className="text-gray-500 mt-1">{challenge.description}</p>
+            <p className="text-gray-500 mt-1 whitespace-pre-line">{challenge.description}</p>
             <div className="flex items-center gap-4 mt-2 text-sm">
               <span className="text-pink-500 font-bold">+{challenge.coins_reward} corações</span>
               {challenge.prize_amount && (
@@ -99,7 +99,15 @@ export default async function AdminDesafioDetalhesPage({ params }: PageProps) {
             </div>
           </div>
         </div>
-        <ChallengeActions challenge={challenge} />
+        <div className="flex items-center gap-3">
+          <Link
+            href={`/admin/desafios/${id}/editar`}
+            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium"
+          >
+            Editar
+          </Link>
+          <ChallengeActions challenge={challenge} />
+        </div>
       </div>
 
       {/* Estatisticas */}

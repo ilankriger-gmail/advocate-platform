@@ -5,12 +5,11 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSidebar } from '@/contexts/SidebarContext';
 import { Avatar } from '@/components/ui';
 import { cn } from '@/lib/utils';
 
 interface HeaderProps {
-  onMenuClick?: () => void;
-  showMenuButton?: boolean;
   className?: string;
   siteName?: string;
   logoUrl?: string;
@@ -22,8 +21,9 @@ const HIDDEN_HEADER_ROUTES = ['/seja-arena', '/login', '/registro'];
 // Domínio comece onde o Header nunca aparece
 const COMECE_DOMAIN = 'comece.omocodoteamo.com.br';
 
-export function Header({ onMenuClick, showMenuButton = false, className, siteName = 'Arena Te Amo', logoUrl = '/logo.png' }: HeaderProps) {
+export function Header({ className, siteName = 'Arena Te Amo', logoUrl = '/logo.png' }: HeaderProps) {
   const { user, profile, signOut, isLoading } = useAuth();
+  const { toggle: toggleSidebar } = useSidebar();
   const pathname = usePathname();
   const [isComeceDomain, setIsComeceDomain] = useState(false);
 
@@ -61,10 +61,10 @@ export function Header({ onMenuClick, showMenuButton = false, className, siteNam
         <div className="flex items-center justify-between h-14">
           {/* Left: Menu button + Logo */}
           <div className="flex items-center gap-3">
-            {/* Mobile menu button */}
-            {showMenuButton && onMenuClick && (
+            {/* Mobile menu button - só mostra quando logado */}
+            {user && (
               <button
-                onClick={onMenuClick}
+                onClick={toggleSidebar}
                 className="lg:hidden p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100"
                 aria-label="Abrir menu"
               >

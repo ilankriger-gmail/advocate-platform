@@ -84,7 +84,7 @@ export async function searchYouTubeVideos(query?: string): Promise<{
       part: 'snippet',
       channelId: channelId,
       type: 'video',
-      maxResults: '20',
+      maxResults: '50',
       order: query && query.trim() ? 'viewCount' : 'date',
       key: YOUTUBE_API_KEY,
     });

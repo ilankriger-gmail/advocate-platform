@@ -143,7 +143,7 @@ export default async function DesafiosPage() {
                   </div>
 
                   <div className="p-4 space-y-4">
-                    <p className="text-gray-700 text-sm">{challenge.description}</p>
+                    <p className="text-gray-700 text-sm whitespace-pre-line">{challenge.description}</p>
 
                     {/* Regras */}
                     <div>
