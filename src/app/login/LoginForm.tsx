@@ -78,7 +78,7 @@ export default function LoginForm({ siteName, subtitle, logoUrl = '/logo.png' }:
   // Redireciona se já autenticado
   useEffect(() => {
     if (user && !isLoading) {
-      router.push('/dashboard');
+      router.push('/');
     }
   }, [user, isLoading, router]);
 

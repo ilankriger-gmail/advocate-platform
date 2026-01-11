@@ -65,7 +65,7 @@ export function Header({ className, siteName = 'Arena Te Amo', logoUrl = '/logo.
             {user && (
               <button
                 onClick={toggleSidebar}
-                className="lg:hidden p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                className="md:hidden p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100"
                 aria-label="Abrir menu"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -104,7 +104,7 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
       {/* Overlay para mobile */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
           onClick={onClose}
         />
       )}
@@ -113,7 +113,7 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
       <aside
         className={cn(
           'fixed top-14 left-0 z-40 h-[calc(100vh-56px)] transition-transform bg-white border-r border-gray-200',
-          'w-64 lg:translate-x-0',
+          'w-64 md:translate-x-0',
           isOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >

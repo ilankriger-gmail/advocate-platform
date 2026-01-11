@@ -16,7 +16,7 @@ export default function DashboardLayout({
       <Sidebar isOpen={isOpen} onClose={close} />
 
       {/* Main content */}
-      <main className="lg:ml-64 pt-4">
+      <main className="md:ml-64 pt-4">
         <div className="px-4 sm:px-6 lg:px-8 pb-8">
           {children}
         </div>

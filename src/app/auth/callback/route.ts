@@ -35,10 +35,10 @@ function isValidRedirect(path: string): boolean {
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
-  const requestedNext = searchParams.get('next') ?? '/dashboard';
+  const requestedNext = searchParams.get('next') ?? '/';
 
   // Validar redirect para prevenir Open Redirect
-  const next = isValidRedirect(requestedNext) ? requestedNext : '/dashboard';
+  const next = isValidRedirect(requestedNext) ? requestedNext : '/';
 
   if (code) {
     const supabase = await createClient();
