@@ -140,7 +140,7 @@ export default async function DesafiosPage() {
             <div className="relative">
               <div className="absolute inset-0 animate-ping bg-white/20 rounded-full" />
               <div className="relative w-20 h-20 bg-white/10 backdrop-blur rounded-full flex items-center justify-center">
-                <span className="text-5xl">❤️</span>
+                <span className="text-5xl">❤️‍🔥</span>
               </div>
             </div>
           </div>
