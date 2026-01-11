@@ -6,7 +6,7 @@ import { ActionResponse, CreatePostResponse } from '@/types/action';
 import type { CreatePostData, UpdatePostData } from '@/types/post';
 import type { Post, PostComment } from '@/lib/supabase/types';
 import { moderatePost, getBlockedMessage, getPendingReviewMessage } from '@/lib/moderation';
-import { logModerationAction, checkRateLimit, RATE_LIMITS } from '@/lib/security';
+import { logModerationAction, checkRateLimit, RATE_LIMITS, validateFileMagicBytes } from '@/lib/security';
 
 /**
  * Remove links clicáveis do HTML, mantendo apenas o texto
