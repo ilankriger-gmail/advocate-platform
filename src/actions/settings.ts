@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import type { SiteSetting, SiteSettingKey } from '@/lib/config/site';
+import { validateFileMagicBytes } from '@/lib/security';
 
 /**
  * Buscar todas as configurações do site (para página de admin)
