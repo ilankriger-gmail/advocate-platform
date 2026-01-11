@@ -147,35 +147,50 @@ export async function toggleChallengeActive(
   challengeId: string,
   isActive: boolean
 ): Promise<ActionResponse> {
+  console.log('toggleChallengeActive: Iniciando', { challengeId, isActive });
+
   try {
     // Verificar autenticação
     const userCheck = await getAuthenticatedUser();
+    console.log('toggleChallengeActive: userCheck', userCheck);
+
     if (userCheck.error) {
+      console.log('toggleChallengeActive: Usuario nao autenticado');
       return userCheck;
     }
     const user = userCheck.data!;
 
     // Verificar se é admin/creator
     const authCheck = await verifyAdminOrCreator(user.id);
+    console.log('toggleChallengeActive: authCheck', authCheck);
+
     if (authCheck.error) {
+      console.log('toggleChallengeActive: Nao autorizado');
       return authCheck;
     }
 
     const supabase = await createClient();
 
-    const { error } = await supabase
+    console.log('toggleChallengeActive: Executando update...');
+    const { error, data } = await supabase
       .from('challenges')
       .update({ is_active: isActive })
-      .eq('id', challengeId);
+      .eq('id', challengeId)
+      .select();
+
+    console.log('toggleChallengeActive: Resultado update', { error, data });
 
     if (error) {
+      console.log('toggleChallengeActive: Erro no update', error);
       return { error: 'Erro ao atualizar desafio' };
     }
 
+    console.log('toggleChallengeActive: Sucesso! Revalidando paths...');
     revalidatePath('/desafios');
     revalidatePath('/admin/desafios');
     return { success: true };
-  } catch {
+  } catch (err) {
+    console.error('toggleChallengeActive: Erro inesperado', err);
     return { error: 'Erro interno do servidor' };
   }
 }

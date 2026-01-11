@@ -22,20 +22,25 @@ export function ChallengeToggleButton({
   const [error, setError] = useState<string | null>(null);
 
   const handleToggle = async () => {
+    console.log('ChallengeToggleButton: Iniciando toggle', { challengeId, isActive, newValue: !isActive });
     setIsLoading(true);
     setError(null);
 
     try {
+      console.log('ChallengeToggleButton: Chamando toggleChallengeActive...');
       const result = await toggleChallengeActive(challengeId, !isActive);
+      console.log('ChallengeToggleButton: Resultado:', result);
 
       if (result.success) {
+        console.log('ChallengeToggleButton: Sucesso! Fazendo refresh...');
         setShowConfirm(false);
         router.refresh();
       } else {
+        console.log('ChallengeToggleButton: Erro retornado:', result.error);
         setError(result.error || 'Erro ao atualizar');
       }
     } catch (err) {
-      console.error('Erro:', err);
+      console.error('ChallengeToggleButton: Erro inesperado:', err);
       setError('Erro inesperado');
     }
 

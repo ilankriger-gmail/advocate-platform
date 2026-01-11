@@ -18,10 +18,15 @@ export function RewardActions({ reward }: RewardActionsProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleToggle = async () => {
+    console.log('RewardActions: Iniciando toggle', { rewardId: reward.id, isActive: reward.is_active, newValue: !reward.is_active });
     setIsLoading(true);
     const result = await toggleRewardActive(reward.id, !reward.is_active);
+    console.log('RewardActions: Resultado:', result);
     if (result.success) {
+      console.log('RewardActions: Sucesso! Fazendo refresh...');
       router.refresh();
+    } else {
+      console.log('RewardActions: Erro:', result.error);
     }
     setIsLoading(false);
   };

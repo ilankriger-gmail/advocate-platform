@@ -12,35 +12,50 @@ export async function toggleRewardActive(
   rewardId: string,
   isActive: boolean
 ): Promise<ActionResponse> {
+  console.log('toggleRewardActive: Iniciando', { rewardId, isActive });
+
   try {
     // Verificar autenticação
     const userCheck = await getAuthenticatedUser();
+    console.log('toggleRewardActive: userCheck', userCheck);
+
     if (userCheck.error) {
+      console.log('toggleRewardActive: Usuario nao autenticado');
       return userCheck;
     }
     const user = userCheck.data!;
 
     // Verificar se é admin/creator
     const authCheck = await verifyAdminOrCreator(user.id);
+    console.log('toggleRewardActive: authCheck', authCheck);
+
     if (authCheck.error) {
+      console.log('toggleRewardActive: Nao autorizado');
       return authCheck;
     }
 
     const supabase = await createClient();
 
-    const { error } = await supabase
+    console.log('toggleRewardActive: Executando update...');
+    const { error, data } = await supabase
       .from('rewards')
       .update({ is_active: isActive })
-      .eq('id', rewardId);
+      .eq('id', rewardId)
+      .select();
+
+    console.log('toggleRewardActive: Resultado update', { error, data });
 
     if (error) {
+      console.log('toggleRewardActive: Erro no update', error);
       return { error: 'Erro ao atualizar recompensa' };
     }
 
+    console.log('toggleRewardActive: Sucesso! Revalidando paths...');
     revalidatePath('/premios');
     revalidatePath('/admin/premios');
     return { success: true };
-  } catch {
+  } catch (err) {
+    console.error('toggleRewardActive: Erro inesperado', err);
     return { error: 'Erro interno do servidor' };
   }
 }
