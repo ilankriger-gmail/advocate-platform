@@ -324,7 +324,7 @@ export interface Challenge {
   // Para físico
   goal_type: 'repetitions' | 'time' | null;
   goal_value: number | null;
-  record_vídeo_url: string | null;
+  record_video_url: string | null;
   hashtag: string | null;
   profile_to_tag: string | null;
   coins_reward: number;
@@ -340,7 +340,7 @@ export interface ChallengeParticipant {
   challenge_id: string;
   user_id: string;
   result_value: number | null;
-  vídeo_proof_url: string | null;
+  video_proof_url: string | null;
   social_media_url: string | null;
   status: ParticipationStatus;
   approved_by: string | null;
