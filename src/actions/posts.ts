@@ -290,9 +290,13 @@ export async function uploadPostImages(formData: FormData): Promise<ActionRespon
     const uploadedUrls: string[] = [];
 
     for (const file of files) {
-      // Validar tipo de arquivo
-      if (!file.type.startsWith('image/')) {
-        return { error: 'Apenas imagens são permitidas' };
+      // Validar tipo de arquivo usando magic bytes (conteúdo real)
+      // Não confiar em file.type que pode ser manipulado pelo cliente
+      const validation = await validateFileMagicBytes(file);
+      if (!validation.valid) {
+        return {
+          error: validation.error || 'Arquivo inválido. Apenas imagens são permitidas.'
+        };
       }
 
       // Validar tamanho (máximo 5MB)
