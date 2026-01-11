@@ -5,6 +5,8 @@ import { LeadFilters } from './LeadFilters';
 import { CsvImport } from './CsvImport';
 import { AnalyzeButton } from './AnalyzeButton';
 import { BulkApproveByScore } from './BulkApproveByScore';
+import { AutoApprovalSettings } from './AutoApprovalSettings';
+import { getAutoApprovalSettings } from '@/actions/settings';
 import type { NpsLead, LeadStatus } from '@/lib/supabase/types';
 
 interface PageProps {
@@ -34,6 +36,9 @@ export default async function AdminLeadsPage({ searchParams }: PageProps) {
   if (!profile || (profile.role !== 'admin' && !profile.is_creator)) {
     redirect('/admin/login');
   }
+
+  // Buscar configurações de auto-aprovação
+  const autoApprovalSettings = await getAutoApprovalSettings();
 
   // Buscar estatisticas
   const { data: allLeads } = await supabase

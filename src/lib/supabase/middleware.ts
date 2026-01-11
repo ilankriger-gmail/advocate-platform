@@ -21,6 +21,8 @@ const COMUNIDADE_PUBLIC_ROUTES = [
   '/auth/callback',
   '/auth/reset-password',
   '/esqueci-senha',
+  '/seja-arena',
+  '/registro',
 ];
 
 // Rotas que requerem role de admin

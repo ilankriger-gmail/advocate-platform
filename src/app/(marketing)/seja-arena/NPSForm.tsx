@@ -22,9 +22,9 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
   const [phone, setPhone] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Sistema de steps
+  // Sistema de steps - agora com 5 steps
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 3;
+  const totalSteps = 5;
 
   // Validacao por step
   const validateStep = (step: number): boolean => {
@@ -38,14 +38,15 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
       newErrors.reason = 'Por favor, explique o motivo (minimo 3 caracteres)';
     }
 
-    if (step === 3) {
-      if (!name || name.trim().length < 2) {
-        newErrors.name = 'Nome e obrigatorio';
-      }
-      if (!email || !email.includes('@')) {
-        newErrors.email = 'Email inválido';
-      }
+    if (step === 3 && (!name || name.trim().length < 2)) {
+      newErrors.name = 'Nome é obrigatório';
     }
+
+    if (step === 4 && (!email || !email.includes('@'))) {
+      newErrors.email = 'Email inválido';
+    }
+
+    // Step 5 (WhatsApp) é opcional, não precisa validar
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -65,8 +66,6 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
 
   // Submit
   async function handleSubmit() {
-    if (!validateStep(3)) return;
-
     setIsLoading(true);
 
     const result = await submitNpsLead({
@@ -203,7 +202,7 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
                 if (errors.reason) setErrors({});
               }}
               rows={4}
-              placeholder="Conte-nos o motivo da sua avaliacao..."
+              placeholder="Conte-nos o motivo da sua avaliação..."
               className={`typeform-textarea ${errors.reason ? 'border-red-500' : ''}`}
               autoFocus={currentStep === 2}
             />
@@ -238,7 +237,7 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
         </div>
       </div>
 
-      {/* Step 3: Contact */}
+      {/* Step 3: Nome */}
       <div className={`step-wrapper ${getStepClass(3)}`}>
         <div className="w-full max-w-xl mx-auto text-center">
           {/* Step indicator */}
@@ -248,7 +247,125 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
 
           {/* Title */}
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-medium text-surface-900 mb-8 leading-tight">
-            Seus dados de contato
+            Qual seu nome?
+          </h2>
+
+          {/* Input */}
+          <div className="text-left">
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={name}
+              onChange={(e) => {
+                setName(e.target.value);
+                if (errors.name) setErrors({});
+              }}
+              placeholder="Digite seu nome"
+              className={`typeform-input ${errors.name ? 'border-red-500' : ''}`}
+              autoFocus={currentStep === 3}
+            />
+            {errors.name && (
+              <p className="mt-2 text-sm text-red-500">{errors.name}</p>
+            )}
+          </div>
+
+          {/* Navigation */}
+          <div className="flex justify-center gap-4 mt-8">
+            <button
+              type="button"
+              onClick={prevStep}
+              className="px-6 py-3 text-surface-600 font-medium rounded-full
+                       hover:bg-surface-100 transition-all duration-200"
+            >
+              Voltar
+            </button>
+            <button
+              type="button"
+              onClick={nextStep}
+              className="px-8 py-3 bg-primary-600 text-white font-medium rounded-full
+                       hover:bg-primary-700 transition-all duration-200 press-scale"
+            >
+              Continuar
+            </button>
+          </div>
+
+          <p className="mt-6 text-sm text-surface-400">
+            Pressione Enter para continuar
+          </p>
+        </div>
+      </div>
+
+      {/* Step 4: Email */}
+      <div className={`step-wrapper ${getStepClass(4)}`}>
+        <div className="w-full max-w-xl mx-auto text-center">
+          {/* Step indicator */}
+          <span className="inline-block text-sm text-primary-500 font-medium mb-4">
+            {currentStep} / {totalSteps}
+          </span>
+
+          {/* Title */}
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-medium text-surface-900 mb-8 leading-tight">
+            Qual seu email?
+          </h2>
+
+          {/* Input */}
+          <div className="text-left">
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (errors.email) setErrors({});
+              }}
+              placeholder="seu@email.com"
+              className={`typeform-input ${errors.email ? 'border-red-500' : ''}`}
+              autoFocus={currentStep === 4}
+            />
+            {errors.email && (
+              <p className="mt-2 text-sm text-red-500">{errors.email}</p>
+            )}
+          </div>
+
+          {/* Navigation */}
+          <div className="flex justify-center gap-4 mt-8">
+            <button
+              type="button"
+              onClick={prevStep}
+              className="px-6 py-3 text-surface-600 font-medium rounded-full
+                       hover:bg-surface-100 transition-all duration-200"
+            >
+              Voltar
+            </button>
+            <button
+              type="button"
+              onClick={nextStep}
+              className="px-8 py-3 bg-primary-600 text-white font-medium rounded-full
+                       hover:bg-primary-700 transition-all duration-200 press-scale"
+            >
+              Continuar
+            </button>
+          </div>
+
+          <p className="mt-6 text-sm text-surface-400">
+            Pressione Enter para continuar
+          </p>
+        </div>
+      </div>
+
+      {/* Step 5: WhatsApp (opcional) */}
+      <div className={`step-wrapper ${getStepClass(5)}`}>
+        <div className="w-full max-w-xl mx-auto text-center">
+          {/* Step indicator */}
+          <span className="inline-block text-sm text-primary-500 font-medium mb-4">
+            {currentStep} / {totalSteps}
+          </span>
+
+          {/* Title */}
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-medium text-surface-900 mb-8 leading-tight">
+            Qual seu WhatsApp?
           </h2>
 
           {/* Erro geral */}
@@ -258,56 +375,19 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
             </div>
           )}
 
-          {/* Inputs */}
-          <div className="space-y-6 text-left">
-            <div>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={name}
-                onChange={(e) => {
-                  setName(e.target.value);
-                  if (errors.name) setErrors((prev) => ({ ...prev, name: '' }));
-                }}
-                placeholder="Seu nome"
-                className={`typeform-input ${errors.name ? 'border-red-500' : ''}`}
-                autoFocus={currentStep === 3}
-              />
-              {errors.name && (
-                <p className="mt-1 text-sm text-red-500">{errors.name}</p>
-              )}
-            </div>
-
-            <div>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  if (errors.email) setErrors((prev) => ({ ...prev, email: '' }));
-                }}
-                placeholder="seu@email.com"
-                className={`typeform-input ${errors.email ? 'border-red-500' : ''}`}
-              />
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-500">{errors.email}</p>
-              )}
-            </div>
-
-            <div>
-              <input
-                type="tel"
-                id="phone"
-                name="phone"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="WhatsApp (opcional)"
-                className="typeform-input"
-              />
-            </div>
+          {/* Input */}
+          <div className="text-left">
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="(00) 00000-0000"
+              className="typeform-input"
+              autoFocus={currentStep === 5}
+            />
+            <p className="mt-2 text-sm text-surface-400">Opcional</p>
           </div>
 
           {/* Navigation */}

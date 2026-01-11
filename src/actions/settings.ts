@@ -473,6 +473,91 @@ export async function resetLogo(): Promise<{
 }
 
 /**
+ * Buscar configurações de auto-aprovação NPS
+ */
+export async function getAutoApprovalSettings(): Promise<{
+  enabled: boolean;
+  minScore: number;
+  error: string | null;
+}> {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { enabled: false, minScore: 70, error: 'Usuário não autenticado' };
+  }
+
+  const { data } = await supabase
+    .from('site_settings')
+    .select('key, value')
+    .in('key', ['nps_auto_approval_enabled', 'nps_auto_approval_min_score']);
+
+  const enabled = data?.find(s => s.key === 'nps_auto_approval_enabled')?.value === 'true';
+  const minScore = parseInt(data?.find(s => s.key === 'nps_auto_approval_min_score')?.value || '70', 10);
+
+  return { enabled, minScore, error: null };
+}
+
+/**
+ * Atualizar configurações de auto-aprovação NPS
+ */
+export async function updateAutoApprovalSettings(
+  enabled: boolean,
+  minScore: number
+): Promise<{
+  success: boolean;
+  error: string | null;
+}> {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { success: false, error: 'Usuário não autenticado' };
+  }
+
+  const { data: profile } = await supabase
+    .from('users')
+    .select('is_creator')
+    .eq('id', user.id)
+    .single();
+
+  if (!profile?.is_creator) {
+    return { success: false, error: 'Acesso negado' };
+  }
+
+  // Validar score
+  if (minScore < 0 || minScore > 100) {
+    return { success: false, error: 'Score deve estar entre 0 e 100' };
+  }
+
+  // Atualizar ambas as configurações
+  const updates = [
+    { key: 'nps_auto_approval_enabled' as SiteSettingKey, value: enabled ? 'true' : 'false' },
+    { key: 'nps_auto_approval_min_score' as SiteSettingKey, value: minScore.toString() },
+  ];
+
+  for (const update of updates) {
+    const { error } = await supabase
+      .from('site_settings')
+      .upsert({
+        key: update.key,
+        value: update.value,
+        label: update.key === 'nps_auto_approval_enabled' ? 'Auto-Aprovação NPS' : 'Score Mínimo',
+        description: '',
+        field_type: update.key === 'nps_auto_approval_enabled' ? 'toggle' : 'number',
+      }, { onConflict: 'key' });
+
+    if (error) {
+      settingsLogger.error('Erro ao atualizar auto-approval settings', { error: sanitizeError(error) });
+      return { success: false, error: 'Erro ao salvar configurações' };
+    }
+  }
+
+  revalidatePath('/admin/leads');
+  return { success: true, error: null };
+}
+
+/**
  * Resetar uma configuração para o valor padrão
  */
 export async function resetSiteSetting(key: SiteSettingKey): Promise<{
