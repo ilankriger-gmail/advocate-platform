@@ -50,8 +50,8 @@ function verifyResendSignature(
   const webhookSecret = process.env.RESEND_WEBHOOK_SECRET;
 
   if (!webhookSecret) {
-    console.warn('[Webhook Resend] Secret não configurado - aceitando requisição');
-    return true; // Em desenvolvimento, aceitar sem validacao
+    console.error('[Webhook Resend] RESEND_WEBHOOK_SECRET não configurado - requisição será rejeitada');
+    return false;
   }
 
   if (!signature || !timestamp) {
