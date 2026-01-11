@@ -12,8 +12,14 @@ interface YouTubeVideo {
   url: string;
 }
 
+export interface SelectedYouTubeVideo {
+  url: string;
+  title: string;
+  thumbnail: string;
+}
+
 interface YouTubeVideoPickerProps {
-  onSelect: (url: string) => void;
+  onSelect: (video: SelectedYouTubeVideo) => void;
 }
 
 export function YouTubeVideoPicker({ onSelect }: YouTubeVideoPickerProps) {
@@ -45,13 +51,16 @@ export function YouTubeVideoPicker({ onSelect }: YouTubeVideoPickerProps) {
     }
   }, [isOpen]);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSearch = () => {
     loadVideos(searchQuery);
   };
 
   const handleSelect = (video: YouTubeVideo) => {
-    onSelect(video.url);
+    onSelect({
+      url: video.url,
+      title: video.title,
+      thumbnail: video.thumbnail,
+    });
     setIsOpen(false);
   };
 
@@ -101,17 +110,23 @@ export function YouTubeVideoPicker({ onSelect }: YouTubeVideoPickerProps) {
               </div>
 
               {/* Search */}
-              <form onSubmit={handleSearch} className="flex gap-2">
+              <div className="flex gap-2">
                 <Input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleSearch();
+                    }
+                  }}
                   placeholder="Buscar videos..."
                   className="flex-1"
                 />
-                <Button type="submit" disabled={isLoading}>
+                <Button type="button" onClick={handleSearch} disabled={isLoading}>
                   {isLoading ? '...' : 'Buscar'}
                 </Button>
-              </form>
+              </div>
             </div>
 
             {/* Content */}

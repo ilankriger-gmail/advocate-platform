@@ -254,6 +254,8 @@ export async function createChallenge(data: {
   starts_at?: string | null;
   ends_at?: string | null;
 }): Promise<ActionResponse> {
+  console.log('createChallenge: Dados recebidos:', JSON.stringify(data, null, 2));
+
   try {
     // Verificar autenticação
     const userCheck = await getAuthenticatedUser();
@@ -298,7 +300,8 @@ export async function createChallenge(data: {
       .single();
 
     if (error) {
-      return { error: 'Erro ao criar desafio' };
+      console.error('createChallenge error:', error);
+      return { error: `Erro ao criar desafio: ${error.message}` };
     }
 
     revalidatePath('/desafios');

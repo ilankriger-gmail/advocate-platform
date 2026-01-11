@@ -16,7 +16,11 @@ interface YouTubeSearchResponse {
     id: { videoId: string };
     snippet: {
       title: string;
-      thumbnails: { medium: { url: string } };
+      thumbnails: {
+        default?: { url: string };
+        medium?: { url: string };
+        high?: { url: string };
+      };
       publishedAt: string;
     };
   }>;
@@ -86,13 +90,22 @@ export async function searchYouTubeVideos(query?: string): Promise<{
       return { error: data.error.message };
     }
 
-    const videos: YouTubeVideo[] = (data.items || []).map((item) => ({
-      id: item.id.videoId,
-      title: item.snippet.title,
-      thumbnail: item.snippet.thumbnails.medium.url,
-      publishedAt: item.snippet.publishedAt,
-      url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
-    }));
+    const videos: YouTubeVideo[] = (data.items || []).map((item) => {
+      // Usar thumbnail disponivel (medium > high > default > fallback)
+      const thumbnails = item.snippet.thumbnails;
+      const thumbnailUrl = thumbnails.medium?.url
+        || thumbnails.high?.url
+        || thumbnails.default?.url
+        || `https://i.ytimg.com/vi/${item.id.videoId}/mqdefault.jpg`;
+
+      return {
+        id: item.id.videoId,
+        title: item.snippet.title,
+        thumbnail: thumbnailUrl,
+        publishedAt: item.snippet.publishedAt,
+        url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
+      };
+    });
 
     return { videos };
   } catch (error) {

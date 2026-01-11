@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Card, Button, Input, Textarea } from '@/components/ui';
 import { createChallenge } from '@/actions/challenges-admin';
 import { AIDescriptionGenerator } from '@/components/admin/AIDescriptionGenerator';
-import { YouTubeVideoPicker } from '@/components/youtube/YouTubeVideoPicker';
+import { YouTubeVideoPicker, SelectedYouTubeVideo } from '@/components/youtube/YouTubeVideoPicker';
 
 type ChallengeType = 'fisico' | 'engajamento' | 'participe';
 type GoalType = 'repetitions' | 'time';
@@ -16,6 +16,7 @@ export default function NovoChallengeDesafioPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [selectedIconCategory, setSelectedIconCategory] = useState('Fitness');
+  const [selectedVideo, setSelectedVideo] = useState<SelectedYouTubeVideo | null>(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -304,16 +305,37 @@ export default function NovoChallengeDesafioPage() {
                   className="flex-1"
                 />
                 <YouTubeVideoPicker
-                  onSelect={(url) => setFormData({ ...formData, record_vídeo_url: url })}
+                  onSelect={(video) => {
+                    setFormData({ ...formData, record_vídeo_url: video.url });
+                    setSelectedVideo(video);
+                  }}
                 />
               </div>
-              {formData.record_vídeo_url && (
-                <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  Video selecionado
-                </p>
+              {selectedVideo && (
+                <div className="mt-2 flex items-center gap-3 p-2 bg-gray-50 rounded-lg">
+                  <img
+                    src={selectedVideo.thumbnail || `https://i.ytimg.com/vi/${selectedVideo.url.match(/[?&]v=([^&]+)/)?.[1]}/mqdefault.jpg`}
+                    alt={selectedVideo.title}
+                    className="w-24 h-14 object-cover rounded"
+                    onError={(e) => {
+                      const videoId = selectedVideo.url.match(/[?&]v=([^&]+)/)?.[1];
+                      if (videoId) {
+                        (e.target as HTMLImageElement).src = `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`;
+                      }
+                    }}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {selectedVideo.title}
+                    </p>
+                    <p className="text-xs text-green-600 flex items-center gap-1">
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Video selecionado
+                    </p>
+                  </div>
+                </div>
               )}
             </div>
 
