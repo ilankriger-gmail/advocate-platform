@@ -3,9 +3,9 @@
 import {
   getCoinsLeaderboard,
   getChallengesLeaderboard,
-  getEventsLeaderboard,
   getCombinedLeaderboard,
   getUserRank,
+  getRelativeLeaderboard,
 } from '@/lib/supabase/leaderboard';
 import { createClient } from '@/lib/supabase/server';
 import type {
@@ -26,10 +26,11 @@ type ActionResponse<T = any> = {
 };
 
 /**
- * Buscar dados do leaderboard por categoria
- * @param category - Categoria: 'coins', 'challenges', 'events', 'combined'
+ * Buscar dados do leaderboard por categoria (Top N)
+ * @param category - Categoria: 'coins', 'challenges', 'combined'
  * @param period - Período: 'weekly', 'monthly', 'all_time'
  * @param limit - Número de resultados (padrão: 10)
+ * @deprecated Use fetchRelativeLeaderboard para ranking relativo
  */
 export async function fetchLeaderboard(
   category: LeaderboardCategory,
@@ -46,9 +47,6 @@ export async function fetchLeaderboard(
       case 'challenges':
         data = await getChallengesLeaderboard(period, limit);
         break;
-      case 'events':
-        data = await getEventsLeaderboard(period, limit);
-        break;
       case 'combined':
         data = await getCombinedLeaderboard(period, limit);
         break;
@@ -64,8 +62,38 @@ export async function fetchLeaderboard(
 }
 
 /**
+ * Buscar leaderboard relativo (usuários próximos ao usuário atual)
+ * Mostra 5 acima + usuário + 5 abaixo = 11 pessoas
+ * @param category - Categoria: 'coins', 'challenges', 'combined'
+ * @param range - Quantos usuários acima/abaixo mostrar (padrão: 5)
+ */
+export async function fetchRelativeLeaderboard(
+  category: LeaderboardCategory = 'combined',
+  range = 5
+): Promise<ActionResponse<LeaderboardEntry[]>> {
+  try {
+    const supabase = await createClient();
+
+    // Obter usuário autenticado
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { error: 'Usuário não autenticado' };
+    }
+
+    const data = await getRelativeLeaderboard(user.id, category, range);
+    return { success: true, data };
+  } catch (error) {
+    leaderboardLogger.error('Erro ao buscar leaderboard relativo', { error: sanitizeError(error) });
+    return { error: 'Erro ao buscar ranking' };
+  }
+}
+
+/**
  * Buscar ranking do usuário atual
- * @param category - Categoria: 'coins', 'challenges', 'events', 'combined'
+ * @param category - Categoria: 'coins', 'challenges', 'combined'
  * @param period - Período: 'weekly', 'monthly', 'all_time'
  */
 export async function fetchUserRank(
@@ -133,24 +161,6 @@ export async function fetchChallengesLeaderboard(
   } catch (error) {
     leaderboardLogger.error('Erro ao buscar leaderboard de desafios', { error: sanitizeError(error) });
     return { error: 'Erro ao buscar ranking de desafios' };
-  }
-}
-
-/**
- * Buscar leaderboard de eventos
- * @param period - Período: 'weekly', 'monthly', 'all_time'
- * @param limit - Número de resultados (padrão: 10)
- */
-export async function fetchEventsLeaderboard(
-  period: TimePeriod = 'all_time',
-  limit = 10
-): Promise<ActionResponse<LeaderboardEntry[]>> {
-  try {
-    const data = await getEventsLeaderboard(period, limit);
-    return { success: true, data };
-  } catch (error) {
-    leaderboardLogger.error('Erro ao buscar leaderboard de eventos', { error: sanitizeError(error) });
-    return { error: 'Erro ao buscar ranking de eventos' };
   }
 }
 

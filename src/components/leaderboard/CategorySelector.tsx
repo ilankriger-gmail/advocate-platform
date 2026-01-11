@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 
 /**
  * Interface de seleção de categoria do leaderboard
- * Permite alternar entre moedas, desafios, eventos e ranking geral
+ * Permite alternar entre moedas, desafios e ranking geral
  */
 
 interface CategorySelectorProps {
@@ -23,8 +23,6 @@ function getCategoryLabel(category: LeaderboardCategory): string {
       return 'Moedas';
     case 'challenges':
       return 'Desafios';
-    case 'events':
-      return 'Eventos';
     case 'combined':
       return 'Geral';
     default:
@@ -41,8 +39,6 @@ function getCategoryDescription(category: LeaderboardCategory): string {
       return 'Ranking por moedas ganhas';
     case 'challenges':
       return 'Ranking por desafios completados';
-    case 'events':
-      return 'Ranking por eventos participados';
     case 'combined':
       return 'Ranking geral combinado';
     default:
@@ -89,23 +85,6 @@ function getCategoryIcon(category: LeaderboardCategory) {
           />
         </svg>
       );
-    case 'events':
-      return (
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-          />
-        </svg>
-      );
     case 'combined':
       return (
         <svg
@@ -131,12 +110,12 @@ export function CategorySelector({
   onCategoryChange,
   className,
 }: CategorySelectorProps) {
-  const categories: LeaderboardCategory[] = ['coins', 'challenges', 'events', 'combined'];
+  const categories: LeaderboardCategory[] = ['coins', 'challenges', 'combined'];
 
   return (
     <div className={cn('w-full', className)}>
       {/* Grid de categorias */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-3 gap-3">
         {categories.map((category) => {
           const isActive = activeCategory === category;
 
@@ -241,7 +220,7 @@ export function CategorySelectorCompact({
   onCategoryChange,
   className,
 }: CategorySelectorProps) {
-  const categories: LeaderboardCategory[] = ['coins', 'challenges', 'events', 'combined'];
+  const categories: LeaderboardCategory[] = ['coins', 'challenges', 'combined'];
 
   return (
     <div className={cn('w-full', className)}>

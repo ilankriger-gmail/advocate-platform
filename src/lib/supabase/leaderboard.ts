@@ -186,88 +186,6 @@ export async function getChallengesLeaderboard(
 }
 
 /**
- * Buscar leaderboard de eventos atendidos
- * @param period - Período de tempo: 'weekly', 'monthly', 'all_time'
- * @param limit - Número máximo de resultados (padrão: 10)
- */
-export async function getEventsLeaderboard(
-  period: TimePeriod = 'all_time',
-  limit = 10
-): Promise<LeaderboardEntry[]> {
-  const supabase = await createClient();
-
-  // Construir filtro de data
-  let query = supabase
-    .from('event_registrations')
-    .select('user_id, check_in_time')
-    .not('check_in_time', 'is', null)
-    .neq('status', 'cancelled');
-
-  if (period !== 'all_time') {
-    const intervalDays = period === 'weekly' ? 7 : 30;
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - intervalDays);
-    query = query.gte('check_in_time', startDate.toISOString());
-  }
-
-  const { data: registrations, error: registrationsError } = await query;
-
-  if (registrationsError || !registrations) return [];
-
-  // Agregar por usuário
-  const eventsMap = new Map<string, { count: number; lastActivity: string | null }>();
-  registrations.forEach((reg) => {
-    const current = eventsMap.get(reg.user_id) || { count: 0, lastActivity: null };
-    eventsMap.set(reg.user_id, {
-      count: current.count + 1,
-      lastActivity: reg.check_in_time > (current.lastActivity || '') ? reg.check_in_time : current.lastActivity,
-    });
-  });
-
-  // Buscar informações dos usuários
-  const userIds = Array.from(eventsMap.keys());
-  if (userIds.length === 0) return [];
-
-  const { data: users, error: usersError } = await supabase
-    .from('users')
-    .select('id, full_name, avatar_url')
-    .in('id', userIds);
-
-  if (usersError || !users) return [];
-
-  // Combinar e ordenar
-  const entries: LeaderboardEntry[] = users
-    .map((user) => {
-      const stats = eventsMap.get(user.id)!;
-      const score = stats.count;
-
-      // Para eventos, tier baseado no número de eventos
-      let tier: 'bronze' | 'silver' | 'gold' | 'diamond' = 'bronze';
-      if (score >= 20) tier = 'diamond';
-      else if (score >= 10) tier = 'gold';
-      else if (score >= 5) tier = 'silver';
-
-      return {
-        user_id: user.id,
-        full_name: user.full_name,
-        avatar_url: user.avatar_url,
-        score,
-        tier,
-        rank: 0,
-        last_activity: stats.lastActivity,
-      };
-    })
-    .sort((a, b) => b.score - a.score)
-    .slice(0, limit)
-    .map((entry, index) => ({
-      ...entry,
-      rank: index + 1,
-    }));
-
-  return entries;
-}
-
-/**
  * Buscar leaderboard combinado (pontuação geral)
  * @param period - Período de tempo: 'weekly', 'monthly', 'all_time'
  * @param limit - Número máximo de resultados (padrão: 10)
@@ -393,7 +311,7 @@ export async function getCombinedLeaderboard(
 /**
  * Buscar ranking do usuário em uma categoria específica
  * @param userId - ID do usuário
- * @param category - Categoria: 'coins', 'challenges', 'events', 'combined'
+ * @param category - Categoria: 'coins', 'challenges', 'combined'
  * @param period - Período de tempo: 'weekly', 'monthly', 'all_time'
  */
 export async function getUserRank(
@@ -404,10 +322,9 @@ export async function getUserRank(
   const supabase = await createClient();
 
   // Mapear categoria para nome da função SQL
-  const functionMap = {
+  const functionMap: Record<LeaderboardCategory, string> = {
     coins: 'get_user_coins_rank',
     challenges: 'get_user_challenges_rank',
-    events: 'get_user_events_rank',
     combined: 'get_user_combined_rank',
   };
 
@@ -425,10 +342,50 @@ export async function getUserRank(
   return {
     user_id: userId,
     rank: Number(result.rank_position) || 0,
-    score: Number(result.total_coins || result.total_score || result.challenges_completed || result.events_attended) || 0,
+    score: Number(result.total_coins || result.total_score || result.challenges_completed) || 0,
     tier: result.tier || 'bronze',
     total_participants: Number(result.total_users) || 0,
     category,
     period,
   };
+}
+
+/**
+ * Buscar leaderboard relativo (usuários próximos ao usuário atual)
+ * @param userId - ID do usuário logado
+ * @param category - Categoria: 'coins', 'challenges', 'combined'
+ * @param range - Quantos usuários acima/abaixo mostrar (padrão: 5)
+ */
+export async function getRelativeLeaderboard(
+  userId: string,
+  category: LeaderboardCategory = 'combined',
+  range = 5
+): Promise<LeaderboardEntry[]> {
+  const supabase = await createClient();
+
+  // Mapear categoria para nome da função SQL
+  const functionMap: Record<LeaderboardCategory, string> = {
+    coins: 'get_relative_coins_leaderboard',
+    challenges: 'get_relative_challenges_leaderboard',
+    combined: 'get_relative_combined_leaderboard',
+  };
+
+  const functionName = functionMap[category];
+
+  const { data, error } = await supabase.rpc(functionName, {
+    p_user_id: userId,
+    p_range: range,
+  });
+
+  if (error || !data) return [];
+
+  return data.map((entry: { user_id: string; full_name: string; avatar_url: string; score: number; tier: string; rank: number }) => ({
+    user_id: entry.user_id,
+    full_name: entry.full_name,
+    avatar_url: entry.avatar_url,
+    score: Number(entry.score) || 0,
+    tier: entry.tier as 'bronze' | 'silver' | 'gold' | 'diamond',
+    rank: Number(entry.rank) || 0,
+    last_activity: null,
+  }));
 }

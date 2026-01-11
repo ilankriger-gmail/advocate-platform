@@ -70,7 +70,7 @@ export default async function PrêmiosPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Meus Prêmios" />
+      <PageHeader title="Prêmios" />
 
       {/* Saldo de Moedas */}
       <Card className="p-6 bg-gradient-to-r from-indigo-500 to-purple-600 text-white">

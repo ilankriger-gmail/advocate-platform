@@ -7,34 +7,30 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, Skeleton } from '@/components/ui';
 import {
   CategorySelector,
-  LeaderboardTabs,
   LeaderboardList,
   UserRankCard,
 } from '@/components/leaderboard';
 import {
-  fetchLeaderboard,
+  fetchRelativeLeaderboard,
   fetchUserRank,
 } from '@/actions/leaderboard';
 import type {
   LeaderboardEntry,
   UserRanking,
-  TimePeriod,
   LeaderboardCategory,
 } from '@/lib/supabase/types';
 
 /**
- * Página de Rankings - exibe leaderboards públicos com todas as categorias
- * e filtros de tempo
+ * Página de Rankings - exibe ranking relativo (usuários próximos)
+ * Mostra 5 acima + usuário atual + 5 abaixo
  */
 export default function RankingPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
 
-  // Estados dos filtros
+  // Estado do filtro de categoria
   const [category, setCategory] = useState<LeaderboardCategory>('combined');
-  const [period, setPeriod] = useState<TimePeriod>('all_time');
-  const [limit, setLimit] = useState<number>(10);
 
   // Estados dos dados
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([]);
@@ -61,7 +57,7 @@ export default function RankingPage() {
     checkAuth();
   }, [router]);
 
-  // Carregar dados do leaderboard quando os filtros mudarem
+  // Carregar dados do leaderboard quando a categoria mudar
   useEffect(() => {
     if (loading) return;
 
@@ -69,7 +65,7 @@ export default function RankingPage() {
       setLoadingLeaderboard(true);
       setError(null);
 
-      const result = await fetchLeaderboard(category, period, limit);
+      const result = await fetchRelativeLeaderboard(category);
 
       if (result.error) {
         setError(result.error);
@@ -82,16 +78,16 @@ export default function RankingPage() {
     }
 
     loadLeaderboard();
-  }, [category, period, limit, loading]);
+  }, [category, loading]);
 
-  // Carregar ranking do usuário quando categoria ou período mudarem
+  // Carregar ranking do usuário quando categoria mudar
   useEffect(() => {
     if (loading || !userId) return;
 
     async function loadUserRank() {
       setLoadingUserRank(true);
 
-      const result = await fetchUserRank(category, period);
+      const result = await fetchUserRank(category);
 
       if (result.error) {
         setUserRank(null);
@@ -103,7 +99,7 @@ export default function RankingPage() {
     }
 
     loadUserRank();
-  }, [category, period, loading, userId]);
+  }, [category, loading, userId]);
 
   // Loading inicial
   if (loading) {
@@ -121,7 +117,7 @@ export default function RankingPage() {
       {/* Header */}
       <PageHeader
         title="Rankings"
-        description="Veja os rankings da comunidade e compare seu desempenho"
+        description="Veja sua posicao e os participantes proximos a voce"
       />
 
       {/* Seletor de Categoria */}
@@ -135,24 +131,13 @@ export default function RankingPage() {
         />
       </div>
 
-      {/* Filtros de Tempo */}
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Período
-        </h2>
-        <LeaderboardTabs
-          activePeriod={period}
-          onPeriodChange={setPeriod}
-        />
-      </div>
-
       {/* Ranking do Usuário */}
       {loadingUserRank ? (
         <Skeleton className="h-32 w-full" />
       ) : userRank ? (
         <div>
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Sua Posição
+            Sua Posicao
           </h2>
           <UserRankCard ranking={userRank} />
         </div>
@@ -171,15 +156,15 @@ export default function RankingPage() {
         </Card>
       )}
 
-      {/* Lista de Ranking */}
+      {/* Lista de Ranking Relativo */}
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-gray-900">
-            Top Participantes
+            Participantes Proximos
           </h2>
           {!loadingLeaderboard && leaderboardData.length > 0 && (
             <div className="text-sm text-gray-500">
-              Exibindo {leaderboardData.length} participantes
+              {leaderboardData.length} participantes
             </div>
           )}
         </div>
@@ -188,7 +173,6 @@ export default function RankingPage() {
           entries={leaderboardData}
           currentUserId={userId}
           isLoading={loadingLeaderboard}
-          defaultLimit={limit as 10 | 25 | 50}
         />
       </div>
 
@@ -207,11 +191,7 @@ export default function RankingPage() {
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-blue-500">•</span>
-                <span>Participe de eventos da comunidade</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-blue-500">•</span>
-                <span>Mantenha-se ativo e engajado</span>
+                <span>Mantenha-se ativo e engajado na comunidade</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-blue-500">•</span>
@@ -225,9 +205,9 @@ export default function RankingPage() {
       {/* Legenda de Tiers */}
       <Card className="p-6">
         <h3 className="font-semibold text-gray-900 mb-4">
-          📊 Entenda os Tiers
+          Entenda os Tiers
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-amber-700 flex items-center justify-center text-white font-bold">
               🥉

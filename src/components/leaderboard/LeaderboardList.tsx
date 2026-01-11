@@ -1,15 +1,13 @@
 'use client';
 
-import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
 import { LeaderboardEntry } from './LeaderboardEntry';
 import { LeaderboardEntry as LeaderboardEntryType } from '@/lib/supabase/types';
 
 /**
- * Componente para exibir lista de entradas do leaderboard com suporte a paginação
- * Permite selecionar entre top 10/25/50 fãs
+ * Componente para exibir lista de entradas do leaderboard
+ * Exibe ranking relativo (usuários próximos ao usuário atual)
  */
 
 interface LeaderboardListProps {
@@ -17,7 +15,6 @@ interface LeaderboardListProps {
   currentUserId?: string | null;
   isLoading?: boolean;
   showLastActivity?: boolean;
-  defaultLimit?: 10 | 25 | 50;
   className?: string;
 }
 
@@ -68,8 +65,8 @@ function EmptyState() {
         Nenhum participante ainda
       </h3>
       <p className="text-sm text-surface-500 max-w-sm">
-        Seja o primeiro a participar e aparecer no ranking! Complete desafios,
-        participe de eventos e ganhe moedas para subir no leaderboard.
+        Seja o primeiro a participar e aparecer no ranking! Complete desafios
+        e ganhe moedas para subir no leaderboard.
       </p>
     </div>
   );
@@ -80,17 +77,14 @@ export function LeaderboardList({
   currentUserId,
   isLoading = false,
   showLastActivity = false,
-  defaultLimit = 10,
   className,
 }: LeaderboardListProps) {
-  const [displayLimit, setDisplayLimit] = useState<10 | 25 | 50>(defaultLimit);
-
   // Se estiver carregando, mostrar skeletons
   if (isLoading) {
     return (
       <Card padding="none" className={cn('overflow-hidden', className)}>
         <div className="divide-y divide-surface-100">
-          {Array.from({ length: displayLimit }).map((_, index) => (
+          {Array.from({ length: 11 }).map((_, index) => (
             <LeaderboardEntrySkeleton key={index} />
           ))}
         </div>
@@ -107,86 +101,24 @@ export function LeaderboardList({
     );
   }
 
-  // Limitar entradas ao número selecionado
-  const displayedEntries = entries.slice(0, displayLimit);
-  const hasMoreEntries = entries.length > displayLimit;
-
   return (
     <div className={cn('space-y-4', className)}>
-      {/* Controles de paginação - Top */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-surface-700">Mostrar:</span>
-          <div className="flex items-center gap-1 bg-surface-100 rounded-lg p-1">
-            <Button
-              size="sm"
-              variant={displayLimit === 10 ? 'primary' : 'ghost'}
-              onClick={() => setDisplayLimit(10)}
-              className={cn(
-                'min-w-[60px] rounded-md',
-                displayLimit === 10 ? '' : 'hover:bg-surface-200'
-              )}
-            >
-              Top 10
-            </Button>
-            <Button
-              size="sm"
-              variant={displayLimit === 25 ? 'primary' : 'ghost'}
-              onClick={() => setDisplayLimit(25)}
-              className={cn(
-                'min-w-[60px] rounded-md',
-                displayLimit === 25 ? '' : 'hover:bg-surface-200'
-              )}
-            >
-              Top 25
-            </Button>
-            <Button
-              size="sm"
-              variant={displayLimit === 50 ? 'primary' : 'ghost'}
-              onClick={() => setDisplayLimit(50)}
-              className={cn(
-                'min-w-[60px] rounded-md',
-                displayLimit === 50 ? '' : 'hover:bg-surface-200'
-              )}
-            >
-              Top 50
-            </Button>
-          </div>
-        </div>
-
-        <div className="text-sm text-surface-500">
-          {displayedEntries.length} de {entries.length} participantes
-        </div>
-      </div>
-
       {/* Lista de entradas */}
       <Card padding="none" className="overflow-hidden">
         <div className="divide-y divide-surface-100">
-          {displayedEntries.map((entry, index) => (
+          {entries.map((entry) => (
             <LeaderboardEntry
               key={entry.user_id}
               entry={entry}
-              position={index}
+              position={entry.rank - 1}
               currentUserId={currentUserId}
               showLastActivity={showLastActivity}
             />
           ))}
         </div>
-
-        {/* Indicador de mais entradas */}
-        {hasMoreEntries && (
-          <div className="bg-surface-50 px-4 py-3 text-center border-t border-surface-100">
-            <p className="text-sm text-surface-600">
-              +{entries.length - displayLimit} participantes não exibidos
-            </p>
-            <p className="text-xs text-surface-500 mt-1">
-              Selecione "Top 25" ou "Top 50" para ver mais
-            </p>
-          </div>
-        )}
       </Card>
 
-      {/* Informação adicional - responsivo */}
+      {/* Informação adicional */}
       <div className="flex items-center justify-center gap-2 text-xs text-surface-500">
         <svg
           className="w-4 h-4"
@@ -202,7 +134,7 @@ export function LeaderboardList({
             d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
           />
         </svg>
-        <span>Os rankings são atualizados em tempo real</span>
+        <span>Mostrando participantes proximos a voce</span>
       </div>
     </div>
   );
@@ -217,7 +149,7 @@ export function LeaderboardListCompact({
   currentUserId,
   isLoading = false,
   className,
-}: Omit<LeaderboardListProps, 'showLastActivity' | 'defaultLimit'>) {
+}: Omit<LeaderboardListProps, 'showLastActivity'>) {
   // Se estiver carregando, mostrar skeletons
   if (isLoading) {
     return (
@@ -252,11 +184,11 @@ export function LeaderboardListCompact({
   return (
     <Card padding="none" className={cn('overflow-hidden', className)}>
       <div className="divide-y divide-surface-100">
-        {displayedEntries.map((entry, index) => (
+        {displayedEntries.map((entry) => (
           <LeaderboardEntry
             key={entry.user_id}
             entry={entry}
-            position={index}
+            position={entry.rank - 1}
             currentUserId={currentUserId}
             showLastActivity={false}
           />
