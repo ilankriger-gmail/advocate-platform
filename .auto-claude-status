@@ -3,23 +3,23 @@
   "spec": "036-validar-conte-do-real-de-arquivos-no-upload-magic-",
   "state": "building",
   "subtasks": {
-    "completed": 8,
+    "completed": 13,
     "total": 16,
     "in_progress": 1,
     "failed": 0
   },
   "phase": {
-    "current": "Atualizar fun\u00e7\u00f5es uploadFavicon e uploadLogo",
+    "current": "Testes unit\u00e1rios",
     "id": null,
-    "total": 3
+    "total": 4
   },
   "workers": {
     "active": 0,
     "max": 1
   },
   "session": {
-    "number": 9,
+    "number": 14,
     "started_at": "2026-01-11T11:02:57.633538"
   },
-  "last_update": "2026-01-11T11:17:27.432851"
+  "last_update": "2026-01-11T11:29:20.864158"
 }
