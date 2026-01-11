@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
-import { analyzeVídeoChallenge, type AIVerdict } from '@/lib/gemini';
+import { analyzeVídeoChallenge, isValidYouTubeUrl, type AIVerdict } from '@/lib/gemini';
 import { ActionResponse } from '@/types/action';
 import type { Challenge, ChallengeParticipant, ChallengeWinner, ParticipationWithChallenge } from '@/lib/supabase/types';
 
@@ -52,16 +52,22 @@ export async function participateInChallenge(data: {
       return { error: 'Você já participou deste desafio' };
     }
 
-    // Analisar vídeo com IA (se tiver URL)
-    let aiVerdict: AIVerdict | null = null;
-    if (data.vídeoProofUrl) {
-      aiVerdict = await analyzeVídeoChallenge(
-        data.vídeoProofUrl,
-        challenge.goal_type,
-        challenge.goal_value,
-        challenge.title
-      );
+    // Validar que é URL do YouTube (obrigatório para análise de IA)
+    if (!data.vídeoProofUrl) {
+      return { error: 'Link do vídeo do YouTube é obrigatório' };
     }
+
+    if (!isValidYouTubeUrl(data.vídeoProofUrl)) {
+      return { error: 'Apenas links do YouTube são aceitos. O vídeo deve ser público.' };
+    }
+
+    // Analisar vídeo com IA (Gemini assiste o vídeo do YouTube)
+    const aiVerdict = await analyzeVídeoChallenge(
+      data.vídeoProofUrl,
+      challenge.goal_type,
+      challenge.goal_value,
+      challenge.title
+    );
 
     // Criar participacao
     const { data: participation, error } = await supabase

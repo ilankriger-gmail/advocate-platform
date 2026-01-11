@@ -1,11 +1,14 @@
 /**
  * Integracao com Google Gemini para verificação de vídeos de desafios
  *
- * Fluxo:
- * 1. Usuário envia link do vídeo
- * 2. Gemini analisa o conteudo
- * 3. Retorna veredito (válido/inválido + confianca + motivo)
- * 4. Admin ve o veredito e decide aprovar/rejeitar
+ * NOVO: Gemini agora ASSISTE o vídeo do YouTube de verdade!
+ * - Conta repetições
+ * - Mede tempo
+ * - Valida se a meta foi batida
+ *
+ * Requisitos:
+ * - Vídeo deve ser PÚBLICO no YouTube (não funciona com unlisted/privado)
+ * - Máximo 8h de vídeo/dia no plano gratuito
  */
 
 export interface AIVerdict {
@@ -13,24 +16,46 @@ export interface AIVerdict {
   confidence: number; // 0-100
   reason: string;
   analyzedAt: string;
+  observedValue?: number; // Repetições contadas ou segundos medidos
 }
 
 interface GeminiAnalysisResult {
   isValid: boolean;
   confidence: number;
   reason: string;
+  observedValue?: number;
+}
+
+/**
+ * Extrai o ID do vídeo do YouTube de várias formas de URL
+ */
+function extractYouTubeId(url: string): string | null {
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/v\/)([^&\n?#]+)/,
+    /youtube\.com\/shorts\/([^&\n?#]+)/,
+  ];
+
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+
+  return null;
 }
 
 /**
  * Analisa um vídeo de desafio usando Gemini
+ * ASSISTE o vídeo do YouTube de verdade e valida se a meta foi batida
  *
- * @param vídeoUrl URL do vídeo (YouTube, Instagram, TikTok)
+ * @param videoUrl URL do vídeo do YouTube (deve ser público)
  * @param challengeType Tipo do desafio (repetitions ou time)
  * @param goalValue Meta a ser atingida
  * @param challengeTitle Título do desafio para contexto
  */
 export async function analyzeVídeoChallenge(
-  vídeoUrl: string,
+  videoUrl: string,
   challengeType: 'repetitions' | 'time' | null,
   goalValue: number | null,
   challengeTitle: string
@@ -47,11 +72,52 @@ export async function analyzeVídeoChallenge(
     };
   }
 
-  try {
-    const prompt = buildAnalysisPrompt(vídeoUrl, challengeType, goalValue, challengeTitle);
+  // Validar que é URL do YouTube
+  const videoId = extractYouTubeId(videoUrl);
+  if (!videoId) {
+    return {
+      isValid: false,
+      confidence: 0,
+      reason: 'URL do YouTube inválida. Use youtube.com/watch?v=... ou youtu.be/...',
+      analyzedAt: new Date().toISOString(),
+    };
+  }
 
+  try {
+    const goalDescription = challengeType === 'time'
+      ? `${goalValue} segundos`
+      : `${goalValue} repetições`;
+
+    const prompt = `Você é um verificador de desafios físicos. ASSISTA este vídeo completo e analise:
+
+DESAFIO: ${challengeTitle}
+META: ${goalValue ? goalDescription : 'Não especificada'}
+
+INSTRUÇÕES DE ANÁLISE:
+1. A pessoa está fazendo o exercício correto para o desafio "${challengeTitle}"?
+2. O exercício está sendo feito com boa forma/técnica?
+3. ${challengeType === 'time'
+  ? 'Quanto tempo (em segundos) a pessoa manteve o exercício?'
+  : 'Quantas repetições completas a pessoa fez? Conte cada repetição cuidadosamente.'}
+4. A meta de ${goalValue ? goalDescription : 'não especificada'} foi atingida?
+
+CRITÉRIOS DE VALIDAÇÃO:
+- O exercício deve corresponder ao título do desafio
+- Cada repetição deve ser completa (movimento completo)
+- Para tempo, considere apenas o período de execução ativa
+- Seja justo mas criterioso na avaliação
+
+Responda EXATAMENTE neste formato JSON (apenas o JSON, sem markdown):
+{
+  "isValid": true ou false (se bateu a meta),
+  "confidence": 0-100 (quão confiante você está),
+  "reason": "Explicação breve do veredito",
+  "observedValue": número (repetições contadas ou segundos medidos)
+}`;
+
+    // Usar gemini-2.0-flash com suporte a YouTube nativo
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: {
@@ -61,6 +127,12 @@ export async function analyzeVídeoChallenge(
           contents: [
             {
               parts: [
+                // Passar URL do YouTube como file_data
+                {
+                  file_data: {
+                    file_uri: videoUrl,
+                  },
+                },
                 {
                   text: prompt,
                 },
@@ -69,24 +141,38 @@ export async function analyzeVídeoChallenge(
           ],
           generationConfig: {
             temperature: 0.2,
-            maxOutputTokens: 500,
+            maxOutputTokens: 1000,
           },
         }),
       }
     );
 
     if (!response.ok) {
-      console.error('Gemini API error:', response.status, await response.text());
+      const errorText = await response.text();
+      console.error('Gemini API error:', response.status, errorText);
+
+      // Verificar se é erro de vídeo privado/não listado
+      if (errorText.includes('private') || errorText.includes('unavailable')) {
+        return {
+          isValid: false,
+          confidence: 0,
+          reason: 'Vídeo não acessível. Verifique se o vídeo está PÚBLICO no YouTube.',
+          analyzedAt: new Date().toISOString(),
+        };
+      }
+
       return {
         isValid: false,
         confidence: 0,
-        reason: 'Erro ao conectar com API Gemini',
+        reason: 'Erro ao conectar com API Gemini. Tente novamente.',
         analyzedAt: new Date().toISOString(),
       };
     }
 
     const data = await response.json();
     const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    console.log('Gemini video analysis response:', textResponse);
 
     const result = parseGeminiResponse(textResponse);
 
@@ -95,53 +181,14 @@ export async function analyzeVídeoChallenge(
       analyzedAt: new Date().toISOString(),
     };
   } catch (error) {
-    console.error('Error analyzing vídeo:', error);
+    console.error('Error analyzing video:', error);
     return {
       isValid: false,
       confidence: 0,
-      reason: 'Erro ao analisar vídeo',
+      reason: 'Erro ao analisar vídeo. Verifique se o vídeo é público.',
       analyzedAt: new Date().toISOString(),
     };
   }
-}
-
-function buildAnalysisPrompt(
-  vídeoUrl: string,
-  challengeType: 'repetitions' | 'time' | null,
-  goalValue: number | null,
-  challengeTitle: string
-): string {
-  const goalDescription = challengeType === 'time'
-    ? `${goalValue} segundos`
-    : `${goalValue} repeticoes`;
-
-  return `Voce e um verificador de desafios fisicos. Analise a URL do vídeo abaixo e determine se o participante completou o desafio de forma legitima.
-
-DESAFIO: ${challengeTitle}
-META: ${goalValue ? goalDescription : 'Nao especificada'}
-URL DO VIDEO: ${vídeoUrl}
-
-Avalie os seguintes criterios:
-1. O vídeo parece ser de uma plataforma legitima (YouTube, Instagram, TikTok)?
-2. A URL parece valida e acessivel?
-3. O formato da URL corresponde a um vídeo de exercicio/desafio?
-
-IMPORTANTE: Voce NAO pode assistir ao vídeo diretamente, entao faca uma analise baseada na URL.
-- URLs de Instagram (instagram.com/reel/, instagram.com/p/) sao validas
-- URLs de YouTube (youtube.com/watch, youtu.be/) sao validas
-- URLs de TikTok (tiktok.com/@, vm.tiktok.com/) sao validas
-
-Responda EXATAMENTE neste formato JSON:
-{
-  "isValid": true/false,
-  "confidence": 0-100,
-  "reason": "Explicacao breve do veredito"
-}
-
-Se a URL parece valida e de uma plataforma conhecida, dê isValid: true com confianca baseada na qualidade da URL.
-Se a URL parece suspeita ou invalida, dê isValid: false.
-
-APENAS o JSON, sem texto adicional.`;
 }
 
 function parseGeminiResponse(text: string): GeminiAnalysisResult {
@@ -162,6 +209,7 @@ function parseGeminiResponse(text: string): GeminiAnalysisResult {
       isValid: Boolean(parsed.isValid),
       confidence: Math.min(100, Math.max(0, parseInt(parsed.confidence) || 0)),
       reason: String(parsed.reason || 'Sem detalhes'),
+      observedValue: parsed.observedValue ? parseInt(parsed.observedValue) : undefined,
     };
   } catch {
     return {
@@ -173,29 +221,23 @@ function parseGeminiResponse(text: string): GeminiAnalysisResult {
 }
 
 /**
- * Verifica se uma URL e de uma plataforma de vídeo valida
+ * Verifica se uma URL é do YouTube
+ */
+export function isValidYouTubeUrl(url: string): boolean {
+  return /youtube\.com\/watch|youtu\.be\/|youtube\.com\/shorts\//.test(url);
+}
+
+/**
+ * Verifica se uma URL é de uma plataforma de vídeo válida (legado)
  */
 export function isValidVídeoUrl(url: string): boolean {
-  const patterns = [
-    /instagram\.com\/(p|reel|reels|tv)\//,
-    /youtube\.com\/watch/,
-    /youtu\.be\//,
-    /tiktok\.com\/@/,
-    /vm\.tiktok\.com\//,
-    /facebook\.com\/.*\/vídeos/,
-    /fb\.watch\//,
-  ];
-
-  return patterns.some(pattern => pattern.test(url));
+  return isValidYouTubeUrl(url);
 }
 
 /**
  * Extrai o tipo de plataforma da URL
  */
 export function getVídeoPlatform(url: string): string | null {
-  if (/instagram\.com/.test(url)) return 'Instagram';
   if (/youtube\.com|youtu\.be/.test(url)) return 'YouTube';
-  if (/tiktok\.com/.test(url)) return 'TikTok';
-  if (/facebook\.com|fb\.watch/.test(url)) return 'Facebook';
   return null;
 }

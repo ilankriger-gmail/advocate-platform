@@ -127,7 +127,7 @@ export async function searchYouTubeVideos(query?: string): Promise<{
       }
     }
 
-    const videos: YouTubeVideo[] = (data.items || []).map((item) => {
+    let videos: YouTubeVideo[] = (data.items || []).map((item) => {
       // SEMPRE usar URL direta do YouTube (mais confiavel que a API)
       const thumbnailUrl = `https://i.ytimg.com/vi/${item.id.videoId}/mqdefault.jpg`;
 
@@ -140,6 +140,15 @@ export async function searchYouTubeVideos(query?: string): Promise<{
         viewCount: viewCounts[item.id.videoId] || 0,
       };
     });
+
+    // Filtrar vídeos que tenham o termo de busca no título
+    // (a API do YouTube retorna por relevância, mas pode incluir vídeos sem o termo no título)
+    if (query && query.trim()) {
+      const searchTerm = query.trim().toLowerCase();
+      videos = videos.filter((video) =>
+        video.title.toLowerCase().includes(searchTerm)
+      );
+    }
 
     return { videos };
   } catch (error) {

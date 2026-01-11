@@ -44,6 +44,12 @@ export function ChallengeParticipationModal({
       return;
     }
 
+    // Validar que é YouTube
+    if (!formData.proofUrl || !isYouTubeUrl(formData.proofUrl)) {
+      setError('Apenas links do YouTube são aceitos. O vídeo deve ser público.');
+      return;
+    }
+
     setIsLoading(true);
 
     const result = await participateInChallenge({
@@ -64,6 +70,11 @@ export function ChallengeParticipationModal({
   };
 
   const goalLabel = challenge.goal_type === 'time' ? 'segundos' : 'repeticoes';
+
+  // Validar que é URL do YouTube
+  const isYouTubeUrl = (url: string) => {
+    return /youtube\.com\/watch|youtu\.be\/|youtube\.com\/shorts\//.test(url);
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Participar do Desafio">
@@ -96,29 +107,26 @@ export function ChallengeParticipationModal({
           />
         </div>
 
-        {/* Link de comprovação */}
+        {/* Link do YouTube */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Link de comprovação *
+            Link do vídeo no YouTube *
           </label>
           <Input
             type="url"
             value={formData.proofUrl}
             onChange={(e) => setFormData({ ...formData, proofUrl: e.target.value })}
-            placeholder="https://instagram.com/reel/... ou youtube.com/..."
+            placeholder="https://youtube.com/watch?v=..."
             required
           />
-          <p className="text-xs text-gray-500 mt-1">
-            Cole o link do seu vídeo ou publicação (Instagram, YouTube, TikTok)
-            {challenge.hashtag && (
-              <>
-                <br />
-                Use a hashtag <strong>{challenge.hashtag}</strong>
-                {challenge.profile_to_tag && (
-                  <> e marque <strong>{challenge.profile_to_tag}</strong></>
-                )}
-              </>
-            )}
+          <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p className="text-xs text-yellow-800">
+              ⚠️ <strong>Importante:</strong> O vídeo deve ser <strong>PÚBLICO</strong> no YouTube.
+              Vídeos não listados ou privados não serão analisados.
+            </p>
+          </div>
+          <p className="text-xs text-gray-500 mt-2">
+            Nossa IA vai assistir seu vídeo e validar se você bateu a meta!
           </p>
         </div>
 
