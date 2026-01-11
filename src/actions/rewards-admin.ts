@@ -10,6 +10,40 @@ import { logger, maskId, sanitizeError } from '@/lib';
 const rewardsAdminLogger = logger.withContext('[RewardsAdmin]');
 
 /**
+ * Buscar recompensa por ID (admin)
+ */
+export async function getRewardById(rewardId: string): Promise<ActionResponse> {
+  try {
+    const userCheck = await getAuthenticatedUser();
+    if (userCheck.error) {
+      return userCheck;
+    }
+    const user = userCheck.data!;
+
+    const authCheck = await verifyAdminOrCreator(user.id);
+    if (authCheck.error) {
+      return authCheck;
+    }
+
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+      .from('rewards')
+      .select('*')
+      .eq('id', rewardId)
+      .single();
+
+    if (error) {
+      return { error: 'Recompensa não encontrada' };
+    }
+
+    return { success: true, data };
+  } catch {
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+/**
  * Ativar/Desativar recompensa (admin)
  */
 export async function toggleRewardActive(
@@ -250,11 +284,12 @@ export async function updateReward(
   rewardId: string,
   data: Partial<{
     name: string;
-    description: string;
-    imageUrl: string;
-    coinsRequired: number;
-    quantityAvailable: number;
-    isActive: boolean;
+    description: string | null;
+    coins_cost: number;
+    stock: number | null;
+    type: 'digital' | 'physical';
+    image_url: string | null;
+    is_active: boolean;
   }>
 ): Promise<ActionResponse> {
   try {
@@ -273,17 +308,9 @@ export async function updateReward(
 
     const supabase = await createClient();
 
-    const updateData: any = {};
-    if (data.name !== undefined) updateData.name = data.name;
-    if (data.description !== undefined) updateData.description = data.description;
-    if (data.imageUrl !== undefined) updateData.image_url = data.imageUrl;
-    if (data.coinsRequired !== undefined) updateData.coins_required = data.coinsRequired;
-    if (data.quantityAvailable !== undefined) updateData.quantity_available = data.quantityAvailable;
-    if (data.isActive !== undefined) updateData.is_active = data.isActive;
-
     const { error } = await supabase
       .from('rewards')
-      .update(updateData)
+      .update({ ...data, updated_at: new Date().toISOString() })
       .eq('id', rewardId);
 
     if (error) {

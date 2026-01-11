@@ -6,6 +6,40 @@ import type { ActionResponse } from './types';
 import { verifyAdminOrCreator, getAuthenticatedUser } from './utils';
 
 /**
+ * Buscar evento por ID (admin)
+ */
+export async function getEventById(eventId: string): Promise<ActionResponse> {
+  try {
+    const userCheck = await getAuthenticatedUser();
+    if (userCheck.error) {
+      return userCheck;
+    }
+    const user = userCheck.data!;
+
+    const authCheck = await verifyAdminOrCreator(user.id);
+    if (authCheck.error) {
+      return authCheck;
+    }
+
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+      .from('events')
+      .select('*')
+      .eq('id', eventId)
+      .single();
+
+    if (error) {
+      return { error: 'Evento não encontrado' };
+    }
+
+    return { success: true, data };
+  } catch {
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+/**
  * Criar evento (admin)
  */
 export async function createEvent(data: {
@@ -111,15 +145,14 @@ export async function updateEvent(
   eventId: string,
   data: Partial<{
     title: string;
-    description: string;
-    location: string;
-    start_time: string;
-    end_time: string;
-    max_participants: number;
-    required_level: number;
-    is_virtual: boolean;
-    meeting_url: string;
-    image_url: string;
+    description: string | null;
+    type: 'virtual' | 'presencial' | 'hibrido';
+    location: string | null;
+    starts_at: string;
+    ends_at: string | null;
+    max_participants: number | null;
+    meeting_url: string | null;
+    image_url: string | null;
     is_active: boolean;
   }>
 ): Promise<ActionResponse> {

@@ -78,7 +78,7 @@ export interface FileValidationResult {
 /**
  * Verifica se um array de bytes corresponde a uma assinatura de magic bytes
  */
-function matchesSignature(bytes: Uint8Array, signature: number[]): boolean {
+function matchesSignature(bytes: Uint8Array, signature: readonly number[]): boolean {
   if (bytes.length < signature.length) {
     return false;
   }
@@ -285,9 +285,10 @@ export async function validateMimeTypeMatch(file: File): Promise<boolean> {
 
   // Encontrar o formato baseado no MIME type detectado
   for (const config of Object.values(MAGIC_BYTES)) {
-    if (config.mimeTypes.includes(detectedMimeType)) {
+    const mimeTypes = config.mimeTypes as readonly string[];
+    if (mimeTypes.includes(detectedMimeType)) {
       // Verificar se o tipo declarado também está na lista de tipos válidos
-      return config.mimeTypes.some(mime => mime === declaredType);
+      return mimeTypes.some(mime => mime === declaredType);
     }
   }
 

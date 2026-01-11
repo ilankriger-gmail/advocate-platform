@@ -49,6 +49,7 @@ export interface SanitizedError {
   name: string;
   code?: string;
   stack?: string;
+  [key: string]: unknown; // Permite compatibilidade com LogContext
 }
 
 // ============================================================================
