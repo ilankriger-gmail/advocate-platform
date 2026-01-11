@@ -11,6 +11,9 @@
  * - Máximo 8h de vídeo/dia no plano gratuito
  */
 
+// SEGURANCA: Timeout para evitar requisicoes pendentes indefinidamente
+const GEMINI_TIMEOUT_MS = 60000; // 60 segundos (análise de vídeo pode demorar)
+
 export interface AIVerdict {
   isValid: boolean;
   confidence: number; // 0-100
@@ -115,6 +118,10 @@ Responda EXATAMENTE neste formato JSON (apenas o JSON, sem markdown):
   "observedValue": número (repetições contadas ou segundos medidos)
 }`;
 
+    // SEGURANCA: AbortController para timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), GEMINI_TIMEOUT_MS);
+
     // Usar gemini-2.0-flash com suporte a YouTube nativo
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
@@ -123,6 +130,7 @@ Responda EXATAMENTE neste formato JSON (apenas o JSON, sem markdown):
         headers: {
           'Content-Type': 'application/json',
         },
+        signal: controller.signal,
         body: JSON.stringify({
           contents: [
             {
@@ -146,6 +154,8 @@ Responda EXATAMENTE neste formato JSON (apenas o JSON, sem markdown):
         }),
       }
     );
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -222,9 +232,39 @@ function parseGeminiResponse(text: string): GeminiAnalysisResult {
 
 /**
  * Verifica se uma URL é do YouTube
+ * SEGURANCA: Validacao rigorosa para prevenir URLs maliciosas
  */
 export function isValidYouTubeUrl(url: string): boolean {
-  return /youtube\.com\/watch|youtu\.be\/|youtube\.com\/shorts\//.test(url);
+  if (!url || typeof url !== 'string') {
+    return false;
+  }
+
+  // Normalizar e limpar URL
+  const trimmedUrl = url.trim();
+
+  // SEGURANCA: Verificar protocolo (apenas https e http)
+  if (!trimmedUrl.startsWith('https://') && !trimmedUrl.startsWith('http://')) {
+    return false;
+  }
+
+  // SEGURANCA: Bloquear URLs com caracteres suspeitos
+  if (/[<>"'`\\]/.test(trimmedUrl)) {
+    return false;
+  }
+
+  // SEGURANCA: Verificar dominio exato (previne youtube.com.malicious.com)
+  try {
+    const urlObj = new URL(trimmedUrl);
+    const validHosts = ['www.youtube.com', 'youtube.com', 'youtu.be', 'm.youtube.com'];
+    if (!validHosts.includes(urlObj.hostname)) {
+      return false;
+    }
+  } catch {
+    return false;
+  }
+
+  // Verificar formato da URL
+  return /youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\//.test(trimmedUrl);
 }
 
 /**

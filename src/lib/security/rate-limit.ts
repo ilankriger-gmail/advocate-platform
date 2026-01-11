@@ -79,7 +79,9 @@ export async function checkRateLimit(
     };
   } catch (error) {
     // Em caso de erro do Redis, fail-open (permitir requisição)
-    console.error('Rate limit Redis error:', error);
+    // SEGURANCA: Nao logar detalhes do erro que podem conter dados sensiveis
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Rate limit Redis error:', errorMessage);
     return {
       success: true,
       remaining: config.limit - 1,

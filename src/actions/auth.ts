@@ -189,12 +189,20 @@ export async function resetPassword(formData: FormData): Promise<AuthResponse> {
 
 /**
  * Server Action para atualizar senha
+ * SEGURANCA: Exige senha atual para prevenir alteracao por sessao roubada
  */
 export async function updatePassword(formData: FormData): Promise<AuthResponse> {
   const supabase = await createClient();
 
+  const currentPassword = formData.get('currentPassword') as string;
   const password = formData.get('password') as string;
   const confirmPassword = formData.get('confirmPassword') as string;
+
+  // SEGURANCA: Exigir senha atual para alteracao de senha
+  // Previne que atacante com sessao roubada altere a senha
+  if (!currentPassword) {
+    return { error: 'Senha atual e obrigatoria' };
+  }
 
   if (!password) {
     return { error: 'Nova senha e obrigatoria' };
@@ -208,6 +216,23 @@ export async function updatePassword(formData: FormData): Promise<AuthResponse> 
   const passwordValidation = validatePassword(password);
   if (!passwordValidation.isValid) {
     return { error: passwordValidation.errors[0] };
+  }
+
+  // Verificar usuario logado
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user?.email) {
+    return { error: 'Usuario nao autenticado' };
+  }
+
+  // SEGURANCA: Verificar senha atual antes de permitir alteracao
+  const { error: verifyError } = await supabase.auth.signInWithPassword({
+    email: user.email,
+    password: currentPassword,
+  });
+
+  if (verifyError) {
+    // Mensagem generica para nao revelar detalhes
+    return { error: 'Senha atual incorreta' };
   }
 
   const { error } = await supabase.auth.updateUser({

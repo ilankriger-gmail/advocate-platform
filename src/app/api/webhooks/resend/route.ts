@@ -8,6 +8,7 @@ import crypto from 'crypto';
 import { updateEmailNotificationStatus, cancelScheduledTask } from '@/lib/notifications';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { maskId } from '@/lib/sanitize';
+import { checkRateLimit, RATE_LIMITS, getClientIP } from '@/lib/security/rate-limit';
 
 // Tipos de eventos do Resend
 type ResendEventType =
@@ -114,6 +115,21 @@ async function getLeadIdByEmail(email: string): Promise<string | null> {
 
 export async function POST(request: NextRequest) {
   try {
+    // SEGURANCA: Rate limiting para prevenir abuso
+    const ip = getClientIP(request);
+    const rateLimitResult = await checkRateLimit(`webhook:resend:${ip}`, RATE_LIMITS.webhook);
+    if (!rateLimitResult.success) {
+      console.warn('[Webhook Resend] Rate limit excedido');
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
+    // SEGURANCA: Validar Content-Type
+    const contentType = request.headers.get('content-type');
+    if (!contentType?.includes('application/json')) {
+      console.error('[Webhook Resend] Content-Type invalido');
+      return NextResponse.json({ error: 'Invalid content type' }, { status: 415 });
+    }
+
     const body = await request.text();
     const signature = request.headers.get('svix-signature');
     const timestamp = request.headers.get('svix-timestamp');

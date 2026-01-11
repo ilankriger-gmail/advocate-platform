@@ -6,6 +6,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { updateWhatsAppNotificationStatus } from '@/lib/notifications';
+import { checkRateLimit, RATE_LIMITS, getClientIP } from '@/lib/security/rate-limit';
+import { maskId } from '@/lib/sanitize';
 
 // Tipos de status do WhatsApp
 type WhatsAppMessageStatus = 'sent' | 'delivered' | 'read' | 'failed';
@@ -110,6 +112,21 @@ function mapWhatsAppStatus(
 
 export async function POST(request: NextRequest) {
   try {
+    // SEGURANCA: Rate limiting para prevenir abuso
+    const ip = getClientIP(request);
+    const rateLimitResult = await checkRateLimit(`webhook:whatsapp:${ip}`, RATE_LIMITS.webhook);
+    if (!rateLimitResult.success) {
+      console.warn('[Webhook WhatsApp] Rate limit excedido');
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
+    // SEGURANCA: Validar Content-Type
+    const contentType = request.headers.get('content-type');
+    if (!contentType?.includes('application/json')) {
+      console.error('[Webhook WhatsApp] Content-Type invalido');
+      return NextResponse.json({ error: 'Invalid content type' }, { status: 415 });
+    }
+
     const body = await request.text();
     const signature = request.headers.get('x-hub-signature-256');
 

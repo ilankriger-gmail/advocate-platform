@@ -7,6 +7,9 @@ const aiLogger = logger.withContext('[AI]');
 // Cliente OpenAI inicializado lazily
 let openaiClient: OpenAI | null = null;
 
+// SEGURANCA: Timeout para evitar requisicoes pendentes indefinidamente
+const OPENAI_TIMEOUT_MS = 30000; // 30 segundos
+
 function getOpenAIClient(): OpenAI | null {
   if (openaiClient) {
     aiLogger.debug('Usando cliente OpenAI existente');
@@ -23,7 +26,12 @@ function getOpenAIClient(): OpenAI | null {
   }
 
   aiLogger.debug('Criando novo cliente OpenAI');
-  openaiClient = new OpenAI({ apiKey });
+  // SEGURANCA: Configurar timeout para prevenir hang indefinido
+  openaiClient = new OpenAI({
+    apiKey,
+    timeout: OPENAI_TIMEOUT_MS,
+    maxRetries: 2,
+  });
   aiLogger.debug('Cliente OpenAI criado com sucesso');
   return openaiClient;
 }

@@ -39,7 +39,8 @@ export async function verifyAdminOrCreator(
 }
 
 /**
- * Verifica se o usuário é admin
+ * Verifica se o usuário é admin (apenas role = 'admin')
+ * DIFERENTE de verifyAdminOrCreator que aceita creators também
  *
  * @param userId - ID do usuário a ser verificado
  * @returns ActionResponse com sucesso ou erro de autorização
@@ -65,9 +66,10 @@ export async function verifyAdmin(
     return { error: 'Erro ao verificar permissões do usuário' };
   }
 
-  // Verifica se é creator (role = 'creator' OU is_creator = true)
-  if (profile.role !== 'creator' && !profile.is_creator) {
-    return { error: 'Acesso não autorizado' };
+  // SEGURANCA: verifyAdmin exige role = 'admin' APENAS
+  // Para permitir creators, use verifyAdminOrCreator
+  if (profile.role !== 'admin') {
+    return { error: 'Acesso não autorizado - apenas administradores' };
   }
 
   return { success: true, data: profile };
