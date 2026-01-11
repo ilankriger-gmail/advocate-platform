@@ -36,13 +36,21 @@ async function analyzeLeadInBackground(leadId: string, leadEmail: string, leadDa
     // Analise com OpenAI
     const analysis = await analyzeLeadWithAI(leadData);
 
-    if (!analysis) {
-      leadsLogger.info('Analise AI nao disponivel (API key nao configurada ou erro)');
-      return;
-    }
-
     // Usar admin client para atualizar o lead (bypassa RLS)
     const adminClient = createAdminClient();
+
+    if (!analysis) {
+      leadsLogger.info('Analise AI nao disponivel (API key nao configurada ou erro)');
+      // Marcar como analisado mesmo sem AI para não travar a página de obrigado
+      await adminClient
+        .from('nps_leads')
+        .update({
+          ai_analyzed_at: new Date().toISOString(),
+          status: 'pending', // Vai para revisão manual
+        })
+        .eq('id', leadId);
+      return;
+    }
 
     // Buscar settings de auto-aprovacao
     const settings = await getSiteSettings([
