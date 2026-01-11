@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Card, Badge, Button } from '@/components/ui';
 import { ChallengeParticipationModal } from './ChallengeParticipationModal';
+import YouTubeEmbed from '@/components/posts/YouTubeEmbed';
 
 interface Challenge {
   id: string;
@@ -96,20 +97,11 @@ export function PhysicalChallengeCard({
               </div>
             )}
 
-            {/* Link do vídeo de recorde */}
+            {/* Vídeo de referência embeddado */}
             {challenge.record_vídeo_url && (
-              <a
-                href={challenge.record_vídeo_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 mt-3 text-sm text-indigo-600 hover:text-indigo-700"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Ver vídeo do recorde
-              </a>
+              <div className="mt-3">
+                <YouTubeEmbed url={challenge.record_vídeo_url} title={challenge.title} />
+              </div>
             )}
 
             <div className="mt-4 flex items-center justify-between">

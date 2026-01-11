@@ -237,11 +237,11 @@ export default async function DesafiosPage() {
       {/* Desafios Fisicos */}
       {physicalChallenges.length > 0 && (
         <div>
-          <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+          <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2 justify-center">
             💪 Desafios Fisicos
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="max-w-2xl mx-auto space-y-4">
             {physicalChallenges.map((challenge) => (
               <PhysicalChallengeCard
                 key={challenge.id}

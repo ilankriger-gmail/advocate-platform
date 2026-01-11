@@ -31,8 +31,7 @@ export function ChallengeParticipationModal({
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     resultValue: '',
-    vídeoProofUrl: '',
-    socialMediaUrl: '',
+    proofUrl: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -50,8 +49,7 @@ export function ChallengeParticipationModal({
     const result = await participateInChallenge({
       challengeId: challenge.id,
       resultValue,
-      vídeoProofUrl: formData.vídeoProofUrl || undefined,
-      socialMediaUrl: formData.socialMediaUrl || undefined,
+      vídeoProofUrl: formData.proofUrl || undefined,
     });
 
     if (result.error) {
@@ -98,41 +96,30 @@ export function ChallengeParticipationModal({
           />
         </div>
 
-        {/* Link do vídeo */}
+        {/* Link de comprovação */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Link do vídeo (YouTube, Instagram, TikTok)
+            Link de comprovação *
           </label>
           <Input
             type="url"
-            value={formData.vídeoProofUrl}
-            onChange={(e) => setFormData({ ...formData, vídeoProofUrl: e.target.value })}
-            placeholder="https://..."
+            value={formData.proofUrl}
+            onChange={(e) => setFormData({ ...formData, proofUrl: e.target.value })}
+            placeholder="https://instagram.com/reel/... ou youtube.com/..."
+            required
           />
           <p className="text-xs text-gray-500 mt-1">
-            Cole o link do vídeo onde você gravou o desafio
+            Cole o link do seu vídeo ou publicação (Instagram, YouTube, TikTok)
+            {challenge.hashtag && (
+              <>
+                <br />
+                Use a hashtag <strong>{challenge.hashtag}</strong>
+                {challenge.profile_to_tag && (
+                  <> e marque <strong>{challenge.profile_to_tag}</strong></>
+                )}
+              </>
+            )}
           </p>
-        </div>
-
-        {/* Link da publicacao */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Link da publicacao nas redes sociais
-          </label>
-          <Input
-            type="url"
-            value={formData.socialMediaUrl}
-            onChange={(e) => setFormData({ ...formData, socialMediaUrl: e.target.value })}
-            placeholder="https://instagram.com/p/..."
-          />
-          {challenge.hashtag && (
-            <p className="text-xs text-gray-500 mt-1">
-              Nao esqueca de usar a hashtag <strong>{challenge.hashtag}</strong>
-              {challenge.profile_to_tag && (
-                <> e marcar <strong>{challenge.profile_to_tag}</strong></>
-              )}
-            </p>
-          )}
         </div>
 
         {/* Erro */}
