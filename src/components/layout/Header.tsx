@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSidebar } from '@/contexts/SidebarContext';
 import { Avatar } from '@/components/ui';
@@ -26,12 +26,25 @@ export function Header({ className, siteName = 'Arena Te Amo', logoUrl = '/logo.
   const { toggle: toggleSidebar } = useSidebar();
   const pathname = usePathname();
   const [isComeceDomain, setIsComeceDomain] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Detectar domínio comece
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setIsComeceDomain(window.location.hostname === COMECE_DOMAIN);
     }
+  }, []);
+
+  // Fechar dropdown ao clicar fora
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   // Mostrar link admin se tiver role='admin' OU is_creator=true
@@ -47,8 +60,8 @@ export function Header({ className, siteName = 'Arena Te Amo', logoUrl = '/logo.
     return null;
   }
 
-  const userName = user?.user_metadata?.full_name || 'Usuário';
-  const userAvatar = user?.user_metadata?.avatar_url;
+  const userName = profile?.full_name || user?.user_metadata?.full_name || 'Usuário';
+  const userAvatar = profile?.avatar_url || user?.user_metadata?.avatar_url;
 
   return (
     <header
@@ -101,38 +114,44 @@ export function Header({ className, siteName = 'Arena Te Amo', logoUrl = '/logo.
               /* Skeleton enquanto carrega */
               <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
             ) : user ? (
-              <div className="relative group">
-                <button className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100">
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100"
+                >
                   <Avatar
                     name={userName}
                     src={userAvatar}
                     size="sm"
                   />
-                  <svg className="w-4 h-4 text-gray-500 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className={`w-4 h-4 text-gray-500 hidden sm:block transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
 
                 {/* Dropdown menu */}
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                <div className={`absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 transition-all ${isDropdownOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}>
                   <div className="px-4 py-2 border-b border-gray-100">
                     <p className="text-sm font-medium text-gray-900 truncate">{userName}</p>
                     <p className="text-xs text-gray-500 truncate">{user?.email}</p>
                   </div>
                   <Link
                     href="/perfil"
+                    onClick={() => setIsDropdownOpen(false)}
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                   >
                     Meu Perfil
                   </Link>
                   <Link
                     href="/premios"
+                    onClick={() => setIsDropdownOpen(false)}
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                   >
                     Meus Prêmios
                   </Link>
                   <Link
                     href="/perfil/editar"
+                    onClick={() => setIsDropdownOpen(false)}
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                   >
                     Configurações
@@ -142,6 +161,7 @@ export function Header({ className, siteName = 'Arena Te Amo', logoUrl = '/logo.
                       <hr className="my-1" />
                       <Link
                         href="/admin"
+                        onClick={() => setIsDropdownOpen(false)}
                         className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-medium"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

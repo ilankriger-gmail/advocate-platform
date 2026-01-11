@@ -14,6 +14,8 @@ import type { User, Session } from '@supabase/supabase-js';
 interface UserProfile {
   role: string;
   is_creator: boolean;
+  full_name: string | null;
+  avatar_url: string | null;
 }
 
 interface AuthContextType {
@@ -46,11 +48,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       const { data } = await supabase
         .from('users')
-        .select('role, is_creator')
+        .select('role, is_creator, full_name, avatar_url')
         .eq('id', userId)
         .single();
 
-      setProfile(data ? { role: data.role, is_creator: data.is_creator } : null);
+      setProfile(data ? {
+        role: data.role,
+        is_creator: data.is_creator,
+        full_name: data.full_name,
+        avatar_url: data.avatar_url,
+      } : null);
     } catch (error) {
       console.error('Erro ao buscar perfil:', error);
       setProfile(null);
