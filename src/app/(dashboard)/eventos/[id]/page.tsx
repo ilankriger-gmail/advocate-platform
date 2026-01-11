@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
+import { getSiteSettings } from '@/lib/config/site';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, Badge, Button } from '@/components/ui';
 import { EventActions } from './EventActions';
@@ -13,7 +14,11 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
-  const supabase = await createClient();
+
+  const [supabase, settings] = await Promise.all([
+    createClient(),
+    getSiteSettings(['seo_evento_title_template', 'seo_evento_description_template']),
+  ]);
 
   const { data: event } = await supabase
     .from('events')
@@ -25,22 +30,29 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: 'Evento nao encontrado' };
   }
 
-  const description = event.description
-    ? event.description.slice(0, 160)
-    : 'Participe deste evento exclusivo da comunidade Arena Te Amo';
+  const eventDescription = event.description?.slice(0, 160) || '';
+
+  // Aplicar templates
+  const title = settings.seo_evento_title_template
+    .replace('{{titulo}}', event.title)
+    .replace('{{descricao}}', eventDescription);
+
+  const description = settings.seo_evento_description_template
+    .replace('{{titulo}}', event.title)
+    .replace('{{descricao}}', eventDescription) || eventDescription;
 
   return {
-    title: event.title,
+    title,
     description,
     openGraph: {
-      title: event.title,
+      title,
       description,
       type: 'article',
       images: event.image_url ? [{ url: event.image_url, width: 1200, height: 630 }] : [],
     },
     twitter: {
       card: 'summary_large_image',
-      title: event.title,
+      title,
       description,
       images: event.image_url ? [event.image_url] : [],
     },

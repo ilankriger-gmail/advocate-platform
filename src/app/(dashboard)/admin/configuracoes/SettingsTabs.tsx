@@ -3,9 +3,10 @@
 import { useState } from 'react';
 import { GeneralSettings } from './GeneralSettings';
 import { ImageSettings } from './ImageSettings';
+import { SeoSettings } from './SeoSettings';
 import type { SiteSetting } from '@/lib/config/site';
 
-type TabId = 'general' | 'images';
+type TabId = 'general' | 'images' | 'seo';
 
 interface Tab {
   id: TabId;
@@ -30,6 +31,15 @@ const TABS: Tab[] = [
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>
+    ),
+  },
+  {
+    id: 'seo',
+    label: 'SEO',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
       </svg>
     ),
   },
@@ -78,6 +88,9 @@ export function SettingsTabs({ settings, logoUrl, faviconUrl }: SettingsTabsProp
         )}
         {activeTab === 'images' && (
           <ImageSettings initialLogoUrl={logoUrl} initialFaviconUrl={faviconUrl} />
+        )}
+        {activeTab === 'seo' && (
+          <SeoSettings initialSettings={settings} />
         )}
       </div>
     </div>

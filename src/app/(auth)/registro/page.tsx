@@ -1,12 +1,24 @@
 import { Metadata } from 'next';
 import { Suspense } from 'react';
+import { getSiteSettings } from '@/lib/config/site';
 import RegisterForm from '@/components/auth/RegisterForm';
 import { Skeleton } from '@/components/ui';
 
-export const metadata: Metadata = {
-  title: 'Criar Conta | Advocate Platform',
-  description: 'Crie sua conta na plataforma de Advocate Marketing',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings([
+    'seo_registro_title',
+    'seo_registro_description',
+  ]);
+
+  return {
+    title: settings.seo_registro_title,
+    description: settings.seo_registro_description,
+    openGraph: {
+      title: settings.seo_registro_title,
+      description: settings.seo_registro_description,
+    },
+  };
+}
 
 /**
  * Pagina de registro - Server Component que renderiza o formulario

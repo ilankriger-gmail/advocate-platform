@@ -1,18 +1,26 @@
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { getSiteSettings } from '@/lib/config/site';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card } from '@/components/ui';
 import { PhysicalChallengeCard } from '@/components/challenges';
 
-export const metadata: Metadata = {
-  title: 'Desafios',
-  description: 'Participe dos desafios da comunidade Arena Te Amo e ganhe corações, prêmios em Pix e recompensas exclusivas!',
-  openGraph: {
-    title: 'Desafios | Arena Te Amo',
-    description: 'Participe dos desafios e ganhe corações, prêmios e recompensas exclusivas!',
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings([
+    'seo_desafios_title',
+    'seo_desafios_description',
+  ]);
+
+  return {
+    title: settings.seo_desafios_title,
+    description: settings.seo_desafios_description,
+    openGraph: {
+      title: settings.seo_desafios_title,
+      description: settings.seo_desafios_description,
+    },
+  };
+}
 
 type Challenge = {
   id: string;

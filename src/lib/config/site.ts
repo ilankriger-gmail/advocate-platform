@@ -59,7 +59,10 @@ export type SiteSettingKey =
   | 'seo_evento_title_template'
   | 'seo_evento_description_template'
   | 'seo_desafio_title_template'
-  | 'seo_desafio_description_template';
+  | 'seo_desafio_description_template'
+  // NPS Auto-Aprovacao
+  | 'nps_auto_approval_enabled'
+  | 'nps_auto_approval_min_score';
 
 /**
  * Tipo para uma configuração do site
@@ -137,6 +140,9 @@ const DEFAULT_VALUES: Record<SiteSettingKey, string> = {
   seo_evento_description_template: '{{descricao}}',
   seo_desafio_title_template: '{{titulo}} | Desafios',
   seo_desafio_description_template: '{{descricao}}',
+  // NPS Auto-Aprovacao
+  nps_auto_approval_enabled: 'true',
+  nps_auto_approval_min_score: '70',
 };
 
 /**

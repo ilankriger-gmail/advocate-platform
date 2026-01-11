@@ -1,7 +1,25 @@
+import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { getSiteSettings } from '@/lib/config/site';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, Badge } from '@/components/ui';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings([
+    'seo_premios_title',
+    'seo_premios_description',
+  ]);
+
+  return {
+    title: settings.seo_premios_title,
+    description: settings.seo_premios_description,
+    openGraph: {
+      title: settings.seo_premios_title,
+      description: settings.seo_premios_description,
+    },
+  };
+}
 
 export default async function PrêmiosPage() {
   const supabase = await createClient();

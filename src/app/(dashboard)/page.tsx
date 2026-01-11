@@ -1,8 +1,26 @@
+import { Metadata } from 'next';
 import { Suspense } from 'react';
 import { createClient } from '@/lib/supabase/server';
+import { getSiteSettings } from '@/lib/config/site';
 import { getInitialFeedPosts } from '@/actions/feed';
 import { HeroSection, FeedTabs, LeaderboardWidget } from '@/components/home';
 import { Card, Skeleton } from '@/components/ui';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings([
+    'seo_home_title',
+    'seo_home_description',
+  ]);
+
+  return {
+    title: settings.seo_home_title,
+    description: settings.seo_home_description,
+    openGraph: {
+      title: settings.seo_home_title,
+      description: settings.seo_home_description,
+    },
+  };
+}
 
 // Loading fallback para o feed
 function FeedLoading() {
