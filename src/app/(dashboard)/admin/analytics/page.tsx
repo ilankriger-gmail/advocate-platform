@@ -10,6 +10,7 @@ import { ActivityBreakdown } from './components/ActivityBreakdown';
 import { UserSegments } from './components/UserSegments';
 import { TrendCharts } from './components/TrendCharts';
 import { PeriodSelector } from './components/PeriodSelector';
+import { ExportButton } from './components/ExportButton';
 
 export type Period = '7d' | '30d' | '90d';
 export type TimePeriod = 'weekly' | 'monthly';
@@ -35,7 +36,10 @@ export default function AnalyticsPage() {
             Acompanhe o desempenho da sua comunidade
           </p>
         </div>
-        <PeriodSelector period={period} onChange={setPeriod} />
+        <div className="flex items-center gap-3">
+          <PeriodSelector period={period} onChange={setPeriod} />
+          <ExportButton period={period} cohortPeriod={cohortPeriod} />
+        </div>
       </div>
 
       {/* Overview KPIs */}
