@@ -113,14 +113,15 @@ export async function updateSession(request: NextRequest) {
   if (isAdminRoute && user) {
     // Buscar perfil do usuario para verificar role
     const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
+      .from('users')
+      .select('role, is_creator')
       .eq('id', user.id)
       .single();
 
-    // Se nao e admin ou creator, negar acesso
+    // Se nao e admin, creator ou is_creator, negar acesso
     const userRole = profile?.role;
-    if (userRole !== 'admin' && userRole !== 'creator') {
+    const isCreator = profile?.is_creator;
+    if (userRole !== 'admin' && userRole !== 'creator' && !isCreator) {
       const url = request.nextUrl.clone();
       url.pathname = '/';
       return NextResponse.redirect(url);
