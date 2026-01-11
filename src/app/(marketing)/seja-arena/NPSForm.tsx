@@ -20,6 +20,7 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [lgpdAccepted, setLgpdAccepted] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Sistema de steps - agora com 5 steps
@@ -66,6 +67,12 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
 
   // Submit
   async function handleSubmit() {
+    // Validar LGPD antes de enviar
+    if (!lgpdAccepted) {
+      setErrors({ lgpd: 'Você precisa aceitar os termos para continuar' });
+      return;
+    }
+
     setIsLoading(true);
 
     const result = await submitNpsLead({
@@ -74,6 +81,7 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
       name: name.trim(),
       email: email.trim(),
       phone: phone?.trim() || undefined,
+      lgpdConsent: lgpdAccepted,
     });
 
     setIsLoading(false);
@@ -390,6 +398,61 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
             <p className="mt-2 text-sm text-surface-400">Opcional</p>
           </div>
 
+          {/* LGPD Consent Checkbox */}
+          <div className="mt-6 text-left">
+            <label className="flex items-start gap-3 cursor-pointer group">
+              <div className="relative flex-shrink-0 mt-0.5">
+                <input
+                  type="checkbox"
+                  checked={lgpdAccepted}
+                  onChange={(e) => {
+                    setLgpdAccepted(e.target.checked);
+                    if (errors.lgpd) setErrors({});
+                  }}
+                  className="peer sr-only"
+                />
+                <div className={`w-5 h-5 border-2 rounded transition-all duration-200
+                  ${lgpdAccepted
+                    ? 'bg-primary-600 border-primary-600'
+                    : 'border-surface-300 group-hover:border-primary-400'
+                  }
+                  ${errors.lgpd ? 'border-red-500' : ''}
+                `}>
+                  {lgpdAccepted && (
+                    <svg className="w-full h-full text-white p-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </div>
+              </div>
+              <span className="text-sm text-surface-600 leading-relaxed">
+                Li e concordo com os{' '}
+                <a
+                  href="/termos"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary-600 underline hover:text-primary-700"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  Termos de Uso
+                </a>{' '}
+                e a{' '}
+                <a
+                  href="/privacidade"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary-600 underline hover:text-primary-700"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  Política de Privacidade
+                </a>
+              </span>
+            </label>
+            {errors.lgpd && (
+              <p className="mt-2 text-sm text-red-500">{errors.lgpd}</p>
+            )}
+          </div>
+
           {/* Navigation */}
           <div className="flex justify-center gap-4 mt-8">
             <button
@@ -403,9 +466,9 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={isLoading}
+              disabled={isLoading || !lgpdAccepted}
               className="px-8 py-3 bg-gradient-to-r from-primary-600 to-accent-500 text-white font-medium rounded-full
-                       hover:from-primary-700 hover:to-accent-600 disabled:opacity-60
+                       hover:from-primary-700 hover:to-accent-600 disabled:opacity-60 disabled:cursor-not-allowed
                        transition-all duration-200 press-scale flex items-center gap-2"
             >
               {isLoading ? (
@@ -433,10 +496,6 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
               )}
             </button>
           </div>
-
-          <p className="mt-6 text-xs text-surface-400">
-            Ao enviar, você concorda com nossa política de privacidade.
-          </p>
         </div>
       </div>
 

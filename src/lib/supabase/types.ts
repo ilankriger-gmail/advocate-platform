@@ -539,6 +539,10 @@ export interface NpsLead {
   converted: boolean;
   converted_at: string | null;
   converted_user_id: string | null;
+  // Campos de consentimento LGPD
+  lgpd_consent_accepted: boolean;
+  lgpd_consent_at: string | null;
+  lgpd_consent_ip: string | null;
 }
 
 export interface NpsLeadInsert {
@@ -547,6 +551,7 @@ export interface NpsLeadInsert {
   name: string;
   email: string;
   phone?: string | null;
+  lgpdConsent?: boolean;
 }
 
 export interface NpsLeadWithApprover extends NpsLead {
@@ -571,7 +576,7 @@ export type TimePeriod = 'weekly' | 'monthly' | 'all_time';
 /**
  * Categorias de leaderboard disponíveis
  */
-export type LeaderboardCategory = 'coins' | 'challenges' | 'events' | 'combined';
+export type LeaderboardCategory = 'coins' | 'challenges' | 'combined';
 
 // ============ NOTIFICACOES ============
 

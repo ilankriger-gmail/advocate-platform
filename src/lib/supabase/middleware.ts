@@ -13,7 +13,7 @@ const COMECE_DOMAIN = 'comece.omocodoteamo.com.br';
 const COMUNIDADE_DOMAIN = 'comunidade.omocodoteamo.com.br';
 
 // Rotas permitidas no domínio comece (totalmente público)
-const COMECE_ALLOWED_ROUTES = ['/', '/seja-arena'];
+const COMECE_ALLOWED_ROUTES = ['/', '/seja-arena', '/termos', '/privacidade'];
 
 // Rotas públicas no domínio comunidade (não requerem auth)
 const COMUNIDADE_PUBLIC_ROUTES = [
@@ -23,6 +23,8 @@ const COMUNIDADE_PUBLIC_ROUTES = [
   '/esqueci-senha',
   '/seja-arena',
   '/registro',
+  '/termos',
+  '/privacidade',
 ];
 
 // Rotas que requerem role de admin

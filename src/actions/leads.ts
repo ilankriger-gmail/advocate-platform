@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
+import { headers } from 'next/headers';
 import { ActionResponse } from '@/types/action';
 import type { NpsLead, NpsLeadInsert } from '@/lib/supabase/types';
 import {
@@ -132,6 +133,12 @@ export async function submitNpsLead(data: NpsLeadInsert): Promise<ActionResponse
 
     const email = data.email.trim().toLowerCase();
 
+    // Capturar IP para auditoria LGPD
+    const headersList = await headers();
+    const clientIp = headersList.get('x-forwarded-for')?.split(',')[0]?.trim()
+      || headersList.get('x-real-ip')
+      || 'unknown';
+
     // Inserir lead usando admin client para poder retornar o ID
     const adminClient = createAdminClient();
     const { data: insertedLead, error } = await adminClient
@@ -142,6 +149,10 @@ export async function submitNpsLead(data: NpsLeadInsert): Promise<ActionResponse
         name: data.name.trim(),
         email,
         phone: data.phone?.trim() || null,
+        // Campos de consentimento LGPD
+        lgpd_consent_accepted: data.lgpdConsent || false,
+        lgpd_consent_at: data.lgpdConsent ? new Date().toISOString() : null,
+        lgpd_consent_ip: data.lgpdConsent ? clientIp : null,
       })
       .select('id')
       .single();
