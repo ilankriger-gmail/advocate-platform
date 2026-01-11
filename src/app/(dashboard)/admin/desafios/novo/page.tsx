@@ -13,6 +13,8 @@ export default function NovoChallengeDesafioPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [selectedIconCategory, setSelectedIconCategory] = useState('Fitness');
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -67,7 +69,14 @@ export default function NovoChallengeDesafioPage() {
     router.refresh();
   };
 
-  const icons = ['💪', '🏋️', '🏃', '🎯', '🔥', '⭐', '🏆', '🎁', '❤️', '📸', '🎬', '💬'];
+  const iconCategories: Record<string, string[]> = {
+    'Fitness': ['💪', '🏋️', '🏃', '🚴', '🧘', '🤸', '⚡', '🔥', '💯', '🏅', '🥇', '🥈', '🥉', '🎖️'],
+    'Esportes': ['⚽', '🏀', '🏈', '⚾', '🎾', '🏐', '🏉', '🎱', '🥏', '🏓', '🏸', '🥅', '⛳', '🏒'],
+    'Água': ['🏊', '🤽', '🚣', '🏄', '🤿', '🛶', '⛵', '🚤'],
+    'Lutas': ['🥊', '🤼', '🥋', '🎿', '⛷️', '🏂', '⛸️', '🧗', '🏇', '🎳', '🛹', '🛼'],
+    'Aventura': ['🚶', '🥾', '⛰️', '🏕️', '🌲', '🌊', '☀️', '🌙', '🏔️', '🌋'],
+    'Geral': ['🎯', '⭐', '🏆', '🎁', '❤️', '📸', '🎬', '💬', '🎉', '✨', '👏', '🙌'],
+  };
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -109,23 +118,48 @@ export default function NovoChallengeDesafioPage() {
           <h2 className="font-bold text-gray-900">Informacoes Basicas</h2>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Icone</label>
-            <div className="flex flex-wrap gap-2">
-              {icons.map((icon) => (
+            <label className="block text-sm font-medium text-gray-700 mb-2">Icone</label>
+
+            {/* Abas de categorias */}
+            <div className="flex flex-wrap gap-1 mb-3">
+              {Object.keys(iconCategories).map((category) => (
+                <button
+                  key={category}
+                  type="button"
+                  onClick={() => setSelectedIconCategory(category)}
+                  className={`px-3 py-1 rounded-full text-sm transition-colors ${
+                    selectedIconCategory === category
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+
+            {/* Grid de ícones da categoria selecionada */}
+            <div className="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-lg">
+              {iconCategories[selectedIconCategory].map((icon) => (
                 <button
                   key={icon}
                   type="button"
                   onClick={() => setFormData({ ...formData, icon })}
-                  className={`w-10 h-10 flex items-center justify-center rounded-lg text-xl ${
+                  className={`w-10 h-10 flex items-center justify-center rounded-lg text-xl transition-all ${
                     formData.icon === icon
-                      ? 'bg-indigo-100 ring-2 ring-indigo-500'
-                      : 'bg-gray-100 hover:bg-gray-200'
+                      ? 'bg-indigo-100 ring-2 ring-indigo-500 scale-110'
+                      : 'bg-white hover:bg-gray-100 hover:scale-105'
                   }`}
                 >
                   {icon}
                 </button>
               ))}
             </div>
+
+            {/* Ícone selecionado */}
+            <p className="text-sm text-gray-500 mt-2">
+              Selecionado: <span className="text-2xl">{formData.icon}</span>
+            </p>
           </div>
 
           <div>
