@@ -21,7 +21,6 @@ function getOpenAIClient(): OpenAI | null {
  */
 export interface ChallengeDescriptionInput {
   title: string;
-  idea: string; // O que a pessoa precisa gravar/publicar
   type: 'fisico' | 'engajamento' | 'participe';
   icon?: string;
   coinsReward?: number;
@@ -126,13 +125,12 @@ function buildDescriptionPrompt(input: ChallengeDescriptionInput): string {
 DADOS DO DESAFIO:
 - Título: ${input.title}
 - Tipo: ${typeLabels[input.type]}
-- Ícone: ${input.icon || '💪'}
-- Ideia/O que fazer: ${input.idea}${contextDetails}
+- Ícone: ${input.icon || '💪'}${contextDetails}
 
 INSTRUÇÕES:
-1. Crie uma descrição CURTA e DIRETA (máximo 3-4 frases)
+1. Crie uma descrição CURTA e DIRETA (máximo 2-3 frases)
 2. Use linguagem motivacional e energética
-3. Seja claro sobre o que a pessoa precisa fazer
+3. Baseie-se no título para entender o que o participante deve fazer
 4. Inclua um CTA (call-to-action) no final
 5. Use emojis com moderação (1-2 no máximo)
 6. O tom deve ser amigável e encorajador

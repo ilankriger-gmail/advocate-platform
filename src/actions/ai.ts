@@ -20,17 +20,9 @@ export async function generateDescription(
     };
   }
 
-  if (!input.idea || input.idea.trim().length < 10) {
-    return {
-      success: false,
-      error: 'Descreva a ideia do desafio (mínimo 10 caracteres)',
-    };
-  }
-
   const result = await generateChallengeDescription({
     ...input,
     title: input.title.trim(),
-    idea: input.idea.trim(),
   });
 
   return result;
