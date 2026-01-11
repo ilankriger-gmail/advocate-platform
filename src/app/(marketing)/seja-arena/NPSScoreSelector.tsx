@@ -40,7 +40,7 @@ export function NPSScoreSelector({ value, onChange, error }: NPSScoreSelectorPro
               w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12
               flex items-center justify-center flex-shrink-0
               text-sm sm:text-base md:text-lg font-semibold
-              border-2 rounded-full
+              border-2 rounded-lg
               transition-all duration-200
               focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500
               ${getScoreStyle(score, value === score)}

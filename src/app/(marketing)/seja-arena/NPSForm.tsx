@@ -84,7 +84,13 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
       return;
     }
 
-    router.push('/seja-arena/obrigado');
+    // Redirecionar com leadId para acompanhamento do status
+    const leadId = result.data?.leadId;
+    if (leadId) {
+      router.push(`/seja-arena/obrigado?leadId=${leadId}`);
+    } else {
+      router.push('/seja-arena/obrigado');
+    }
   }
 
   // Keyboard navigation
@@ -146,6 +152,8 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
               onChange={(newScore) => {
                 setScore(newScore);
                 setErrors({});
+                // Auto-avanca para proximo step apos selecionar
+                setTimeout(() => nextStep(), 300);
               }}
               error={errors.score}
             />
