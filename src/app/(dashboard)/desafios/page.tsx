@@ -1,8 +1,18 @@
+import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card } from '@/components/ui';
 import { PhysicalChallengeCard } from '@/components/challenges';
+
+export const metadata: Metadata = {
+  title: 'Desafios',
+  description: 'Participe dos desafios da comunidade Arena Te Amo e ganhe corações, prêmios em Pix e recompensas exclusivas!',
+  openGraph: {
+    title: 'Desafios | Arena Te Amo',
+    description: 'Participe dos desafios e ganhe corações, prêmios e recompensas exclusivas!',
+  },
+};
 
 type Challenge = {
   id: string;

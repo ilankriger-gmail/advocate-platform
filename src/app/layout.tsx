@@ -15,13 +15,68 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export async function generateMetadata(): Promise<Metadata> {
-  const settings = await getSiteSettings(['meta_title', 'meta_description', 'favicon_url']);
+  const settings = await getSiteSettings([
+    'meta_title',
+    'meta_description',
+    'favicon_url',
+    'site_name',
+    'logo_url',
+  ]);
 
   const faviconUrl = settings.favicon_url || '/favicon.svg';
+  const siteName = settings.site_name || 'Arena Te Amo';
+  const description = settings.meta_description || 'Comunidade oficial do O Moço do Te Amo';
+  const logoUrl = settings.logo_url || '/logo.png';
 
   return {
-    title: settings.meta_title,
-    description: settings.meta_description,
+    metadataBase: new URL('https://comunidade.omocodoteamo.com.br'),
+    title: {
+      default: settings.meta_title || siteName,
+      template: `%s | ${siteName}`,
+    },
+    description,
+    keywords: ['comunidade', 'moço do te amo', 'arena', 'fãs', 'eventos', 'desafios'],
+    authors: [{ name: siteName }],
+    creator: siteName,
+    publisher: siteName,
+    formatDetection: {
+      email: false,
+      address: false,
+      telephone: false,
+    },
+    openGraph: {
+      type: 'website',
+      locale: 'pt_BR',
+      url: 'https://comunidade.omocodoteamo.com.br',
+      siteName,
+      title: settings.meta_title || siteName,
+      description,
+      images: [
+        {
+          url: logoUrl,
+          width: 1200,
+          height: 630,
+          alt: siteName,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: settings.meta_title || siteName,
+      description,
+      images: [logoUrl],
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
     icons: {
       icon: faviconUrl,
       shortcut: faviconUrl,

@@ -1,9 +1,19 @@
+import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card } from '@/components/ui';
 import { EventCard } from '@/components/events/EventCard';
 import { EventRegistrationWithEvent } from '@/lib/supabase/types';
+
+export const metadata: Metadata = {
+  title: 'Eventos',
+  description: 'Participe de eventos exclusivos da comunidade Arena Te Amo. Encontros, lives, workshops e muito mais!',
+  openGraph: {
+    title: 'Eventos | Arena Te Amo',
+    description: 'Participe de eventos exclusivos da comunidade Arena Te Amo.',
+  },
+};
 
 export default async function EventosPage() {
   const supabase = await createClient();

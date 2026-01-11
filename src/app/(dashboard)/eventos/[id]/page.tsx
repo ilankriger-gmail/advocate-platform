@@ -1,12 +1,50 @@
+import { Metadata } from 'next';
 import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, Badge, Button } from '@/components/ui';
 import { EventActions } from './EventActions';
+import { EventJsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd';
 
 interface PageProps {
   params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id } = await params;
+  const supabase = await createClient();
+
+  const { data: event } = await supabase
+    .from('events')
+    .select('title, description, image_url')
+    .eq('id', id)
+    .single();
+
+  if (!event) {
+    return { title: 'Evento nao encontrado' };
+  }
+
+  const description = event.description
+    ? event.description.slice(0, 160)
+    : 'Participe deste evento exclusivo da comunidade Arena Te Amo';
+
+  return {
+    title: event.title,
+    description,
+    openGraph: {
+      title: event.title,
+      description,
+      type: 'article',
+      images: event.image_url ? [{ url: event.image_url, width: 1200, height: 630 }] : [],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: event.title,
+      description,
+      images: event.image_url ? [event.image_url] : [],
+    },
+  };
 }
 
 export default async function EventoDetalhePage({ params }: PageProps) {
@@ -75,8 +113,29 @@ export default async function EventoDetalhePage({ params }: PageProps) {
 
   const isPast = new Date(event.end_time) < new Date();
 
+  const baseUrl = 'https://comunidade.omocodoteamo.com.br';
+
   return (
     <div className="space-y-6">
+      {/* Structured Data */}
+      <EventJsonLd
+        name={event.title}
+        description={event.description}
+        startDate={event.start_time}
+        endDate={event.end_time}
+        location={event.location}
+        image={event.image_url}
+        url={`${baseUrl}/eventos/${id}`}
+        organizer="Arena Te Amo"
+      />
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Inicio', url: baseUrl },
+          { name: 'Eventos', url: `${baseUrl}/eventos` },
+          { name: event.title, url: `${baseUrl}/eventos/${id}` },
+        ]}
+      />
+
       <PageHeader
         title=""
         breadcrumbs={[
