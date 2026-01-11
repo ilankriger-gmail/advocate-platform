@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Card, Button, Input, Textarea } from '@/components/ui';
 import { createChallenge } from '@/actions/challenges-admin';
 import { AIDescriptionGenerator } from '@/components/admin/AIDescriptionGenerator';
+import { YouTubeVideoPicker } from '@/components/youtube/YouTubeVideoPicker';
 
 type ChallengeType = 'fisico' | 'engajamento' | 'participe';
 type GoalType = 'repetitions' | 'time';
@@ -292,14 +293,28 @@ export default function NovoChallengeDesafioPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Link do Vídeo de Recorde (opcional)
+                Link do Video de Recorde (opcional)
               </label>
-              <Input
-                type="url"
-                value={formData.record_vídeo_url}
-                onChange={(e) => setFormData({ ...formData, record_vídeo_url: e.target.value })}
-                placeholder="https://youtube.com/..."
-              />
+              <div className="flex gap-2">
+                <Input
+                  type="url"
+                  value={formData.record_vídeo_url}
+                  onChange={(e) => setFormData({ ...formData, record_vídeo_url: e.target.value })}
+                  placeholder="https://youtube.com/..."
+                  className="flex-1"
+                />
+                <YouTubeVideoPicker
+                  onSelect={(url) => setFormData({ ...formData, record_vídeo_url: url })}
+                />
+              </div>
+              {formData.record_vídeo_url && (
+                <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Video selecionado
+                </p>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
