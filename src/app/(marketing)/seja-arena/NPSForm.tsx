@@ -144,7 +144,7 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
           )}
 
           {/* Step indicator */}
-          <span className="inline-block text-sm text-primary-500 font-medium mb-4">
+          <span className="inline-block text-sm text-pink-500 font-medium mb-4">
             {currentStep} / {totalSteps}
           </span>
 
@@ -173,9 +173,9 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
               type="button"
               onClick={nextStep}
               disabled={score === null}
-              className="px-8 py-3 bg-primary-600 text-white font-medium rounded-full
-                       hover:bg-primary-700 disabled:opacity-40 disabled:cursor-not-allowed
-                       transition-all duration-200 press-scale"
+              className="px-8 py-3 bg-gradient-to-r from-pink-500 to-red-500 text-white font-medium rounded-full
+                       hover:from-pink-600 hover:to-red-600 disabled:opacity-40 disabled:cursor-not-allowed
+                       transition-all duration-200 press-scale shadow-lg shadow-pink-500/25"
             >
               Continuar
             </button>
@@ -191,7 +191,7 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
       <div className={`step-wrapper ${getStepClass(2)}`}>
         <div className="w-full max-w-2xl mx-auto text-center">
           {/* Step indicator */}
-          <span className="inline-block text-sm text-primary-500 font-medium mb-4">
+          <span className="inline-block text-sm text-pink-500 font-medium mb-4">
             {currentStep} / {totalSteps}
           </span>
 
@@ -233,8 +233,8 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
             <button
               type="button"
               onClick={nextStep}
-              className="px-8 py-3 bg-primary-600 text-white font-medium rounded-full
-                       hover:bg-primary-700 transition-all duration-200 press-scale"
+              className="px-8 py-3 bg-gradient-to-r from-pink-500 to-red-500 text-white font-medium rounded-full
+                       hover:from-pink-600 hover:to-red-600 transition-all duration-200 press-scale shadow-lg shadow-pink-500/25"
             >
               Continuar
             </button>
@@ -250,7 +250,7 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
       <div className={`step-wrapper ${getStepClass(3)}`}>
         <div className="w-full max-w-xl mx-auto text-center">
           {/* Step indicator */}
-          <span className="inline-block text-sm text-primary-500 font-medium mb-4">
+          <span className="inline-block text-sm text-pink-500 font-medium mb-4">
             {currentStep} / {totalSteps}
           </span>
 
@@ -292,8 +292,8 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
             <button
               type="button"
               onClick={nextStep}
-              className="px-8 py-3 bg-primary-600 text-white font-medium rounded-full
-                       hover:bg-primary-700 transition-all duration-200 press-scale"
+              className="px-8 py-3 bg-gradient-to-r from-pink-500 to-red-500 text-white font-medium rounded-full
+                       hover:from-pink-600 hover:to-red-600 transition-all duration-200 press-scale shadow-lg shadow-pink-500/25"
             >
               Continuar
             </button>
@@ -309,7 +309,7 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
       <div className={`step-wrapper ${getStepClass(4)}`}>
         <div className="w-full max-w-xl mx-auto text-center">
           {/* Step indicator */}
-          <span className="inline-block text-sm text-primary-500 font-medium mb-4">
+          <span className="inline-block text-sm text-pink-500 font-medium mb-4">
             {currentStep} / {totalSteps}
           </span>
 
@@ -351,8 +351,8 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
             <button
               type="button"
               onClick={nextStep}
-              className="px-8 py-3 bg-primary-600 text-white font-medium rounded-full
-                       hover:bg-primary-700 transition-all duration-200 press-scale"
+              className="px-8 py-3 bg-gradient-to-r from-pink-500 to-red-500 text-white font-medium rounded-full
+                       hover:from-pink-600 hover:to-red-600 transition-all duration-200 press-scale shadow-lg shadow-pink-500/25"
             >
               Continuar
             </button>
@@ -368,7 +368,7 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
       <div className={`step-wrapper ${getStepClass(5)}`}>
         <div className="w-full max-w-xl mx-auto text-center">
           {/* Step indicator */}
-          <span className="inline-block text-sm text-primary-500 font-medium mb-4">
+          <span className="inline-block text-sm text-pink-500 font-medium mb-4">
             {currentStep} / {totalSteps}
           </span>
 
@@ -414,8 +414,8 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
                 />
                 <div className={`w-5 h-5 border-2 rounded transition-all duration-200
                   ${lgpdAccepted
-                    ? 'bg-primary-600 border-primary-600'
-                    : 'border-surface-300 group-hover:border-primary-400'
+                    ? 'bg-pink-500 border-pink-500'
+                    : 'border-surface-300 group-hover:border-pink-400'
                   }
                   ${errors.lgpd ? 'border-red-500' : ''}
                 `}>
@@ -432,7 +432,7 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
                   href="/termos"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-primary-600 underline hover:text-primary-700"
+                  className="text-pink-500 underline hover:text-pink-600"
                   onClick={(e) => e.stopPropagation()}
                 >
                   Termos de Uso
@@ -442,7 +442,7 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
                   href="/privacidade"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-primary-600 underline hover:text-primary-700"
+                  className="text-pink-500 underline hover:text-pink-600"
                   onClick={(e) => e.stopPropagation()}
                 >
                   Política de Privacidade
@@ -468,9 +468,9 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
               type="button"
               onClick={handleSubmit}
               disabled={isLoading || !lgpdAccepted}
-              className="px-8 py-3 bg-gradient-to-r from-primary-600 to-accent-500 text-white font-medium rounded-full
-                       hover:from-primary-700 hover:to-accent-600 disabled:opacity-60 disabled:cursor-not-allowed
-                       transition-all duration-200 press-scale flex items-center gap-2"
+              className="px-8 py-3 bg-gradient-to-r from-pink-500 to-red-500 text-white font-medium rounded-full
+                       hover:from-pink-600 hover:to-red-600 disabled:opacity-60 disabled:cursor-not-allowed
+                       transition-all duration-200 press-scale flex items-center gap-2 shadow-lg shadow-pink-500/25"
             >
               {isLoading ? (
                 <>
