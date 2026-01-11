@@ -26,11 +26,15 @@ export async function verifyAdminOrCreator(
     .eq('id', userId)
     .single();
 
+  console.log('verifyAdminOrCreator:', { userId, profile, error });
+
   if (error || !profile) {
     return { error: 'Erro ao verificar permissões do usuário' };
   }
 
-  if (profile.role !== 'admin' && !profile.is_creator) {
+  // Verifica se é creator (role = 'creator' OU is_creator = true)
+  if (profile.role !== 'creator' && !profile.is_creator) {
+    console.log('verifyAdminOrCreator: Acesso negado', { role: profile.role, is_creator: profile.is_creator });
     return { error: 'Acesso não autorizado' };
   }
 
@@ -51,20 +55,24 @@ export async function verifyAdminOrCreator(
  */
 export async function verifyAdmin(
   userId: string
-): Promise<ActionResponse<{ role: string }>> {
+): Promise<ActionResponse<{ role: string; is_creator: boolean }>> {
   const supabase = await createClient();
 
   const { data: profile, error } = await supabase
     .from('users')
-    .select('role')
+    .select('role, is_creator')
     .eq('id', userId)
     .single();
+
+  console.log('verifyAdmin:', { userId, profile, error });
 
   if (error || !profile) {
     return { error: 'Erro ao verificar permissões do usuário' };
   }
 
-  if (profile.role !== 'admin') {
+  // Verifica se é creator (role = 'creator' OU is_creator = true)
+  if (profile.role !== 'creator' && !profile.is_creator) {
+    console.log('verifyAdmin: Acesso negado', { role: profile.role, is_creator: profile.is_creator });
     return { error: 'Acesso não autorizado' };
   }
 
