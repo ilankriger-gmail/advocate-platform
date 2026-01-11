@@ -1,29 +1,30 @@
 import OpenAI from 'openai';
+import { logger, sanitizeError } from '@/lib';
+
+// Logger contextualizado para o módulo de AI
+const aiLogger = logger.withContext('[AI]');
 
 // Cliente OpenAI inicializado lazily
 let openaiClient: OpenAI | null = null;
 
 function getOpenAIClient(): OpenAI | null {
   if (openaiClient) {
-    console.log('[AI] Usando cliente OpenAI existente');
+    aiLogger.debug('Usando cliente OpenAI existente');
     return openaiClient;
   }
 
   const apiKey = process.env.OPENAI_API_KEY;
 
-  console.log('[AI] Verificando OPENAI_API_KEY...');
-  console.log('[AI] API Key presente:', !!apiKey);
-  console.log('[AI] API Key prefixo:', apiKey ? apiKey.substring(0, 10) + '...' : 'N/A');
-
+  // CRÍTICO: Nunca logar API keys ou prefixos!
+  // Apenas verificar se está presente
   if (!apiKey) {
-    console.error('[AI] ERRO: OpenAI API key NAO configurada!');
-    console.error('[AI] Variaveis de ambiente disponiveis:', Object.keys(process.env).filter(k => k.includes('OPENAI') || k.includes('API')));
+    aiLogger.error('OpenAI API key não configurada');
     return null;
   }
 
-  console.log('[AI] Criando novo cliente OpenAI...');
+  aiLogger.debug('Criando novo cliente OpenAI');
   openaiClient = new OpenAI({ apiKey });
-  console.log('[AI] Cliente OpenAI criado com sucesso');
+  aiLogger.debug('Cliente OpenAI criado com sucesso');
   return openaiClient;
 }
 
@@ -55,17 +56,20 @@ export interface LeadForAnalysis {
 export async function analyzeLeadWithAI(
   lead: LeadForAnalysis
 ): Promise<LeadAnalysis | null> {
-  console.log('[AI] === Iniciando analise de lead ===');
-  console.log('[AI] Lead:', { name: lead.name, score: lead.score, reasonLength: lead.reason?.length });
+  aiLogger.debug('Iniciando análise de lead', {
+    score: lead.score,
+    reasonLength: lead.reason?.length,
+    // Não logar nome do lead (PII)
+  });
 
   const client = getOpenAIClient();
 
   if (!client) {
-    console.error('[AI] ERRO: Cliente OpenAI nao disponivel - abortando analise');
+    aiLogger.error('Cliente OpenAI não disponível - abortando análise');
     return null;
   }
 
-  console.log('[AI] Cliente OpenAI obtido, preparando requisicao...');
+  aiLogger.debug('Cliente OpenAI obtido, preparando requisição');
 
   const prompt = `Voce e um analista de comunidade especializado em avaliar potenciais membros.
 Analise este lead que respondeu uma pesquisa NPS para determinar se seria um bom membro
@@ -103,7 +107,7 @@ Se nao houver preocupacoes, retorne concerns como array vazio [].
 Se nao houver pontos fortes claros, retorne pelo menos um item generico.`;
 
   try {
-    console.log('[AI] Enviando requisicao para OpenAI (modelo: gpt-4o-mini)...');
+    aiLogger.debug('Enviando requisição para OpenAI', { model: 'gpt-4o-mini' });
     const startTime = Date.now();
 
     const response = await client.chat.completions.create({
@@ -122,20 +126,28 @@ Se nao houver pontos fortes claros, retorne pelo menos um item generico.`;
     });
 
     const elapsed = Date.now() - startTime;
-    console.log(`[AI] Resposta recebida em ${elapsed}ms`);
-    console.log('[AI] Usage:', response.usage);
+    aiLogger.debug('Resposta recebida', {
+      elapsed: `${elapsed}ms`,
+      usage: response.usage,
+    });
 
     const content = response.choices[0]?.message?.content;
 
     if (!content) {
-      console.error('[AI] ERRO: Resposta vazia da OpenAI');
+      aiLogger.error('Resposta vazia da OpenAI');
       return null;
     }
 
-    console.log('[AI] Conteudo da resposta:', content.substring(0, 200) + '...');
+    aiLogger.debug('Resposta da OpenAI recebida', {
+      contentLength: content.length,
+    });
 
     const analysis = JSON.parse(content) as LeadAnalysis;
-    console.log('[AI] Analise parseada:', { score: analysis.score, sentiment: analysis.sentiment, recommendation: analysis.recommendation });
+    aiLogger.debug('Análise parseada com sucesso', {
+      score: analysis.score,
+      sentiment: analysis.sentiment,
+      recommendation: analysis.recommendation,
+    });
 
     // Validacao basica do resultado
     if (
@@ -143,33 +155,30 @@ Se nao houver pontos fortes claros, retorne pelo menos um item generico.`;
       analysis.score < 0 ||
       analysis.score > 100
     ) {
-      console.error('[AI] ERRO: Score invalido:', analysis.score);
+      aiLogger.error('Score inválido retornado pela AI', { score: analysis.score });
       return null;
     }
 
     if (!['positivo', 'neutro', 'negativo'].includes(analysis.sentiment)) {
-      console.error('[AI] ERRO: Sentimento invalido:', analysis.sentiment);
+      aiLogger.error('Sentimento inválido retornado pela AI', {
+        sentiment: analysis.sentiment,
+      });
       return null;
     }
 
     if (!['aprovar', 'analisar', 'rejeitar'].includes(analysis.recommendation)) {
-      console.error('[AI] ERRO: Recomendacao invalida:', analysis.recommendation);
+      aiLogger.error('Recomendação inválida retornada pela AI', {
+        recommendation: analysis.recommendation,
+      });
       return null;
     }
 
-    console.log('[AI] === Analise concluida com sucesso ===');
+    aiLogger.debug('Análise concluída com sucesso');
     return analysis;
   } catch (error) {
-    console.error('[AI] === ERRO NA ANALISE ===');
-    console.error('[AI] Tipo do erro:', error instanceof Error ? error.constructor.name : typeof error);
-    console.error('[AI] Mensagem:', error instanceof Error ? error.message : String(error));
-    if (error instanceof Error && 'status' in error) {
-      console.error('[AI] Status HTTP:', (error as { status: number }).status);
-    }
-    if (error instanceof Error && 'code' in error) {
-      console.error('[AI] Codigo do erro:', (error as { code: string }).code);
-    }
-    console.error('[AI] Erro completo:', error);
+    // Sanitizar erro para não expor stack traces ou detalhes internos em produção
+    const sanitized = sanitizeError(error);
+    aiLogger.error('Erro na análise de lead', { error: sanitized });
     return null;
   }
 }
