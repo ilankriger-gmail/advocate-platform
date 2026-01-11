@@ -9,5 +9,6 @@
   "affectedFiles": [
     "src/hooks/useEvents.ts",
     "src/hooks/index.ts"
-  ]
+  ],
+  "archivedAt": "2026-01-11T14:07:38.564Z"
 }
