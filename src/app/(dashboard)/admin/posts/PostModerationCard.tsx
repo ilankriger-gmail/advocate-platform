@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Card, Button, Badge } from '@/components/ui';
 import { approvePost, rejectPost } from '@/actions/posts';
 
@@ -141,25 +142,35 @@ export function PostModerationCard({ post, profile, status }: PostModerationCard
           )}
 
           {/* Acoes */}
-          {status === 'pending' && (
-            <div className="mt-4 pt-4 border-t flex gap-3">
+          <div className="mt-4 pt-4 border-t flex gap-3">
+            <Link href={`/admin/posts/${post.id}/editar`}>
               <Button
-                onClick={handleApprove}
-                disabled={isLoading}
-                className="flex-1 bg-green-600 hover:bg-green-700"
-              >
-                {isLoading ? 'Aprovando...' : 'Aprovar'}
-              </Button>
-              <Button
-                onClick={() => setShowRejectModal(true)}
-                disabled={isLoading}
                 variant="outline"
-                className="flex-1 border-red-300 text-red-600 hover:bg-red-50"
+                className="border-indigo-300 text-indigo-600 hover:bg-indigo-50"
               >
-                Rejeitar
+                Editar
               </Button>
-            </div>
-          )}
+            </Link>
+            {status === 'pending' && (
+              <>
+                <Button
+                  onClick={handleApprove}
+                  disabled={isLoading}
+                  className="flex-1 bg-green-600 hover:bg-green-700"
+                >
+                  {isLoading ? 'Aprovando...' : 'Aprovar'}
+                </Button>
+                <Button
+                  onClick={() => setShowRejectModal(true)}
+                  disabled={isLoading}
+                  variant="outline"
+                  className="flex-1 border-red-300 text-red-600 hover:bg-red-50"
+                >
+                  Rejeitar
+                </Button>
+              </>
+            )}
+          </div>
         </div>
       </Card>
 

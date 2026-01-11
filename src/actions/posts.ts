@@ -8,6 +8,7 @@ import type { Post, PostComment } from '@/lib/supabase/types';
 import { moderatePost, getBlockedMessage, getPendingReviewMessage } from '@/lib/moderation';
 import { logModerationAction, checkRateLimit, RATE_LIMITS, validateFileMagicBytes } from '@/lib/security';
 import { logger, maskId, sanitizeError } from '@/lib';
+import { verifyAdminOrCreator } from './utils';
 
 // Logger contextualizado para o módulo de posts
 const postsLogger = logger.withContext('[Posts]');
@@ -209,14 +210,23 @@ export async function updatePost(data: UpdatePostData): Promise<ActionResponse<P
       return { error: 'Usuário não autenticado' };
     }
 
-    // Verificar se o post pertence ao usuário
+    // Verificar se o post pertence ao usuário ou se é admin/creator
     const { data: existingPost } = await supabase
       .from('posts')
       .select('user_id')
       .eq('id', data.id)
       .single();
 
-    if (!existingPost || existingPost.user_id !== user.id) {
+    if (!existingPost) {
+      return { error: 'Post não encontrado' };
+    }
+
+    // Verificar permissão: é o autor OU é admin/creator
+    const isOwner = existingPost.user_id === user.id;
+    const adminCheck = await verifyAdminOrCreator(user.id);
+    const isAdmin = !adminCheck.error;
+
+    if (!isOwner && !isAdmin) {
       return { error: 'Você não tem permissão para editar este post' };
     }
 
@@ -709,6 +719,34 @@ export async function deletePost(postId: string): Promise<ActionResponse> {
     revalidatePath('/feed');
     revalidatePath('/profile');
     return { success: true };
+  } catch {
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+/**
+ * Buscar post por ID (para edição)
+ */
+export async function getPostById(postId: string): Promise<ActionResponse<Post>> {
+  try {
+    const supabase = await createClient();
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return { error: 'Usuário não autenticado' };
+    }
+
+    const { data: post, error } = await supabase
+      .from('posts')
+      .select('*')
+      .eq('id', postId)
+      .single();
+
+    if (error || !post) {
+      return { error: 'Post não encontrado' };
+    }
+
+    return { success: true, data: post };
   } catch {
     return { error: 'Erro interno do servidor' };
   }
