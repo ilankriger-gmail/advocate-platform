@@ -117,7 +117,7 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
           isOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
-        <div className="h-full px-3 py-4 overflow-y-auto">
+        <div className="h-full px-3 py-4 pb-20 overflow-y-auto">
           {/* Create Post Button */}
           <Link
             href="/perfil/novo-post"
