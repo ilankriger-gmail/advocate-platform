@@ -117,12 +117,10 @@ export async function POST(request: NextRequest) {
     const signature = request.headers.get('svix-signature');
     const timestamp = request.headers.get('svix-timestamp');
 
-    // Verificar assinatura (opcional em dev)
-    if (process.env.NODE_ENV === 'production') {
-      if (!verifyResendSignature(body, signature, timestamp)) {
-        console.error('[Webhook Resend] Assinatura invalida');
-        return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
-      }
+    // Verificar assinatura
+    if (!verifyResendSignature(body, signature, timestamp)) {
+      console.error('[Webhook Resend] Assinatura invalida');
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
     }
 
     const payload = JSON.parse(body) as ResendWebhookPayload;
