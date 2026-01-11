@@ -65,7 +65,7 @@ function verifyResendSignature(
     const diffMinutes = (now.getTime() - timestampDate.getTime()) / (1000 * 60);
 
     if (diffMinutes > 5) {
-      console.warn('[Webhook Resend] Timestamp muito antigo');
+      console.error('[Webhook Resend] Timestamp muito antigo');
       return false;
     }
 
