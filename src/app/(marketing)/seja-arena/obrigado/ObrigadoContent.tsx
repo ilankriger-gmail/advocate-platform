@@ -250,15 +250,15 @@ function StaticThankYou({ siteName, footerText }: { siteName: string; footerText
           </div>
         </div>
 
-        {/* Botão voltar */}
+        {/* Botão voltar para o site */}
         <Link
-          href="/seja-arena"
+          href="/"
           className="inline-flex items-center gap-2 text-pink-600 hover:text-pink-700 font-medium"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
-          Voltar ao início
+          Ir para o site
         </Link>
       </div>
 

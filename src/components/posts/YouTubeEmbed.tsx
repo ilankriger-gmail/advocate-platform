@@ -27,14 +27,14 @@ export default function YouTubeEmbed({ url, title = 'Vídeo do YouTube' }: YouTu
 
   if (!vídeoId) {
     return (
-      <div className="w-full aspect-vídeo bg-gray-100 rounded-lg flex items-center justify-center text-gray-500">
+      <div className="w-full aspect-video bg-gray-100 rounded-lg flex items-center justify-center text-gray-500">
         <p>URL do YouTube inválida</p>
       </div>
     );
   }
 
   return (
-    <div className="w-full aspect-vídeo rounded-lg overflow-hidden">
+    <div className="w-full aspect-video rounded-lg overflow-hidden">
       <iframe
         src={`https://www.youtube.com/embed/${vídeoId}`}
         title={title}

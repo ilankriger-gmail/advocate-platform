@@ -124,6 +124,12 @@ export default async function AdminLeadsPage({ searchParams }: PageProps) {
         </div>
       </div>
 
+      {/* Auto-Aprovação Settings */}
+      <AutoApprovalSettings
+        initialEnabled={autoApprovalSettings.enabled}
+        initialMinScore={autoApprovalSettings.minScore}
+      />
+
       {/* Filtros */}
       <LeadFilters stats={stats} />
 
