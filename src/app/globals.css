@@ -162,4 +162,58 @@
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
   }
+
+  /* Typeform-style step animations */
+  .step-container {
+    position: relative;
+    min-height: 100vh;
+    width: 100%;
+  }
+
+  .step-wrapper {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+  }
+
+  .step-active {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .step-inactive {
+    opacity: 0;
+    transform: translateY(30px);
+    pointer-events: none;
+  }
+
+  /* Typeform-style inputs */
+  .typeform-textarea {
+    @apply w-full bg-transparent border-0 border-b-2 border-surface-300
+           text-xl sm:text-2xl text-surface-900 placeholder:text-surface-400
+           focus:border-primary-500 focus:ring-0 focus:outline-none
+           py-4 transition-colors resize-none;
+  }
+
+  .typeform-input {
+    @apply w-full bg-transparent border-0 border-b-2 border-surface-300
+           text-lg sm:text-xl text-surface-900 placeholder:text-surface-400
+           focus:border-primary-500 focus:ring-0 focus:outline-none
+           py-3 transition-colors;
+  }
+
+  /* Progress bar */
+  .progress-bar {
+    @apply fixed bottom-0 left-0 right-0 h-1 bg-surface-200;
+  }
+
+  .progress-bar-fill {
+    @apply h-full bg-gradient-to-r from-primary-500 to-accent-500 transition-all duration-500 ease-out;
+  }
 }

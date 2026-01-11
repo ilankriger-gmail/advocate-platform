@@ -2,57 +2,75 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { NPSScoreSelector } from './NPSScoreSelector';
 import { submitNpsLead } from '@/actions/leads';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
 
-export function NPSForm() {
+interface NPSFormProps {
+  siteName: string;
+  creatorName: string;
+  logoUrl: string;
+}
+
+export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [score, setScore] = useState<number | null>(null);
+  const [reason, setReason] = useState('');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setErrors({});
+  // Sistema de steps
+  const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = 3;
 
-    // Validacao do score
-    if (score === null) {
-      setErrors({ score: 'Por favor, selecione uma nota' });
-      return;
-    }
-
-    const formData = new FormData(e.currentTarget);
-    const reason = formData.get('reason') as string;
-    const name = formData.get('name') as string;
-    const email = formData.get('email') as string;
-    const phone = formData.get('phone') as string;
-
-    // Validacoes
+  // Validacao por step
+  const validateStep = (step: number): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (!reason || reason.trim().length < 3) {
-      newErrors.reason = 'Por favor, explique o motivo';
+    if (step === 1 && score === null) {
+      newErrors.score = 'Por favor, selecione uma nota';
     }
 
-    if (!name || name.trim().length < 2) {
-      newErrors.name = 'Nome e obrigatorio';
+    if (step === 2 && (!reason || reason.trim().length < 3)) {
+      newErrors.reason = 'Por favor, explique o motivo (minimo 3 caracteres)';
     }
 
-    if (!email || !email.includes('@')) {
-      newErrors.email = 'Email inválido';
+    if (step === 3) {
+      if (!name || name.trim().length < 2) {
+        newErrors.name = 'Nome e obrigatorio';
+      }
+      if (!email || !email.includes('@')) {
+        newErrors.email = 'Email inválido';
+      }
     }
 
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Navegacao
+  const nextStep = () => {
+    if (validateStep(currentStep)) {
+      setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
     }
+  };
+
+  const prevStep = () => {
+    setErrors({});
+    setCurrentStep((prev) => Math.max(prev - 1, 1));
+  };
+
+  // Submit
+  async function handleSubmit() {
+    if (!validateStep(3)) return;
 
     setIsLoading(true);
 
     const result = await submitNpsLead({
-      score,
+      score: score!,
       reason: reason.trim(),
       name: name.trim(),
       email: email.trim(),
@@ -66,111 +84,274 @@ export function NPSForm() {
       return;
     }
 
-    // Redirecionar para pagina de obrigado
     router.push('/seja-arena/obrigado');
   }
 
+  // Keyboard navigation
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (currentStep < totalSteps) {
+        nextStep();
+      } else {
+        handleSubmit();
+      }
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Erro geral */}
-      {errors.form && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
-          {errors.form}
-        </div>
-      )}
+    <div className="step-container" onKeyDown={handleKeyDown}>
+      {/* Step 1: Score */}
+      <div className={`step-wrapper ${currentStep === 1 ? 'step-active' : 'step-inactive'}`}>
+        <div className="w-full max-w-2xl mx-auto text-center">
+          {/* Logo */}
+          {logoUrl.startsWith('/') ? (
+            <Image
+              src={logoUrl}
+              alt={siteName}
+              width={120}
+              height={40}
+              className="h-12 w-auto mx-auto mb-8 opacity-60"
+              priority
+            />
+          ) : (
+            <img
+              src={logoUrl}
+              alt={siteName}
+              className="h-12 w-auto mx-auto mb-8 opacity-60"
+            />
+          )}
 
-      {/* Seletor de nota NPS */}
-      <NPSScoreSelector
-        value={score}
-        onChange={setScore}
-        error={errors.score}
-      />
+          {/* Step indicator */}
+          <span className="inline-block text-sm text-primary-500 font-medium mb-4">
+            {currentStep} / {totalSteps}
+          </span>
 
-      {/* Motivo da nota */}
-      <div className="w-full">
-        <label
-          htmlFor="reason"
-          className="block text-sm font-medium text-gray-700 mb-1.5"
-        >
-          Por que você deu a nota {score !== null ? score : '...'}?
-        </label>
-        <textarea
-          id="reason"
-          name="reason"
-          rows={4}
-          placeholder="Conte-nos o motivo da sua avaliacao..."
-          className={`
-            w-full px-4 py-3
-            bg-white border rounded-xl
-            text-gray-900 placeholder:text-gray-400
-            transition-all duration-200
-            focus:outline-none focus:ring-2 focus:ring-offset-0
-            resize-none
-            ${errors.reason
-              ? 'border-red-500 focus:border-red-500 focus:ring-red-200'
-              : 'border-gray-300 focus:border-pink-500 focus:ring-pink-200'
-            }
-          `}
-        />
-        {errors.reason && (
-          <p className="mt-1.5 text-sm text-red-600 flex items-center gap-1">
-            <svg className="h-4 w-4 shrink-0" viewBox="0 0 20 20" fill="currentColor">
-              <path
-                fillRule="evenodd"
-                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                clipRule="evenodd"
-              />
-            </svg>
-            {errors.reason}
+          {/* Title */}
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-medium text-surface-900 mb-8 leading-tight">
+            De 0 a 10, qual a chance de você recomendar {creatorName} para um amigo?
+          </h2>
+
+          {/* Score selector */}
+          <div className="mb-8">
+            <NPSScoreSelector
+              value={score}
+              onChange={(newScore) => {
+                setScore(newScore);
+                setErrors({});
+              }}
+              error={errors.score}
+            />
+          </div>
+
+          {/* Navigation */}
+          <div className="flex justify-center gap-4">
+            <button
+              type="button"
+              onClick={nextStep}
+              disabled={score === null}
+              className="px-8 py-3 bg-primary-600 text-white font-medium rounded-full
+                       hover:bg-primary-700 disabled:opacity-40 disabled:cursor-not-allowed
+                       transition-all duration-200 press-scale"
+            >
+              Continuar
+            </button>
+          </div>
+
+          <p className="mt-6 text-sm text-surface-400">
+            Pressione Enter para continuar
           </p>
-        )}
+        </div>
       </div>
 
-      {/* Nome */}
-      <Input
-        label="Seu nome"
-        name="name"
-        type="text"
-        placeholder="Como podemos te chamar?"
-        error={errors.name}
-        required
-      />
+      {/* Step 2: Reason */}
+      <div className={`step-wrapper ${currentStep === 2 ? 'step-active' : 'step-inactive'}`}>
+        <div className="w-full max-w-2xl mx-auto text-center">
+          {/* Step indicator */}
+          <span className="inline-block text-sm text-primary-500 font-medium mb-4">
+            {currentStep} / {totalSteps}
+          </span>
 
-      {/* Email */}
-      <Input
-        label="Seu e-mail"
-        name="email"
-        type="email"
-        placeholder="seu@email.com"
-        error={errors.email}
-        hint="Para enviarmos o convite da comunidade"
-        required
-      />
+          {/* Title */}
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-medium text-surface-900 mb-8 leading-tight">
+            O que motivou sua nota {score}?
+          </h2>
 
-      {/* Telefone (opcional) */}
-      <Input
-        label="Seu WhatsApp (opcional)"
-        name="phone"
-        type="tel"
-        placeholder="(11) 99999-9999"
-        hint="Para enviarmos o convite da comunidade"
-      />
+          {/* Textarea */}
+          <div className="text-left">
+            <textarea
+              id="reason"
+              name="reason"
+              value={reason}
+              onChange={(e) => {
+                setReason(e.target.value);
+                if (errors.reason) setErrors({});
+              }}
+              rows={4}
+              placeholder="Conte-nos o motivo da sua avaliacao..."
+              className={`typeform-textarea ${errors.reason ? 'border-red-500' : ''}`}
+              autoFocus={currentStep === 2}
+            />
+            {errors.reason && (
+              <p className="mt-2 text-sm text-red-500">{errors.reason}</p>
+            )}
+          </div>
 
-      {/* Botao de envio */}
-      <Button
-        type="submit"
-        variant="primary"
-        size="lg"
-        fullWidth
-        isLoading={isLoading}
-        className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
-      >
-        Enviar
-      </Button>
+          {/* Navigation */}
+          <div className="flex justify-center gap-4 mt-8">
+            <button
+              type="button"
+              onClick={prevStep}
+              className="px-6 py-3 text-surface-600 font-medium rounded-full
+                       hover:bg-surface-100 transition-all duration-200"
+            >
+              Voltar
+            </button>
+            <button
+              type="button"
+              onClick={nextStep}
+              className="px-8 py-3 bg-primary-600 text-white font-medium rounded-full
+                       hover:bg-primary-700 transition-all duration-200 press-scale"
+            >
+              Continuar
+            </button>
+          </div>
 
-      <p className="text-xs text-gray-500 text-center">
-        Ao enviar, você concorda com nossa política de privacidade.
-      </p>
-    </form>
+          <p className="mt-6 text-sm text-surface-400">
+            Pressione Enter para continuar
+          </p>
+        </div>
+      </div>
+
+      {/* Step 3: Contact */}
+      <div className={`step-wrapper ${currentStep === 3 ? 'step-active' : 'step-inactive'}`}>
+        <div className="w-full max-w-xl mx-auto text-center">
+          {/* Step indicator */}
+          <span className="inline-block text-sm text-primary-500 font-medium mb-4">
+            {currentStep} / {totalSteps}
+          </span>
+
+          {/* Title */}
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-medium text-surface-900 mb-8 leading-tight">
+            Seus dados de contato
+          </h2>
+
+          {/* Erro geral */}
+          {errors.form && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm text-left">
+              {errors.form}
+            </div>
+          )}
+
+          {/* Inputs */}
+          <div className="space-y-6 text-left">
+            <div>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  if (errors.name) setErrors((prev) => ({ ...prev, name: '' }));
+                }}
+                placeholder="Seu nome"
+                className={`typeform-input ${errors.name ? 'border-red-500' : ''}`}
+                autoFocus={currentStep === 3}
+              />
+              {errors.name && (
+                <p className="mt-1 text-sm text-red-500">{errors.name}</p>
+              )}
+            </div>
+
+            <div>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (errors.email) setErrors((prev) => ({ ...prev, email: '' }));
+                }}
+                placeholder="seu@email.com"
+                className={`typeform-input ${errors.email ? 'border-red-500' : ''}`}
+              />
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-500">{errors.email}</p>
+              )}
+            </div>
+
+            <div>
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="WhatsApp (opcional)"
+                className="typeform-input"
+              />
+            </div>
+          </div>
+
+          {/* Navigation */}
+          <div className="flex justify-center gap-4 mt-8">
+            <button
+              type="button"
+              onClick={prevStep}
+              className="px-6 py-3 text-surface-600 font-medium rounded-full
+                       hover:bg-surface-100 transition-all duration-200"
+            >
+              Voltar
+            </button>
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={isLoading}
+              className="px-8 py-3 bg-gradient-to-r from-primary-600 to-accent-500 text-white font-medium rounded-full
+                       hover:from-primary-700 hover:to-accent-600 disabled:opacity-60
+                       transition-all duration-200 press-scale flex items-center gap-2"
+            >
+              {isLoading ? (
+                <>
+                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      fill="none"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  Enviando...
+                </>
+              ) : (
+                'Enviar'
+              )}
+            </button>
+          </div>
+
+          <p className="mt-6 text-xs text-surface-400">
+            Ao enviar, você concorda com nossa política de privacidade.
+          </p>
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <div className="progress-bar">
+        <div
+          className="progress-bar-fill"
+          style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+        />
+      </div>
+    </div>
   );
 }
