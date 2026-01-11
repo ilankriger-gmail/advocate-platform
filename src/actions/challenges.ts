@@ -84,7 +84,6 @@ export async function participateInChallenge(data: {
         social_media_url: data.socialMediaUrl || null,
         status: 'pending',
         coins_earned: 0,
-        ai_verdict: aiVerdict,
       })
       .select()
       .single();

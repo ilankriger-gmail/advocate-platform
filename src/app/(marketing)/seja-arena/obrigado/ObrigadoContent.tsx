@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { ProcessingAnimation } from './ProcessingAnimation';
@@ -11,10 +11,11 @@ interface ObrigadoContentProps {
   footerText: string;
 }
 
-type PageState = 'processing' | 'approved' | 'pending' | 'error' | 'no-lead';
+type PageState = 'processing' | 'approved' | 'pending' | 'timeout' | 'error' | 'no-lead';
 
 const POLL_INTERVAL = 2000; // 2 segundos
-const MAX_POLL_TIME = 30000; // 30 segundos
+const MAX_POLL_TIME = 90000; // 90 segundos (AI pode demorar até 30s + latência)
+const MAX_RETRIES = 3; // Máximo de retries em caso de erro
 
 export function ObrigadoContent({ siteName, footerText }: ObrigadoContentProps) {
   const searchParams = useSearchParams();
@@ -22,52 +23,94 @@ export function ObrigadoContent({ siteName, footerText }: ObrigadoContentProps) 
 
   const [state, setState] = useState<PageState>(leadId ? 'processing' : 'no-lead');
   const [leadData, setLeadData] = useState<LeadStatusResult | null>(null);
-  const [pollCount, setPollCount] = useState(0);
+  const [errorCount, setErrorCount] = useState(0);
 
-  const checkStatus = useCallback(async () => {
-    if (!leadId) return;
+  // Usar refs para evitar problemas com closures e re-renders
+  const pollStartTime = useRef<number>(Date.now());
+  const isPolling = useRef<boolean>(false);
 
-    const result = await getLeadStatus(leadId);
-
-    if (result.error) {
-      setState('error');
-      return;
-    }
-
-    if (result.data) {
-      setLeadData(result.data);
-
-      if (result.data.status === 'processing') {
-        // Continua polling
-        setPollCount((prev) => prev + 1);
-      } else if (result.data.status === 'approved') {
-        setState('approved');
-      } else {
-        setState('pending');
-      }
-    }
-  }, [leadId]);
-
-  // Polling effect
   useEffect(() => {
     if (!leadId || state !== 'processing') return;
 
-    // Verificar se excedeu tempo máximo
-    if (pollCount * POLL_INTERVAL >= MAX_POLL_TIME) {
-      setState('pending');
-      return;
-    }
+    let timeoutId: NodeJS.Timeout;
 
-    const timer = setTimeout(checkStatus, POLL_INTERVAL);
-    return () => clearTimeout(timer);
-  }, [leadId, state, pollCount, checkStatus]);
+    const checkStatus = async () => {
+      // Evitar chamadas duplicadas
+      if (isPolling.current) return;
+      isPolling.current = true;
 
-  // Primeira verificação imediata
-  useEffect(() => {
-    if (leadId) {
-      checkStatus();
-    }
-  }, [leadId, checkStatus]);
+      try {
+        const result = await getLeadStatus(leadId);
+
+        if (result.error) {
+          // Incrementar contador de erros
+          setErrorCount((prev) => {
+            const newCount = prev + 1;
+            if (newCount >= MAX_RETRIES) {
+              setState('error');
+            }
+            return newCount;
+          });
+          isPolling.current = false;
+          return;
+        }
+
+        // Reset error count em sucesso
+        setErrorCount(0);
+
+        if (result.data) {
+          setLeadData(result.data);
+
+          if (result.data.status === 'approved') {
+            setState('approved');
+            isPolling.current = false;
+            return;
+          } else if (result.data.status === 'pending' || result.data.status === 'rejected') {
+            setState('pending');
+            isPolling.current = false;
+            return;
+          }
+          // status === 'processing' - continua polling
+        }
+
+        // Verificar timeout
+        const elapsedTime = Date.now() - pollStartTime.current;
+        if (elapsedTime >= MAX_POLL_TIME) {
+          // Timeout - mas se temos dados, mostra estado pendente
+          if (leadData) {
+            setState('timeout');
+          } else {
+            setState('pending');
+          }
+          isPolling.current = false;
+          return;
+        }
+
+        // Agendar próxima verificação
+        isPolling.current = false;
+        timeoutId = setTimeout(checkStatus, POLL_INTERVAL);
+      } catch {
+        // Erro de rede - tentar novamente
+        setErrorCount((prev) => {
+          const newCount = prev + 1;
+          if (newCount >= MAX_RETRIES) {
+            setState('error');
+          }
+          return newCount;
+        });
+        isPolling.current = false;
+      }
+    };
+
+    // Iniciar polling
+    pollStartTime.current = Date.now();
+    checkStatus();
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      isPolling.current = false;
+    };
+  }, [leadId, state]); // Removido leadData das dependências para evitar loops
 
   // Estado: sem leadId (fallback para comportamento antigo)
   if (state === 'no-lead') {
@@ -158,9 +201,65 @@ export function ObrigadoContent({ siteName, footerText }: ObrigadoContentProps) 
     );
   }
 
+  // Estado: timeout (análise demorou muito)
+  if (state === 'timeout') {
+    return (
+      <main className="min-h-screen flex flex-col items-center justify-center px-4 py-8">
+        <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-6">
+          <svg
+            className="w-10 h-10 text-blue-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+        </div>
+
+        <div className="text-center max-w-md">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            Análise em andamento
+          </h1>
+          <p className="text-gray-600 mb-6">
+            Sua inscrição está sendo analisada e pode demorar alguns minutos.
+            Você receberá um email quando o resultado estiver pronto.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <button
+              onClick={() => {
+                setState('processing');
+                setErrorCount(0);
+              }}
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary-600 text-white font-medium rounded-full hover:bg-primary-700 transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Verificar novamente
+            </button>
+            <Link
+              href="/"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-full hover:bg-gray-50 transition-colors"
+            >
+              Ir para o site
+            </Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   // Estado: pendente (aguardando análise manual)
   if (state === 'pending') {
-    return <StaticThankYou siteName={siteName} footerText={footerText} />;
+    return <StaticThankYou siteName={siteName} footerText={footerText} showRefresh leadId={leadId} onRefresh={() => {
+      setState('processing');
+      setErrorCount(0);
+    }} />;
   }
 
   // Estado: erro
@@ -187,21 +286,47 @@ export function ObrigadoContent({ siteName, footerText }: ObrigadoContentProps) 
           Algo deu errado
         </h1>
         <p className="text-gray-600 mb-6">
-          Nao foi possível verificar sua inscricao. Por favor, tente novamente.
+          Não foi possível verificar sua inscrição. Por favor, tente novamente.
         </p>
-        <Link
-          href="/seja-arena"
-          className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white font-medium rounded-full hover:bg-primary-700 transition-colors"
-        >
-          Tentar novamente
-        </Link>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <button
+            onClick={() => {
+              setState('processing');
+              setErrorCount(0);
+            }}
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary-600 text-white font-medium rounded-full hover:bg-primary-700 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Tentar novamente
+          </button>
+          <Link
+            href="/seja-arena"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-full hover:bg-gray-50 transition-colors"
+          >
+            Refazer inscrição
+          </Link>
+        </div>
       </div>
     </main>
   );
 }
 
 // Componente de agradecimento estático (comportamento antigo)
-function StaticThankYou({ siteName, footerText }: { siteName: string; footerText: string }) {
+function StaticThankYou({
+  siteName,
+  footerText,
+  showRefresh = false,
+  leadId,
+  onRefresh
+}: {
+  siteName: string;
+  footerText: string;
+  showRefresh?: boolean;
+  leadId?: string | null;
+  onRefresh?: () => void;
+}) {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-4 py-8">
       {/* Ícone de sucesso */}
@@ -230,7 +355,7 @@ function StaticThankYou({ siteName, footerText }: { siteName: string; footerText
           Seu cadastro foi enviado com sucesso.
         </p>
         <p className="text-gray-500 mb-8">
-          Nossa equipe ira analisar sua solicitação e em breve entraremos em contato
+          Nossa equipe irá analisar sua solicitação e em breve entraremos em contato
           para informar se você foi aprovado para a comunidade {siteName}.
         </p>
 
@@ -250,16 +375,29 @@ function StaticThankYou({ siteName, footerText }: { siteName: string; footerText
           </div>
         </div>
 
-        {/* Botão voltar para o site */}
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-pink-600 hover:text-pink-700 font-medium"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-          Ir para o site
-        </Link>
+        {/* Botões */}
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          {showRefresh && onRefresh && (
+            <button
+              onClick={onRefresh}
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary-600 text-white font-medium rounded-full hover:bg-primary-700 transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Verificar status
+            </button>
+          )}
+          <Link
+            href="/"
+            className="inline-flex items-center justify-center gap-2 text-pink-600 hover:text-pink-700 font-medium"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Ir para o site
+          </Link>
+        </div>
       </div>
 
       {/* Footer */}
