@@ -117,7 +117,7 @@ export default function RankingPage() {
       {/* Header */}
       <PageHeader
         title="Rankings"
-        description="Veja sua posicao e os participantes proximos a voce"
+        description="Veja sua posição e os participantes próximos a você"
       />
 
       {/* Seletor de Categoria */}
@@ -137,7 +137,7 @@ export default function RankingPage() {
       ) : userRank ? (
         <div>
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Sua Posicao
+            Sua Posição
           </h2>
           <UserRankCard ranking={userRank} />
         </div>
@@ -160,7 +160,7 @@ export default function RankingPage() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-gray-900">
-            Participantes Proximos
+            Participantes Próximos
           </h2>
           {!loadingLeaderboard && leaderboardData.length > 0 && (
             <div className="text-sm text-gray-500">

@@ -58,10 +58,44 @@ npm run verify  # Roda lint + typecheck + build
 ```
 
 ### Erros comuns a evitar
-- Nao usar cores `primary-*` (usar `pink-500`, `red-500` explicitamente)
-- Nao esquecer de exportar tipos/funcoes criados
-- Verificar se todas as props obrigatorias estao sendo passadas
-- Nao deixar `console.log` em codigo de producao
+- Não usar cores `primary-*` (usar `pink-500`, `red-500` explicitamente)
+- Não esquecer de exportar tipos/funções criados
+- Verificar se todas as props obrigatórias estão sendo passadas
+- Não deixar `console.log` em código de produção
+
+## Padrão de Textos em Português Brasil
+
+### Regra Obrigatória
+Todos os textos visíveis ao usuário DEVEM ter acentuação correta em português Brasil.
+
+### Exemplos de erros comuns a evitar:
+| Errado | Correto |
+|--------|---------|
+| voce | você |
+| nao | não |
+| coracao/coracoes | coração/corações |
+| acao/acoes | ação/ações |
+| participacao | participação |
+| posicao | posição |
+| secao | seção |
+| sera/serao | será/serão |
+| premio/premios | prêmio/prêmios |
+| disponivel | disponível |
+| fisico | físico |
+| proximo | próximo |
+
+### Onde aplicar:
+- Títulos e descrições de páginas
+- Labels de botões e formulários
+- Mensagens de erro e sucesso
+- Placeholders
+- Textos em cards e componentes
+
+### Onde NÃO aplicar (manter sem acento):
+- Nomes de variáveis e funções (padrão técnico)
+- Nomes de arquivos
+- Chaves de objetos
+- Comentários de código (opcional)
 
 ## Estrutura de Diretórios (Sugestão Inicial)
 ```

@@ -41,7 +41,7 @@ export default async function DashboardPage() {
     <div className="space-y-6">
       <PageHeader
         title="Dashboard"
-        description="Visao geral da sua conta"
+        description="Visão geral da sua conta"
       />
 
       {/* Card de Boas-vindas */}
@@ -113,10 +113,10 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      {/* Acoes Rapidas */}
+      {/* Ações Rápidas */}
       <Card className="p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Acoes Rapidas
+          Ações Rápidas
         </h3>
         <div className="flex flex-wrap gap-3">
           <Link

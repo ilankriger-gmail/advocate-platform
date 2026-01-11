@@ -67,7 +67,7 @@ export default async function AdminDashboardPage() {
       icon: '📝',
       href: '/admin/posts',
       color: 'border-l-yellow-500',
-      description: 'Aguardando moderacao',
+      description: 'Aguardando moderação',
     },
     {
       title: 'Desafios Ativos',
@@ -144,9 +144,9 @@ export default async function AdminDashboardPage() {
         ))}
       </div>
 
-      {/* Acoes Rapidas */}
+      {/* Ações Rápidas */}
       <Card className="p-5">
-        <h2 className="text-lg font-bold text-gray-900 mb-4">Acoes Rapidas</h2>
+        <h2 className="text-lg font-bold text-gray-900 mb-4">Ações Rápidas</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <Link
             href="/admin/desafios/novo"
@@ -306,7 +306,7 @@ async function RecentPendingParticipations() {
   if (!participations || participations.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500">
-        Nenhuma participacao pendente
+        Nenhuma participação pendente
       </div>
     );
   }

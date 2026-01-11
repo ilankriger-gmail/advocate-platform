@@ -144,10 +144,10 @@ export default async function DesafiosPage() {
         <div className="relative p-6">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <p className="text-pink-100 text-sm font-medium tracking-wide uppercase">Seus coracoes</p>
+              <p className="text-pink-100 text-sm font-medium tracking-wide uppercase">Seus corações</p>
               <div className="flex items-baseline gap-2">
                 <p className="text-5xl font-black tracking-tight">{balance}</p>
-                <p className="text-xl font-medium text-pink-100">coracoes</p>
+                <p className="text-xl font-medium text-pink-100">corações</p>
               </div>
               <p className="text-pink-200 text-sm mt-2">Complete desafios para ganhar mais!</p>
             </div>
@@ -164,14 +164,14 @@ export default async function DesafiosPage() {
       {/* Desafios de Engajamento */}
       {engagementChallenges.length > 0 && (
         <section className="space-y-6">
-          {/* Header da Secao */}
+          {/* Header da Seção */}
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/25">
               <span className="text-2xl">🎁</span>
             </div>
             <div>
               <h2 className="text-2xl font-bold text-gray-900">Participe e Concorra</h2>
-              <p className="text-gray-500 text-sm">Interaja no Instagram e ganhe premios em dinheiro</p>
+              <p className="text-gray-500 text-sm">Interaja no Instagram e ganhe prêmios em dinheiro</p>
             </div>
           </div>
 
@@ -213,13 +213,13 @@ export default async function DesafiosPage() {
                         </li>
                         <li className="flex items-start gap-2">
                           <span className="text-pink-500">•</span>
-                          <span className="text-gray-600">Deixe seu comentario criativo</span>
+                          <span className="text-gray-600">Deixe seu comentário criativo</span>
                         </li>
                         {challenge.num_winners && (
                           <li className="flex items-start gap-2">
                             <span className="text-pink-500">•</span>
                             <span className="text-gray-600">
-                              {challenge.num_winners} ganhador(es) serao selecionados
+                              {challenge.num_winners} ganhador(es) serão selecionados
                             </span>
                           </li>
                         )}
@@ -278,7 +278,7 @@ export default async function DesafiosPage() {
                         </div>
                       ) : (
                         <div className="text-center py-4 bg-gray-50 rounded-lg">
-                          <p className="text-gray-500 text-sm">Aguardando selecao...</p>
+                          <p className="text-gray-500 text-sm">Aguardando seleção...</p>
                         </div>
                       )}
                     </div>
@@ -290,17 +290,17 @@ export default async function DesafiosPage() {
         </section>
       )}
 
-      {/* Desafios Fisicos */}
+      {/* Desafios Físicos */}
       {physicalChallenges.length > 0 && (
         <section className="space-y-6">
-          {/* Header da Secao */}
+          {/* Header da Seção */}
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/25">
               <span className="text-2xl">💪</span>
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Desafios Fisicos</h2>
-              <p className="text-gray-500 text-sm">Supere metas e mostre sua forca</p>
+              <h2 className="text-2xl font-bold text-gray-900">Desafios Físicos</h2>
+              <p className="text-gray-500 text-sm">Supere metas e mostre sua força</p>
             </div>
           </div>
 
@@ -316,16 +316,16 @@ export default async function DesafiosPage() {
         </section>
       )}
 
-      {/* Minhas Participacoes */}
+      {/* Minhas Participações */}
       {userParticipationsWithChallenge.length > 0 && (
         <section className="space-y-6">
-          {/* Header da Secao */}
+          {/* Header da Seção */}
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center shadow-lg shadow-green-500/25">
               <span className="text-2xl">📋</span>
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Minhas Participacoes</h2>
+              <h2 className="text-2xl font-bold text-gray-900">Minhas Participações</h2>
               <p className="text-gray-500 text-sm">Acompanhe o status dos seus desafios enviados</p>
             </div>
           </div>
@@ -350,10 +350,10 @@ export default async function DesafiosPage() {
               <span className="text-4xl">🎯</span>
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Nenhum desafio disponivel
+              Nenhum desafio disponível
             </h2>
             <p className="text-gray-500 max-w-md mx-auto">
-              Fique atento! Novos desafios serao adicionados em breve para voce participar e ganhar coracoes.
+              Fique atento! Novos desafios serão adicionados em breve para você participar e ganhar corações.
             </p>
           </div>
         </Card>
