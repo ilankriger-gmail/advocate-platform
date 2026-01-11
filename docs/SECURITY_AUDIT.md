@@ -1,18 +1,21 @@
 # Auditoria de Seguranca - Plataforma Advocate Marketing
 
 **Data:** 2026-01-10
-**Status:** Pendente de Correcoes
+**Última Atualização:** 2026-01-11
+**Status:** Em Correção
 
 ---
 
 ## Resumo Executivo
 
-| Severidade | Quantidade | Status |
-|------------|------------|--------|
-| CRITICO | 4 | Pendente |
-| ALTO | 5 | Pendente |
-| MEDIO | 10 | Pendente |
-| BAIXO | 6 | Pendente |
+| Severidade | Quantidade | Corrigidos | Pendentes |
+|------------|------------|------------|-----------|
+| CRITICO | 4 | 0 | 4 |
+| ALTO | 5 | 1 | 4 |
+| MEDIO | 10 | 0 | 10 |
+| BAIXO | 6 | 0 | 6 |
+
+**Última Correção:** Webhook Aceita Sem Validacao em Dev (#7) - 2026-01-11
 
 ---
 
@@ -147,14 +150,19 @@ console.log('createPost - userId:', user.id, 'userData:', userData);
 
 ---
 
-### 7. Webhook Aceita Sem Validacao em Dev
+### 7. Webhook Aceita Sem Validacao em Dev ✅ CORRIGIDO
 **Arquivos:**
 - `src/app/api/webhooks/whatsapp/route.ts` (linhas 58-64)
 - `src/app/api/webhooks/resend/route.ts` (linhas 52-55)
 
 **Problema:** Em desenvolvimento, webhooks sao aceitos sem validacao de assinatura
 
-**Correcao:** Sempre validar, usar secrets mesmo em dev
+**Correcao Aplicada:**
+- ✅ Removido bypass que retornava `true` quando secrets não configurados
+- ✅ Implementado fail-secure: webhooks rejeitam requisições sem secret válido
+- ✅ Verificação de assinatura agora SEMPRE executada em todos os ambientes
+- ✅ Documentado WHATSAPP_APP_SECRET e RESEND_WEBHOOK_SECRET como obrigatórios em `.env.local.example`
+- ✅ Adicionadas instruções detalhadas de como obter os secrets
 
 ---
 
@@ -260,7 +268,7 @@ if (!data.email || !data.email.includes('@')) // FRACA
 5. [ ] Remover console.logs com dados sensiveis
 6. [ ] Implementar rate limiting basico
 7. [ ] Adicionar RLS policies para UPDATE/DELETE em posts
-8. [ ] Melhorar validacao de webhooks
+8. [x] Melhorar validacao de webhooks (CONCLUÍDO - 2026-01-11)
 
 ### Fase 3 - Medio (Proximas 2 Semanas)
 9. [ ] Melhorar validacao de email
