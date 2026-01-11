@@ -39,6 +39,30 @@
 - Documentação inline para decisões arquiteturais importantes
 - Revisão de código antes de merge de features significativas
 
+## Verificacao Obrigatoria (Claude)
+
+### ANTES de cada commit
+1. **`npm run build`** - Verificar se compila sem erros
+2. **`npm run typecheck`** - Verificar tipos TypeScript
+3. **`npm run lint`** - Verificar padroes de codigo
+4. Revisar TODAS as mudancas feitas na sessao
+
+### APOS editar arquivos .ts/.tsx
+1. Verificar se o arquivo salvo esta correto sintaticamente
+2. Em caso de duvida, rodar `npm run typecheck`
+3. Nao deixar imports nao utilizados
+
+### Comando rapido de verificacao completa
+```bash
+npm run verify  # Roda lint + typecheck + build
+```
+
+### Erros comuns a evitar
+- Nao usar cores `primary-*` (usar `pink-500`, `red-500` explicitamente)
+- Nao esquecer de exportar tipos/funcoes criados
+- Verificar se todas as props obrigatorias estao sendo passadas
+- Nao deixar `console.log` em codigo de producao
+
 ## Estrutura de Diretórios (Sugestão Inicial)
 ```
 app/
