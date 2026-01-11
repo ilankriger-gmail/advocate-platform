@@ -221,13 +221,10 @@ export async function updatePost(data: UpdatePostData): Promise<ActionResponse<P
       return { error: 'Post não encontrado' };
     }
 
-    // Verificar permissão: é o autor OU é admin/creator
-    const isOwner = existingPost.user_id === user.id;
+    // APENAS admin/creator pode editar posts (usuários só podem deletar)
     const adminCheck = await verifyAdminOrCreator(user.id);
-    const isAdmin = !adminCheck.error;
-
-    if (!isOwner && !isAdmin) {
-      return { error: 'Você não tem permissão para editar este post' };
+    if (adminCheck.error) {
+      return { error: 'Apenas administradores e criadores podem editar posts' };
     }
 
     // Verificar se é criador para permitir embeds de YouTube/Instagram
