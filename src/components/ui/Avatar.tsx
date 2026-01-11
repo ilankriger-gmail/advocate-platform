@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, type ImgHTMLAttributes } from 'react';
+import { useState } from 'react';
+import Image from 'next/image';
 
 /**
  * Tamanhos disponíveis para o avatar
@@ -49,12 +50,17 @@ type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
  * // Avatar extra pequeno sem imagem
  * <Avatar name="Carlos" size="xs" />
  */
-interface AvatarProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, 'src'> {
+interface AvatarProps {
   /**
    * URL da imagem do avatar.
    * Se não fornecida ou falhar ao carregar, exibe fallback com iniciais.
    */
   src?: string | null;
+
+  /**
+   * Classes CSS adicionais para o container.
+   */
+  className?: string;
 
   /**
    * Texto alternativo para a imagem.
@@ -189,7 +195,6 @@ export function Avatar({
   size = 'md',
   status,
   className = '',
-  ...props
 }: AvatarProps) {
   const [imageError, setImageError] = useState(false);
 
@@ -222,12 +227,13 @@ export function Avatar({
           {initials}
         </div>
       ) : (
-        <img
+        <Image
           src={src!}
           alt={alt || name || 'Avatar'}
+          fill
+          sizes="64px"
           onError={() => setImageError(true)}
-          className="w-full h-full object-cover"
-          {...props}
+          className="object-cover"
         />
       )}
 

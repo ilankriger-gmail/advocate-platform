@@ -47,31 +47,36 @@ export default async function DesafiosPage() {
     redirect('/login');
   }
 
-  // Buscar desafios ativos
-  const { data: challenges } = await supabase
-    .from('challenges')
-    .select('*')
-    .eq('is_active', true)
-    .order('created_at', { ascending: false });
-
-  // Buscar ganhadores
-  const { data: winners } = await supabase
-    .from('challenge_winners')
-    .select('*')
-    .order('created_at', { ascending: false });
-
-  // Buscar participações do usuário
-  const { data: participations } = await supabase
-    .from('challenge_participants')
-    .select('challenge_id, status, result_value, coins_earned')
-    .eq('user_id', user.id);
-
-  // Buscar saldo de corações
-  const { data: userCoins } = await supabase
-    .from('user_coins')
-    .select('balance')
-    .eq('user_id', user.id)
-    .single();
+  // Paralelizar todas as queries para melhor performance
+  const [
+    { data: challenges },
+    { data: winners },
+    { data: participations },
+    { data: userCoins }
+  ] = await Promise.all([
+    // Buscar desafios ativos
+    supabase
+      .from('challenges')
+      .select('*')
+      .eq('is_active', true)
+      .order('created_at', { ascending: false }),
+    // Buscar ganhadores
+    supabase
+      .from('challenge_winners')
+      .select('*')
+      .order('created_at', { ascending: false }),
+    // Buscar participações do usuário
+    supabase
+      .from('challenge_participants')
+      .select('challenge_id, status, result_value, coins_earned')
+      .eq('user_id', user.id),
+    // Buscar saldo de corações
+    supabase
+      .from('user_coins')
+      .select('balance')
+      .eq('user_id', user.id)
+      .single()
+  ]);
 
   const balance = userCoins?.balance || 0;
 

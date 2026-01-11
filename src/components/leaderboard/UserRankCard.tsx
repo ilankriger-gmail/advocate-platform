@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/Card';
 import { Avatar } from '@/components/ui/Avatar';
@@ -175,7 +176,8 @@ function NotRankedState() {
   );
 }
 
-export function UserRankCard({
+// Memoizado para evitar re-renders desnecessários
+export const UserRankCard = memo(function UserRankCard({
   ranking,
   userName,
   userAvatar,
@@ -316,12 +318,13 @@ export function UserRankCard({
       </div>
     </Card>
   );
-}
+});
 
 /**
  * Variante compacta do UserRankCard para widgets/previews
+ * Memoizada para evitar re-renders desnecessários
  */
-export function UserRankCardCompact({
+export const UserRankCardCompact = memo(function UserRankCardCompact({
   ranking,
   userName,
   userAvatar,
@@ -381,7 +384,5 @@ export function UserRankCardCompact({
       </div>
     </Card>
   );
-}
+});
 
-// Exportar variante compacta como propriedade do componente principal
-UserRankCard.Compact = UserRankCardCompact;

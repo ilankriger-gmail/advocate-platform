@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { LeaderboardEntry } from './LeaderboardEntry';
-import { UserRankCard } from './UserRankCard';
+import { UserRankCard, UserRankCardCompact } from './UserRankCard';
 import { fetchCombinedLeaderboard, fetchUserRank } from '@/actions/leaderboard';
 import type {
   LeaderboardEntry as LeaderboardEntryType,
@@ -188,7 +188,7 @@ export function LeaderboardPreview({
                 <p className="text-xs font-medium text-surface-600 mb-2 uppercase tracking-wide">
                   Sua posição
                 </p>
-                <UserRankCard.Compact
+                <UserRankCardCompact
                   ranking={userRank}
                   userName={null}
                   userAvatar={null}

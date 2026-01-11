@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import Link from 'next/link';
 import DOMPurify from 'isomorphic-dompurify';
 import { Card, Avatar, Badge, Button, ConfirmModal, PromptModal } from '@/components/ui';
@@ -41,7 +41,8 @@ function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, '');
 }
 
-export function PostCard({
+// Memoizado para evitar re-renders desnecessários em listas
+export const PostCard = memo(function PostCard({
   post,
   userVote = null,
   isOwner = false,
@@ -338,4 +339,4 @@ export function PostCard({
     />
   </>
   );
-}
+});

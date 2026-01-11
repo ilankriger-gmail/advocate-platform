@@ -13,27 +13,41 @@ export default async function EventosPage() {
     redirect('/login');
   }
 
-  // Buscar eventos ativos
-  const { data: events } = await supabase
-    .from('events')
-    .select('*')
-    .eq('is_active', true)
-    .gte('end_time', new Date().toISOString())
-    .order('start_time', { ascending: true });
-
-  // Buscar inscricoes do usuário
-  const { data: registrations } = await supabase
-    .from('event_registrations')
-    .select('event_id, status')
-    .eq('user_id', user.id)
-    .neq('status', 'cancelled');
-
-  // Buscar perfil do usuário para verificar nivel
-  const { data: profile } = await supabase
-    .from('users')
-    .select('advocate_level')
-    .eq('id', user.id)
-    .single();
+  // Paralelizar todas as queries para melhor performance
+  const [
+    { data: events },
+    { data: registrations },
+    { data: profile },
+    { data: pastRegistrations }
+  ] = await Promise.all([
+    // Buscar eventos ativos
+    supabase
+      .from('events')
+      .select('*')
+      .eq('is_active', true)
+      .gte('end_time', new Date().toISOString())
+      .order('start_time', { ascending: true }),
+    // Buscar inscricoes do usuário
+    supabase
+      .from('event_registrations')
+      .select('event_id, status')
+      .eq('user_id', user.id)
+      .neq('status', 'cancelled'),
+    // Buscar perfil do usuário para verificar nivel
+    supabase
+      .from('users')
+      .select('advocate_level')
+      .eq('id', user.id)
+      .single(),
+    // Buscar eventos passados que o usuário participou
+    supabase
+      .from('event_registrations')
+      .select('*, events(*)')
+      .eq('user_id', user.id)
+      .eq('status', 'attended')
+      .order('registration_time', { ascending: false })
+      .limit(5)
+  ]);
 
   const userLevel = profile?.advocate_level || 1;
 
@@ -50,15 +64,6 @@ export default async function EventosPage() {
     const now = new Date();
     return new Date(e.start_time) <= now && new Date(e.end_time) >= now;
   });
-
-  // Buscar eventos passados que o usuário participou
-  const { data: pastRegistrations } = await supabase
-    .from('event_registrations')
-    .select('*, events(*)')
-    .eq('user_id', user.id)
-    .eq('status', 'attended')
-    .order('registration_time', { ascending: false })
-    .limit(5);
 
   return (
     <div className="space-y-8">

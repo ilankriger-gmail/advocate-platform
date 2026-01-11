@@ -1,5 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Remover console.log em produção para melhor performance
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production' ? {
+      exclude: ['error', 'warn'], // Manter console.error e console.warn
+    } : false,
+  },
   // Configuração para permitir imagens do Supabase Storage e Google
   images: {
     remotePatterns: [
