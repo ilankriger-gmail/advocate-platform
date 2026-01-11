@@ -9,12 +9,17 @@ interface ImageCarouselProps {
   aspectRatio?: 'square' | 'vídeo' | 'portrait' | 'auto';
 }
 
+// Distancia minima em pixels para considerar um swipe
+const MIN_SWIPE_DISTANCE = 50;
+
 export default function ImageCarousel({
   images,
   alt = 'Imagem do post',
   aspectRatio = 'auto',
 }: ImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
   const goToNext = useCallback(() => {
     setCurrentIndex((prev) => (prev + 1) % images.length);
@@ -27,6 +32,30 @@ export default function ImageCarousel({
   const goToIndex = useCallback((index: number) => {
     setCurrentIndex(index);
   }, []);
+
+  // Touch handlers para swipe em mobile
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  }, []);
+
+  const onTouchMove = useCallback((e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  }, []);
+
+  const onTouchEnd = useCallback(() => {
+    if (!touchStart || !touchEnd) return;
+
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > MIN_SWIPE_DISTANCE;
+    const isRightSwipe = distance < -MIN_SWIPE_DISTANCE;
+
+    if (isLeftSwipe) {
+      goToNext();
+    } else if (isRightSwipe) {
+      goToPrev();
+    }
+  }, [touchStart, touchEnd, goToNext, goToPrev]);
 
   if (images.length === 0) return null;
 
@@ -52,13 +81,18 @@ export default function ImageCarousel({
 
   return (
     <div className="relative w-full">
-      {/* Container da imagem */}
-      <div className={`relative w-full overflow-hidden rounded-lg bg-gray-100 ${
-        aspectRatio === 'square' ? 'aspect-square' :
-        aspectRatio === 'vídeo' ? 'aspect-vídeo' :
-        aspectRatio === 'portrait' ? 'aspect-[4/5]' :
-        'aspect-auto min-h-[200px]'
-      }`}>
+      {/* Container da imagem com suporte a swipe */}
+      <div
+        className={`relative w-full overflow-hidden rounded-lg bg-gray-100 ${
+          aspectRatio === 'square' ? 'aspect-square' :
+          aspectRatio === 'vídeo' ? 'aspect-vídeo' :
+          aspectRatio === 'portrait' ? 'aspect-[4/5]' :
+          'aspect-auto min-h-[200px]'
+        }`}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
         <Image
           src={images[currentIndex]}
           alt={`${alt} - ${currentIndex + 1} de ${images.length}`}
