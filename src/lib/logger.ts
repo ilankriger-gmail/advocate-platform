@@ -54,9 +54,9 @@ const IS_TEST = process.env.NODE_ENV === 'test';
  * Níveis de log que devem ser habilitados em cada ambiente
  */
 const ENABLED_LEVELS: Record<string, Set<LogLevel>> = {
-  development: new Set(['debug', 'info', 'warn', 'error']),
-  test: new Set(['warn', 'error']), // Em testes, só logs importantes
-  production: new Set(['warn', 'error']), // Em produção, só warnings e erros
+  development: new Set<LogLevel>(['debug', 'info', 'warn', 'error']),
+  test: new Set<LogLevel>(['warn', 'error']), // Em testes, só logs importantes
+  production: new Set<LogLevel>(['warn', 'error']), // Em produção, só warnings e erros
 };
 
 // ============================================================================
