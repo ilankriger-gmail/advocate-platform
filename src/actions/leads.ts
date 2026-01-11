@@ -24,8 +24,9 @@ const leadsLogger = logger.withContext('[Leads]');
 /**
  * Analisa um lead com AI em background (usa admin client para bypassar RLS)
  * Nao bloqueia a resposta do formulario
+ * Auto-aprova leads com score >= threshold se feature estiver habilitada
  */
-async function analyzeLeadInBackground(leadEmail: string, leadData: {
+async function analyzeLeadInBackground(leadId: string, leadEmail: string, leadData: {
   name: string;
   score: number;
   reason: string;
@@ -42,18 +43,44 @@ async function analyzeLeadInBackground(leadEmail: string, leadData: {
     // Usar admin client para atualizar o lead (bypassa RLS)
     const adminClient = createAdminClient();
 
+    // Buscar settings de auto-aprovacao
+    const settings = await getSiteSettings([
+      'nps_auto_approval_enabled',
+      'nps_auto_approval_min_score',
+    ]);
+
+    const autoApprovalEnabled = settings.nps_auto_approval_enabled === 'true';
+    const minScore = parseInt(settings.nps_auto_approval_min_score || '70', 10);
+
+    // Verificar se deve auto-aprovar
+    const shouldAutoApprove = autoApprovalEnabled && analysis.score >= minScore;
+
+    const updateData: Record<string, unknown> = {
+      ai_score: analysis.score,
+      ai_sentiment: analysis.sentiment,
+      ai_recommendation: analysis.recommendation,
+      ai_summary: analysis.summary,
+      ai_strengths: analysis.strengths,
+      ai_concerns: analysis.concerns,
+      ai_analyzed_at: new Date().toISOString(),
+    };
+
+    // Se auto-aprovacao ativa e score >= threshold, aprovar automaticamente
+    if (shouldAutoApprove) {
+      updateData.status = 'approved';
+      updateData.approved_at = new Date().toISOString();
+      updateData.approved_by = null; // Auto-aprovado pelo sistema
+      leadsLogger.info('Lead auto-aprovado pelo sistema', {
+        email: maskEmail(leadEmail),
+        aiScore: analysis.score,
+        threshold: minScore,
+      });
+    }
+
     const { error } = await adminClient
       .from('nps_leads')
-      .update({
-        ai_score: analysis.score,
-        ai_sentiment: analysis.sentiment,
-        ai_recommendation: analysis.recommendation,
-        ai_summary: analysis.summary,
-        ai_strengths: analysis.strengths,
-        ai_concerns: analysis.concerns,
-        ai_analyzed_at: new Date().toISOString(),
-      })
-      .eq('email', leadEmail);
+      .update(updateData)
+      .eq('id', leadId);
 
     if (error) {
       leadsLogger.error('Erro ao salvar analise AI', { error: sanitizeError(error) });
@@ -61,6 +88,7 @@ async function analyzeLeadInBackground(leadEmail: string, leadData: {
       leadsLogger.info('Lead analisado com sucesso', {
         email: maskEmail(leadEmail),
         score: analysis.score,
+        autoApproved: shouldAutoApprove,
       });
     }
   } catch (err) {
@@ -70,8 +98,9 @@ async function analyzeLeadInBackground(leadEmail: string, leadData: {
 
 /**
  * Submeter formulario NPS (público - sem autenticacao)
+ * Retorna o leadId para acompanhamento do status
  */
-export async function submitNpsLead(data: NpsLeadInsert): Promise<ActionResponse> {
+export async function submitNpsLead(data: NpsLeadInsert): Promise<ActionResponse<{ leadId: string }>> {
   try {
     const supabase = await createClient();
 
@@ -103,8 +132,9 @@ export async function submitNpsLead(data: NpsLeadInsert): Promise<ActionResponse
 
     const email = data.email.trim().toLowerCase();
 
-    // Inserir lead (sem select, pois usuário anonimo não tem permissao de leitura)
-    const { error } = await supabase
+    // Inserir lead usando admin client para poder retornar o ID
+    const adminClient = createAdminClient();
+    const { data: insertedLead, error } = await adminClient
       .from('nps_leads')
       .insert({
         score: data.score,
@@ -112,15 +142,19 @@ export async function submitNpsLead(data: NpsLeadInsert): Promise<ActionResponse
         name: data.name.trim(),
         email,
         phone: data.phone?.trim() || null,
-      });
+      })
+      .select('id')
+      .single();
 
-    if (error) {
+    if (error || !insertedLead) {
       leadsLogger.error('Erro ao criar lead NPS', { error: sanitizeError(error) });
       return { error: 'Erro ao enviar formulario. Tente novamente.' };
     }
 
+    const leadId = insertedLead.id;
+
     // Analise AI em background (nao bloqueia a resposta)
-    analyzeLeadInBackground(email, {
+    analyzeLeadInBackground(leadId, email, {
       name: data.name.trim(),
       score: data.score,
       reason: data.reason.trim(),
@@ -128,9 +162,68 @@ export async function submitNpsLead(data: NpsLeadInsert): Promise<ActionResponse
       leadsLogger.error('Erro ao iniciar analise AI em background', { error: sanitizeError(err) });
     });
 
-    return { success: true };
+    return { success: true, data: { leadId } };
   } catch {
     return { error: 'Erro interno do servidor' };
+  }
+}
+
+/**
+ * Status do lead para a página de obrigado
+ */
+export type LeadStatusResult = {
+  status: 'processing' | 'approved' | 'pending' | 'rejected';
+  email?: string;
+  name?: string;
+};
+
+/**
+ * Verificar status de um lead (público - para página de obrigado)
+ * Retorna apenas informações necessárias para exibição
+ */
+export async function getLeadStatus(leadId: string): Promise<ActionResponse<LeadStatusResult>> {
+  try {
+    if (!leadId) {
+      return { error: 'ID do lead não fornecido' };
+    }
+
+    // Usar admin client para bypassar RLS
+    const adminClient = createAdminClient();
+
+    const { data: lead, error } = await adminClient
+      .from('nps_leads')
+      .select('id, status, email, name, ai_analyzed_at')
+      .eq('id', leadId)
+      .single();
+
+    if (error || !lead) {
+      leadsLogger.warn('Lead não encontrado para status', { leadId });
+      return { error: 'Lead não encontrado' };
+    }
+
+    // Se ainda não foi analisado pela AI, está processando
+    if (!lead.ai_analyzed_at) {
+      return {
+        success: true,
+        data: {
+          status: 'processing',
+          email: lead.email,
+          name: lead.name,
+        },
+      };
+    }
+
+    // Retornar status atual
+    return {
+      success: true,
+      data: {
+        status: lead.status as 'approved' | 'pending' | 'rejected',
+        email: lead.email,
+        name: lead.name,
+      },
+    };
+  } catch {
+    return { error: 'Erro ao verificar status' };
   }
 }
 

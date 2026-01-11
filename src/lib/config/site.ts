@@ -37,7 +37,29 @@ export type SiteSettingKey =
   | 'email_followup_message'
   | 'email_followup_benefits'
   | 'email_followup_cta'
-  | 'email_followup_footer';
+  | 'email_followup_footer'
+  // SEO - Páginas estáticas
+  | 'seo_home_title'
+  | 'seo_home_description'
+  | 'seo_eventos_title'
+  | 'seo_eventos_description'
+  | 'seo_desafios_title'
+  | 'seo_desafios_description'
+  | 'seo_ranking_title'
+  | 'seo_ranking_description'
+  | 'seo_premios_title'
+  | 'seo_premios_description'
+  | 'seo_login_title'
+  | 'seo_login_description'
+  | 'seo_registro_title'
+  | 'seo_registro_description'
+  | 'seo_seja_arena_title'
+  | 'seo_seja_arena_description'
+  // SEO - Templates dinâmicos
+  | 'seo_evento_title_template'
+  | 'seo_evento_description_template'
+  | 'seo_desafio_title_template'
+  | 'seo_desafio_description_template';
 
 /**
  * Tipo para uma configuração do site
@@ -93,6 +115,28 @@ const DEFAULT_VALUES: Record<SiteSettingKey, string> = {
   email_followup_benefits: 'Conteúdos exclusivos do criador,Desafios com prêmios reais,Comunidade engajada,Acesso antecipado a novidades',
   email_followup_cta: 'Criar Minha Conta Agora',
   email_followup_footer: 'Não perca essa oportunidade única!',
+  // SEO - Páginas estáticas
+  seo_home_title: 'Arena Te Amo - Comunidade Oficial',
+  seo_home_description: 'Participe da comunidade oficial do O Moço do Te Amo. Eventos exclusivos, desafios e prêmios!',
+  seo_eventos_title: 'Eventos',
+  seo_eventos_description: 'Participe de eventos exclusivos da comunidade Arena Te Amo. Encontros, lives, workshops e muito mais!',
+  seo_desafios_title: 'Desafios',
+  seo_desafios_description: 'Participe dos desafios da comunidade Arena Te Amo e ganhe corações, prêmios em Pix e recompensas exclusivas!',
+  seo_ranking_title: 'Ranking',
+  seo_ranking_description: 'Veja quem são os maiores fãs da comunidade Arena Te Amo. Suba no ranking e ganhe recompensas!',
+  seo_premios_title: 'Prêmios',
+  seo_premios_description: 'Troque seus corações por prêmios exclusivos na comunidade Arena Te Amo.',
+  seo_login_title: 'Entrar',
+  seo_login_description: 'Faça login na comunidade Arena Te Amo e participe de eventos, desafios e muito mais!',
+  seo_registro_title: 'Criar Conta',
+  seo_registro_description: 'Crie sua conta na comunidade Arena Te Amo e comece a participar de eventos e desafios exclusivos!',
+  seo_seja_arena_title: 'Seja Arena',
+  seo_seja_arena_description: 'Avalie sua experiência e faça parte da comunidade Arena Te Amo.',
+  // SEO - Templates dinâmicos
+  seo_evento_title_template: '{{titulo}} | Eventos',
+  seo_evento_description_template: '{{descricao}}',
+  seo_desafio_title_template: '{{titulo}} | Desafios',
+  seo_desafio_description_template: '{{descricao}}',
 };
 
 /**

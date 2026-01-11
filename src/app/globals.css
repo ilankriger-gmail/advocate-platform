@@ -163,11 +163,12 @@
     -webkit-backdrop-filter: blur(10px);
   }
 
-  /* Typeform-style step animations */
+  /* Typeform-style step animations - scroll vertical */
   .step-container {
     position: relative;
     min-height: 100vh;
     width: 100%;
+    overflow: hidden;
   }
 
   .step-wrapper {
@@ -178,7 +179,7 @@
     align-items: center;
     justify-content: center;
     padding: 1.5rem;
-    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .step-active {
@@ -189,7 +190,14 @@
 
   .step-inactive {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(100vh);
+    pointer-events: none;
+  }
+
+  /* Step anterior (ja passou) - sobe para cima */
+  .step-passed {
+    opacity: 0;
+    transform: translateY(-100vh);
     pointer-events: none;
   }
 

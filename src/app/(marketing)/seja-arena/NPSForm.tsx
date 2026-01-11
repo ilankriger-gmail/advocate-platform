@@ -99,10 +99,17 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
     }
   };
 
+  // Determina a classe CSS baseado na posicao do step
+  const getStepClass = (step: number) => {
+    if (step === currentStep) return 'step-active';
+    if (step < currentStep) return 'step-passed';
+    return 'step-inactive';
+  };
+
   return (
     <div className="step-container" onKeyDown={handleKeyDown}>
       {/* Step 1: Score */}
-      <div className={`step-wrapper ${currentStep === 1 ? 'step-active' : 'step-inactive'}`}>
+      <div className={`step-wrapper ${getStepClass(1)}`}>
         <div className="w-full max-w-2xl mx-auto text-center">
           {/* Logo */}
           {logoUrl.startsWith('/') ? (
@@ -165,7 +172,7 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
       </div>
 
       {/* Step 2: Reason */}
-      <div className={`step-wrapper ${currentStep === 2 ? 'step-active' : 'step-inactive'}`}>
+      <div className={`step-wrapper ${getStepClass(2)}`}>
         <div className="w-full max-w-2xl mx-auto text-center">
           {/* Step indicator */}
           <span className="inline-block text-sm text-primary-500 font-medium mb-4">
@@ -174,7 +181,7 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
 
           {/* Title */}
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-medium text-surface-900 mb-8 leading-tight">
-            O que motivou sua nota {score}?
+            Por que você deu a nota {score}?
           </h2>
 
           {/* Textarea */}
@@ -224,7 +231,7 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
       </div>
 
       {/* Step 3: Contact */}
-      <div className={`step-wrapper ${currentStep === 3 ? 'step-active' : 'step-inactive'}`}>
+      <div className={`step-wrapper ${getStepClass(3)}`}>
         <div className="w-full max-w-xl mx-auto text-center">
           {/* Step indicator */}
           <span className="inline-block text-sm text-primary-500 font-medium mb-4">
