@@ -36,57 +36,126 @@ export default async function AdminDesafiosPage() {
   const activeChallenges = processedChallenges.filter((c) => c.is_active);
   const inactiveChallenges = processedChallenges.filter((c) => !c.is_active);
 
+  // Calcular totais
+  const totalParticipants = processedChallenges.reduce((acc, c) => acc + c.totalParticipants, 0);
+  const totalPending = processedChallenges.reduce((acc, c) => acc + c.pendingCount, 0);
+  const totalApproved = processedChallenges.reduce((acc, c) => acc + c.approvedCount, 0);
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gerenciar Desafios</h1>
-          <p className="text-gray-500 text-sm mt-1">Crie e gerencie desafios para seus usuários</p>
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="flex items-start justify-between">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 bg-gradient-to-br from-pink-500 to-red-500 rounded-2xl flex items-center justify-center shadow-lg shadow-pink-500/25">
+            <span className="text-3xl">🎯</span>
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Gerenciar Desafios</h1>
+            <p className="text-gray-500 text-sm mt-0.5">Crie e gerencie desafios para seus usuarios</p>
+          </div>
         </div>
         <Link href="/admin/desafios/novo">
-          <Button>+ Novo Desafio</Button>
+          <Button className="bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 shadow-lg shadow-pink-500/25">
+            + Novo Desafio
+          </Button>
         </Link>
       </div>
 
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-100">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
+              <span className="text-white text-lg">📊</span>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-blue-700">{processedChallenges.length}</p>
+              <p className="text-xs text-blue-600">Total Desafios</p>
+            </div>
+          </div>
+        </Card>
+        <Card className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 border-green-100">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center">
+              <span className="text-white text-lg">✅</span>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-green-700">{activeChallenges.length}</p>
+              <p className="text-xs text-green-600">Ativos</p>
+            </div>
+          </div>
+        </Card>
+        <Card className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 border-purple-100">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-purple-500 rounded-xl flex items-center justify-center">
+              <span className="text-white text-lg">👥</span>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-purple-700">{totalParticipants}</p>
+              <p className="text-xs text-purple-600">Participacoes</p>
+            </div>
+          </div>
+        </Card>
+        <Card className="p-4 bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-100">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-yellow-500 rounded-xl flex items-center justify-center">
+              <span className="text-white text-lg">⏳</span>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-yellow-700">{totalPending}</p>
+              <p className="text-xs text-yellow-600">Pendentes</p>
+            </div>
+          </div>
+        </Card>
+      </div>
+
       {/* Desafios Ativos */}
-      <div>
-        <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-          <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-          Desafios Ativos ({activeChallenges.length})
-        </h2>
+      <section className="space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+          <h2 className="text-xl font-bold text-gray-900">
+            Desafios Ativos
+          </h2>
+          <Badge className="bg-green-100 text-green-700">{activeChallenges.length}</Badge>
+        </div>
 
         {activeChallenges.length > 0 ? (
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {activeChallenges.map((challenge) => (
               <ChallengeAdminCard key={challenge.id} challenge={challenge} />
             ))}
           </div>
         ) : (
-          <Card className="p-8 text-center">
+          <Card className="p-8 text-center bg-gray-50">
+            <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-3">
+              <span className="text-2xl">🎯</span>
+            </div>
             <p className="text-gray-500">Nenhum desafio ativo no momento</p>
+            <Link href="/admin/desafios/novo" className="inline-block mt-3">
+              <Button size="sm" variant="outline">Criar primeiro desafio</Button>
+            </Link>
           </Card>
         )}
-      </div>
+      </section>
 
       {/* Desafios Ocultos */}
-      <div>
-        <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-          <span className="w-2 h-2 bg-gray-400 rounded-full"></span>
-          Desafios Ocultos ({inactiveChallenges.length})
-        </h2>
+      {inactiveChallenges.length > 0 && (
+        <section className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
+            <h2 className="text-xl font-bold text-gray-900">
+              Desafios Ocultos
+            </h2>
+            <Badge className="bg-gray-100 text-gray-600">{inactiveChallenges.length}</Badge>
+          </div>
 
-        {inactiveChallenges.length > 0 ? (
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {inactiveChallenges.map((challenge) => (
               <ChallengeAdminCard key={challenge.id} challenge={challenge} />
             ))}
           </div>
-        ) : (
-          <Card className="p-6 text-center bg-gray-50">
-            <p className="text-gray-400 text-sm">Nenhum desafio oculto</p>
-          </Card>
-        )}
-      </div>
+        </section>
+      )}
     </div>
   );
 }
@@ -111,42 +180,58 @@ interface ChallengeCardProps {
 
 function ChallengeAdminCard({ challenge }: ChallengeCardProps) {
   const getTypeBadge = () => {
+    const typeStyles: Record<string, string> = {
+      fisico: 'bg-blue-500/20 text-blue-100',
+      engajamento: 'bg-purple-500/20 text-purple-100',
+      participe: 'bg-green-500/20 text-green-100',
+    };
+    const style = typeStyles[challenge.type] || 'bg-white/20 text-white';
+    const label = challenge.type.charAt(0).toUpperCase() + challenge.type.slice(1);
+    return <Badge className={`${style} border-0`}>{label}</Badge>;
+  };
+
+  // Header gradient muda baseado no tipo e estado
+  const getHeaderGradient = () => {
+    if (!challenge.is_active) return 'bg-gradient-to-r from-gray-400 to-gray-500';
     switch (challenge.type) {
       case 'fisico':
-        return <Badge className="bg-white/20 text-white border-0">Fisico</Badge>;
+        return 'bg-gradient-to-r from-blue-500 to-cyan-500';
       case 'engajamento':
-        return <Badge className="bg-white/20 text-white border-0">Engajamento</Badge>;
+        return 'bg-gradient-to-r from-purple-500 to-pink-500';
       case 'participe':
-        return <Badge className="bg-white/20 text-white border-0">Participe</Badge>;
+        return 'bg-gradient-to-r from-pink-500 to-red-500';
       default:
-        return <Badge className="bg-white/20 text-white border-0">{challenge.type}</Badge>;
+        return 'bg-gradient-to-r from-pink-500 to-red-500';
     }
   };
 
-  // Header gradient muda baseado no estado
-  const headerGradient = challenge.is_active
-    ? 'bg-gradient-to-r from-pink-500 to-red-500'
-    : 'bg-gradient-to-r from-gray-400 to-gray-500';
-
   return (
-    <Card className={`overflow-hidden hover:shadow-lg transition-shadow h-full ${!challenge.is_active ? 'opacity-75' : ''}`}>
+    <Card className={`overflow-hidden hover:shadow-xl transition-all duration-300 h-full ${!challenge.is_active ? 'opacity-70 grayscale-[30%]' : ''}`}>
       <Link href={`/admin/desafios/${challenge.id}`} className="block">
         {/* Header com gradiente */}
-        <div className={`${headerGradient} p-4 text-white`}>
-          <div className="flex items-center gap-3">
-            <span className="text-3xl">{challenge.icon}</span>
-            <div className="flex-1">
+        <div className={`${getHeaderGradient()} p-5 text-white relative overflow-hidden`}>
+          {/* Pattern de fundo */}
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute -right-4 -top-4 w-24 h-24 bg-white rounded-full" />
+            <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-white rounded-full" />
+          </div>
+
+          <div className="relative flex items-center gap-4">
+            <div className="w-14 h-14 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center">
+              <span className="text-3xl">{challenge.icon}</span>
+            </div>
+            <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-2">
-                <h3 className="text-lg font-bold">{challenge.title}</h3>
+                <h3 className="text-lg font-bold truncate">{challenge.title}</h3>
                 {getTypeBadge()}
               </div>
               <div className="flex items-center gap-3 mt-1">
-                <span className={challenge.is_active ? 'text-pink-100 text-sm' : 'text-gray-200 text-sm'}>
-                  +{challenge.coins_reward} corações
+                <span className="text-white/90 text-sm font-medium">
+                  +{challenge.coins_reward} coracoes
                 </span>
                 {challenge.prize_amount && (
-                  <span className="text-white/80 text-sm">
-                    R$ {challenge.prize_amount.toFixed(2)}
+                  <span className="text-white/70 text-sm">
+                    | R$ {challenge.prize_amount.toFixed(2)}
                   </span>
                 )}
               </div>
@@ -155,34 +240,35 @@ function ChallengeAdminCard({ challenge }: ChallengeCardProps) {
         </div>
 
         {/* Content */}
-        <div className="p-4 space-y-3">
-          <p className="text-sm text-gray-600 line-clamp-2 whitespace-pre-line">
-            {challenge.description || 'Sem descrição'}
+        <div className="p-5 space-y-4">
+          <p className="text-sm text-gray-600 line-clamp-2 whitespace-pre-line leading-relaxed">
+            {challenge.description || 'Sem descricao'}
           </p>
 
-          {/* Stats como pills */}
-          <div className="flex flex-wrap gap-2 text-xs">
-            <span className="px-2 py-1 bg-gray-100 rounded-full text-gray-600">
-              {challenge.totalParticipants} participantes
-            </span>
-            {challenge.pendingCount > 0 && (
-              <span className="px-2 py-1 bg-yellow-100 rounded-full text-yellow-700">
-                {challenge.pendingCount} pendentes
-              </span>
-            )}
-            {challenge.type !== 'fisico' && (
-              <span className="px-2 py-1 bg-green-100 rounded-full text-green-700">
-                {challenge.winnersCount} ganhadores
-              </span>
-            )}
+          {/* Stats Grid */}
+          <div className="grid grid-cols-3 gap-2">
+            <div className="text-center p-2 bg-gray-50 rounded-lg">
+              <p className="text-lg font-bold text-gray-900">{challenge.totalParticipants}</p>
+              <p className="text-[10px] text-gray-500 uppercase tracking-wide">Participantes</p>
+            </div>
+            <div className="text-center p-2 bg-yellow-50 rounded-lg">
+              <p className="text-lg font-bold text-yellow-600">{challenge.pendingCount}</p>
+              <p className="text-[10px] text-yellow-600 uppercase tracking-wide">Pendentes</p>
+            </div>
+            <div className="text-center p-2 bg-green-50 rounded-lg">
+              <p className="text-lg font-bold text-green-600">{challenge.approvedCount}</p>
+              <p className="text-[10px] text-green-600 uppercase tracking-wide">Aprovados</p>
+            </div>
           </div>
         </div>
       </Link>
 
       {/* Actions */}
-      <div className="px-4 pb-4 pt-2 border-t flex items-center gap-2">
+      <div className="px-5 pb-5 pt-0 flex items-center gap-2">
         <Link href={`/admin/desafios/${challenge.id}`} className="flex-1">
-          <Button size="sm" className="w-full">Gerenciar</Button>
+          <Button size="sm" className="w-full bg-gray-900 hover:bg-gray-800">
+            Gerenciar
+          </Button>
         </Link>
         <Link href={`/admin/desafios/${challenge.id}/editar`}>
           <Button size="sm" variant="outline">Editar</Button>
