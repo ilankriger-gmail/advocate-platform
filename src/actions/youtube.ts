@@ -9,6 +9,7 @@ interface YouTubeVideo {
   thumbnail: string;
   publishedAt: string;
   url: string;
+  viewCount?: number;
 }
 
 interface YouTubeSearchResponse {
@@ -30,6 +31,15 @@ interface YouTubeSearchResponse {
 interface YouTubeChannelResponse {
   items?: Array<{
     id: string;
+  }>;
+}
+
+interface YouTubeVideoStatsResponse {
+  items?: Array<{
+    id: string;
+    statistics: {
+      viewCount: string;
+    };
   }>;
 }
 
@@ -69,12 +79,13 @@ export async function searchYouTubeVideos(query?: string): Promise<{
     }
 
     // Buscar vídeos do canal
+    // Se houver busca, ordenar por views; senão, por data
     const params = new URLSearchParams({
       part: 'snippet',
       channelId: channelId,
       type: 'video',
       maxResults: '20',
-      order: 'date',
+      order: query && query.trim() ? 'viewCount' : 'date',
       key: YOUTUBE_API_KEY,
     });
 
@@ -90,13 +101,35 @@ export async function searchYouTubeVideos(query?: string): Promise<{
       return { error: data.error.message };
     }
 
+    // Extrair IDs dos vídeos para buscar estatísticas
+    const videoIds = (data.items || []).map((item) => item.id.videoId).join(',');
+
+    // Buscar estatísticas dos vídeos
+    let viewCounts: Record<string, number> = {};
+    if (videoIds) {
+      const statsParams = new URLSearchParams({
+        part: 'statistics',
+        id: videoIds,
+        key: YOUTUBE_API_KEY,
+      });
+
+      const statsRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?${statsParams}`);
+      const statsData: YouTubeVideoStatsResponse = await statsRes.json();
+
+      if (statsData.items) {
+        viewCounts = statsData.items.reduce(
+          (acc, item) => {
+            acc[item.id] = parseInt(item.statistics.viewCount, 10);
+            return acc;
+          },
+          {} as Record<string, number>
+        );
+      }
+    }
+
     const videos: YouTubeVideo[] = (data.items || []).map((item) => {
-      // Usar thumbnail disponivel (medium > high > default > fallback)
-      const thumbnails = item.snippet.thumbnails;
-      const thumbnailUrl = thumbnails.medium?.url
-        || thumbnails.high?.url
-        || thumbnails.default?.url
-        || `https://i.ytimg.com/vi/${item.id.videoId}/mqdefault.jpg`;
+      // SEMPRE usar URL direta do YouTube (mais confiavel que a API)
+      const thumbnailUrl = `https://i.ytimg.com/vi/${item.id.videoId}/mqdefault.jpg`;
 
       return {
         id: item.id.videoId,
@@ -104,6 +137,7 @@ export async function searchYouTubeVideos(query?: string): Promise<{
         thumbnail: thumbnailUrl,
         publishedAt: item.snippet.publishedAt,
         url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
+        viewCount: viewCounts[item.id.videoId] || 0,
       };
     });
 

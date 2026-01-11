@@ -10,6 +10,7 @@ interface YouTubeVideo {
   thumbnail: string;
   publishedAt: string;
   url: string;
+  viewCount?: number;
 }
 
 export interface SelectedYouTubeVideo {
@@ -72,6 +73,12 @@ export function YouTubeVideoPicker({ onSelect }: YouTubeVideoPickerProps) {
     });
   };
 
+  const formatViews = (views: number) => {
+    if (views >= 1000000) return `${(views / 1000000).toFixed(1)}M`;
+    if (views >= 1000) return `${Math.floor(views / 1000)}K`;
+    return views.toString();
+  };
+
   return (
     <>
       <Button
@@ -89,7 +96,7 @@ export function YouTubeVideoPicker({ onSelect }: YouTubeVideoPickerProps) {
       {/* Modal */}
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[80vh] flex flex-col">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col">
             {/* Header */}
             <div className="p-4 border-b">
               <div className="flex items-center justify-between mb-3">
@@ -173,6 +180,7 @@ export function YouTubeVideoPicker({ onSelect }: YouTubeVideoPickerProps) {
                           {video.title}
                         </p>
                         <p className="text-xs text-gray-500 mt-1">
+                          {video.viewCount ? `${formatViews(video.viewCount)} views • ` : ''}
                           {formatDate(video.publishedAt)}
                         </p>
                       </div>
