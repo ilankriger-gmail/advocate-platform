@@ -131,7 +131,7 @@ export function ObrigadoContent({ siteName, footerText }: ObrigadoContentProps) 
 
   // Estado: aprovado
   if (state === 'approved' && leadData) {
-    const registrationUrl = `/registro?email=${encodeURIComponent(leadData.email || '')}`;
+    const registrationUrl = `https://comunidade.omocodoteamo.com.br/registro?email=${encodeURIComponent(leadData.email || '')}`;
 
     return (
       <main className="min-h-screen flex flex-col items-center justify-center px-4 py-8">
@@ -165,8 +165,8 @@ export function ObrigadoContent({ siteName, footerText }: ObrigadoContentProps) 
             desafios e muito mais!
           </p>
 
-          {/* Botão de cadastro */}
-          <Link
+          {/* Botão de cadastro - usa <a> para navegação externa */}
+          <a
             href={registrationUrl}
             className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-primary-600 to-accent-500
                      text-white font-semibold rounded-full hover:from-primary-700 hover:to-accent-600
@@ -176,7 +176,7 @@ export function ObrigadoContent({ siteName, footerText }: ObrigadoContentProps) 
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
             </svg>
             Criar minha conta
-          </Link>
+          </a>
 
           <p className="mt-6 text-xs text-gray-400">
             Seu email ja esta pre-preenchido no formulario
