@@ -7,18 +7,30 @@ import { ActionResponse } from '@/types/action';
 import type { Challenge, ChallengeParticipant, ChallengeWinner, ParticipationWithChallenge } from '@/lib/supabase/types';
 import { logger, maskId, sanitizeError } from '@/lib';
 
+// Tipo de retorno com AI verdict para feedback ao usuário
+export type ParticipationResult = {
+  participation: ChallengeParticipant;
+  aiVerdict: AIVerdict | null;
+  challenge: {
+    title: string;
+    goal_type: 'repetitions' | 'time' | null;
+    goal_value: number | null;
+  };
+};
+
 // Logger contextualizado para o módulo de desafios
 const challengesLogger = logger.withContext('[Challenges]');
 
 /**
  * Participar de um desafio fisico
+ * Retorna o resultado da participação com o veredito da IA
  */
 export async function participateInChallenge(data: {
   challengeId: string;
   resultValue: number;
   vídeoProofUrl?: string;
   socialMediaUrl?: string;
-}): Promise<ActionResponse<ChallengeParticipant>> {
+}): Promise<ActionResponse<ParticipationResult>> {
   try {
     const supabase = await createClient();
 
@@ -73,7 +85,7 @@ export async function participateInChallenge(data: {
       challenge.title
     );
 
-    // Criar participacao
+    // Criar participacao com dados da análise de IA
     const { data: participation, error } = await supabase
       .from('challenge_participants')
       .insert({
@@ -84,6 +96,12 @@ export async function participateInChallenge(data: {
         social_media_url: data.socialMediaUrl || null,
         status: 'pending',
         coins_earned: 0,
+        // Campos de análise de IA
+        ai_is_valid: aiVerdict?.isValid ?? null,
+        ai_confidence: aiVerdict?.confidence ?? null,
+        ai_reason: aiVerdict?.reason ?? null,
+        ai_observed_value: aiVerdict?.observedValue ?? null,
+        ai_analyzed_at: aiVerdict ? new Date().toISOString() : null,
       })
       .select()
       .single();
@@ -98,7 +116,20 @@ export async function participateInChallenge(data: {
 
     revalidatePath('/desafios');
     revalidatePath('/dashboard');
-    return { success: true, data: participation };
+
+    // Retornar resultado completo com AI verdict e dados do desafio
+    return {
+      success: true,
+      data: {
+        participation,
+        aiVerdict: aiVerdict || null,
+        challenge: {
+          title: challenge.title,
+          goal_type: challenge.goal_type,
+          goal_value: challenge.goal_value,
+        },
+      },
+    };
   } catch {
     return { error: 'Erro interno do servidor' };
   }

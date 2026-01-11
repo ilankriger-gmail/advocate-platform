@@ -4,7 +4,8 @@ import { createClient } from '@/lib/supabase/server';
 import { getSiteSettings } from '@/lib/config/site';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card } from '@/components/ui';
-import { PhysicalChallengeCard } from '@/components/challenges';
+import { PhysicalChallengeCard, MyParticipationCard } from '@/components/challenges';
+import type { ParticipationWithChallenge } from '@/lib/supabase/types';
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings([
@@ -70,6 +71,7 @@ export default async function DesafiosPage() {
     { data: challenges },
     { data: winners },
     { data: participations },
+    { data: allUserParticipations },
     { data: userCoins }
   ] = await Promise.all([
     // Buscar desafios ativos
@@ -83,11 +85,20 @@ export default async function DesafiosPage() {
       .from('challenge_winners')
       .select('*')
       .order('created_at', { ascending: false }),
-    // Buscar participações do usuário
+    // Buscar participações do usuário (para o mapa de verificação)
     supabase
       .from('challenge_participants')
       .select('challenge_id, status, result_value, coins_earned')
       .eq('user_id', user.id),
+    // Buscar todas as participações com dados completos (para a seção "Minhas Participações")
+    supabase
+      .from('challenge_participants')
+      .select(`
+        *,
+        challenges (title, goal_type, goal_value, coins_reward)
+      `)
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false }),
     // Buscar saldo de corações
     supabase
       .from('user_coins')
@@ -95,6 +106,9 @@ export default async function DesafiosPage() {
       .eq('user_id', user.id)
       .single()
   ]);
+
+  // Cast para o tipo correto
+  const userParticipationsWithChallenge = (allUserParticipations || []) as ParticipationWithChallenge[];
 
   const balance = userCoins?.balance || 0;
 
@@ -296,6 +310,31 @@ export default async function DesafiosPage() {
                 key={challenge.id}
                 challenge={challenge}
                 participation={participationMap.get(challenge.id)}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Minhas Participacoes */}
+      {userParticipationsWithChallenge.length > 0 && (
+        <section className="space-y-6">
+          {/* Header da Secao */}
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center shadow-lg shadow-green-500/25">
+              <span className="text-2xl">📋</span>
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">Minhas Participacoes</h2>
+              <p className="text-gray-500 text-sm">Acompanhe o status dos seus desafios enviados</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {userParticipationsWithChallenge.map((participation) => (
+              <MyParticipationCard
+                key={participation.id}
+                participation={participation}
               />
             ))}
           </div>
