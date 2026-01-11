@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { Card, Button, Badge } from '@/components/ui';
-import { ChallengeDeleteButton } from './ChallengeDeleteButton';
+import { ChallengeToggleButton } from './ChallengeToggleButton';
 
 export default async function AdminDesafiosPage() {
   const supabase = await createClient();
@@ -68,21 +68,25 @@ export default async function AdminDesafiosPage() {
         )}
       </div>
 
-      {/* Desafios Inativos */}
-      {inactiveChallenges.length > 0 && (
-        <div>
-          <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <span className="w-2 h-2 bg-gray-400 rounded-full"></span>
-            Desafios Inativos ({inactiveChallenges.length})
-          </h2>
+      {/* Desafios Ocultos */}
+      <div>
+        <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+          <span className="w-2 h-2 bg-gray-400 rounded-full"></span>
+          Desafios Ocultos ({inactiveChallenges.length})
+        </h2>
 
+        {inactiveChallenges.length > 0 ? (
           <div className="space-y-4">
             {inactiveChallenges.map((challenge) => (
               <ChallengeAdminCard key={challenge.id} challenge={challenge} />
             ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <Card className="p-6 text-center bg-gray-50">
+            <p className="text-gray-400 text-sm">Nenhum desafio oculto</p>
+          </Card>
+        )}
+      </div>
     </div>
   );
 }
@@ -102,6 +106,7 @@ interface ChallengeCardProps {
     approvedCount: number;
     winnersCount: number;
   };
+  showReactivate?: boolean;
 }
 
 function ChallengeAdminCard({ challenge }: ChallengeCardProps) {
@@ -118,14 +123,16 @@ function ChallengeAdminCard({ challenge }: ChallengeCardProps) {
     }
   };
 
-  // Só pode excluir se não tiver participantes nem ganhadores
-  const canDelete = challenge.totalParticipants === 0 && challenge.winnersCount === 0;
+  // Header gradient muda baseado no estado
+  const headerGradient = challenge.is_active
+    ? 'bg-gradient-to-r from-pink-500 to-red-500'
+    : 'bg-gradient-to-r from-gray-400 to-gray-500';
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow h-full">
+    <Card className={`overflow-hidden hover:shadow-lg transition-shadow h-full ${!challenge.is_active ? 'opacity-75' : ''}`}>
       <Link href={`/admin/desafios/${challenge.id}`} className="block">
-        {/* Header com gradiente igual ao frontend */}
-        <div className="bg-gradient-to-r from-pink-500 to-red-500 p-4 text-white">
+        {/* Header com gradiente */}
+        <div className={`${headerGradient} p-4 text-white`}>
           <div className="flex items-center gap-3">
             <span className="text-3xl">{challenge.icon}</span>
             <div className="flex-1">
@@ -134,7 +141,7 @@ function ChallengeAdminCard({ challenge }: ChallengeCardProps) {
                 {getTypeBadge()}
               </div>
               <div className="flex items-center gap-3 mt-1">
-                <span className="text-pink-100 text-sm">
+                <span className={challenge.is_active ? 'text-pink-100 text-sm' : 'text-gray-200 text-sm'}>
                   +{challenge.coins_reward} coracoes
                 </span>
                 {challenge.prize_amount && (
@@ -177,12 +184,10 @@ function ChallengeAdminCard({ challenge }: ChallengeCardProps) {
         <Link href={`/admin/desafios/${challenge.id}`} className="flex-1">
           <Button size="sm" className="w-full">Gerenciar</Button>
         </Link>
-        <ChallengeDeleteButton
+        <ChallengeToggleButton
           challengeId={challenge.id}
           challengeName={challenge.title}
-          canDelete={canDelete}
-          participantsCount={challenge.totalParticipants}
-          winnersCount={challenge.winnersCount}
+          isActive={challenge.is_active}
         />
       </div>
     </Card>

@@ -161,21 +161,25 @@ export default async function AdminPrêmiosPage() {
         )}
       </div>
 
-      {/* Recompensas Inativas */}
-      {inactiveRewards.length > 0 && (
-        <div>
-          <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <span className="w-2 h-2 bg-gray-400 rounded-full"></span>
-            Recompensas Inativas ({inactiveRewards.length})
-          </h2>
+      {/* Recompensas Ocultas */}
+      <div>
+        <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+          <span className="w-2 h-2 bg-gray-400 rounded-full"></span>
+          Recompensas Ocultas ({inactiveRewards.length})
+        </h2>
 
+        {inactiveRewards.length > 0 ? (
           <div className="space-y-4">
             {inactiveRewards.map((reward) => (
               <RewardCard key={reward.id} reward={reward} />
             ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <Card className="p-6 text-center bg-gray-50">
+            <p className="text-gray-400 text-sm">Nenhuma recompensa oculta</p>
+          </Card>
+        )}
+      </div>
     </div>
   );
 }
@@ -194,23 +198,30 @@ interface RewardCardProps {
 }
 
 function RewardCard({ reward }: RewardCardProps) {
+  // Header gradient muda baseado no estado
+  const headerGradient = reward.is_active
+    ? 'bg-gradient-to-r from-indigo-500 to-purple-600'
+    : 'bg-gradient-to-r from-gray-400 to-gray-500';
+
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+    <Card className={`overflow-hidden hover:shadow-lg transition-shadow ${!reward.is_active ? 'opacity-75' : ''}`}>
       {/* Imagem se existir */}
       {reward.image_url && (
         <img
           src={reward.image_url}
           alt={reward.name}
-          className="w-full h-32 object-cover"
+          className={`w-full h-32 object-cover ${!reward.is_active ? 'grayscale' : ''}`}
         />
       )}
 
-      {/* Header com gradiente igual ao frontend */}
-      <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-4 text-white">
+      {/* Header com gradiente */}
+      <div className={`${headerGradient} p-4 text-white`}>
         <div className="flex items-center justify-between">
           <div>
             <h3 className="font-bold text-lg">{reward.name}</h3>
-            <p className="text-indigo-100 text-sm">{reward.coins_cost} coracoes</p>
+            <p className={reward.is_active ? 'text-indigo-100 text-sm' : 'text-gray-200 text-sm'}>
+              {reward.coins_cost} coracoes
+            </p>
           </div>
           <Badge className="bg-white/20 text-white border-0">
             {reward.type === 'physical' ? 'Fisico' : 'Digital'}
