@@ -80,7 +80,7 @@ export async function participateInChallenge(data: {
         challenge_id: data.challengeId,
         user_id: user.id,
         result_value: data.resultValue,
-        vídeo_proof_url: data.vídeoProofUrl || null,
+        video_proof_url: data.vídeoProofUrl || null,
         social_media_url: data.socialMediaUrl || null,
         status: 'pending',
         coins_earned: 0,
@@ -110,7 +110,7 @@ export async function participateInChallenge(data: {
  */
 type ChallengeParticipantUpdate = {
   result_value?: number;
-  vídeo_proof_url?: string;
+  video_proof_url?: string;
   social_media_url?: string;
 };
 
@@ -146,7 +146,7 @@ export async function updateParticipation(data: {
 
     const updateData: ChallengeParticipantUpdate = {};
     if (data.resultValue !== undefined) updateData.result_value = data.resultValue;
-    if (data.vídeoProofUrl !== undefined) updateData.vídeo_proof_url = data.vídeoProofUrl;
+    if (data.vídeoProofUrl !== undefined) updateData.video_proof_url = data.vídeoProofUrl;
     if (data.socialMediaUrl !== undefined) updateData.social_media_url = data.socialMediaUrl;
 
     const { error } = await supabase
@@ -402,7 +402,7 @@ export async function createChallenge(data: {
   // Para fisico
   goal_type?: 'repetitions' | 'time' | null;
   goal_value?: number | null;
-  record_vídeo_url?: string | null;
+  record_video_url?: string | null;
   hashtag?: string | null;
   profile_to_tag?: string | null;
   // Controle
@@ -445,7 +445,7 @@ export async function createChallenge(data: {
         // Fisico
         goal_type: data.goal_type || null,
         goal_value: data.goal_value || null,
-        record_vídeo_url: data.record_vídeo_url || null,
+        record_video_url: data.record_video_url || null,
         hashtag: data.hashtag || null,
         profile_to_tag: data.profile_to_tag || null,
         // Controle
