@@ -58,15 +58,15 @@ export interface SiteSetting {
  */
 const DEFAULT_VALUES: Record<SiteSettingKey, string> = {
   site_name: 'Arena Te Amo',
-  site_description: 'Comunidade oficial de O Moço do Te Amo | NextlevelDJ',
+  site_description: 'Comunidade oficial do O Moço do Te Amo | NextlevelDJ',
   creator_name: 'O Moço do Te Amo',
   creator_handle: 'NextlevelDJ',
   hero_title: 'Arena Te Amo',
-  hero_subtitle: 'Comunidade oficial de O Moço do Te Amo | NextlevelDJ',
+  hero_subtitle: 'Comunidade oficial do O Moço do Te Amo | NextlevelDJ',
   login_title: 'Arena Te Amo',
-  login_subtitle: 'Comunidade oficial de O Moço do Te Amo',
+  login_subtitle: 'Comunidade oficial do O Moço do Te Amo',
   meta_title: 'Arena Te Amo - Comunidade O Moço do Te Amo',
-  meta_description: 'Comunidade oficial de O Moço do Te Amo | NextlevelDJ',
+  meta_description: 'Comunidade oficial do O Moço do Te Amo | NextlevelDJ',
   email_from_name: 'Arena Te Amo',
   footer_text: 'O Moço do Te Amo - Arena Te Amo',
   // Chavês de API (sem valor padrão - devem ser configuradas no banco)

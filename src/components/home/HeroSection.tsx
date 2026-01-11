@@ -10,7 +10,7 @@ interface HeroSectionProps {
 export function HeroSection({
   isLoggedIn,
   title = 'Arena Te Amo',
-  subtitle = 'Comunidade oficial de O Moço do Te Amo | NextlevelDJ',
+  subtitle = 'Comunidade oficial do O Moço do Te Amo | NextlevelDJ',
   siteName = 'Arena Te Amo',
 }: HeroSectionProps) {
   return (

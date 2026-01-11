@@ -25,15 +25,15 @@ CREATE INDEX IF NOT EXISTS idx_site_settings_key ON site_settings(key);
 
 INSERT INTO site_settings (key, value, label, description, field_type) VALUES
   ('site_name', 'Arena Te Amo', 'Nome do Site', 'Nome principal exibido no header e títulos', 'text'),
-  ('site_description', 'Comunidade oficial de O Moço do Te Amo | NextlevelDJ', 'Descrição do Site', 'Descrição completa para SEO e meta tags', 'textarea'),
+  ('site_description', 'Comunidade oficial do O Moço do Te Amo | NextlevelDJ', 'Descrição do Site', 'Descrição completa para SEO e meta tags', 'textarea'),
   ('creator_name', 'O Moço do Te Amo', 'Nome do Criador', 'Nome do criador/artista principal', 'text'),
   ('creator_handle', 'NextlevelDJ', 'Handle do Criador', 'Nome artístico ou handle nas redes sociais', 'text'),
   ('hero_title', 'Arena Te Amo', 'Título do Hero', 'Título principal na página inicial', 'text'),
-  ('hero_subtitle', 'Comunidade oficial de O Moço do Te Amo | NextlevelDJ', 'Subtítulo do Hero', 'Subtítulo exibido abaixo do título principal', 'textarea'),
+  ('hero_subtitle', 'Comunidade oficial do O Moço do Te Amo | NextlevelDJ', 'Subtítulo do Hero', 'Subtítulo exibido abaixo do título principal', 'textarea'),
   ('login_title', 'Arena Te Amo', 'Título do Login', 'Título na página de login', 'text'),
-  ('login_subtitle', 'Comunidade oficial de O Moço do Te Amo', 'Subtítulo do Login', 'Subtítulo na página de login', 'text'),
+  ('login_subtitle', 'Comunidade oficial do O Moço do Te Amo', 'Subtítulo do Login', 'Subtítulo na página de login', 'text'),
   ('meta_title', 'Arena Te Amo - Comunidade O Moço do Te Amo', 'Título SEO', 'Título para mecanismos de busca (title tag)', 'text'),
-  ('meta_description', 'Comunidade oficial de O Moço do Te Amo | NextlevelDJ', 'Descrição SEO', 'Descrição para mecanismos de busca (meta description)', 'textarea'),
+  ('meta_description', 'Comunidade oficial do O Moço do Te Amo | NextlevelDJ', 'Descrição SEO', 'Descrição para mecanismos de busca (meta description)', 'textarea'),
   ('email_from_name', 'Arena Te Amo', 'Nome do Remetente', 'Nome exibido nos emails enviados', 'text'),
   ('footer_text', 'O Moço do Te Amo - Arena Te Amo', 'Texto do Rodapé', 'Texto exibido no rodapé das páginas', 'text')
 ON CONFLICT (key) DO NOTHING;
