@@ -28,26 +28,34 @@ import type { ScheduledTask, TaskProcessingResult } from '@/types/notification';
 const TASKS_PER_RUN = 20;
 
 /**
- * Verifica se a requisição é do Vercel Cron
+ * Verifica se a requisicao e do Vercel Cron
+ * SEGURANCA: Sempre exige CRON_SECRET para prevenir execucao nao autorizada
  */
 function isValidCronRequest(request: NextRequest): boolean {
-  // Em producao, verificar o header de autorizacao do Vercel
   const authHeader = request.headers.get('authorization');
   const cronSecret = process.env.CRON_SECRET;
 
-  // Se CRON_SECRET esta configurado, validar
-  if (cronSecret) {
-    return authHeader === `Bearer ${cronSecret}`;
+  // SEGURANCA: CRON_SECRET e OBRIGATORIO em todos os ambientes
+  if (!cronSecret) {
+    console.error('[CRON] CRON_SECRET nao configurado - endpoint desabilitado');
+    return false;
   }
 
-  // Em desenvolvimento, aceitar requisicoes locais
-  if (process.env.NODE_ENV !== 'production') {
+  // Validar token de autorizacao
+  if (authHeader === `Bearer ${cronSecret}`) {
     return true;
   }
 
-  // Verificar header do Vercel Cron
+  // Verificar header do Vercel Cron como fallback adicional (nao substitui CRON_SECRET)
+  // Isso permite que o Vercel Cron funcione junto com a validacao do secret
   const vercelCron = request.headers.get('x-vercel-cron');
-  return vercelCron === '1';
+  if (vercelCron === '1') {
+    // Mesmo com o header do Vercel, ainda precisa do secret no header Authorization
+    // Esta verificacao e apenas para logging
+    console.log('[CRON] Requisicao do Vercel Cron detectada');
+  }
+
+  return false;
 }
 
 /**

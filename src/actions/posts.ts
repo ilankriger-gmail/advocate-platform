@@ -6,7 +6,7 @@ import { ActionResponse, CreatePostResponse } from '@/types/action';
 import type { CreatePostData, UpdatePostData } from '@/types/post';
 import type { Post, PostComment } from '@/lib/supabase/types';
 import { moderatePost, getBlockedMessage, getPendingReviewMessage } from '@/lib/moderation';
-import { logModerationAction, checkRateLimit, RATE_LIMITS, validateFileMagicBytes } from '@/lib/security';
+import { logModerationAction, checkRateLimit, RATE_LIMITS, validateFileMagicBytes, sanitizeText } from '@/lib/security';
 import { logger, maskId, sanitizeError } from '@/lib';
 import { verifyAdminOrCreator } from './utils';
 
@@ -657,11 +657,14 @@ export async function commentPost(postId: string, content: string): Promise<Acti
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      return { error: 'Usuário não autenticado' };
+      return { error: 'Usuario nao autenticado' };
     }
 
-    if (!content.trim()) {
-      return { error: 'Comentário não pode ser vazio' };
+    // SEGURANCA: Sanitizar conteudo do comentario para prevenir XSS
+    const sanitizedContent = sanitizeText(content, 2000);
+
+    if (!sanitizedContent.trim()) {
+      return { error: 'Comentario nao pode ser vazio' };
     }
 
     const { data: comment, error } = await supabase
@@ -669,7 +672,7 @@ export async function commentPost(postId: string, content: string): Promise<Acti
       .insert({
         post_id: postId,
         user_id: user.id,
-        content: content.trim(),
+        content: sanitizedContent,
       })
       .select()
       .single();

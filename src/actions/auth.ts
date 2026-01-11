@@ -3,6 +3,9 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
+import { headers } from 'next/headers';
+import { checkRateLimit, RATE_LIMITS } from '@/lib/security/rate-limit';
+import { validatePassword } from '@/lib/password-validation';
 
 // Tipos para respostas das actions
 type AuthResponse = {
@@ -11,44 +14,74 @@ type AuthResponse = {
 };
 
 /**
+ * Helper para obter IP do cliente em Server Actions
+ */
+async function getClientIP(): Promise<string> {
+  const headersList = await headers();
+  const forwardedFor = headersList.get('x-forwarded-for');
+  if (forwardedFor) {
+    return forwardedFor.split(',')[0].trim();
+  }
+  return headersList.get('x-real-ip') || 'unknown';
+}
+
+/**
  * Server Action para login com email e senha
+ * Protegido com rate limiting (5 tentativas/minuto por IP)
  */
 export async function login(formData: FormData): Promise<AuthResponse> {
+  // Rate limiting por IP
+  const ip = await getClientIP();
+  const rateLimitResult = await checkRateLimit(`login:${ip}`, RATE_LIMITS.login);
+
+  if (!rateLimitResult.success) {
+    const retryAfter = Math.ceil((rateLimitResult.reset - Date.now()) / 1000);
+    return { error: `Muitas tentativas. Aguarde ${retryAfter} segundos.` };
+  }
+
   const supabase = await createClient();
 
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
 
-  // Validação básica
+  // Validacao basica
   if (!email || !password) {
-    return { error: 'Email e senha são obrigatórios' };
+    return { error: 'Email e senha sao obrigatorios' };
   }
 
+  // Normalizar email para lowercase
+  const normalizedEmail = email.toLowerCase().trim();
+
   const { error } = await supabase.auth.signInWithPassword({
-    email,
+    email: normalizedEmail,
     password,
   });
 
   if (error) {
-    // Mensagens de erro amigáveis em português
-    if (error.message.includes('Invalid login credentials')) {
-      return { error: 'Email ou senha incorretos' };
-    }
-    if (error.message.includes('Email not confirmed')) {
-      return { error: 'Por favor, confirme seu email antes de fazer login' };
-    }
-    return { error: 'Erro ao fazer login. Tente novamente.' };
+    // SEGURANCA: Mensagem generica para evitar enumeracao de usuarios
+    // Nao revelar se o email existe ou se a senha esta incorreta
+    return { error: 'Credenciais invalidas' };
   }
 
   revalidatePath('/', 'layout');
-  redirect('/dashboard');
+  redirect('/');
 }
 
 /**
- * Server Action para registro de novo usuário
+ * Server Action para registro de novo usuario
  * Apenas emails aprovados no NPS podem se registrar
+ * Protegido com rate limiting (3 tentativas/minuto por IP)
  */
 export async function register(formData: FormData): Promise<AuthResponse> {
+  // Rate limiting por IP
+  const ip = await getClientIP();
+  const rateLimitResult = await checkRateLimit(`signup:${ip}`, RATE_LIMITS.signup);
+
+  if (!rateLimitResult.success) {
+    const retryAfter = Math.ceil((rateLimitResult.reset - Date.now()) / 1000);
+    return { error: `Muitas tentativas. Aguarde ${retryAfter} segundos.` };
+  }
+
   const supabase = await createClient();
 
   const name = formData.get('name') as string;
@@ -56,35 +89,42 @@ export async function register(formData: FormData): Promise<AuthResponse> {
   const password = formData.get('password') as string;
   const confirmPassword = formData.get('confirmPassword') as string;
 
-  // Validações
+  // Validacoes basicas
   if (!name || !email || !password) {
-    return { error: 'Todos os campos são obrigatórios' };
+    return { error: 'Todos os campos sao obrigatorios' };
   }
 
   if (password !== confirmPassword) {
-    return { error: 'As senhas não coincidem' };
+    return { error: 'As senhas nao coincidem' };
   }
 
-  if (password.length < 6) {
-    return { error: 'A senha deve ter pelo menos 6 caracteres' };
+  // Validacao robusta de senha (8+ chars, maiuscula, minuscula, numero)
+  const passwordValidation = validatePassword(password);
+  if (!passwordValidation.isValid) {
+    return { error: passwordValidation.errors[0] };
   }
+
+  // Normalizar email para lowercase
+  const normalizedEmail = email.toLowerCase().trim();
 
   // Verificar se o email foi aprovado no NPS
   const { data: approvedLead } = await supabase
     .from('nps_leads')
     .select('id, name, status')
-    .eq('email', email.toLowerCase())
+    .eq('email', normalizedEmail)
     .eq('status', 'approved')
     .single();
 
+  // SEGURANCA: Mensagem generica para evitar enumeracao
+  // Nao revelar se o email existe, foi aprovado ou ja esta cadastrado
   if (!approvedLead) {
     return {
-      error: 'Este email não está autorizado para cadastro. Por favor, preencha o formulário de inscrição primeiro e aguarde aprovação.'
+      error: 'Nao foi possivel criar a conta. Verifique se preencheu o formulario de inscricao.'
     };
   }
 
   const { error } = await supabase.auth.signUp({
-    email,
+    email: normalizedEmail,
     password,
     options: {
       data: {
@@ -95,10 +135,8 @@ export async function register(formData: FormData): Promise<AuthResponse> {
   });
 
   if (error) {
-    if (error.message.includes('already registered')) {
-      return { error: 'Este email já está cadastrado' };
-    }
-    return { error: 'Erro ao criar conta. Tente novamente.' };
+    // SEGURANCA: Mensagem generica para todos os erros
+    return { error: 'Nao foi possivel criar a conta. Verifique seus dados.' };
   }
 
   return { success: true };
@@ -115,25 +153,37 @@ export async function logout(): Promise<void> {
 }
 
 /**
- * Server Action para recuperação de senha
+ * Server Action para recuperacao de senha
+ * Protegido com rate limiting (5 tentativas/minuto por IP)
  */
 export async function resetPassword(formData: FormData): Promise<AuthResponse> {
+  // Rate limiting por IP
+  const ip = await getClientIP();
+  const rateLimitResult = await checkRateLimit(`reset:${ip}`, RATE_LIMITS.login);
+
+  if (!rateLimitResult.success) {
+    const retryAfter = Math.ceil((rateLimitResult.reset - Date.now()) / 1000);
+    return { error: `Muitas tentativas. Aguarde ${retryAfter} segundos.` };
+  }
+
   const supabase = await createClient();
 
   const email = formData.get('email') as string;
 
   if (!email) {
-    return { error: 'Email é obrigatório' };
+    return { error: 'Email e obrigatorio' };
   }
 
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+  // Normalizar email
+  const normalizedEmail = email.toLowerCase().trim();
+
+  // Sempre tentar enviar (mesmo que email nao exista)
+  await supabase.auth.resetPasswordForEmail(normalizedEmail, {
     redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/reset-password`,
   });
 
-  if (error) {
-    return { error: 'Erro ao enviar email de recuperação' };
-  }
-
+  // SEGURANCA: Sempre retornar sucesso para evitar enumeracao de usuarios
+  // Nao revelar se o email existe ou nao no sistema
   return { success: true };
 }
 
@@ -147,15 +197,17 @@ export async function updatePassword(formData: FormData): Promise<AuthResponse> 
   const confirmPassword = formData.get('confirmPassword') as string;
 
   if (!password) {
-    return { error: 'Nova senha é obrigatória' };
+    return { error: 'Nova senha e obrigatoria' };
   }
 
   if (password !== confirmPassword) {
-    return { error: 'As senhas não coincidem' };
+    return { error: 'As senhas nao coincidem' };
   }
 
-  if (password.length < 6) {
-    return { error: 'A senha deve ter pelo menos 6 caracteres' };
+  // Validacao robusta de senha (8+ chars, maiuscula, minuscula, numero)
+  const passwordValidation = validatePassword(password);
+  if (!passwordValidation.isValid) {
+    return { error: passwordValidation.errors[0] };
   }
 
   const { error } = await supabase.auth.updateUser({
@@ -166,5 +218,5 @@ export async function updatePassword(formData: FormData): Promise<AuthResponse> 
     return { error: 'Erro ao atualizar senha' };
   }
 
-  redirect('/dashboard');
+  redirect('/');
 }
