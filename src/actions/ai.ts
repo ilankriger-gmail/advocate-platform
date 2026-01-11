@@ -4,7 +4,7 @@
  * Server Actions para funcionalidades de IA
  */
 
-import { generateChallengeDescription, ChallengeDescriptionInput } from '@/lib/gemini';
+import { generateChallengeDescription, ChallengeDescriptionInput } from '@/lib/ai/generate-description';
 
 /**
  * Gera descrição de desafio usando IA

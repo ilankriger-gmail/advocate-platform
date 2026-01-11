@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button, Input, Textarea } from '@/components/ui';
 import { generateDescription } from '@/actions/ai';
-import type { ChallengeDescriptionInput } from '@/lib/gemini';
+import type { ChallengeDescriptionInput } from '@/lib/ai/generate-description';
 
 interface AIDescriptionGeneratorProps {
   challengeData: Omit<ChallengeDescriptionInput, 'idea'>;
