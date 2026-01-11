@@ -342,27 +342,6 @@ export default function NovoChallengeDesafioPage() {
         <Card className="p-5 space-y-4">
           <h2 className="font-bold text-gray-900">Periodo de Validade (opcional)</h2>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Data de Início</label>
-              <Input
-                type="datetime-local"
-                value={formData.starts_at}
-                onChange={(e) => setFormData({ ...formData, starts_at: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Data de Término</label>
-              <Input
-                type="datetime-local"
-                value={formData.ends_at}
-                onChange={(e) => setFormData({ ...formData, ends_at: e.target.value })}
-                disabled={formData.noEndDate}
-                className={formData.noEndDate ? 'opacity-50 cursor-not-allowed' : ''}
-              />
-            </div>
-          </div>
-
           {/* Opção de desafio permanente */}
           <label className="flex items-center gap-3 cursor-pointer">
             <input
@@ -371,15 +350,43 @@ export default function NovoChallengeDesafioPage() {
               onChange={(e) => setFormData({
                 ...formData,
                 noEndDate: e.target.checked,
+                starts_at: e.target.checked ? '' : formData.starts_at,
                 ends_at: e.target.checked ? '' : formData.ends_at,
               })}
               className="w-5 h-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
             />
             <div>
               <span className="text-sm font-medium text-gray-700">Desafio permanente</span>
-              <p className="text-xs text-gray-500">Sem data de término definida</p>
+              <p className="text-xs text-gray-500">Sem data de início ou término</p>
             </div>
           </label>
+
+          {!formData.noEndDate && (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Data de Início</label>
+                <Input
+                  type="datetime-local"
+                  value={formData.starts_at}
+                  onChange={(e) => setFormData({ ...formData, starts_at: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Data de Término</label>
+                <Input
+                  type="datetime-local"
+                  value={formData.ends_at}
+                  onChange={(e) => setFormData({ ...formData, ends_at: e.target.value })}
+                />
+              </div>
+            </div>
+          )}
+
+          {formData.noEndDate && (
+            <div className="p-3 bg-green-50 rounded-lg text-green-700 text-sm">
+              ✓ Este desafio estará sempre ativo, sem limite de datas.
+            </div>
+          )}
         </Card>
 
         {/* Erro */}
