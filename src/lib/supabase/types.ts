@@ -347,6 +347,12 @@ export interface ChallengeParticipant {
   approved_at: string | null;
   coins_earned: number;
   created_at: string;
+  // Campos de análise de IA
+  ai_is_valid: boolean | null;
+  ai_confidence: number | null;
+  ai_reason: string | null;
+  ai_observed_value: number | null;
+  ai_analyzed_at: string | null;
 }
 
 export interface ChallengeWinner {
@@ -374,11 +380,19 @@ export interface ChallengeParticipantWithUser extends ChallengeParticipant {
 }
 
 /**
+ * Tipo de meta do desafio
+ */
+export type GoalType = 'repetitions' | 'time';
+
+/**
  * Tipo para participação com dados do desafio associado
  * Usado quando fazemos join com a tabela challenges
  */
 export interface ParticipationWithChallenge extends ChallengeParticipant {
   challenges: {
+    title: string;
+    goal_type: GoalType | null;
+    goal_value: number | null;
     coins_reward: number;
   } | null;
 }

@@ -162,6 +162,11 @@ export const createMockParticipation = (
     approved_at: null,
     coins_earned: 0,
     created_at: now,
+    ai_is_valid: null,
+    ai_confidence: null,
+    ai_reason: null,
+    ai_observed_value: null,
+    ai_analyzed_at: null,
     ...overrides,
   };
 };
