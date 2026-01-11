@@ -91,12 +91,13 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
       return;
     }
 
-    // Redirecionar com leadId para acompanhamento do status
+    // Redirecionar para o domínio comunidade (não comece)
     const leadId = result.data?.leadId;
+    const baseUrl = 'https://comunidade.omocodoteamo.com.br';
     if (leadId) {
-      router.push(`/seja-arena/obrigado?leadId=${leadId}`);
+      window.location.href = `${baseUrl}/seja-arena/obrigado?leadId=${leadId}`;
     } else {
-      router.push('/seja-arena/obrigado');
+      window.location.href = `${baseUrl}/seja-arena/obrigado`;
     }
   }
 
