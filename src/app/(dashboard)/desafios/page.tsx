@@ -124,25 +124,44 @@ export default async function DesafiosPage() {
         description="Participe dos desafios e ganhe corações"
       />
 
-      {/* Saldo */}
-      <Card className="p-4 bg-gradient-to-r from-pink-500 to-red-500 text-white">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-pink-100 text-sm">Seus corações</p>
-            <p className="text-3xl font-bold">{balance} corações</p>
+      {/* Saldo - Card Premium */}
+      <Card className="relative overflow-hidden bg-gradient-to-br from-pink-500 via-rose-500 to-red-500 text-white shadow-xl">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMzLjMxNCAwIDYgMi42ODYgNiA2cy0yLjY4NiA2LTYgNi02LTIuNjg2LTYtNiAyLjY4Ni02IDYtNiIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMSkiIHN0cm9rZS13aWR0aD0iMiIvPjwvZz48L3N2Zz4=')] opacity-30" />
+        <div className="relative p-6">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-pink-100 text-sm font-medium tracking-wide uppercase">Seus coracoes</p>
+              <div className="flex items-baseline gap-2">
+                <p className="text-5xl font-black tracking-tight">{balance}</p>
+                <p className="text-xl font-medium text-pink-100">coracoes</p>
+              </div>
+              <p className="text-pink-200 text-sm mt-2">Complete desafios para ganhar mais!</p>
+            </div>
+            <div className="relative">
+              <div className="absolute inset-0 animate-ping bg-white/20 rounded-full" />
+              <div className="relative w-20 h-20 bg-white/10 backdrop-blur rounded-full flex items-center justify-center">
+                <span className="text-5xl">❤️</span>
+              </div>
+            </div>
           </div>
-          <div className="text-5xl">❤️</div>
         </div>
       </Card>
 
       {/* Desafios de Engajamento */}
       {engagementChallenges.length > 0 && (
-        <div>
-          <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-            🎁 Participe e Concorra
-          </h2>
+        <section className="space-y-6">
+          {/* Header da Secao */}
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/25">
+              <span className="text-2xl">🎁</span>
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">Participe e Concorra</h2>
+              <p className="text-gray-500 text-sm">Interaja no Instagram e ganhe premios em dinheiro</p>
+            </div>
+          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {engagementChallenges.map((challenge) => {
               const challengeWinners = (winners || []).filter(
                 w => w.challenge_id === challenge.id
@@ -254,15 +273,22 @@ export default async function DesafiosPage() {
               );
             })}
           </div>
-        </div>
+        </section>
       )}
 
       {/* Desafios Fisicos */}
       {physicalChallenges.length > 0 && (
-        <div>
-          <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2 justify-center">
-            💪 Desafios Fisicos
-          </h2>
+        <section className="space-y-6">
+          {/* Header da Secao */}
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/25">
+              <span className="text-2xl">💪</span>
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">Desafios Fisicos</h2>
+              <p className="text-gray-500 text-sm">Supere metas e mostre sua forca</p>
+            </div>
+          </div>
 
           <div className="max-w-2xl mx-auto space-y-4">
             {physicalChallenges.map((challenge) => (
@@ -273,19 +299,24 @@ export default async function DesafiosPage() {
               />
             ))}
           </div>
-        </div>
+        </section>
       )}
 
       {/* Sem desafios */}
       {(!challenges || challenges.length === 0) && (
-        <Card className="p-12 text-center">
-          <div className="text-5xl mb-4">🎯</div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Nenhum desafio disponível
-          </h2>
-          <p className="text-gray-500">
-            Novos desafios serao adicionados em breve!
-          </p>
+        <Card className="relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-100" />
+          <div className="relative p-12 text-center">
+            <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-pink-100 to-purple-100 rounded-full flex items-center justify-center">
+              <span className="text-4xl">🎯</span>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Nenhum desafio disponivel
+            </h2>
+            <p className="text-gray-500 max-w-md mx-auto">
+              Fique atento! Novos desafios serao adicionados em breve para voce participar e ganhar coracoes.
+            </p>
+          </div>
         </Card>
       )}
     </div>
