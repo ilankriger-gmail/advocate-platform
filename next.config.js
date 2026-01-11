@@ -90,14 +90,18 @@ const nextConfig = {
           {
             // Content-Security-Policy (CSP): Define políticas de segurança para recursos carregados pela página
             // Previne XSS e injeção de código malicioso ao controlar quais recursos podem ser carregados
+            //
+            // NOTA DE SEGURANCA: 'unsafe-inline' e 'unsafe-eval' sao necessarios para Next.js funcionar.
+            // Em projetos futuros, considerar implementar nonces (requer middleware customizado).
+            // Mitigacoes atuais: DOMPurify para sanitizacao HTML, RLS para dados, validacao de inputs.
             key: 'Content-Security-Policy',
             value: [
               // default-src 'self': Por padrão, permite carregar recursos apenas da mesma origem
               "default-src 'self'",
               // script-src: Controla de onde scripts podem ser carregados
               // 'self': Scripts da mesma origem
-              // 'unsafe-inline': Permite scripts inline (necessário para Next.js e desenvolvimento)
-              // 'unsafe-eval': Permite eval() (necessário para Next.js em desenvolvimento)
+              // 'unsafe-inline': Permite scripts inline (necessário para Next.js)
+              // 'unsafe-eval': Permite eval() (necessário para Next.js)
               "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
               // style-src: Controla de onde estilos podem ser carregados
               // 'self': Estilos da mesma origem

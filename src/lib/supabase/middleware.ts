@@ -18,6 +18,9 @@ const COMECE_ALLOWED_ROUTES = ['/', '/seja-arena'];
 // Rotas públicas no domínio comunidade (não requerem auth)
 const COMUNIDADE_PUBLIC_ROUTES = ['/login', '/auth/callback'];
 
+// Rotas que requerem role de admin
+const ADMIN_ROUTES = ['/admin'];
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
@@ -94,6 +97,29 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = '/';
     return NextResponse.redirect(url);
+  }
+
+  // === PROTECAO DE ROTAS ADMIN ===
+  // SEGURANCA: Verificar role antes de permitir acesso a rotas admin
+  const isAdminRoute = ADMIN_ROUTES.some(route =>
+    pathname === route || pathname.startsWith(route + '/')
+  );
+
+  if (isAdminRoute && user) {
+    // Buscar perfil do usuario para verificar role
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    // Se nao e admin ou creator, negar acesso
+    const userRole = profile?.role;
+    if (userRole !== 'admin' && userRole !== 'creator') {
+      const url = request.nextUrl.clone();
+      url.pathname = '/';
+      return NextResponse.redirect(url);
+    }
   }
 
   return supabaseResponse;

@@ -29,8 +29,8 @@ function isValidRedirect(path: string): boolean {
 }
 
 /**
- * Rota de callback para autenticação do Supabase
- * Usada para confirmação de email e OAuth
+ * Rota de callback para autenticacao do Supabase
+ * Usada para confirmacao de email e OAuth
  */
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -45,7 +45,15 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
-      return NextResponse.redirect(`${origin}${next}`);
+      // SEGURANCA: Validar que a sessao foi criada corretamente
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (user) {
+        return NextResponse.redirect(`${origin}${next}`);
+      }
+
+      // Sessao invalida mesmo sem erro - tratar como falha
+      console.error('[Auth Callback] Sessao criada mas usuario nao encontrado');
     }
   }
 

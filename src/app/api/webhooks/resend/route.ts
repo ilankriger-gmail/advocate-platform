@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { updateEmailNotificationStatus, cancelScheduledTask } from '@/lib/notifications';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { maskId } from '@/lib/sanitize';
 
 // Tipos de eventos do Resend
 type ResendEventType =
@@ -150,7 +151,8 @@ export async function POST(request: NextRequest) {
         // Cancelar tarefa de WhatsApp agendada
         const leadId = await getLeadIdByEmail(recipientEmail);
         if (leadId) {
-          console.log(`[Webhook Resend] Email aberto - cancelando WhatsApp para lead ${leadId}`);
+          // SEGURANCA: Sanitizar ID nos logs para prevenir vazamento
+          console.log(`[Webhook Resend] Email aberto - cancelando WhatsApp para lead ${maskId(leadId)}`);
           await cancelScheduledTask(leadId, 'check_email_opened');
         }
         break;
