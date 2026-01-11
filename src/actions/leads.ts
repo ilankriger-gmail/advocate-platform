@@ -14,6 +14,10 @@ import {
 import { getSiteSettings } from '@/lib/config/site';
 import { analyzeLeadWithAI } from '@/lib/ai';
 import { validateEmail, checkRateLimit, RATE_LIMITS, auditLog } from '@/lib/security';
+import { logger, maskEmail, sanitizeError } from '@/lib';
+
+// Logger contextualizado para o módulo de leads
+const leadsLogger = logger.withContext('[Leads]');
 
 // ============ ACOES PUBLICAS ============
 
@@ -31,7 +35,7 @@ async function analyzeLeadInBackground(leadEmail: string, leadData: {
     const analysis = await analyzeLeadWithAI(leadData);
 
     if (!analysis) {
-      console.log('[AI] Analise nao disponivel (API key nao configurada ou erro)');
+      leadsLogger.info('Analise AI nao disponivel (API key nao configurada ou erro)');
       return;
     }
 
@@ -52,12 +56,15 @@ async function analyzeLeadInBackground(leadEmail: string, leadData: {
       .eq('email', leadEmail);
 
     if (error) {
-      console.error('[AI] Erro ao salvar analise:', error);
+      leadsLogger.error('Erro ao salvar analise AI', { error: sanitizeError(error) });
     } else {
-      console.log('[AI] Lead analisado com sucesso:', leadEmail, '- Score:', analysis.score);
+      leadsLogger.info('Lead analisado com sucesso', {
+        email: maskEmail(leadEmail),
+        score: analysis.score,
+      });
     }
   } catch (err) {
-    console.error('[AI] Erro na analise em background:', err);
+    leadsLogger.error('Erro na analise AI em background', { error: sanitizeError(err) });
   }
 }
 
@@ -108,7 +115,7 @@ export async function submitNpsLead(data: NpsLeadInsert): Promise<ActionResponse
       });
 
     if (error) {
-      console.error('Error creating NPS lead:', error);
+      leadsLogger.error('Erro ao criar lead NPS', { error: sanitizeError(error) });
       return { error: 'Erro ao enviar formulario. Tente novamente.' };
     }
 
@@ -117,7 +124,9 @@ export async function submitNpsLead(data: NpsLeadInsert): Promise<ActionResponse
       name: data.name.trim(),
       score: data.score,
       reason: data.reason.trim(),
-    }).catch(console.error);
+    }).catch((err) => {
+      leadsLogger.error('Erro ao iniciar analise AI em background', { error: sanitizeError(err) });
+    });
 
     return { success: true };
   } catch {
@@ -688,18 +697,18 @@ export async function analyzeUnanalyzedLeads(): Promise<ActionResponse<{
   analyzed: number;
   errors: number;
 }>> {
-  console.log('[LEADS] === Iniciando analise em lote ===');
+  leadsLogger.info('Iniciando analise em lote de leads');
 
   try {
     const supabase = await createClient();
 
     const auth = await verifyAdmin(supabase);
     if ('error' in auth) {
-      console.log('[LEADS] Erro de autenticacao:', auth.error);
+      leadsLogger.warn('Erro de autenticacao ao analisar leads', { error: auth.error });
       return { error: auth.error };
     }
 
-    console.log('[LEADS] Usuario autenticado, buscando leads sem analise...');
+    leadsLogger.debug('Usuario autenticado, buscando leads sem analise');
 
     // Buscar leads sem analise AI (maximo 20 por vez para nao sobrecarregar)
     const adminClient = createAdminClient();
@@ -710,14 +719,14 @@ export async function analyzeUnanalyzedLeads(): Promise<ActionResponse<{
       .limit(20);
 
     if (error) {
-      console.error('[LEADS] Erro ao buscar leads:', error);
+      leadsLogger.error('Erro ao buscar leads para analise', { error: sanitizeError(error) });
       return { error: 'Erro ao buscar leads' };
     }
 
-    console.log('[LEADS] Leads encontrados para analise:', leads?.length || 0);
+    leadsLogger.info('Leads encontrados para analise', { count: leads?.length || 0 });
 
     if (!leads || leads.length === 0) {
-      console.log('[LEADS] Nenhum lead para analisar');
+      leadsLogger.debug('Nenhum lead pendente para analisar');
       return { success: true, data: { analyzed: 0, errors: 0 } };
     }
 
@@ -726,7 +735,10 @@ export async function analyzeUnanalyzedLeads(): Promise<ActionResponse<{
 
     for (let i = 0; i < leads.length; i++) {
       const lead = leads[i];
-      console.log(`[LEADS] Processando lead ${i + 1}/${leads.length}: ${lead.email}`);
+      leadsLogger.debug('Processando lead para analise AI', {
+        progress: `${i + 1}/${leads.length}`,
+        email: maskEmail(lead.email),
+      });
 
       try {
         const analysis = await analyzeLeadWithAI({
@@ -736,7 +748,11 @@ export async function analyzeUnanalyzedLeads(): Promise<ActionResponse<{
         });
 
         if (analysis) {
-          console.log(`[LEADS] Lead ${lead.email} analisado: score=${analysis.score}, rec=${analysis.recommendation}`);
+          leadsLogger.info('Lead analisado com sucesso', {
+            email: maskEmail(lead.email),
+            score: analysis.score,
+            recommendation: analysis.recommendation,
+          });
 
           const { error: updateError } = await adminClient
             .from('nps_leads')
@@ -752,26 +768,32 @@ export async function analyzeUnanalyzedLeads(): Promise<ActionResponse<{
             .eq('id', lead.id);
 
           if (updateError) {
-            console.error(`[LEADS] Erro ao salvar analise do lead ${lead.email}:`, updateError);
+            leadsLogger.error('Erro ao salvar analise do lead', {
+              email: maskEmail(lead.email),
+              error: sanitizeError(updateError),
+            });
             errors++;
           } else {
             analyzed++;
           }
         } else {
-          console.error(`[LEADS] Falha na analise do lead ${lead.email} (retornou null)`);
+          leadsLogger.warn('Analise retornou null para lead', { email: maskEmail(lead.email) });
           errors++;
         }
       } catch (err) {
-        console.error(`[LEADS] Excecao ao processar lead ${lead.email}:`, err);
+        leadsLogger.error('Excecao ao processar lead', {
+          email: maskEmail(lead.email),
+          error: sanitizeError(err),
+        });
         errors++;
       }
     }
 
-    console.log(`[LEADS] === Analise em lote concluida: ${analyzed} sucesso, ${errors} erros ===`);
+    leadsLogger.info('Analise em lote concluida', { analyzed, errors });
     revalidatePath('/admin/leads');
     return { success: true, data: { analyzed, errors } };
   } catch (err) {
-    console.error('[LEADS] Erro interno:', err);
+    leadsLogger.error('Erro interno ao analisar leads', { error: sanitizeError(err) });
     return { error: 'Erro interno do servidor' };
   }
 }

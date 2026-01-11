@@ -4,6 +4,10 @@ import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import type { ActionResponse } from './types';
 import { verifyAdminOrCreator, getAuthenticatedUser } from './utils';
+import { logger, maskId, sanitizeError } from '@/lib';
+
+// Logger contextualizado para o módulo de recompensas admin
+const rewardsAdminLogger = logger.withContext('[RewardsAdmin]');
 
 /**
  * Ativar/Desativar recompensa (admin)
@@ -12,50 +16,68 @@ export async function toggleRewardActive(
   rewardId: string,
   isActive: boolean
 ): Promise<ActionResponse> {
-  console.log('toggleRewardActive: Iniciando', { rewardId, isActive });
+  rewardsAdminLogger.info('Iniciando toggle de recompensa', {
+    rewardId: maskId(rewardId),
+    isActive
+  });
 
   try {
     // Verificar autenticação
     const userCheck = await getAuthenticatedUser();
-    console.log('toggleRewardActive: userCheck', userCheck);
+    rewardsAdminLogger.debug('Verificação de usuário', {
+      hasUser: !!userCheck.data,
+      hasError: !!userCheck.error
+    });
 
     if (userCheck.error) {
-      console.log('toggleRewardActive: Usuario nao autenticado');
+      rewardsAdminLogger.warn('Usuário não autenticado ao tentar toggle de recompensa');
       return userCheck;
     }
     const user = userCheck.data!;
 
     // Verificar se é admin/creator
     const authCheck = await verifyAdminOrCreator(user.id);
-    console.log('toggleRewardActive: authCheck', authCheck);
+    rewardsAdminLogger.debug('Verificação de autorização', {
+      userId: maskId(user.id),
+      isAuthorized: !authCheck.error
+    });
 
     if (authCheck.error) {
-      console.log('toggleRewardActive: Nao autorizado');
+      rewardsAdminLogger.warn('Usuário não autorizado ao tentar toggle de recompensa', {
+        userId: maskId(user.id)
+      });
       return authCheck;
     }
 
     const supabase = await createClient();
 
-    console.log('toggleRewardActive: Executando update...');
+    rewardsAdminLogger.debug('Executando update de recompensa');
     const { error, data } = await supabase
       .from('rewards')
       .update({ is_active: isActive })
       .eq('id', rewardId)
       .select();
 
-    console.log('toggleRewardActive: Resultado update', { error, data });
-
     if (error) {
-      console.log('toggleRewardActive: Erro no update', error);
+      rewardsAdminLogger.error('Erro ao atualizar recompensa', {
+        rewardId: maskId(rewardId),
+        error: sanitizeError(error)
+      });
       return { error: 'Erro ao atualizar recompensa' };
     }
 
-    console.log('toggleRewardActive: Sucesso! Revalidando paths...');
+    rewardsAdminLogger.info('Recompensa atualizada com sucesso', {
+      rewardId: maskId(rewardId),
+      isActive
+    });
     revalidatePath('/premios');
     revalidatePath('/admin/premios');
     return { success: true };
   } catch (err) {
-    console.error('toggleRewardActive: Erro inesperado', err);
+    rewardsAdminLogger.error('Erro inesperado ao toggle de recompensa', {
+      rewardId: maskId(rewardId),
+      error: sanitizeError(err)
+    });
     return { error: 'Erro interno do servidor' };
   }
 }
@@ -352,25 +374,35 @@ export async function addCoinsToUser(
  * Só permite deletar se não houver claims pendentes/aprovados/enviados
  */
 export async function deleteReward(rewardId: string): Promise<ActionResponse> {
-  console.log('deleteReward: Iniciando para rewardId:', rewardId);
+  rewardsAdminLogger.info('Iniciando deleção de recompensa', {
+    rewardId: maskId(rewardId)
+  });
 
   try {
     // Verificar autenticação
     const userCheck = await getAuthenticatedUser();
-    console.log('deleteReward: userCheck:', userCheck);
+    rewardsAdminLogger.debug('Verificação de usuário', {
+      hasUser: !!userCheck.data,
+      hasError: !!userCheck.error
+    });
 
     if (userCheck.error) {
-      console.log('deleteReward: Usuario nao autenticado');
+      rewardsAdminLogger.warn('Usuário não autenticado ao tentar deletar recompensa');
       return userCheck;
     }
     const user = userCheck.data!;
 
     // Verificar se é admin/creator
     const authCheck = await verifyAdminOrCreator(user.id);
-    console.log('deleteReward: authCheck:', authCheck);
+    rewardsAdminLogger.debug('Verificação de autorização', {
+      userId: maskId(user.id),
+      isAuthorized: !authCheck.error
+    });
 
     if (authCheck.error) {
-      console.log('deleteReward: Acesso nao autorizado');
+      rewardsAdminLogger.warn('Acesso não autorizado ao tentar deletar recompensa', {
+        userId: maskId(user.id)
+      });
       return authCheck;
     }
 
@@ -383,35 +415,49 @@ export async function deleteReward(rewardId: string): Promise<ActionResponse> {
       .eq('reward_id', rewardId)
       .in('status', ['pending', 'approved', 'shipped']);
 
-    console.log('deleteReward: activeClaims:', activeClaims, 'Error:', claimsError);
+    rewardsAdminLogger.debug('Verificação de claims ativos', {
+      rewardId: maskId(rewardId),
+      activeClaims: activeClaims || 0,
+      hasError: !!claimsError
+    });
 
     if (activeClaims && activeClaims > 0) {
-      console.log('deleteReward: Bloqueado por claims ativos');
+      rewardsAdminLogger.warn('Deleção bloqueada por claims ativos', {
+        rewardId: maskId(rewardId),
+        activeClaims
+      });
       return {
         error: `Não é possível excluir. Existem ${activeClaims} resgate(s) pendente(s)/em andamento.`
       };
     }
 
     // Deletar a recompensa
-    console.log('deleteReward: Executando delete...');
+    rewardsAdminLogger.debug('Executando delete de recompensa');
     const { error, count } = await supabase
       .from('rewards')
       .delete()
       .eq('id', rewardId);
 
-    console.log('deleteReward: Resultado delete - Error:', error, 'Count:', count);
-
     if (error) {
-      console.error('Error deleting reward:', error);
+      rewardsAdminLogger.error('Erro ao deletar recompensa', {
+        rewardId: maskId(rewardId),
+        error: sanitizeError(error)
+      });
       return { error: 'Erro ao excluir recompensa' };
     }
 
-    console.log('deleteReward: Sucesso! Revalidando paths...');
+    rewardsAdminLogger.info('Recompensa deletada com sucesso', {
+      rewardId: maskId(rewardId),
+      deletedCount: count
+    });
     revalidatePath('/premios');
     revalidatePath('/admin/premios');
     return { success: true };
   } catch (err) {
-    console.error('Error in deleteReward:', err);
+    rewardsAdminLogger.error('Erro inesperado ao deletar recompensa', {
+      rewardId: maskId(rewardId),
+      error: sanitizeError(err)
+    });
     return { error: 'Erro interno do servidor' };
   }
 }

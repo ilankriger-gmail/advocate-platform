@@ -7,6 +7,10 @@ import type { CreatePostData, UpdatePostData } from '@/types/post';
 import type { Post, PostComment } from '@/lib/supabase/types';
 import { moderatePost, getBlockedMessage, getPendingReviewMessage } from '@/lib/moderation';
 import { logModerationAction, checkRateLimit, RATE_LIMITS } from '@/lib/security';
+import { logger, maskId, sanitizeError } from '@/lib';
+
+// Logger contextualizado para o módulo de posts
+const postsLogger = logger.withContext('[Posts]');
 
 /**
  * Remove links clicáveis do HTML, mantendo apenas o texto
@@ -50,7 +54,7 @@ export async function createPost(data: CreatePostData): Promise<CreatePostRespon
         });
 
       if (insertError) {
-        console.error('Erro ao criar usuário:', insertError);
+        postsLogger.error('Erro ao criar usuário', { error: sanitizeError(insertError) });
         return { error: 'Erro ao criar perfil do usuário' };
       }
     }
@@ -99,7 +103,7 @@ export async function createPost(data: CreatePostData): Promise<CreatePostRespon
       // Capturar categoria de conteúdo (normal ou help_request)
       contentCategory = moderationResult.content_category;
 
-      console.log('[Moderation] Resultado:', {
+      postsLogger.debug('Resultado da moderação', {
         decision: moderationResult.decision,
         score: moderationScore,
         blocked_reasons: moderationResult.blocked_reasons,
@@ -120,10 +124,10 @@ export async function createPost(data: CreatePostData): Promise<CreatePostRespon
 
     } catch (moderationError) {
       // Em caso de erro na moderação, continua com fluxo normal
-      console.error('[Moderation] Erro:', moderationError);
+      postsLogger.error('Erro na moderação', { error: sanitizeError(moderationError) });
     }
 
-    console.log('createPost - postStatus:', postStatus);
+    postsLogger.debug('Status do post após moderação', { postStatus });
 
     const { data: post, error } = await supabase
       .from('posts')
@@ -145,7 +149,7 @@ export async function createPost(data: CreatePostData): Promise<CreatePostRespon
       .single();
 
     if (error) {
-      console.error('Erro ao criar post:', error);
+      postsLogger.error('Erro ao criar post', { error: sanitizeError(error) });
       return { error: 'Erro ao criar post' };
     }
 
@@ -252,7 +256,7 @@ export async function updatePost(data: UpdatePostData): Promise<ActionResponse<P
       .single();
 
     if (error) {
-      console.error('Erro ao atualizar post:', error);
+      postsLogger.error('Erro ao atualizar post', { error: sanitizeError(error) });
       return { error: 'Erro ao atualizar post' };
     }
 
@@ -312,7 +316,7 @@ export async function uploadPostImages(formData: FormData): Promise<ActionRespon
         });
 
       if (uploadError) {
-        console.error('Erro no upload:', uploadError);
+        postsLogger.error('Erro no upload de imagem', { error: sanitizeError(uploadError) });
         // Mensagens mais específicas baseadas no erro
         if (uploadError.message?.includes('bucket') || uploadError.message?.includes('not found')) {
           return { error: 'Bucket de imagens não configurado. Contate o administrador.' };

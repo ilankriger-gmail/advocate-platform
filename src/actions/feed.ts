@@ -2,6 +2,10 @@
 
 import { createClient } from '@/lib/supabase/server';
 import type { PostWithAuthor, PaginatedFeedResponse } from '@/types/post';
+import { logger, sanitizeError } from '@/lib';
+
+// Logger contextualizado para o módulo de feed
+const feedLogger = logger.withContext('[Feed]');
 
 export type FeedSortType = 'new' | 'top' | 'hot';
 export type FeedType = 'creator' | 'community' | 'all' | 'help_request';
@@ -201,7 +205,7 @@ export async function getFeedPosts({
   const { data, error } = await query;
 
   if (error) {
-    console.error('Erro ao buscar feed:', error);
+    feedLogger.error('Erro ao buscar feed', { error: sanitizeError(error) });
     return { data: [], nextCursor: null, hasMore: false };
   }
 

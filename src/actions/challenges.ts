@@ -5,6 +5,10 @@ import { revalidatePath } from 'next/cache';
 import { analyzeVídeoChallenge, isValidYouTubeUrl, type AIVerdict } from '@/lib/gemini';
 import { ActionResponse } from '@/types/action';
 import type { Challenge, ChallengeParticipant, ChallengeWinner, ParticipationWithChallenge } from '@/lib/supabase/types';
+import { logger, maskId, sanitizeError } from '@/lib';
+
+// Logger contextualizado para o módulo de desafios
+const challengesLogger = logger.withContext('[Challenges]');
 
 /**
  * Participar de um desafio fisico
@@ -86,7 +90,10 @@ export async function participateInChallenge(data: {
       .single();
 
     if (error) {
-      console.error('Error creating participation:', error);
+      challengesLogger.error('Erro ao criar participação', {
+        challengeId: maskId(data.challengeId),
+        error: sanitizeError(error)
+      });
       return { error: 'Erro ao registrar participacao' };
     }
 
@@ -449,7 +456,9 @@ export async function createChallenge(data: {
       .single();
 
     if (error) {
-      console.error('Error creating challenge:', error);
+      challengesLogger.error('Erro ao criar desafio', {
+        error: sanitizeError(error)
+      });
       return { error: 'Erro ao criar desafio' };
     }
 
@@ -558,16 +567,20 @@ export async function registerWinner(data: {
  * Só permite deletar se não houver participantes ou ganhadores
  */
 export async function deleteChallenge(challengeId: string): Promise<ActionResponse> {
-  console.log('deleteChallenge: Iniciando para challengeId:', challengeId);
+  challengesLogger.info('Iniciando exclusão de desafio', {
+    challengeId: maskId(challengeId)
+  });
 
   try {
     const supabase = await createClient();
 
     const { data: { user } } = await supabase.auth.getUser();
-    console.log('deleteChallenge: Usuario autenticado:', user?.id);
+    challengesLogger.debug('Verificação de usuário', {
+      hasUser: !!user
+    });
 
     if (!user) {
-      console.log('deleteChallenge: Usuario nao autenticado');
+      challengesLogger.warn('Usuário não autenticado ao tentar excluir desafio');
       return { error: 'Usuário não autenticado' };
     }
 
@@ -578,10 +591,16 @@ export async function deleteChallenge(challengeId: string): Promise<ActionRespon
       .eq('id', user.id)
       .single();
 
-    console.log('deleteChallenge: Profile:', profile, 'Error:', profileError);
+    challengesLogger.debug('Verificação de autorização', {
+      userId: maskId(user.id),
+      hasProfile: !!profile,
+      hasError: !!profileError
+    });
 
     if (!profile || (profile.role !== 'admin' && !profile.is_creator)) {
-      console.log('deleteChallenge: Acesso nao autorizado');
+      challengesLogger.warn('Usuário não autorizado ao tentar excluir desafio', {
+        userId: maskId(user.id)
+      });
       return { error: 'Acesso não autorizado' };
     }
 
@@ -591,10 +610,17 @@ export async function deleteChallenge(challengeId: string): Promise<ActionRespon
       .select('*', { count: 'exact', head: true })
       .eq('challenge_id', challengeId);
 
-    console.log('deleteChallenge: Participantes:', participantsCount, 'Error:', partError);
+    challengesLogger.debug('Verificação de participantes', {
+      challengeId: maskId(challengeId),
+      participantsCount,
+      hasError: !!partError
+    });
 
     if (participantsCount && participantsCount > 0) {
-      console.log('deleteChallenge: Bloqueado por participantes');
+      challengesLogger.info('Exclusão bloqueada por participantes vinculados', {
+        challengeId: maskId(challengeId),
+        participantsCount
+      });
       return {
         error: `Não é possível excluir. Existem ${participantsCount} participante(s) vinculado(s).`
       };
@@ -606,35 +632,48 @@ export async function deleteChallenge(challengeId: string): Promise<ActionRespon
       .select('*', { count: 'exact', head: true })
       .eq('challenge_id', challengeId);
 
-    console.log('deleteChallenge: Ganhadores:', winnersCount, 'Error:', winnersError);
+    challengesLogger.debug('Verificação de ganhadores', {
+      challengeId: maskId(challengeId),
+      winnersCount,
+      hasError: !!winnersError
+    });
 
     if (winnersCount && winnersCount > 0) {
-      console.log('deleteChallenge: Bloqueado por ganhadores');
+      challengesLogger.info('Exclusão bloqueada por ganhadores vinculados', {
+        challengeId: maskId(challengeId),
+        winnersCount
+      });
       return {
         error: `Não é possível excluir. Existem ${winnersCount} ganhador(es) vinculado(s).`
       };
     }
 
     // Deletar o desafio
-    console.log('deleteChallenge: Executando delete...');
+    challengesLogger.debug('Executando exclusão de desafio');
     const { error, count } = await supabase
       .from('challenges')
       .delete()
       .eq('id', challengeId);
 
-    console.log('deleteChallenge: Resultado delete - Error:', error, 'Count:', count);
-
     if (error) {
-      console.error('Error deleting challenge:', error);
+      challengesLogger.error('Erro ao excluir desafio', {
+        challengeId: maskId(challengeId),
+        error: sanitizeError(error)
+      });
       return { error: 'Erro ao excluir desafio' };
     }
 
-    console.log('deleteChallenge: Sucesso! Revalidando paths...');
+    challengesLogger.info('Desafio excluído com sucesso', {
+      challengeId: maskId(challengeId)
+    });
     revalidatePath('/desafios');
     revalidatePath('/admin/desafios');
     return { success: true };
   } catch (err) {
-    console.error('Error in deleteChallenge:', err);
+    challengesLogger.error('Erro inesperado ao excluir desafio', {
+      challengeId: maskId(challengeId),
+      error: sanitizeError(err)
+    });
     return { error: 'Erro interno do servidor' };
   }
 }

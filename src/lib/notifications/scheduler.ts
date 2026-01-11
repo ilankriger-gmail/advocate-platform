@@ -4,6 +4,7 @@
  */
 
 import { createAdminClient } from '@/lib/supabase/admin';
+import { logger, maskId, sanitizeError } from '@/lib';
 import type {
   ScheduledTask,
   ScheduledTaskInsert,
@@ -11,6 +12,9 @@ import type {
   ScheduledTaskStatus,
   CheckEmailOpenedPayload,
 } from '@/types/notification';
+
+// Logger contextualizado para o módulo Scheduler
+const schedulerLogger = logger.withContext('[Scheduler]');
 
 // Delay padrão para verificar abertura de email (24 horas em ms)
 const DEFAULT_EMAIL_CHECK_DELAY = 24 * 60 * 60 * 1000;
@@ -43,14 +47,18 @@ export async function scheduleEmailCheck(
       .single();
 
     if (error) {
-      console.error('[Scheduler] Erro ao agendar tarefa:', error);
+      schedulerLogger.error('Erro ao agendar tarefa check_email_opened:', sanitizeError(error));
       return { success: false, error: error.message };
     }
 
-    console.log(`[Scheduler] Tarefa check_email_opened agendada para ${scheduledFor}`);
+    schedulerLogger.debug(`Tarefa check_email_opened agendada`, {
+      taskId: data.id,
+      scheduledFor,
+      leadId: maskId(leadId)
+    });
     return { success: true, taskId: data.id };
   } catch (err) {
-    console.error('[Scheduler] Erro ao agendar tarefa:', err);
+    schedulerLogger.error('Erro ao agendar tarefa check_email_opened:', sanitizeError(err));
     return { success: false, error: 'Erro ao agendar tarefa' };
   }
 }
@@ -76,14 +84,17 @@ export async function cancelScheduledTask(
       .eq('status', 'pending');
 
     if (error) {
-      console.error('[Scheduler] Erro ao cancelar tarefa:', error);
+      schedulerLogger.error('Erro ao cancelar tarefa:', sanitizeError(error));
       return { success: false, error: error.message };
     }
 
-    console.log(`[Scheduler] Tarefa ${type} cancelada para lead ${leadId}`);
+    schedulerLogger.debug(`Tarefa ${type} cancelada`, {
+      type,
+      leadId: maskId(leadId)
+    });
     return { success: true };
   } catch (err) {
-    console.error('[Scheduler] Erro ao cancelar tarefa:', err);
+    schedulerLogger.error('Erro ao cancelar tarefa:', sanitizeError(err));
     return { success: false, error: 'Erro ao cancelar tarefa' };
   }
 }
@@ -108,13 +119,13 @@ export async function getNextPendingTasks(
       .limit(limit);
 
     if (error) {
-      console.error('[Scheduler] Erro ao buscar tarefas:', error);
+      schedulerLogger.error('Erro ao buscar tarefas pendentes:', sanitizeError(error));
       return { tasks: [], error: error.message };
     }
 
     return { tasks: (data as ScheduledTask[]) || [] };
   } catch (err) {
-    console.error('[Scheduler] Erro ao buscar tarefas:', err);
+    schedulerLogger.error('Erro ao buscar tarefas pendentes:', sanitizeError(err));
     return { tasks: [], error: 'Erro ao buscar tarefas' };
   }
 }
@@ -138,13 +149,13 @@ export async function markTaskProcessing(
       .eq('status', 'pending');
 
     if (error) {
-      console.error('[Scheduler] Erro ao marcar tarefa como processing:', error);
+      schedulerLogger.error('Erro ao marcar tarefa como processing:', sanitizeError(error));
       return { success: false, error: error.message };
     }
 
     return { success: true };
   } catch (err) {
-    console.error('[Scheduler] Erro ao marcar tarefa:', err);
+    schedulerLogger.error('Erro ao marcar tarefa como processing:', sanitizeError(err));
     return { success: false, error: 'Erro ao marcar tarefa' };
   }
 }
@@ -186,7 +197,7 @@ export async function incrementTaskAttempts(
 
     return { success: true, attempts: newAttempts };
   } catch (err) {
-    console.error('[Scheduler] Erro ao incrementar tentativas:', err);
+    schedulerLogger.error('Erro ao incrementar tentativas:', sanitizeError(err));
     return { success: false, error: 'Erro ao incrementar tentativas' };
   }
 }
@@ -209,14 +220,14 @@ export async function markTaskCompleted(
       .eq('id', taskId);
 
     if (error) {
-      console.error('[Scheduler] Erro ao completar tarefa:', error);
+      schedulerLogger.error('Erro ao completar tarefa:', sanitizeError(error));
       return { success: false, error: error.message };
     }
 
-    console.log(`[Scheduler] Tarefa ${taskId} completada`);
+    schedulerLogger.debug(`Tarefa completada`, { taskId });
     return { success: true };
   } catch (err) {
-    console.error('[Scheduler] Erro ao completar tarefa:', err);
+    schedulerLogger.error('Erro ao completar tarefa:', sanitizeError(err));
     return { success: false, error: 'Erro ao completar tarefa' };
   }
 }
@@ -256,19 +267,27 @@ export async function markTaskFailed(
       .eq('id', taskId);
 
     if (error) {
-      console.error('[Scheduler] Erro ao marcar tarefa como falha:', error);
+      schedulerLogger.error('Erro ao marcar tarefa como falha:', sanitizeError(error));
       return { success: false, error: error.message };
     }
 
     if (shouldRetry) {
-      console.log(`[Scheduler] Tarefa ${taskId} voltou para pending (${task.attempts}/${task.max_attempts} tentativas)`);
+      schedulerLogger.warn(`Tarefa voltou para pending após falha`, {
+        taskId,
+        attempts: task.attempts,
+        maxAttempts: task.max_attempts
+      });
     } else {
-      console.log(`[Scheduler] Tarefa ${taskId} falhou após ${task.max_attempts} tentativas: ${errorMessage}`);
+      schedulerLogger.error(`Tarefa falhou após todas as tentativas`, {
+        taskId,
+        maxAttempts: task.max_attempts,
+        errorMessage: errorMessage.substring(0, 100) // Limitar tamanho do erro no log
+      });
     }
 
     return { success: true };
   } catch (err) {
-    console.error('[Scheduler] Erro ao marcar tarefa como falha:', err);
+    schedulerLogger.error('Erro ao marcar tarefa como falha:', sanitizeError(err));
     return { success: false, error: 'Erro ao marcar tarefa como falha' };
   }
 }
@@ -345,14 +364,18 @@ export async function scheduleEmail2(
       .single();
 
     if (error) {
-      console.error('[Scheduler] Erro ao agendar Email 2:', error);
+      schedulerLogger.error('Erro ao agendar Email 2:', sanitizeError(error));
       return { success: false, error: error.message };
     }
 
-    console.log(`[Scheduler] Email 2 agendado para ${scheduledFor} (lead ${leadId})`);
+    schedulerLogger.debug(`Email 2 agendado`, {
+      taskId: data.id,
+      scheduledFor,
+      leadId: maskId(leadId)
+    });
     return { success: true, taskId: data.id };
   } catch (err) {
-    console.error('[Scheduler] Erro ao agendar Email 2:', err);
+    schedulerLogger.error('Erro ao agendar Email 2:', sanitizeError(err));
     return { success: false, error: 'Erro ao agendar Email 2' };
   }
 }
@@ -385,14 +408,18 @@ export async function scheduleWhatsAppFinal(
       .single();
 
     if (error) {
-      console.error('[Scheduler] Erro ao agendar WhatsApp final:', error);
+      schedulerLogger.error('Erro ao agendar WhatsApp final:', sanitizeError(error));
       return { success: false, error: error.message };
     }
 
-    console.log(`[Scheduler] WhatsApp final agendado para ${scheduledFor} (lead ${leadId})`);
+    schedulerLogger.debug(`WhatsApp final agendado`, {
+      taskId: data.id,
+      scheduledFor,
+      leadId: maskId(leadId)
+    });
     return { success: true, taskId: data.id };
   } catch (err) {
-    console.error('[Scheduler] Erro ao agendar WhatsApp final:', err);
+    schedulerLogger.error('Erro ao agendar WhatsApp final:', sanitizeError(err));
     return { success: false, error: 'Erro ao agendar WhatsApp final' };
   }
 }
@@ -418,18 +445,21 @@ export async function cancelAllLeadTasks(
       .select('id');
 
     if (error) {
-      console.error('[Scheduler] Erro ao cancelar tarefas do lead:', error);
+      schedulerLogger.error('Erro ao cancelar tarefas do lead:', sanitizeError(error));
       return { success: false, cancelled: 0, error: error.message };
     }
 
     const cancelled = data?.length || 0;
     if (cancelled > 0) {
-      console.log(`[Scheduler] ${cancelled} tarefa(s) cancelada(s) para lead ${leadId}`);
+      schedulerLogger.debug(`Tarefas canceladas para lead`, {
+        cancelled,
+        leadId: maskId(leadId)
+      });
     }
 
     return { success: true, cancelled };
   } catch (err) {
-    console.error('[Scheduler] Erro ao cancelar tarefas do lead:', err);
+    schedulerLogger.error('Erro ao cancelar tarefas do lead:', sanitizeError(err));
     return { success: false, cancelled: 0, error: 'Erro ao cancelar tarefas' };
   }
 }

@@ -4,6 +4,10 @@ import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import type { ActionResponse } from './types';
 import { verifyAdminOrCreator, getAuthenticatedUser } from './utils';
+import { logger, maskId, sanitizeError } from '@/lib';
+
+// Logger contextualizado para o módulo de desafios admin
+const challengesAdminLogger = logger.withContext('[ChallengesAdmin]');
 
 /**
  * Aprovar participação em desafio (admin)
@@ -147,50 +151,68 @@ export async function toggleChallengeActive(
   challengeId: string,
   isActive: boolean
 ): Promise<ActionResponse> {
-  console.log('toggleChallengeActive: Iniciando', { challengeId, isActive });
+  challengesAdminLogger.info('Iniciando toggle de desafio', {
+    challengeId: maskId(challengeId),
+    isActive
+  });
 
   try {
     // Verificar autenticação
     const userCheck = await getAuthenticatedUser();
-    console.log('toggleChallengeActive: userCheck', userCheck);
+    challengesAdminLogger.debug('Verificação de usuário', {
+      hasUser: !!userCheck.data,
+      hasError: !!userCheck.error
+    });
 
     if (userCheck.error) {
-      console.log('toggleChallengeActive: Usuario nao autenticado');
+      challengesAdminLogger.warn('Usuário não autenticado ao tentar toggle de desafio');
       return userCheck;
     }
     const user = userCheck.data!;
 
     // Verificar se é admin/creator
     const authCheck = await verifyAdminOrCreator(user.id);
-    console.log('toggleChallengeActive: authCheck', authCheck);
+    challengesAdminLogger.debug('Verificação de autorização', {
+      userId: maskId(user.id),
+      isAuthorized: !authCheck.error
+    });
 
     if (authCheck.error) {
-      console.log('toggleChallengeActive: Nao autorizado');
+      challengesAdminLogger.warn('Usuário não autorizado ao tentar toggle de desafio', {
+        userId: maskId(user.id)
+      });
       return authCheck;
     }
 
     const supabase = await createClient();
 
-    console.log('toggleChallengeActive: Executando update...');
+    challengesAdminLogger.debug('Executando update de desafio');
     const { error, data } = await supabase
       .from('challenges')
       .update({ is_active: isActive })
       .eq('id', challengeId)
       .select();
 
-    console.log('toggleChallengeActive: Resultado update', { error, data });
-
     if (error) {
-      console.log('toggleChallengeActive: Erro no update', JSON.stringify(error));
+      challengesAdminLogger.error('Erro ao atualizar desafio', {
+        challengeId: maskId(challengeId),
+        error: sanitizeError(error)
+      });
       return { error: `Erro ao atualizar desafio: ${error.message || error.code}` };
     }
 
-    console.log('toggleChallengeActive: Sucesso! Revalidando paths...');
+    challengesAdminLogger.info('Desafio atualizado com sucesso', {
+      challengeId: maskId(challengeId),
+      isActive
+    });
     revalidatePath('/desafios');
     revalidatePath('/admin/desafios');
     return { success: true };
   } catch (err) {
-    console.error('toggleChallengeActive: Erro inesperado', err);
+    challengesAdminLogger.error('Erro inesperado ao toggle de desafio', {
+      challengeId: maskId(challengeId),
+      error: sanitizeError(err)
+    });
     return { error: 'Erro interno do servidor' };
   }
 }
@@ -254,7 +276,11 @@ export async function createChallenge(data: {
   starts_at?: string | null;
   ends_at?: string | null;
 }): Promise<ActionResponse> {
-  console.log('createChallenge: Dados recebidos:', JSON.stringify(data, null, 2));
+  challengesAdminLogger.info('Iniciando criação de desafio', {
+    title: data.title,
+    type: data.type,
+    coinsReward: data.coins_reward
+  });
 
   try {
     // Verificar autenticação
@@ -303,14 +329,23 @@ export async function createChallenge(data: {
       .single();
 
     if (error) {
-      console.error('createChallenge error:', error);
+      challengesAdminLogger.error('Erro ao criar desafio', {
+        error: sanitizeError(error)
+      });
       return { error: `Erro ao criar desafio: ${error.message}` };
     }
 
+    challengesAdminLogger.info('Desafio criado com sucesso', {
+      challengeId: maskId(challenge.id),
+      title: challenge.title
+    });
     revalidatePath('/desafios');
     revalidatePath('/admin/desafios');
     return { success: true, data: challenge };
-  } catch {
+  } catch (err) {
+    challengesAdminLogger.error('Erro inesperado ao criar desafio', {
+      error: sanitizeError(err)
+    });
     return { error: 'Erro interno do servidor' };
   }
 }
