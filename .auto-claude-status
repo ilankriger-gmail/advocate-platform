@@ -1,15 +1,15 @@
 {
   "active": true,
-  "spec": "007-configurar-security-headers-no-next-js",
+  "spec": "036-validar-conte-do-real-de-arquivos-no-upload-magic-",
   "state": "building",
   "subtasks": {
-    "completed": 6,
-    "total": 7,
+    "completed": 14,
+    "total": 16,
     "in_progress": 1,
     "failed": 0
   },
   "phase": {
-    "current": "Verificação e Testes",
+    "current": "Verifica\u00e7\u00e3o final e documenta\u00e7\u00e3o",
     "id": null,
     "total": 2
   },
@@ -18,8 +18,8 @@
     "max": 1
   },
   "session": {
-    "number": 8,
-    "started_at": "2026-01-08T21:20:06.329428"
+    "number": 15,
+    "started_at": "2026-01-11T11:02:57.633538"
   },
-  "last_update": "2026-01-08T21:33:43.244591"
+  "last_update": "2026-01-11T11:32:22.304051"
 }

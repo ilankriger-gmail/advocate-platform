@@ -6,7 +6,7 @@ import { ActionResponse, CreatePostResponse } from '@/types/action';
 import type { CreatePostData, UpdatePostData } from '@/types/post';
 import type { Post, PostComment } from '@/lib/supabase/types';
 import { moderatePost, getBlockedMessage, getPendingReviewMessage } from '@/lib/moderation';
-import { logModerationAction, checkRateLimit, RATE_LIMITS } from '@/lib/security';
+import { logModerationAction, checkRateLimit, RATE_LIMITS, validateFileMagicBytes } from '@/lib/security';
 import { logger, maskId, sanitizeError } from '@/lib';
 
 // Logger contextualizado para o módulo de posts
@@ -294,14 +294,39 @@ export async function uploadPostImages(formData: FormData): Promise<ActionRespon
     const uploadedUrls: string[] = [];
 
     for (const file of files) {
-      // Validar tipo de arquivo
-      if (!file.type.startsWith('image/')) {
-        return { error: 'Apenas imagens são permitidas' };
+      // Validar tipo de arquivo usando magic bytes (conteúdo real)
+      // Não confiar em file.type que pode ser manipulado pelo cliente
+      const validation = await validateFileMagicBytes(file);
+      if (!validation.valid) {
+        // Mensagens de erro específicas e claras para o usuário
+        const fileName = file.name.length > 30
+          ? `${file.name.substring(0, 27)}...`
+          : file.name;
+
+        // Determinar mensagem baseada no tipo de erro
+        let errorMessage: string;
+
+        if (validation.error?.includes('SVG inválido') || validation.error?.includes('malicioso')) {
+          errorMessage = `"${fileName}": Arquivo SVG contém conteúdo inválido ou inseguro. Por favor, use um arquivo SVG limpo.`;
+        } else if (validation.error?.includes('não reconhecido') || validation.error?.includes('inválido')) {
+          errorMessage = `"${fileName}": Tipo de arquivo não suportado. Use apenas: JPEG, PNG, GIF, WebP ou SVG.`;
+        } else if (validation.error?.includes('muito pequeno')) {
+          errorMessage = `"${fileName}": Arquivo corrompido ou muito pequeno para ser uma imagem válida.`;
+        } else if (validation.error?.includes('não é permitido')) {
+          errorMessage = `"${fileName}": ${validation.error}`;
+        } else {
+          errorMessage = `"${fileName}": ${validation.error || 'Arquivo inválido'}. Formatos aceitos: JPEG, PNG, GIF, WebP e SVG.`;
+        }
+
+        return { error: errorMessage };
       }
 
       // Validar tamanho (máximo 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        return { error: 'Imagem muito grande. Máximo 5MB' };
+        const fileName = file.name.length > 30
+          ? `${file.name.substring(0, 27)}...`
+          : file.name;
+        return { error: `"${fileName}": Imagem muito grande. Máximo 5MB por arquivo.` };
       }
 
       // Gerar nome único para o arquivo

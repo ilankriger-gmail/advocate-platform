@@ -43,3 +43,13 @@ export {
   type AuditAction,
   type AuditLogEntry,
 } from './audit-log';
+
+// File Validation
+export {
+  validateFileMagicBytes,
+  getFileTypeFromMagicBytes,
+  validateMimeTypeMatch,
+  MAGIC_BYTES,
+  type SupportedImageFormat,
+  type FileValidationResult,
+} from './file-validation';
