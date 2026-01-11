@@ -50,8 +50,8 @@ function verifyResendSignature(
   const webhookSecret = process.env.RESEND_WEBHOOK_SECRET;
 
   if (!webhookSecret) {
-    console.warn('[Webhook Resend] Secret não configurado - aceitando requisição');
-    return true; // Em desenvolvimento, aceitar sem validacao
+    console.error('[Webhook Resend] RESEND_WEBHOOK_SECRET não configurado - requisição será rejeitada');
+    return false;
   }
 
   if (!signature || !timestamp) {
@@ -65,7 +65,7 @@ function verifyResendSignature(
     const diffMinutes = (now.getTime() - timestampDate.getTime()) / (1000 * 60);
 
     if (diffMinutes > 5) {
-      console.warn('[Webhook Resend] Timestamp muito antigo');
+      console.error('[Webhook Resend] Timestamp muito antigo');
       return false;
     }
 
@@ -117,12 +117,10 @@ export async function POST(request: NextRequest) {
     const signature = request.headers.get('svix-signature');
     const timestamp = request.headers.get('svix-timestamp');
 
-    // Verificar assinatura (opcional em dev)
-    if (process.env.NODE_ENV === 'production') {
-      if (!verifyResendSignature(body, signature, timestamp)) {
-        console.error('[Webhook Resend] Assinatura invalida');
-        return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
-      }
+    // Verificar assinatura
+    if (!verifyResendSignature(body, signature, timestamp)) {
+      console.error('[Webhook Resend] Assinatura invalida');
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
     }
 
     const payload = JSON.parse(body) as ResendWebhookPayload;
