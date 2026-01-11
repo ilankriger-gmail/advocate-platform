@@ -199,3 +199,154 @@ export function getVídeoPlatform(url: string): string | null {
   if (/facebook\.com|fb\.watch/.test(url)) return 'Facebook';
   return null;
 }
+
+/**
+ * Interface para dados do desafio para geração de descrição
+ */
+export interface ChallengeDescriptionInput {
+  title: string;
+  idea: string; // O que a pessoa precisa gravar/publicar
+  type: 'fisico' | 'engajamento' | 'participe';
+  icon?: string;
+  coinsReward?: number;
+  goalType?: 'repetitions' | 'time' | null;
+  goalValue?: number | null;
+  hashtag?: string;
+  profileToTag?: string;
+  prizeAmount?: number | null;
+  numWinners?: number | null;
+}
+
+/**
+ * Gera uma descrição de desafio usando Gemini AI
+ */
+export async function generateChallengeDescription(
+  input: ChallengeDescriptionInput
+): Promise<{ success: boolean; description?: string; error?: string }> {
+  const apiKey = process.env.GEMINI_API_KEY;
+
+  if (!apiKey || apiKey === 'your-gemini-api-key') {
+    return {
+      success: false,
+      error: 'API Gemini não configurada',
+    };
+  }
+
+  try {
+    const prompt = buildDescriptionPrompt(input);
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: prompt,
+                },
+              ],
+            },
+          ],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 500,
+          },
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Gemini API error:', response.status, errorText);
+      return {
+        success: false,
+        error: 'Erro ao conectar com API Gemini',
+      };
+    }
+
+    const data = await response.json();
+    const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    if (!textResponse) {
+      return {
+        success: false,
+        error: 'Resposta vazia da IA',
+      };
+    }
+
+    return {
+      success: true,
+      description: textResponse.trim(),
+    };
+  } catch (error) {
+    console.error('Error generating description:', error);
+    return {
+      success: false,
+      error: 'Erro ao gerar descrição',
+    };
+  }
+}
+
+function buildDescriptionPrompt(input: ChallengeDescriptionInput): string {
+  const typeLabels = {
+    fisico: 'Desafio Físico',
+    engajamento: 'Desafio de Engajamento',
+    participe: 'Desafio Participe (Sorteio)',
+  };
+
+  let contextDetails = '';
+
+  if (input.type === 'fisico') {
+    if (input.goalType === 'repetitions' && input.goalValue) {
+      contextDetails += `\n- Meta: ${input.goalValue} repetições`;
+    } else if (input.goalType === 'time' && input.goalValue) {
+      contextDetails += `\n- Meta: ${input.goalValue} segundos`;
+    }
+    if (input.hashtag) {
+      contextDetails += `\n- Hashtag oficial: ${input.hashtag}`;
+    }
+    if (input.profileToTag) {
+      contextDetails += `\n- Perfil para marcar: ${input.profileToTag}`;
+    }
+  }
+
+  if ((input.type === 'engajamento' || input.type === 'participe') && input.prizeAmount) {
+    contextDetails += `\n- Prêmio: R$ ${input.prizeAmount.toFixed(2)}`;
+    if (input.numWinners) {
+      contextDetails += ` (${input.numWinners} ganhador${input.numWinners > 1 ? 'es' : ''})`;
+    }
+  }
+
+  if (input.coinsReward) {
+    contextDetails += `\n- Recompensa em corações: ${input.coinsReward}`;
+  }
+
+  return `Você é um copywriter especializado em criar descrições motivacionais e engajantes para desafios de uma plataforma de advocate marketing fitness.
+
+DADOS DO DESAFIO:
+- Título: ${input.title}
+- Tipo: ${typeLabels[input.type]}
+- Ícone: ${input.icon || '💪'}
+- Ideia/O que fazer: ${input.idea}${contextDetails}
+
+INSTRUÇÕES:
+1. Crie uma descrição CURTA e DIRETA (máximo 3-4 frases)
+2. Use linguagem motivacional e energética
+3. Seja claro sobre o que a pessoa precisa fazer
+4. Inclua um CTA (call-to-action) no final
+5. Use emojis com moderação (1-2 no máximo)
+6. O tom deve ser amigável e encorajador
+7. NÃO use hashtags na descrição (elas serão adicionadas separadamente)
+8. NÃO mencione valores de prêmios em dinheiro diretamente
+
+EXEMPLOS DE BOM TOM:
+- "Mostre sua força! Faça X e compartilhe com a comunidade. Vamos ver do que você é capaz! 💪"
+- "Hora de brilhar! Complete o desafio e conquiste seus pontos. Estamos torcendo por você!"
+
+Escreva APENAS a descrição, sem explicações adicionais:`;
+}

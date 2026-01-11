@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, Button, Input, Textarea } from '@/components/ui';
 import { createChallenge } from '@/actions/challenges-admin';
+import { AIDescriptionGenerator } from '@/components/admin/AIDescriptionGenerator';
 
 type ChallengeType = 'fisico' | 'engajamento' | 'participe';
 type GoalType = 'repetitions' | 'time';
@@ -34,6 +35,7 @@ export default function NovoChallengeDesafioPage() {
     // Datas
     starts_at: '',
     ends_at: '',
+    noEndDate: false, // Desafio permanente/sem data de término
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -56,7 +58,7 @@ export default function NovoChallengeDesafioPage() {
       hashtag: formData.hashtag || null,
       profile_to_tag: formData.profile_to_tag || null,
       starts_at: formData.starts_at || null,
-      ends_at: formData.ends_at || null,
+      ends_at: formData.noEndDate ? null : (formData.ends_at || null),
     });
 
     if (result.error) {
@@ -173,7 +175,24 @@ export default function NovoChallengeDesafioPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-gray-700">Descrição</label>
+              <AIDescriptionGenerator
+                challengeData={{
+                  title: formData.title,
+                  type: formData.type,
+                  icon: formData.icon,
+                  coinsReward: formData.coins_reward,
+                  goalType: formData.goal_type,
+                  goalValue: formData.goal_value ? parseInt(formData.goal_value) : null,
+                  hashtag: formData.hashtag || undefined,
+                  profileToTag: formData.profile_to_tag || undefined,
+                  prizeAmount: formData.prize_amount ? parseFloat(formData.prize_amount) : null,
+                  numWinners: formData.num_winners ? parseInt(formData.num_winners) : null,
+                }}
+                onDescriptionGenerated={(description) => setFormData({ ...formData, description })}
+              />
+            </div>
             <Textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -323,9 +342,29 @@ export default function NovoChallengeDesafioPage() {
                 type="datetime-local"
                 value={formData.ends_at}
                 onChange={(e) => setFormData({ ...formData, ends_at: e.target.value })}
+                disabled={formData.noEndDate}
+                className={formData.noEndDate ? 'opacity-50 cursor-not-allowed' : ''}
               />
             </div>
           </div>
+
+          {/* Opção de desafio permanente */}
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={formData.noEndDate}
+              onChange={(e) => setFormData({
+                ...formData,
+                noEndDate: e.target.checked,
+                ends_at: e.target.checked ? '' : formData.ends_at,
+              })}
+              className="w-5 h-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+            />
+            <div>
+              <span className="text-sm font-medium text-gray-700">Desafio permanente</span>
+              <p className="text-xs text-gray-500">Sem data de término definida</p>
+            </div>
+          </label>
         </Card>
 
         {/* Erro */}
