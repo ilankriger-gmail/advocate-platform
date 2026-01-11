@@ -201,7 +201,7 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
                 setReason(e.target.value);
                 if (errors.reason) setErrors({});
               }}
-              rows={4}
+              rows={6}
               placeholder="Conte-nos o motivo da sua avaliação..."
               className={`typeform-textarea ${errors.reason ? 'border-red-500' : ''}`}
               autoFocus={currentStep === 2}
