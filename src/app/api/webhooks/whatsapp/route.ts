@@ -59,8 +59,8 @@ function verifyMetaSignature(payload: string, signature: string | null): boolean
   const appSecret = process.env.WHATSAPP_APP_SECRET;
 
   if (!appSecret) {
-    console.warn('[Webhook WhatsApp] App secret não configurado - aceitando em dev');
-    return process.env.NODE_ENV !== 'production';
+    console.warn('[Webhook WhatsApp] App secret não configurado - rejeitando requisição');
+    return false;
   }
 
   if (!signature) {
