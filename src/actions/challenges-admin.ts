@@ -272,12 +272,15 @@ export async function createChallenge(data: {
 
     const supabase = await createClient();
 
+    // Mapear 'participe' para 'engajamento' no banco (constraint só aceita 'engajamento' e 'fisico')
+    const dbType = data.type === 'participe' ? 'engajamento' : data.type;
+
     const { data: challenge, error } = await supabase
       .from('challenges')
       .insert({
         title: data.title,
         description: data.description || null,
-        type: data.type,
+        type: dbType,
         icon: data.icon || '🎯',
         is_active: true,
         status: 'active',
@@ -289,7 +292,7 @@ export async function createChallenge(data: {
         // Físico
         goal_type: data.goal_type || null,
         goal_value: data.goal_value || null,
-        record_vídeo_url: data.record_vídeo_url || null,
+        record_video_url: data.record_vídeo_url || null,
         hashtag: data.hashtag || null,
         profile_to_tag: data.profile_to_tag || null,
         // Controle
