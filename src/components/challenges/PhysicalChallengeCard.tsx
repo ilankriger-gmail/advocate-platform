@@ -12,7 +12,7 @@ interface Challenge {
   icon: string;
   goal_type: 'repetitions' | 'time' | null;
   goal_value: number | null;
-  record_vídeo_url: string | null;
+  record_video_url: string | null;
   hashtag: string | null;
   profile_to_tag: string | null;
   coins_reward: number;
@@ -98,9 +98,9 @@ export function PhysicalChallengeCard({
             )}
 
             {/* Vídeo de referência embeddado */}
-            {challenge.record_vídeo_url && (
+            {challenge.record_video_url && (
               <div className="mt-3">
-                <YouTubeEmbed url={challenge.record_vídeo_url} title={challenge.title} />
+                <YouTubeEmbed url={challenge.record_video_url} title={challenge.title} />
               </div>
             )}
 

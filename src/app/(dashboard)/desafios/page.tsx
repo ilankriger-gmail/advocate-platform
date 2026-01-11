@@ -16,7 +16,7 @@ type Challenge = {
   num_winners?: number;
   goal_type?: 'repetitions' | 'time';
   goal_value?: number;
-  record_vídeo_url?: string;
+  record_video_url?: string;
   hashtag?: string;
   profile_to_tag?: string;
   coins_reward: number;
