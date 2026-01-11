@@ -9,5 +9,6 @@
     "src/components/auth/LoginForm.tsx",
     "src/components/ui/Input.tsx"
   ],
-  "problemSolved": "LoginForm uses raw <input> elements with inline Tailwind classes (appearance-none, block, w-full, px-3, py-2, etc.) without using the project's Input component. This results in different border-radius (rounded-md vs rounded-xl), missing icon support, and no integrated error display."
+  "problemSolved": "LoginForm uses raw <input> elements with inline Tailwind classes (appearance-none, block, w-full, px-3, py-2, etc.) without using the project's Input component. This results in different border-radius (rounded-md vs rounded-xl), missing icon support, and no integrated error display.",
+  "archivedAt": "2026-01-11T14:07:38.564Z"
 }
