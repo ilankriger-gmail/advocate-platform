@@ -12,6 +12,14 @@ interface RateLimitConfig {
   limit: number;
   /** Janela de tempo em segundos */
   windowSeconds: number;
+  /**
+   * Comportamento em caso de falha do Redis:
+   * - 'open': Permite requisicao (default, prioriza disponibilidade)
+   * - 'closed': Bloqueia requisicao (prioriza seguranca)
+   *
+   * Use 'closed' para endpoints criticos como login e alteracao de senha
+   */
+  failMode?: 'open' | 'closed';
 }
 
 interface RateLimitResult {
@@ -78,10 +86,24 @@ export async function checkRateLimit(
       reset,
     };
   } catch (error) {
-    // Em caso de erro do Redis, fail-open (permitir requisição)
     // SEGURANCA: Nao logar detalhes do erro que podem conter dados sensiveis
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('Rate limit Redis error:', errorMessage);
+
+    // SEGURANCA: Fail-closed para endpoints criticos, fail-open para outros
+    const failMode = config.failMode || 'open';
+
+    if (failMode === 'closed') {
+      // Bloquear requisicao em caso de erro (prioriza seguranca)
+      console.warn('Rate limit fail-closed: bloqueando requisicao por falha do Redis');
+      return {
+        success: false,
+        remaining: 0,
+        reset: now + config.windowSeconds * 1000,
+      };
+    }
+
+    // Permitir requisicao em caso de erro (prioriza disponibilidade)
     return {
       success: true,
       remaining: config.limit - 1,
@@ -92,13 +114,17 @@ export async function checkRateLimit(
 
 /**
  * Configuracoes pre-definidas para diferentes endpoints
+ * Endpoints criticos usam failMode: 'closed' para priorizar seguranca
  */
 export const RATE_LIMITS = {
-  // Login: 5 tentativas por minuto
-  login: { limit: 5, windowSeconds: 60 },
+  // Login: 5 tentativas por minuto (CRITICO: fail-closed)
+  login: { limit: 5, windowSeconds: 60, failMode: 'closed' as const },
 
-  // Signup: 3 tentativas por minuto
-  signup: { limit: 3, windowSeconds: 60 },
+  // Signup: 3 tentativas por minuto (CRITICO: fail-closed)
+  signup: { limit: 3, windowSeconds: 60, failMode: 'closed' as const },
+
+  // Reset de senha: 3 tentativas por minuto (CRITICO: fail-closed)
+  resetPassword: { limit: 3, windowSeconds: 60, failMode: 'closed' as const },
 
   // API geral: 100 requisicoes por minuto
   api: { limit: 100, windowSeconds: 60 },

@@ -53,3 +53,15 @@ export {
   type SupportedImageFormat,
   type FileValidationResult,
 } from './file-validation';
+
+// Retry & Circuit Breaker
+export {
+  withRetry,
+  withCircuitBreaker,
+  withRetryAndCircuitBreaker,
+  getCircuitBreaker,
+  resetCircuitBreaker,
+  type RetryConfig,
+  type CircuitBreakerConfig,
+  type CircuitBreakerState,
+} from './retry';

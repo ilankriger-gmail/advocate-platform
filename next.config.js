@@ -45,7 +45,37 @@ const nextConfig = {
     };
   },
   async headers() {
+    // Dominios permitidos para CORS
+    const allowedOrigins = [
+      'https://comunidade.omocodoteamo.com.br',
+      'https://comece.omocodoteamo.com.br',
+      // Adicionar localhost em desenvolvimento
+      ...(process.env.NODE_ENV === 'development' ? ['http://localhost:3000'] : []),
+    ].join(', ');
+
     return [
+      {
+        // CORS para rotas de API
+        source: '/api/:path*',
+        headers: [
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: allowedOrigins,
+          },
+          {
+            key: 'Access-Control-Allow-Methods',
+            value: 'GET, POST, PUT, DELETE, OPTIONS',
+          },
+          {
+            key: 'Access-Control-Allow-Headers',
+            value: 'Content-Type, Authorization, X-Requested-With',
+          },
+          {
+            key: 'Access-Control-Max-Age',
+            value: '86400', // 24 horas
+          },
+        ],
+      },
       {
         // Aplicar headers de segurança em todas as rotas
         source: '/:path*',
