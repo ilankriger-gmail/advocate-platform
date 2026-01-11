@@ -110,6 +110,14 @@ export default async function AdminDashboardPage() {
       description: `${pendingLeads || 0} pendentes · ${analyzedLeads || 0} analisados por AI`,
     },
     {
+      title: 'Analytics',
+      value: 0,
+      icon: '📊',
+      href: '/admin/analytics',
+      color: 'border-l-cyan-500',
+      description: 'Cohorts, retenção, métricas',
+    },
+    {
       title: 'Configurações',
       value: 12,
       icon: '⚙️',
@@ -188,6 +196,13 @@ export default async function AdminDashboardPage() {
           >
             <span className="text-2xl">📧</span>
             <span className="text-sm text-indigo-700 font-medium text-center">Emails</span>
+          </Link>
+          <Link
+            href="/admin/analytics"
+            className="flex flex-col items-center gap-2 p-4 bg-cyan-50 rounded-lg hover:bg-cyan-100 transition-colors"
+          >
+            <span className="text-2xl">📊</span>
+            <span className="text-sm text-cyan-700 font-medium text-center">Analytics</span>
           </Link>
         </div>
       </Card>
