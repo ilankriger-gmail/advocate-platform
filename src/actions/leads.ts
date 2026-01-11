@@ -13,6 +13,7 @@ import {
 } from '@/lib/notifications';
 import { getSiteSettings } from '@/lib/config/site';
 import { analyzeLeadWithAI } from '@/lib/ai';
+import { validateEmail, checkRateLimit, RATE_LIMITS, auditLog } from '@/lib/security';
 
 // ============ ACOES PUBLICAS ============
 
@@ -67,6 +68,13 @@ export async function submitNpsLead(data: NpsLeadInsert): Promise<ActionResponse
   try {
     const supabase = await createClient();
 
+    // Rate limiting por email
+    const rateLimitKey = `lead:${data.email?.toLowerCase() || 'unknown'}`;
+    const rateLimit = checkRateLimit(rateLimitKey, RATE_LIMITS.lead);
+    if (!rateLimit.success) {
+      return { error: `Muitas tentativas. Aguarde ${Math.ceil((rateLimit.reset - Date.now()) / 1000)} segundos.` };
+    }
+
     // Validacao dos dados
     if (data.score < 0 || data.score > 10) {
       return { error: 'Nota deve estar entre 0 e 10' };
@@ -76,8 +84,10 @@ export async function submitNpsLead(data: NpsLeadInsert): Promise<ActionResponse
       return { error: 'Nome e obrigatorio' };
     }
 
-    if (!data.email || !data.email.includes('@')) {
-      return { error: 'Email inválido' };
+    // Validacao de email melhorada
+    const emailValidation = validateEmail(data.email);
+    if (!emailValidation.valid) {
+      return { error: emailValidation.error || 'Email invalido' };
     }
 
     if (!data.reason || data.reason.trim().length < 3) {

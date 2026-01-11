@@ -181,8 +181,8 @@ export async function toggleChallengeActive(
     console.log('toggleChallengeActive: Resultado update', { error, data });
 
     if (error) {
-      console.log('toggleChallengeActive: Erro no update', error);
-      return { error: 'Erro ao atualizar desafio' };
+      console.log('toggleChallengeActive: Erro no update', JSON.stringify(error));
+      return { error: `Erro ao atualizar desafio: ${error.message || error.code}` };
     }
 
     console.log('toggleChallengeActive: Sucesso! Revalidando paths...');
