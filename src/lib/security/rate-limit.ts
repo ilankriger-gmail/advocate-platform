@@ -1,9 +1,11 @@
 /**
- * Rate Limiting para proteger contra brute force e DDoS
+ * Rate Limiting com Redis/Upstash para ambiente serverless
  *
- * Em desenvolvimento: usa Map em memoria
- * Em producao: deve ser substituido por Redis/Upstash
+ * Funciona corretamente em deployments multi-instância (Vercel)
+ * Usa REST API do Upstash - otimizado para edge/serverless
  */
+
+import { Redis } from '@upstash/redis';
 
 interface RateLimitConfig {
   /** Numero maximo de requisicoes */
@@ -18,65 +20,72 @@ interface RateLimitResult {
   reset: number;
 }
 
-// Cache em memoria (apenas para desenvolvimento/single instance)
-const rateLimitCache = new Map<string, { count: number; resetAt: number }>();
-
-// Limpar cache periodicamente (a cada 5 minutos)
-if (typeof setInterval !== 'undefined') {
-  setInterval(() => {
-    const now = Date.now();
-    const entries = Array.from(rateLimitCache.entries());
-    for (const [key, value] of entries) {
-      if (value.resetAt < now) {
-        rateLimitCache.delete(key);
-      }
-    }
-  }, 5 * 60 * 1000);
-}
+// Inicializar Redis apenas se as credenciais estiverem disponíveis
+const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+  ? new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    })
+  : null;
 
 /**
  * Verifica rate limit para um identificador (IP, userId, etc)
+ * Usa Redis para funcionar em ambiente serverless multi-instância
  */
-export function checkRateLimit(
+export async function checkRateLimit(
   identifier: string,
   config: RateLimitConfig
-): RateLimitResult {
+): Promise<RateLimitResult> {
   const now = Date.now();
-  const windowMs = config.windowSeconds * 1000;
-  const key = `ratelimit:${identifier}`;
 
-  const existing = rateLimitCache.get(key);
-
-  // Se nao existe ou expirou, criar novo
-  if (!existing || existing.resetAt < now) {
-    rateLimitCache.set(key, {
-      count: 1,
-      resetAt: now + windowMs,
-    });
+  // Fallback se Redis não estiver configurado
+  if (!redis) {
+    console.warn('Rate limit: Redis não configurado, permitindo requisição');
     return {
       success: true,
       remaining: config.limit - 1,
-      reset: now + windowMs,
+      reset: now + config.windowSeconds * 1000,
     };
   }
 
-  // Incrementar contador
-  existing.count++;
+  try {
+    const key = `ratelimit:${identifier}`;
 
-  // Verificar se excedeu limite
-  if (existing.count > config.limit) {
+    // Incrementar contador atomicamente
+    const count = await redis.incr(key);
+
+    // Se é a primeira requisição na janela, setar TTL
+    if (count === 1) {
+      await redis.expire(key, config.windowSeconds);
+    }
+
+    // Obter TTL para calcular reset time
+    const ttl = await redis.ttl(key);
+    const reset = now + (ttl > 0 ? ttl * 1000 : config.windowSeconds * 1000);
+
+    // Verificar se excedeu limite
+    if (count > config.limit) {
+      return {
+        success: false,
+        remaining: 0,
+        reset,
+      };
+    }
+
     return {
-      success: false,
-      remaining: 0,
-      reset: existing.resetAt,
+      success: true,
+      remaining: config.limit - count,
+      reset,
+    };
+  } catch (error) {
+    // Em caso de erro do Redis, fail-open (permitir requisição)
+    console.error('Rate limit Redis error:', error);
+    return {
+      success: true,
+      remaining: config.limit - 1,
+      reset: now + config.windowSeconds * 1000,
     };
   }
-
-  return {
-    success: true,
-    remaining: config.limit - existing.count,
-    reset: existing.resetAt,
-  };
 }
 
 /**
@@ -132,7 +141,7 @@ export async function withRateLimit<T>(
   config: RateLimitConfig,
   action: () => Promise<T>
 ): Promise<T | { error: string; retryAfter: number }> {
-  const result = checkRateLimit(identifier, config);
+  const result = await checkRateLimit(identifier, config);
 
   if (!result.success) {
     const retryAfter = Math.ceil((result.reset - Date.now()) / 1000);

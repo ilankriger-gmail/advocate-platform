@@ -68,9 +68,9 @@ export async function submitNpsLead(data: NpsLeadInsert): Promise<ActionResponse
   try {
     const supabase = await createClient();
 
-    // Rate limiting por email
+    // Rate limiting por email (usando Redis para ambiente serverless)
     const rateLimitKey = `lead:${data.email?.toLowerCase() || 'unknown'}`;
-    const rateLimit = checkRateLimit(rateLimitKey, RATE_LIMITS.lead);
+    const rateLimit = await checkRateLimit(rateLimitKey, RATE_LIMITS.lead);
     if (!rateLimit.success) {
       return { error: `Muitas tentativas. Aguarde ${Math.ceil((rateLimit.reset - Date.now()) / 1000)} segundos.` };
     }
