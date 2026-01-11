@@ -220,7 +220,7 @@ function RewardCard({ reward }: RewardCardProps) {
           <div>
             <h3 className="font-bold text-lg">{reward.name}</h3>
             <p className={reward.is_active ? 'text-indigo-100 text-sm' : 'text-gray-200 text-sm'}>
-              {reward.coins_cost} coracoes
+              {reward.coins_cost} corações
             </p>
           </div>
           <Badge className="bg-white/20 text-white border-0">

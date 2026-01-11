@@ -146,7 +146,7 @@ export function NewRewardForm() {
     setError(null);
 
     if (!formData.name || !formData.coins_cost) {
-      setError('Nome e custo em coracoes sao obrigatorios');
+      setError('Nome e custo em corações sao obrigatorios');
       return;
     }
 
@@ -235,7 +235,7 @@ export function NewRewardForm() {
 
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Custo (coracoes) *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Custo (corações) *</label>
             <Input
               type="number"
               value={formData.coins_cost}

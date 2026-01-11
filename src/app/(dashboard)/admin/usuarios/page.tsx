@@ -11,7 +11,7 @@ export default async function AdminUsuáriosPage({ searchParams }: PageProps) {
   const search = params.q || '';
   const supabase = await createClient();
 
-  // Buscar usuários com saldo de coracoes
+  // Buscar usuários com saldo de corações
   let query = supabase
     .from('users')
     .select(`
@@ -108,7 +108,7 @@ export default async function AdminUsuáriosPage({ searchParams }: PageProps) {
                   <div className="flex items-center gap-4">
                     <div className="text-right">
                       <p className="text-lg font-bold text-pink-500">{coins}</p>
-                      <p className="text-xs text-gray-500">coracoes</p>
+                      <p className="text-xs text-gray-500">corações</p>
                     </div>
 
                     <AddCoinsButton userId={user.id} userName={user.full_name || 'Usuário'} />

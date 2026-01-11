@@ -142,7 +142,7 @@ function ChallengeAdminCard({ challenge }: ChallengeCardProps) {
               </div>
               <div className="flex items-center gap-3 mt-1">
                 <span className={challenge.is_active ? 'text-pink-100 text-sm' : 'text-gray-200 text-sm'}>
-                  +{challenge.coins_reward} coracoes
+                  +{challenge.coins_reward} corações
                 </span>
                 {challenge.prize_amount && (
                   <span className="text-white/80 text-sm">

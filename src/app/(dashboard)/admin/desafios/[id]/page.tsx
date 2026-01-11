@@ -89,7 +89,7 @@ export default async function AdminDesafioDetalhesPage({ params }: PageProps) {
             </div>
             <p className="text-gray-500 mt-1">{challenge.description}</p>
             <div className="flex items-center gap-4 mt-2 text-sm">
-              <span className="text-pink-500 font-bold">+{challenge.coins_reward} coracoes</span>
+              <span className="text-pink-500 font-bold">+{challenge.coins_reward} corações</span>
               {challenge.prize_amount && (
                 <span className="text-green-600 font-bold">R$ {challenge.prize_amount.toFixed(2)}</span>
               )}
@@ -217,7 +217,7 @@ export default async function AdminDesafioDetalhesPage({ params }: PageProps) {
                       </p>
                     </div>
                   </div>
-                  <span className="text-green-600 font-bold">+{p.coins_earned} coracoes</span>
+                  <span className="text-green-600 font-bold">+{p.coins_earned} corações</span>
                 </div>
               );
             })}

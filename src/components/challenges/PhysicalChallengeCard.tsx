@@ -113,13 +113,13 @@ export function PhysicalChallengeCard({
             )}
 
             <div className="mt-4 flex items-center justify-between">
-              <span className="text-pink-500 font-bold">+{challenge.coins_reward} coracoes</span>
+              <span className="text-pink-500 font-bold">+{challenge.coins_reward} corações</span>
 
               {hasParticipated ? (
                 <div className="text-sm text-gray-500">
                   {participation.status === 'approved' && (
                     <span className="text-green-600 font-medium">
-                      +{participation.coins_earned} coracoes ganhos!
+                      +{participation.coins_earned} corações ganhos!
                     </span>
                   )}
                   {participation.status === 'pending' && 'Aguardando avaliacao'}

@@ -79,7 +79,7 @@ export function ChallengeParticipationModal({
             </p>
           )}
           <p className="text-sm text-blue-600 mt-1">
-            Recompensa: {challenge.coins_reward} coracoes
+            Recompensa: {challenge.coins_reward} corações
           </p>
         </div>
 

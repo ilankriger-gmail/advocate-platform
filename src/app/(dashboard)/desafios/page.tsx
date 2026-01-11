@@ -66,7 +66,7 @@ export default async function DesafiosPage() {
     .select('challenge_id, status, result_value, coins_earned')
     .eq('user_id', user.id);
 
-  // Buscar saldo de coracoes
+  // Buscar saldo de corações
   const { data: userCoins } = await supabase
     .from('user_coins')
     .select('balance')
@@ -98,15 +98,15 @@ export default async function DesafiosPage() {
     <div className="space-y-8">
       <PageHeader
         title="Desafios"
-        description="Participe dos desafios e ganhe coracoes"
+        description="Participe dos desafios e ganhe corações"
       />
 
       {/* Saldo */}
       <Card className="p-4 bg-gradient-to-r from-pink-500 to-red-500 text-white">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-pink-100 text-sm">Seus coracoes</p>
-            <p className="text-3xl font-bold">{balance} coracoes</p>
+            <p className="text-pink-100 text-sm">Seus corações</p>
+            <p className="text-3xl font-bold">{balance} corações</p>
           </div>
           <div className="text-5xl">❤️</div>
         </div>
