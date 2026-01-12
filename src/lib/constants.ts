@@ -90,6 +90,7 @@ export const CREATOR_NAV = [
   { href: '/admin/premios', label: 'Prêmios', icon: 'Gift' },
   { href: '/admin/usuarios', label: 'Usuários', icon: 'Users' },
   { href: '/admin/leads', label: 'Leads NPS', icon: 'Chart' },
+  { href: '/admin/analytics', label: 'Analytics', icon: 'Chart' },
   { href: '/admin/notificacoes', label: 'Notificações', icon: 'Bell' },
   { href: '/admin/emails', label: 'Emails', icon: 'Mail' },
   { href: '/admin/configuracoes', label: 'Configurações', icon: 'Settings' },
