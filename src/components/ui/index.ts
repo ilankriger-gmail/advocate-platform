@@ -10,6 +10,7 @@ export { Modal, ModalFooter } from './Modal';
 export { ConfirmModal } from './ConfirmModal';
 export { PromptModal } from './PromptModal';
 export { Tabs, TabsList, TabsTrigger, TabsContent } from './Tabs';
+export { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from './Accordion';
 export { Skeleton, SkeletonText, SkeletonAvatar, SkeletonCard, SkeletonPost, SkeletonTable } from './Skeleton';
 export { Spinner } from './Spinner';
 export { EmptyState, EmptyStateIcon } from './EmptyState';

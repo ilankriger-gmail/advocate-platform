@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getSiteSettings } from '@/lib/config/site';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Card } from '@/components/ui';
+import { Card, Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui';
 import { PhysicalChallengeCard, MyParticipationCard } from '@/components/challenges';
 import type { ParticipationWithChallenge } from '@/lib/supabase/types';
 
@@ -175,118 +175,116 @@ export default async function DesafiosPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          <Accordion type="single" className="space-y-2">
             {engagementChallenges.map((challenge) => {
               const challengeWinners = (winners || []).filter(
                 w => w.challenge_id === challenge.id
               );
 
               return (
-                <Card key={challenge.id} className="overflow-hidden">
-                  {/* Header */}
-                  <div className="bg-gradient-to-r from-pink-500 to-red-500 p-3 sm:p-4 text-white">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl sm:text-3xl">{challenge.icon}</span>
-                      <div>
-                        <h3 className="text-base sm:text-lg font-bold">{challenge.title}</h3>
+                <AccordionItem key={challenge.id} value={challenge.id}>
+                  <AccordionTrigger>
+                    <div className="flex items-center gap-3 w-full">
+                      <span className="text-2xl">{challenge.icon}</span>
+                      <div className="flex-1 text-left">
+                        <h3 className="font-semibold text-gray-900">{challenge.title}</h3>
                         {challenge.prize_amount && (
-                          <p className="text-pink-100 text-sm">
-                            Concorra a R$ {challenge.prize_amount.toFixed(2)} no Pix!
+                          <p className="text-sm text-pink-600">
+                            R$ {challenge.prize_amount.toFixed(2)} no Pix
                           </p>
                         )}
                       </div>
+                      <span className="text-sm font-medium text-pink-500 whitespace-nowrap">
+                        +{challenge.coins_reward} ❤️
+                      </span>
                     </div>
-                  </div>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="space-y-4 pt-2">
+                      <p className="text-gray-700 text-sm whitespace-pre-line">{challenge.description}</p>
 
-                  <div className="p-3 sm:p-4 space-y-3 sm:space-y-4">
-                    <p className="text-gray-700 text-sm whitespace-pre-line">{challenge.description}</p>
-
-                    {/* Regras */}
-                    <div>
-                      <h4 className="font-semibold text-gray-900 text-sm mb-2">
-                        📋 Como participar:
-                      </h4>
-                      <ul className="space-y-1 text-sm">
-                        <li className="flex items-start gap-2">
-                          <span className="text-pink-500">•</span>
-                          <span className="text-gray-600">Acesse o post no Instagram</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="text-pink-500">•</span>
-                          <span className="text-gray-600">Deixe seu comentário criativo</span>
-                        </li>
-                        {challenge.num_winners && (
+                      {/* Regras */}
+                      <div>
+                        <h4 className="font-semibold text-gray-900 text-sm mb-2">
+                          📋 Como participar:
+                        </h4>
+                        <ul className="space-y-1 text-sm">
                           <li className="flex items-start gap-2">
                             <span className="text-pink-500">•</span>
-                            <span className="text-gray-600">
-                              {challenge.num_winners} ganhador(es) serão selecionados
-                            </span>
+                            <span className="text-gray-600">Acesse o post no Instagram</span>
                           </li>
-                        )}
-                      </ul>
-                    </div>
-
-                    {challenge.ends_at && (
-                      <div className="flex items-center gap-2 text-sm text-gray-500">
-                        📅 Válido até: <strong>{formatDate(challenge.ends_at)}</strong>
+                          <li className="flex items-start gap-2">
+                            <span className="text-pink-500">•</span>
+                            <span className="text-gray-600">Deixe seu comentário criativo</span>
+                          </li>
+                          {challenge.num_winners && (
+                            <li className="flex items-start gap-2">
+                              <span className="text-pink-500">•</span>
+                              <span className="text-gray-600">
+                                {challenge.num_winners} ganhador(es) serão selecionados
+                              </span>
+                            </li>
+                          )}
+                        </ul>
                       </div>
-                    )}
 
-                    {/* Botao Instagram - min-h-[44px] para touch target */}
-                    {challenge.instagram_embed_url && (
-                      <a
-                        href={challenge.instagram_embed_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center justify-center w-full min-h-[44px] py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-center font-semibold rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all"
-                      >
-                        Ver post no Instagram 📲
-                      </a>
-                    )}
-
-                    {/* Ganhadores */}
-                    <div className="border-t pt-4">
-                      <h4 className="font-semibold text-gray-900 text-sm mb-3">
-                        🏆 Ganhadores
-                      </h4>
-
-                      {challengeWinners.length > 0 ? (
-                        <div className="space-y-2">
-                          {challengeWinners.map((winner) => (
-                            <div
-                              key={winner.id}
-                              className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200"
-                            >
-                              <div className="flex items-center gap-2">
-                                <span>🎉</span>
-                                <div>
-                                  <p className="font-medium text-gray-900 text-sm">
-                                    @{winner.instagram_username || 'Usuário'}
-                                  </p>
-                                  <p className="text-xs text-green-600">
-                                    R$ {winner.prize_amount?.toFixed(2)}
-                                  </p>
-                                </div>
-                              </div>
-                              {winner.pix_sent && (
-                                <span className="px-2 py-1 bg-green-500 text-white text-xs rounded-full">
-                                  Pix enviado
-                                </span>
-                              )}
-                            </div>
-                          ))}
+                      {challenge.ends_at && (
+                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                          📅 Válido até: <strong>{formatDate(challenge.ends_at)}</strong>
                         </div>
-                      ) : (
-                        <div className="text-center py-4 bg-gray-50 rounded-lg">
-                          <p className="text-gray-500 text-sm">Aguardando seleção...</p>
+                      )}
+
+                      {/* Botao Instagram */}
+                      {challenge.instagram_embed_url && (
+                        <a
+                          href={challenge.instagram_embed_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center w-full min-h-[44px] py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-center font-semibold rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all"
+                        >
+                          Ver post no Instagram 📲
+                        </a>
+                      )}
+
+                      {/* Ganhadores */}
+                      {challengeWinners.length > 0 && (
+                        <div className="border-t pt-4">
+                          <h4 className="font-semibold text-gray-900 text-sm mb-3">
+                            🏆 Ganhadores
+                          </h4>
+                          <div className="space-y-2">
+                            {challengeWinners.map((winner) => (
+                              <div
+                                key={winner.id}
+                                className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <span>🎉</span>
+                                  <div>
+                                    <p className="font-medium text-gray-900 text-sm">
+                                      @{winner.instagram_username || 'Usuário'}
+                                    </p>
+                                    <p className="text-xs text-green-600">
+                                      R$ {winner.prize_amount?.toFixed(2)}
+                                    </p>
+                                  </div>
+                                </div>
+                                {winner.pix_sent && (
+                                  <span className="px-2 py-1 bg-green-500 text-white text-xs rounded-full">
+                                    Pix enviado
+                                  </span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       )}
                     </div>
-                  </div>
-                </Card>
+                  </AccordionContent>
+                </AccordionItem>
               );
             })}
-          </div>
+          </Accordion>
         </section>
       )}
 
