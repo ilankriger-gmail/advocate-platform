@@ -114,7 +114,7 @@ export default function NovoPostPage() {
       if (result.error) {
         setError(result.error);
       } else {
-        router.push('/perfil');
+        router.push('/');
         router.refresh();
       }
     });

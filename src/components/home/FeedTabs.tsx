@@ -94,6 +94,28 @@ export function FeedTabs({ initialCreatorPosts, initialCommunityPosts, initialHe
         </div>
       </div>
 
+      {/* Banner de Pedidos de Ajuda */}
+      {activeTab === 'ajuda' && (
+        <div className="mt-4 mx-2 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl">
+          <div className="flex items-start gap-3">
+            <div className="p-2 bg-blue-100 rounded-full">
+              <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-blue-900">Oportunidade de fazer a diferença</h3>
+              <p className="text-sm text-blue-700 mt-1">
+                Aqui estão pessoas da comunidade que precisam de ajuda. Cada pequeno gesto pode transformar a vida de alguém.
+              </p>
+              <p className="text-xs text-blue-600/80 mt-2 italic">
+                Dica: Antes de ajudar, converse com a pessoa para entender melhor a situação. A plataforma conecta pessoas, mas não verifica ou se responsabiliza pelos pedidos publicados.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Feed com Infinite Scroll */}
       <div className="mt-4">
         {activeTab === 'novidades' && (
