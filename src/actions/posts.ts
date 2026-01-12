@@ -764,7 +764,7 @@ export async function getPostComments(postId: string) {
       .from('post_comments')
       .select(`
         *,
-        author:profiles!post_comments_user_id_fkey(id, full_name, avatar_url)
+        author:users!post_comments_user_id_fkey(id, full_name, avatar_url)
       `)
       .eq('post_id', postId)
       .eq('is_deleted', false)
