@@ -7,6 +7,14 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontSize: {
+        xs: ['0.8125rem', { lineHeight: '1.25rem' }],    // 13px (era 12px)
+        sm: ['0.9375rem', { lineHeight: '1.375rem' }],   // 15px (era 14px)
+        base: ['1.0625rem', { lineHeight: '1.625rem' }], // 17px (era 16px)
+        lg: ['1.1875rem', { lineHeight: '1.875rem' }],   // 19px (era 18px)
+        xl: ['1.375rem', { lineHeight: '2rem' }],        // 22px (era 20px)
+        '2xl': ['1.625rem', { lineHeight: '2.25rem' }],  // 26px (era 24px)
+      },
       fontFamily: {
         sans: ['var(--font-space-grotesk)', 'system-ui', 'sans-serif'],
       },
