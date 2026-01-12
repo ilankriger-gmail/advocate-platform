@@ -149,12 +149,12 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
           </span>
 
           {/* Title */}
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-medium text-surface-900 mb-8 leading-tight">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-medium text-surface-800 mb-6 sm:mb-8 leading-snug px-2">
             De 0 a 10, qual a chance de você recomendar {creatorName} para um amigo?
           </h2>
 
           {/* Score selector */}
-          <div className="mb-8">
+          <div className="mb-6 sm:mb-8">
             <NPSScoreSelector
               value={score}
               onChange={(newScore) => {
@@ -173,15 +173,15 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
               type="button"
               onClick={nextStep}
               disabled={score === null}
-              className="px-8 py-3 bg-gradient-to-r from-pink-500 to-red-500 text-white font-medium rounded-full
-                       hover:from-pink-600 hover:to-red-600 disabled:opacity-40 disabled:cursor-not-allowed
-                       transition-all duration-200 press-scale shadow-lg shadow-pink-500/25"
+              className="px-6 sm:px-8 py-2.5 sm:py-3 bg-pink-500 text-white text-sm sm:text-base font-medium rounded-full
+                       hover:bg-pink-600 disabled:opacity-40 disabled:cursor-not-allowed
+                       transition-all duration-200"
             >
               Continuar
             </button>
           </div>
 
-          <p className="mt-6 text-sm text-surface-400">
+          <p className="mt-4 sm:mt-6 text-xs sm:text-sm text-surface-400">
             Pressione Enter para continuar
           </p>
         </div>
@@ -221,11 +221,11 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
           </div>
 
           {/* Navigation */}
-          <div className="flex justify-center gap-4 mt-8">
+          <div className="flex justify-center gap-3 mt-6 sm:mt-8">
             <button
               type="button"
               onClick={prevStep}
-              className="px-6 py-3 text-surface-600 font-medium rounded-full
+              className="px-5 sm:px-6 py-2.5 sm:py-3 text-surface-600 text-sm sm:text-base font-medium rounded-full
                        hover:bg-surface-100 transition-all duration-200"
             >
               Voltar
@@ -233,14 +233,14 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
             <button
               type="button"
               onClick={nextStep}
-              className="px-8 py-3 bg-gradient-to-r from-pink-500 to-red-500 text-white font-medium rounded-full
-                       hover:from-pink-600 hover:to-red-600 transition-all duration-200 press-scale shadow-lg shadow-pink-500/25"
+              className="px-6 sm:px-8 py-2.5 sm:py-3 bg-pink-500 text-white text-sm sm:text-base font-medium rounded-full
+                       hover:bg-pink-600 transition-all duration-200"
             >
               Continuar
             </button>
           </div>
 
-          <p className="mt-6 text-sm text-surface-400">
+          <p className="mt-4 sm:mt-6 text-xs sm:text-sm text-surface-400">
             Pressione Enter para continuar
           </p>
         </div>
@@ -280,11 +280,11 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
           </div>
 
           {/* Navigation */}
-          <div className="flex justify-center gap-4 mt-8">
+          <div className="flex justify-center gap-3 mt-6 sm:mt-8">
             <button
               type="button"
               onClick={prevStep}
-              className="px-6 py-3 text-surface-600 font-medium rounded-full
+              className="px-5 sm:px-6 py-2.5 sm:py-3 text-surface-600 text-sm sm:text-base font-medium rounded-full
                        hover:bg-surface-100 transition-all duration-200"
             >
               Voltar
@@ -292,14 +292,14 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
             <button
               type="button"
               onClick={nextStep}
-              className="px-8 py-3 bg-gradient-to-r from-pink-500 to-red-500 text-white font-medium rounded-full
-                       hover:from-pink-600 hover:to-red-600 transition-all duration-200 press-scale shadow-lg shadow-pink-500/25"
+              className="px-6 sm:px-8 py-2.5 sm:py-3 bg-pink-500 text-white text-sm sm:text-base font-medium rounded-full
+                       hover:bg-pink-600 transition-all duration-200"
             >
               Continuar
             </button>
           </div>
 
-          <p className="mt-6 text-sm text-surface-400">
+          <p className="mt-4 sm:mt-6 text-xs sm:text-sm text-surface-400">
             Pressione Enter para continuar
           </p>
         </div>
@@ -339,11 +339,11 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
           </div>
 
           {/* Navigation */}
-          <div className="flex justify-center gap-4 mt-8">
+          <div className="flex justify-center gap-3 mt-6 sm:mt-8">
             <button
               type="button"
               onClick={prevStep}
-              className="px-6 py-3 text-surface-600 font-medium rounded-full
+              className="px-5 sm:px-6 py-2.5 sm:py-3 text-surface-600 text-sm sm:text-base font-medium rounded-full
                        hover:bg-surface-100 transition-all duration-200"
             >
               Voltar
@@ -351,14 +351,14 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
             <button
               type="button"
               onClick={nextStep}
-              className="px-8 py-3 bg-gradient-to-r from-pink-500 to-red-500 text-white font-medium rounded-full
-                       hover:from-pink-600 hover:to-red-600 transition-all duration-200 press-scale shadow-lg shadow-pink-500/25"
+              className="px-6 sm:px-8 py-2.5 sm:py-3 bg-pink-500 text-white text-sm sm:text-base font-medium rounded-full
+                       hover:bg-pink-600 transition-all duration-200"
             >
               Continuar
             </button>
           </div>
 
-          <p className="mt-6 text-sm text-surface-400">
+          <p className="mt-4 sm:mt-6 text-xs sm:text-sm text-surface-400">
             Pressione Enter para continuar
           </p>
         </div>
@@ -455,11 +455,11 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
           </div>
 
           {/* Navigation */}
-          <div className="flex justify-center gap-4 mt-8">
+          <div className="flex justify-center gap-3 mt-6 sm:mt-8">
             <button
               type="button"
               onClick={prevStep}
-              className="px-6 py-3 text-surface-600 font-medium rounded-full
+              className="px-5 sm:px-6 py-2.5 sm:py-3 text-surface-600 text-sm sm:text-base font-medium rounded-full
                        hover:bg-surface-100 transition-all duration-200"
             >
               Voltar
@@ -468,9 +468,9 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
               type="button"
               onClick={handleSubmit}
               disabled={isLoading || !lgpdAccepted}
-              className="px-8 py-3 bg-gradient-to-r from-pink-500 to-red-500 text-white font-medium rounded-full
-                       hover:from-pink-600 hover:to-red-600 disabled:opacity-60 disabled:cursor-not-allowed
-                       transition-all duration-200 press-scale flex items-center gap-2 shadow-lg shadow-pink-500/25"
+              className="px-6 sm:px-8 py-2.5 sm:py-3 bg-pink-500 text-white text-sm sm:text-base font-medium rounded-full
+                       hover:bg-pink-600 disabled:opacity-60 disabled:cursor-not-allowed
+                       transition-all duration-200 flex items-center gap-2"
             >
               {isLoading ? (
                 <>
