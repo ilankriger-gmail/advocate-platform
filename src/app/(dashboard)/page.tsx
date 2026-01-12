@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 import { createClient } from '@/lib/supabase/server';
 import { getSiteSettings } from '@/lib/config/site';
 import { getInitialFeedPosts } from '@/actions/feed';
+import { getCommunityStats } from '@/actions/stats';
 import { HeroSection, FeedTabs, LeaderboardWidget } from '@/components/home';
 import { Card, Skeleton } from '@/components/ui';
 
@@ -69,13 +70,16 @@ async function FeedSection() {
 
 export default async function HomePage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const [{ data: { user } }, stats] = await Promise.all([
+    supabase.auth.getUser(),
+    getCommunityStats(),
+  ]);
   const isLoggedIn = !!user;
 
   return (
     <div className="space-y-6">
       {/* Hero Section - Banner */}
-      <HeroSection isLoggedIn={isLoggedIn} />
+      <HeroSection isLoggedIn={isLoggedIn} stats={stats} />
 
       {/* Main Content - Feed + Sidebar */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

@@ -74,6 +74,63 @@
   }
 }
 
+/* Hero mesh gradient animation - movimento sutil dos blobs */
+@keyframes hero-mesh {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(10px, -10px) scale(1.02);
+  }
+  50% {
+    transform: translate(-5px, 5px) scale(0.98);
+  }
+  75% {
+    transform: translate(-10px, -5px) scale(1.01);
+  }
+}
+
+/* Floating hearts animation */
+@keyframes float-up {
+  0% {
+    opacity: 0;
+    transform: translateY(100%) scale(0.5);
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-100vh) scale(1);
+  }
+}
+
+/* Pulse glow for CTA buttons */
+@keyframes cta-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(236, 72, 153, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(236, 72, 153, 0.5);
+  }
+}
+
+/* Subtle scale for stats on hover */
+@keyframes stat-pop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
 @layer utilities {
   .animate-fade-in {
     animation: fade-in 0.4s ease-out;
@@ -96,6 +153,22 @@
   .animate-gradient {
     background-size: 200% 200%;
     animation: gradient-shift 3s ease infinite;
+  }
+
+  .animate-hero-mesh {
+    animation: hero-mesh 20s ease-in-out infinite;
+  }
+
+  .animate-float-up {
+    animation: float-up 8s ease-in-out infinite;
+  }
+
+  .animate-cta-glow {
+    animation: cta-glow 2s ease-in-out infinite;
+  }
+
+  .animate-stat-pop {
+    animation: stat-pop 0.3s ease-out;
   }
 }
 
