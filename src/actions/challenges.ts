@@ -256,12 +256,18 @@ export async function approveParticipation(participationId: string, customCoins?
         p_amount: coinsReward,
       });
 
-      // Fallback se a função RPC nao existir
+      // Fallback se a função RPC não existir
       if (coinsError) {
+        const { data: userCoins } = await supabase
+          .from('user_coins')
+          .select('balance')
+          .eq('user_id', participation.user_id)
+          .single();
+
         await supabase
           .from('user_coins')
           .update({
-            balance: supabase.rpc('increment', { amount: coinsReward }),
+            balance: (userCoins?.balance || 0) + coinsReward,
             updated_at: new Date().toISOString(),
           })
           .eq('user_id', participation.user_id);

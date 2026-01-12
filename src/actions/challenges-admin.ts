@@ -73,10 +73,16 @@ export async function approveParticipation(
 
       // Fallback se a função RPC não existir
       if (coinsError) {
+        const { data: userCoins } = await supabase
+          .from('user_coins')
+          .select('balance')
+          .eq('user_id', participation.user_id)
+          .single();
+
         await supabase
           .from('user_coins')
           .update({
-            balance: supabase.rpc('increment', { amount: coinsReward }),
+            balance: (userCoins?.balance || 0) + coinsReward,
             updated_at: new Date().toISOString(),
           })
           .eq('user_id', participation.user_id);
@@ -422,7 +428,7 @@ export async function updateChallenge(
       .single();
 
     if (error) {
-      console.error('updateChallenge error:', error);
+      challengesAdminLogger.error('Erro ao atualizar desafio', { error: sanitizeError(error) });
       return { error: `Erro ao atualizar desafio: ${error.message}` };
     }
 

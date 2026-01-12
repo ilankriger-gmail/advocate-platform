@@ -678,15 +678,23 @@ export async function commentPost(postId: string, content: string): Promise<Acti
       .single();
 
     if (error) {
-      console.error('Erro ao criar comentario:', error);
+      postsLogger.error('Erro ao criar comentário', { error: sanitizeError(error) });
       return { error: 'Erro ao adicionar comentário' };
     }
 
     // Incrementar contador de comentários
-    await supabase
+    const { data: post } = await supabase
       .from('posts')
-      .update({ comments_count: supabase.rpc('increment') })
-      .eq('id', postId);
+      .select('comments_count')
+      .eq('id', postId)
+      .single();
+
+    if (post) {
+      await supabase
+        .from('posts')
+        .update({ comments_count: (post.comments_count || 0) + 1 })
+        .eq('id', postId);
+    }
 
     revalidatePath('/feed');
     return { success: true, data: comment };
@@ -771,7 +779,7 @@ export async function getPostComments(postId: string) {
       .order('created_at', { ascending: true });
 
     if (error) {
-      console.error('Erro ao buscar comentarios:', error);
+      postsLogger.error('Erro ao buscar comentários', { error: sanitizeError(error) });
       throw error;
     }
 

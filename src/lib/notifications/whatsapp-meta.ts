@@ -96,7 +96,7 @@ export async function sendTemplateMessage({
   const config = getMetaConfig();
 
   if (!config) {
-    console.warn('[WhatsApp] Meta API nao configurada - pulando envio');
+    console.warn('[WhatsApp] Meta API não configurada - pulando envio');
     return { success: false, error: 'WhatsApp não configurado' };
   }
 

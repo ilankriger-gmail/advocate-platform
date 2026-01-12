@@ -177,7 +177,7 @@ export async function incrementTaskAttempts(
       .single();
 
     if (fetchError || !task) {
-      return { success: false, error: 'Tarefa nao encontrada' };
+      return { success: false, error: 'Tarefa não encontrada' };
     }
 
     const newAttempts = (task.attempts || 0) + 1;
@@ -250,7 +250,7 @@ export async function markTaskFailed(
       .single();
 
     if (fetchError || !task) {
-      return { success: false, error: 'Tarefa nao encontrada' };
+      return { success: false, error: 'Tarefa não encontrada' };
     }
 
     // Se ainda ha tentativas disponíveis, voltar para pending

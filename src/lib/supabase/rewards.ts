@@ -240,7 +240,7 @@ export async function canClaimReward(rewardId: string): Promise<{ canClaim: bool
   const userCoins = coinsResult.data;
 
   if (!reward) {
-    return { canClaim: false, reason: 'Recompensa nao encontrada' };
+    return { canClaim: false, reason: 'Recompensa não encontrada' };
   }
 
   if (!reward.is_active) {

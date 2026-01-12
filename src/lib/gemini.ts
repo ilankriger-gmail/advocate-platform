@@ -70,7 +70,7 @@ export async function analyzeVídeoChallenge(
     return {
       isValid: false,
       confidence: 0,
-      reason: 'API Gemini nao configurada - verificação manual necessaria',
+      reason: 'API Gemini não configurada - verificação manual necessaria',
       analyzedAt: new Date().toISOString(),
     };
   }
