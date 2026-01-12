@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+import { Dumbbell, Trophy } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { getSiteSettings } from '@/lib/config/site';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -291,10 +292,10 @@ export default async function DesafiosPage() {
       {/* Desafios Físicos */}
       {physicalChallenges.length > 0 && (
         <section className="space-y-4 sm:space-y-6">
-          {/* Header da Seção */}
-          <div className="flex items-center gap-3 sm:gap-4">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/25">
-              <span className="text-xl sm:text-2xl">💪</span>
+          {/* Header da Seção - Centralizado */}
+          <div className="flex flex-col items-center text-center gap-2">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/25">
+              <Dumbbell className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
             </div>
             <div>
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Desafios Físicos</h2>
@@ -317,10 +318,10 @@ export default async function DesafiosPage() {
       {/* Minhas Participações */}
       {userParticipationsWithChallenge.length > 0 && (
         <section className="space-y-4 sm:space-y-6">
-          {/* Header da Seção */}
-          <div className="flex items-center gap-3 sm:gap-4">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg shadow-green-500/25">
-              <span className="text-xl sm:text-2xl">📋</span>
+          {/* Header da Seção - Centralizado */}
+          <div className="flex flex-col items-center text-center gap-2">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-amber-500 to-yellow-500 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/25">
+              <Trophy className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
             </div>
             <div>
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Minhas Participações</h2>
