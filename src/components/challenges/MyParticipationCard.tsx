@@ -126,7 +126,7 @@ export function MyParticipationCard({ participation }: MyParticipationCardProps)
             {/* Motivo da IA */}
             {participation.ai_reason && (
               <p className="text-xs text-gray-600 bg-gray-50 rounded-lg p-2 line-clamp-2">
-                "{participation.ai_reason}"
+                &ldquo;{participation.ai_reason}&rdquo;
               </p>
             )}
           </div>

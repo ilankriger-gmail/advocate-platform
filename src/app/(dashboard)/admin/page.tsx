@@ -14,16 +14,16 @@ interface StatCardProps {
 function StatCard({ title, value, icon, href, color, description }: StatCardProps) {
   return (
     <Link href={href}>
-      <Card className={`p-5 hover:shadow-lg transition-shadow cursor-pointer border-l-4 ${color}`}>
+      <Card className={`p-4 sm:p-5 hover:shadow-lg transition-shadow cursor-pointer border-l-4 ${color}`}>
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-gray-500 text-sm">{title}</p>
-            <p className="text-3xl font-bold text-gray-900 mt-1">{value}</p>
+            <p className="text-gray-500 text-xs sm:text-sm">{title}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1">{value}</p>
             {description && (
               <p className="text-xs text-gray-400 mt-1">{description}</p>
             )}
           </div>
-          <span className="text-3xl">{icon}</span>
+          <span className="text-2xl sm:text-3xl">{icon}</span>
         </div>
       </Card>
     </Link>
@@ -136,84 +136,84 @@ export default async function AdminDashboardPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Cards de Estatisticas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {stats.map((stat) => (
           <StatCard key={stat.title} {...stat} />
         ))}
       </div>
 
       {/* Ações Rápidas */}
-      <Card className="p-5">
-        <h2 className="text-lg font-bold text-gray-900 mb-4">Ações Rápidas</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <Card className="p-4 sm:p-5">
+        <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4">Ações Rápidas</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
           <Link
             href="/admin/desafios/novo"
-            className="flex flex-col items-center gap-2 p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+            className="flex flex-col items-center justify-center gap-1.5 sm:gap-2 p-3 sm:p-4 min-h-[80px] bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
           >
-            <span className="text-2xl">➕</span>
-            <span className="text-sm text-blue-700 font-medium text-center">Novo Desafio</span>
+            <span className="text-xl sm:text-2xl">➕</span>
+            <span className="text-xs sm:text-sm text-blue-700 font-medium text-center">Novo Desafio</span>
           </Link>
           <Link
             href="/admin/eventos/novo"
-            className="flex flex-col items-center gap-2 p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
+            className="flex flex-col items-center justify-center gap-1.5 sm:gap-2 p-3 sm:p-4 min-h-[80px] bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
           >
-            <span className="text-2xl">📅</span>
-            <span className="text-sm text-green-700 font-medium text-center">Novo Evento</span>
+            <span className="text-xl sm:text-2xl">📅</span>
+            <span className="text-xs sm:text-sm text-green-700 font-medium text-center">Novo Evento</span>
           </Link>
           <Link
             href="/admin/posts"
-            className="flex flex-col items-center gap-2 p-4 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors"
+            className="flex flex-col items-center justify-center gap-1.5 sm:gap-2 p-3 sm:p-4 min-h-[80px] bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors"
           >
-            <span className="text-2xl">✅</span>
-            <span className="text-sm text-yellow-700 font-medium text-center">Moderar Posts</span>
+            <span className="text-xl sm:text-2xl">✅</span>
+            <span className="text-xs sm:text-sm text-yellow-700 font-medium text-center">Moderar Posts</span>
           </Link>
           <Link
             href="/admin/premios"
-            className="flex flex-col items-center gap-2 p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
+            className="flex flex-col items-center justify-center gap-1.5 sm:gap-2 p-3 sm:p-4 min-h-[80px] bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
           >
-            <span className="text-2xl">🎁</span>
-            <span className="text-sm text-purple-700 font-medium text-center">Gerenciar Prêmios</span>
+            <span className="text-xl sm:text-2xl">🎁</span>
+            <span className="text-xs sm:text-sm text-purple-700 font-medium text-center">Gerenciar Prêmios</span>
           </Link>
           <Link
             href="/admin/leads"
-            className="flex flex-col items-center gap-2 p-4 bg-gradient-to-br from-orange-50 to-indigo-50 rounded-lg hover:from-orange-100 hover:to-indigo-100 transition-colors border border-indigo-100"
+            className="flex flex-col items-center justify-center gap-1.5 sm:gap-2 p-3 sm:p-4 min-h-[80px] bg-gradient-to-br from-orange-50 to-indigo-50 rounded-lg hover:from-orange-100 hover:to-indigo-100 transition-colors border border-indigo-100"
           >
-            <span className="text-2xl">🤖</span>
-            <span className="text-sm text-indigo-700 font-medium text-center">Leads + AI</span>
+            <span className="text-xl sm:text-2xl">🤖</span>
+            <span className="text-xs sm:text-sm text-indigo-700 font-medium text-center">Leads + AI</span>
           </Link>
           <Link
             href="/admin/configuracoes"
-            className="flex flex-col items-center gap-2 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+            className="flex flex-col items-center justify-center gap-1.5 sm:gap-2 p-3 sm:p-4 min-h-[80px] bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
           >
-            <span className="text-2xl">⚙️</span>
-            <span className="text-sm text-gray-700 font-medium text-center">Configurações</span>
+            <span className="text-xl sm:text-2xl">⚙️</span>
+            <span className="text-xs sm:text-sm text-gray-700 font-medium text-center">Configurações</span>
           </Link>
           <Link
             href="/admin/emails"
-            className="flex flex-col items-center gap-2 p-4 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors"
+            className="flex flex-col items-center justify-center gap-1.5 sm:gap-2 p-3 sm:p-4 min-h-[80px] bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors"
           >
-            <span className="text-2xl">📧</span>
-            <span className="text-sm text-indigo-700 font-medium text-center">Emails</span>
+            <span className="text-xl sm:text-2xl">📧</span>
+            <span className="text-xs sm:text-sm text-indigo-700 font-medium text-center">Emails</span>
           </Link>
           <Link
             href="/admin/analytics"
-            className="flex flex-col items-center gap-2 p-4 bg-cyan-50 rounded-lg hover:bg-cyan-100 transition-colors"
+            className="flex flex-col items-center justify-center gap-1.5 sm:gap-2 p-3 sm:p-4 min-h-[80px] bg-cyan-50 rounded-lg hover:bg-cyan-100 transition-colors"
           >
-            <span className="text-2xl">📊</span>
-            <span className="text-sm text-cyan-700 font-medium text-center">Analytics</span>
+            <span className="text-xl sm:text-2xl">📊</span>
+            <span className="text-xs sm:text-sm text-cyan-700 font-medium text-center">Analytics</span>
           </Link>
         </div>
       </Card>
 
       {/* Atividade Recente */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Posts Recentes Pendentes */}
-        <Card className="p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-gray-900">Posts Pendentes</h2>
-            <Link href="/admin/posts" className="text-sm text-indigo-600 hover:text-indigo-700">
+        <Card className="p-4 sm:p-5">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <h2 className="text-base sm:text-lg font-bold text-gray-900">Posts Pendentes</h2>
+            <Link href="/admin/posts" className="text-xs sm:text-sm text-indigo-600 hover:text-indigo-700 min-h-[44px] flex items-center">
               Ver todos
             </Link>
           </div>
@@ -221,10 +221,10 @@ export default async function AdminDashboardPage() {
         </Card>
 
         {/* Participações Recentes */}
-        <Card className="p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-gray-900">Participações Pendentes</h2>
-            <Link href="/admin/desafios" className="text-sm text-indigo-600 hover:text-indigo-700">
+        <Card className="p-4 sm:p-5">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <h2 className="text-base sm:text-lg font-bold text-gray-900">Participações Pendentes</h2>
+            <Link href="/admin/desafios" className="text-xs sm:text-sm text-indigo-600 hover:text-indigo-700 min-h-[44px] flex items-center">
               Ver todos
             </Link>
           </div>

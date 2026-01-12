@@ -110,10 +110,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     // Gera um ID único caso não seja fornecido
     const inputId = id || `input-${Math.random().toString(36).slice(2, 9)}`;
 
+    // min-h-[44px] garante touch target WCAG 2.2 AAA
+    // text-base (16px) evita zoom automático no iOS ao focar no input
     const inputStyles = `
-      w-full px-4 py-2.5
+      w-full px-4 py-2.5 min-h-[44px]
       bg-white border rounded-xl
-      text-surface-900 placeholder:text-surface-400
+      text-base sm:text-sm text-surface-900 placeholder:text-surface-400
       transition-all duration-200
       focus:outline-none focus:ring-2 focus:ring-offset-0
       disabled:bg-surface-50 disabled:text-surface-500 disabled:cursor-not-allowed

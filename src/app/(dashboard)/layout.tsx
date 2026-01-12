@@ -15,9 +15,9 @@ export default function DashboardLayout({
       {/* Sidebar */}
       <Sidebar isOpen={isOpen} onClose={close} />
 
-      {/* Main content */}
+      {/* Main content - safe-area para dispositivos com notch */}
       <main className="md:ml-64 pt-4">
-        <div className="px-4 sm:px-6 lg:px-8 pb-8">
+        <div className="px-4 sm:px-6 lg:px-8 pb-8 pb-[max(2rem,env(safe-area-inset-bottom))]">
           {children}
         </div>
       </main>

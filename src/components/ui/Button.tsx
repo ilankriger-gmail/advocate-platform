@@ -136,11 +136,11 @@ const variantStyles: Record<ButtonVariant, string> = {
   `,
 };
 
-// Mapa de tamanhos
+// Mapa de tamanhos (min-h-[44px] garante touch target WCAG 2.2 AAA)
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: 'px-3 py-1.5 text-sm',
-  md: 'px-4 py-2.5 text-sm',
-  lg: 'px-6 py-3 text-base',
+  sm: 'px-3 py-2 text-sm min-h-[44px]',
+  md: 'px-4 py-2.5 text-sm min-h-[44px]',
+  lg: 'px-6 py-3.5 text-base min-h-[48px]',
 };
 
 // Componente de loading spinner

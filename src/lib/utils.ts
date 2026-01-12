@@ -186,3 +186,85 @@ export function getLevelName(level: number): string {
   };
   return names[level] || names[1];
 }
+
+/**
+ * Classes utilitárias para design responsivo mobile-first
+ * Seguem as diretrizes WCAG 2.2 AAA (touch target 44px mínimo)
+ */
+export const responsive = {
+  /**
+   * Touch targets - garantem área mínima de toque
+   */
+  touch: {
+    min: 'min-h-[44px] min-w-[44px]',
+    recommended: 'min-h-[48px] min-w-[48px]',
+  },
+
+  /**
+   * Padding responsivo
+   */
+  padding: {
+    card: 'p-4 sm:p-5 md:p-6',
+    section: 'p-4 sm:p-6 md:p-8',
+    compact: 'p-3 sm:p-4',
+  },
+
+  /**
+   * Gap responsivo para grids e flex
+   */
+  gap: {
+    sm: 'gap-2 sm:gap-3',
+    md: 'gap-3 sm:gap-4 md:gap-6',
+    lg: 'gap-4 sm:gap-6 md:gap-8',
+  },
+
+  /**
+   * Tipografia responsiva
+   */
+  text: {
+    h1: 'text-2xl sm:text-3xl md:text-4xl font-bold',
+    h2: 'text-xl sm:text-2xl font-bold',
+    h3: 'text-lg sm:text-xl font-semibold',
+    body: 'text-sm sm:text-base',
+    small: 'text-xs sm:text-sm',
+  },
+
+  /**
+   * Grids responsivos
+   */
+  grid: {
+    cols2: 'grid grid-cols-1 sm:grid-cols-2',
+    cols3: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
+    cols4: 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4',
+  },
+
+  /**
+   * Ícones responsivos
+   */
+  icon: {
+    sm: 'w-4 h-4 sm:w-5 sm:h-5',
+    md: 'w-6 h-6 sm:w-8 sm:h-8',
+    lg: 'w-8 h-8 sm:w-10 sm:h-10',
+    xl: 'w-12 h-12 sm:w-16 sm:h-16',
+  },
+
+  /**
+   * Avatar responsivo
+   */
+  avatar: {
+    sm: 'w-8 h-8 sm:w-10 sm:h-10',
+    md: 'w-10 h-10 sm:w-12 sm:h-12',
+    lg: 'w-12 h-12 sm:w-16 sm:h-16',
+  },
+
+  /**
+   * Safe area para dispositivos com notch
+   */
+  safeArea: {
+    top: 'pt-[env(safe-area-inset-top)]',
+    bottom: 'pb-[env(safe-area-inset-bottom)]',
+    left: 'pl-[env(safe-area-inset-left)]',
+    right: 'pr-[env(safe-area-inset-right)]',
+    all: 'pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]',
+  },
+} as const;

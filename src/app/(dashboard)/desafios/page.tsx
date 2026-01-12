@@ -138,23 +138,23 @@ export default async function DesafiosPage() {
         description="Participe dos desafios e ganhe corações"
       />
 
-      {/* Saldo - Card Premium */}
+      {/* Saldo - Card Premium (responsivo para mobile) */}
       <Card className="relative overflow-hidden bg-gradient-to-br from-pink-500 via-rose-500 to-red-500 text-white shadow-xl">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMzLjMxNCAwIDYgMi42ODYgNiA2cy0yLjY4NiA2LTYgNi02LTIuNjg2LTYtNiAyLjY4Ni02IDYtNiIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMSkiIHN0cm9rZS13aWR0aD0iMiIvPjwvZz48L3N2Zz4=')] opacity-30" />
-        <div className="relative p-6">
+        <div className="relative p-4 sm:p-6">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <p className="text-pink-100 text-sm font-medium tracking-wide uppercase">Seus corações</p>
+              <p className="text-pink-100 text-xs sm:text-sm font-medium tracking-wide uppercase">Seus corações</p>
               <div className="flex items-baseline gap-2">
-                <p className="text-5xl font-black tracking-tight">{balance}</p>
-                <p className="text-xl font-medium text-pink-100">corações</p>
+                <p className="text-4xl sm:text-5xl font-black tracking-tight">{balance}</p>
+                <p className="text-lg sm:text-xl font-medium text-pink-100">corações</p>
               </div>
-              <p className="text-pink-200 text-sm mt-2">Complete desafios para ganhar mais!</p>
+              <p className="text-pink-200 text-xs sm:text-sm mt-2">Complete desafios para ganhar mais!</p>
             </div>
             <div className="relative">
               <div className="absolute inset-0 animate-ping bg-white/20 rounded-full" />
-              <div className="relative w-20 h-20 bg-white/10 backdrop-blur rounded-full flex items-center justify-center">
-                <span className="text-5xl">❤️‍🔥</span>
+              <div className="relative w-16 h-16 sm:w-20 sm:h-20 bg-white/10 backdrop-blur rounded-full flex items-center justify-center">
+                <span className="text-4xl sm:text-5xl">❤️‍🔥</span>
               </div>
             </div>
           </div>
@@ -163,19 +163,19 @@ export default async function DesafiosPage() {
 
       {/* Desafios de Engajamento */}
       {engagementChallenges.length > 0 && (
-        <section className="space-y-6">
+        <section className="space-y-4 sm:space-y-6">
           {/* Header da Seção */}
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/25">
-              <span className="text-2xl">🎁</span>
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/25">
+              <span className="text-xl sm:text-2xl">🎁</span>
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Participe e Concorra</h2>
-              <p className="text-gray-500 text-sm">Interaja no Instagram e ganhe prêmios em dinheiro</p>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Participe e Concorra</h2>
+              <p className="text-gray-500 text-xs sm:text-sm">Interaja no Instagram e ganhe prêmios em dinheiro</p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {engagementChallenges.map((challenge) => {
               const challengeWinners = (winners || []).filter(
                 w => w.challenge_id === challenge.id
@@ -184,11 +184,11 @@ export default async function DesafiosPage() {
               return (
                 <Card key={challenge.id} className="overflow-hidden">
                   {/* Header */}
-                  <div className="bg-gradient-to-r from-pink-500 to-red-500 p-4 text-white">
+                  <div className="bg-gradient-to-r from-pink-500 to-red-500 p-3 sm:p-4 text-white">
                     <div className="flex items-center gap-3">
-                      <span className="text-3xl">{challenge.icon}</span>
+                      <span className="text-2xl sm:text-3xl">{challenge.icon}</span>
                       <div>
-                        <h3 className="text-lg font-bold">{challenge.title}</h3>
+                        <h3 className="text-base sm:text-lg font-bold">{challenge.title}</h3>
                         {challenge.prize_amount && (
                           <p className="text-pink-100 text-sm">
                             Concorra a R$ {challenge.prize_amount.toFixed(2)} no Pix!
@@ -198,7 +198,7 @@ export default async function DesafiosPage() {
                     </div>
                   </div>
 
-                  <div className="p-4 space-y-4">
+                  <div className="p-3 sm:p-4 space-y-3 sm:space-y-4">
                     <p className="text-gray-700 text-sm whitespace-pre-line">{challenge.description}</p>
 
                     {/* Regras */}
@@ -232,13 +232,13 @@ export default async function DesafiosPage() {
                       </div>
                     )}
 
-                    {/* Botao Instagram */}
+                    {/* Botao Instagram - min-h-[44px] para touch target */}
                     {challenge.instagram_embed_url && (
                       <a
                         href={challenge.instagram_embed_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="block w-full py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-center font-semibold rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all"
+                        className="flex items-center justify-center w-full min-h-[44px] py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-center font-semibold rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all"
                       >
                         Ver post no Instagram 📲
                       </a>
@@ -292,19 +292,19 @@ export default async function DesafiosPage() {
 
       {/* Desafios Físicos */}
       {physicalChallenges.length > 0 && (
-        <section className="space-y-6">
+        <section className="space-y-4 sm:space-y-6">
           {/* Header da Seção */}
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/25">
-              <span className="text-2xl">💪</span>
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/25">
+              <span className="text-xl sm:text-2xl">💪</span>
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Desafios Físicos</h2>
-              <p className="text-gray-500 text-sm">Supere metas e mostre sua força</p>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Desafios Físicos</h2>
+              <p className="text-gray-500 text-xs sm:text-sm">Supere metas e mostre sua força</p>
             </div>
           </div>
 
-          <div className="max-w-2xl mx-auto space-y-4">
+          <div className="max-w-2xl mx-auto space-y-3 sm:space-y-4">
             {physicalChallenges.map((challenge) => (
               <PhysicalChallengeCard
                 key={challenge.id}
@@ -318,19 +318,19 @@ export default async function DesafiosPage() {
 
       {/* Minhas Participações */}
       {userParticipationsWithChallenge.length > 0 && (
-        <section className="space-y-6">
+        <section className="space-y-4 sm:space-y-6">
           {/* Header da Seção */}
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center shadow-lg shadow-green-500/25">
-              <span className="text-2xl">📋</span>
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg shadow-green-500/25">
+              <span className="text-xl sm:text-2xl">📋</span>
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Minhas Participações</h2>
-              <p className="text-gray-500 text-sm">Acompanhe o status dos seus desafios enviados</p>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Minhas Participações</h2>
+              <p className="text-gray-500 text-xs sm:text-sm">Acompanhe o status dos seus desafios enviados</p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {userParticipationsWithChallenge.map((participation) => (
               <MyParticipationCard
                 key={participation.id}
@@ -345,14 +345,14 @@ export default async function DesafiosPage() {
       {(!challenges || challenges.length === 0) && (
         <Card className="relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-100" />
-          <div className="relative p-12 text-center">
-            <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-pink-100 to-purple-100 rounded-full flex items-center justify-center">
-              <span className="text-4xl">🎯</span>
+          <div className="relative p-8 sm:p-12 text-center">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 sm:mb-6 bg-gradient-to-br from-pink-100 to-purple-100 rounded-full flex items-center justify-center">
+              <span className="text-3xl sm:text-4xl">🎯</span>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
               Nenhum desafio disponível
             </h2>
-            <p className="text-gray-500 max-w-md mx-auto">
+            <p className="text-sm sm:text-base text-gray-500 max-w-md mx-auto">
               Fique atento! Novos desafios serão adicionados em breve para você participar e ganhar corações.
             </p>
           </div>

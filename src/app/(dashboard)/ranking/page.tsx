@@ -104,16 +104,16 @@ export default function RankingPage() {
   // Loading inicial
   if (loading) {
     return (
-      <div className="space-y-8">
-        <Skeleton className="h-16 w-full" />
-        <Skeleton className="h-32 w-full" />
-        <Skeleton className="h-64 w-full" />
+      <div className="space-y-6 sm:space-y-8">
+        <Skeleton className="h-14 sm:h-16 w-full" />
+        <Skeleton className="h-28 sm:h-32 w-full" />
+        <Skeleton className="h-56 sm:h-64 w-full" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Header */}
       <PageHeader
         title="Rankings"
@@ -122,7 +122,7 @@ export default function RankingPage() {
 
       {/* Seletor de Categoria */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+        <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
           Escolha uma categoria
         </h2>
         <CategorySelector
@@ -133,10 +133,10 @@ export default function RankingPage() {
 
       {/* Ranking do Usuário */}
       {loadingUserRank ? (
-        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-28 sm:h-32 w-full" />
       ) : userRank ? (
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
             Sua Posição
           </h2>
           <UserRankCard ranking={userRank} />
@@ -145,12 +145,12 @@ export default function RankingPage() {
 
       {/* Erro */}
       {error && (
-        <Card className="p-6 bg-red-50 border-red-200">
+        <Card className="p-4 sm:p-6 bg-red-50 border-red-200">
           <div className="flex items-center gap-3">
-            <span className="text-3xl">⚠️</span>
+            <span className="text-2xl sm:text-3xl">⚠️</span>
             <div>
-              <h3 className="font-semibold text-red-900">Erro ao carregar ranking</h3>
-              <p className="text-red-700 text-sm">{error}</p>
+              <h3 className="font-semibold text-red-900 text-sm sm:text-base">Erro ao carregar ranking</h3>
+              <p className="text-red-700 text-xs sm:text-sm">{error}</p>
             </div>
           </div>
         </Card>
@@ -158,12 +158,12 @@ export default function RankingPage() {
 
       {/* Lista de Ranking Relativo */}
       <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
+          <h2 className="text-base sm:text-lg font-semibold text-gray-900">
             Participantes Próximos
           </h2>
           {!loadingLeaderboard && leaderboardData.length > 0 && (
-            <div className="text-sm text-gray-500">
+            <div className="text-xs sm:text-sm text-gray-500">
               {leaderboardData.length} participantes
             </div>
           )}
@@ -177,14 +177,14 @@ export default function RankingPage() {
       </div>
 
       {/* Informação adicional */}
-      <Card className="p-6 bg-blue-50 border-blue-200">
+      <Card className="p-4 sm:p-6 bg-blue-50 border-blue-200">
         <div className="flex items-start gap-3">
-          <span className="text-2xl">💡</span>
+          <span className="text-xl sm:text-2xl">💡</span>
           <div className="flex-1">
-            <h3 className="font-semibold text-blue-900 mb-2">
+            <h3 className="font-semibold text-blue-900 mb-2 text-sm sm:text-base">
               Como subir no ranking?
             </h3>
-            <ul className="space-y-1 text-sm text-blue-800">
+            <ul className="space-y-1 text-xs sm:text-sm text-blue-800">
               <li className="flex items-start gap-2">
                 <span className="text-blue-500">•</span>
                 <span>Complete desafios para ganhar moedas e pontos</span>
@@ -203,44 +203,44 @@ export default function RankingPage() {
       </Card>
 
       {/* Legenda de Tiers */}
-      <Card className="p-6">
-        <h3 className="font-semibold text-gray-900 mb-4">
+      <Card className="p-4 sm:p-6">
+        <h3 className="font-semibold text-gray-900 mb-3 sm:mb-4 text-sm sm:text-base">
           Entenda os Tiers
         </h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-amber-700 flex items-center justify-center text-white font-bold">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-amber-700 flex items-center justify-center text-white font-bold text-sm sm:text-base">
               🥉
             </div>
             <div>
-              <p className="font-medium text-gray-900">Bronze</p>
+              <p className="font-medium text-gray-900 text-sm sm:text-base">Bronze</p>
               <p className="text-xs text-gray-500">0 - 99 pontos</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gray-400 flex items-center justify-center text-white font-bold">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-400 flex items-center justify-center text-white font-bold text-sm sm:text-base">
               🥈
             </div>
             <div>
-              <p className="font-medium text-gray-900">Silver</p>
+              <p className="font-medium text-gray-900 text-sm sm:text-base">Silver</p>
               <p className="text-xs text-gray-500">100 - 499 pontos</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-yellow-400 flex items-center justify-center text-white font-bold">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-yellow-400 flex items-center justify-center text-white font-bold text-sm sm:text-base">
               🥇
             </div>
             <div>
-              <p className="font-medium text-gray-900">Gold</p>
+              <p className="font-medium text-gray-900 text-sm sm:text-base">Gold</p>
               <p className="text-xs text-gray-500">500 - 999 pontos</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold text-sm sm:text-base">
               💎
             </div>
             <div>
-              <p className="font-medium text-gray-900">Diamond</p>
+              <p className="font-medium text-gray-900 text-sm sm:text-base">Diamond</p>
               <p className="text-xs text-gray-500">1000+ pontos</p>
             </div>
           </div>

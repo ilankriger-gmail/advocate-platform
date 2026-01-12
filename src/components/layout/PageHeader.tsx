@@ -48,11 +48,11 @@ export function PageHeader({
         </nav>
       )}
 
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{title}</h1>
           {description && (
-            <p className="mt-1 text-sm text-gray-500">{description}</p>
+            <p className="mt-1 text-sm sm:text-base text-gray-500">{description}</p>
           )}
         </div>
 
