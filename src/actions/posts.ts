@@ -678,6 +678,7 @@ export async function commentPost(postId: string, content: string): Promise<Acti
       .single();
 
     if (error) {
+      console.error('Erro ao criar comentario:', error);
       return { error: 'Erro ao adicionar comentário' };
     }
 
@@ -763,13 +764,16 @@ export async function getPostComments(postId: string) {
       .from('post_comments')
       .select(`
         *,
-        author:users!post_comments_user_id_fkey(id, full_name, avatar_url)
+        author:profiles!post_comments_user_id_fkey(id, full_name, avatar_url)
       `)
       .eq('post_id', postId)
       .eq('is_deleted', false)
       .order('created_at', { ascending: true });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Erro ao buscar comentarios:', error);
+      throw error;
+    }
 
     return data || [];
   } catch {
