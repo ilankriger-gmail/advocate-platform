@@ -112,7 +112,7 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed top-14 left-0 z-50 h-[calc(100vh-56px)] transition-transform bg-white border-r border-gray-200',
+          'fixed top-14 left-0 z-50 h-[calc(100vh-56px)] transition-transform bg-gradient-to-b from-pink-50 via-white to-purple-50 border-r border-pink-100',
           'w-72 sm:w-64 md:translate-x-0',
           isOpen ? 'translate-x-0' : '-translate-x-full'
         )}
@@ -122,7 +122,7 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
           <Link
             href="/perfil/novo-post"
             onClick={onClose}
-            className="flex items-center justify-center gap-2 w-full px-4 py-3 mb-4 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition-colors font-medium"
+            className="flex items-center justify-center gap-2 w-full px-4 py-3 mb-4 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-xl hover:from-pink-600 hover:to-rose-600 transition-all font-medium shadow-md hover:shadow-lg"
           >
             {icons.Plus}
             Criar Post
@@ -140,13 +140,13 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
                   href={item.href}
                   onClick={onClose}
                   className={cn(
-                    'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
+                    'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all',
                     isActive
-                      ? 'bg-gray-200 text-gray-900'
-                      : 'text-gray-700 hover:bg-gray-100'
+                      ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-sm'
+                      : 'text-gray-700 hover:bg-pink-100 hover:text-pink-700'
                   )}
                 >
-                  <span className={isActive ? 'text-gray-700' : 'text-gray-500'}>
+                  <span className={isActive ? 'text-white' : 'text-gray-500'}>
                     {icons[item.icon]}
                   </span>
                   {item.label}
@@ -158,8 +158,8 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
           {/* Creator Navigation - Mostra para criadores OU admins autenticados */}
           {showAdminMenu && (
             <>
-              <hr className="my-4 border-gray-200" />
-              <p className="px-3 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              <hr className="my-4 border-pink-200" />
+              <p className="px-3 mb-2 text-xs font-semibold text-pink-500 uppercase tracking-wider">
                 Admin
               </p>
               <nav className="space-y-1">
@@ -172,13 +172,13 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
                       href={item.href}
                       onClick={onClose}
                       className={cn(
-                        'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
+                        'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all',
                         isActive
-                          ? 'bg-gray-200 text-gray-900'
-                          : 'text-gray-700 hover:bg-gray-100'
+                          ? 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-sm'
+                          : 'text-gray-700 hover:bg-purple-100 hover:text-purple-700'
                       )}
                     >
-                      <span className={isActive ? 'text-gray-700' : 'text-gray-500'}>
+                      <span className={isActive ? 'text-white' : 'text-gray-500'}>
                         {icons[item.icon]}
                       </span>
                       {item.label}
@@ -190,7 +190,7 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
           )}
 
           {/* Footer */}
-          <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 bg-gray-50">
+          <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-pink-100 bg-gradient-to-r from-pink-50 to-purple-50">
             <div className="flex items-center gap-2 text-xs text-gray-500">
               <span className="w-2 h-2 bg-green-500 rounded-full" />
               Conectado

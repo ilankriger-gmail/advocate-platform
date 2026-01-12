@@ -80,6 +80,15 @@ export const MAIN_NAV = [
   { href: '/perfil', label: 'Perfil', icon: 'User' },
 ] as const;
 
+// Navegação bottom bar mobile (5 itens principais)
+export const BOTTOM_NAV_ITEMS = [
+  { href: '/', label: 'Início', icon: 'Home' },
+  { href: '/desafios', label: 'Desafios', icon: 'Target' },
+  { href: '/premios', label: 'Prêmios', icon: 'Gift' },
+  { href: '/ranking', label: 'Ranking', icon: 'Trophy' },
+  { href: '/perfil', label: 'Perfil', icon: 'User' },
+] as const;
+
 // Navegação do criador/admin (adicional)
 export const CREATOR_NAV = [
   { href: '/admin', label: 'Painel Admin', icon: 'Shield' },
