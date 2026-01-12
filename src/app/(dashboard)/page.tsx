@@ -78,8 +78,8 @@ export default async function HomePage() {
 
   return (
     <div className="space-y-6">
-      {/* Hero Section - Banner */}
-      <HeroSection isLoggedIn={isLoggedIn} stats={stats} />
+      {/* Hero Section - Banner (apenas para visitantes não logados) */}
+      {!isLoggedIn && <HeroSection isLoggedIn={false} stats={stats} />}
 
       {/* Main Content - Feed + Sidebar */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
