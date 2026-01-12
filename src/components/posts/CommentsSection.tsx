@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { Avatar, Button } from '@/components/ui';
 import { formatRelativeTime } from '@/lib/utils';
 import { commentPost, getPostComments } from '@/actions/posts';
@@ -27,20 +27,25 @@ export function CommentsSection({
   initialComments = [],
   commentsCount,
 }: CommentsSectionProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
   const [comments, setComments] = useState<Comment[]>(initialComments);
   const [newComment, setNewComment] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  const loadComments = async () => {
+  // Carregar comentários automaticamente ao montar (já que começa expandido)
+  useEffect(() => {
     if (comments.length === 0 && commentsCount > 0) {
       setIsLoading(true);
-      const data = await getPostComments(postId);
-      setComments(data as Comment[]);
-      setIsLoading(false);
+      getPostComments(postId).then((data) => {
+        setComments(data as Comment[]);
+        setIsLoading(false);
+      });
     }
-    setIsExpanded(true);
+  }, [postId, commentsCount, comments.length]);
+
+  const toggleComments = () => {
+    setIsExpanded(!isExpanded);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -64,7 +69,7 @@ export function CommentsSection({
     <div className="border-t border-gray-100">
       {/* Toggle button */}
       <button
-        onClick={loadComments}
+        onClick={toggleComments}
         className="w-full px-4 py-2 text-sm text-gray-500 hover:text-indigo-600 hover:bg-gray-50 flex items-center gap-2 transition-colors"
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
