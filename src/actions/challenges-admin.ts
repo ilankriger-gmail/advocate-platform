@@ -503,6 +503,48 @@ export async function updateChallenge(
 }
 
 /**
+ * Atualizar URL da thumbnail do desafio (admin)
+ */
+export async function updateChallengeThumbnail(
+  challengeId: string,
+  thumbnailUrl: string | null
+): Promise<ActionResponse> {
+  try {
+    // Verificar autenticação
+    const userCheck = await getAuthenticatedUser();
+    if (userCheck.error) {
+      return userCheck;
+    }
+    const user = userCheck.data!;
+
+    // Verificar se é admin/creator
+    const authCheck = await verifyAdminOrCreator(user.id);
+    if (authCheck.error) {
+      return authCheck;
+    }
+
+    const supabase = await createClient();
+
+    const { error } = await supabase
+      .from('challenges')
+      .update({ thumbnail_url: thumbnailUrl })
+      .eq('id', challengeId);
+
+    if (error) {
+      challengesAdminLogger.error('Erro ao atualizar thumbnail', { error: sanitizeError(error) });
+      return { error: `Erro ao atualizar thumbnail: ${error.message}` };
+    }
+
+    revalidatePath('/desafios');
+    revalidatePath('/admin/desafios');
+    revalidatePath(`/admin/desafios/${challengeId}`);
+    return { success: true };
+  } catch {
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+/**
  * Encerrar desafio (admin)
  */
 export async function closeChallenge(challengeId: string): Promise<ActionResponse> {

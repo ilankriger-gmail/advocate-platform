@@ -3,13 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Card, Button, Input, Textarea } from '@/components/ui';
-import { updateChallenge, getChallengeForEdit, regenerateChallengeThumbnail } from '@/actions/challenges-admin';
+import { updateChallenge, getChallengeForEdit, updateChallengeThumbnail, getChallengePrizes, saveChallengePrizes } from '@/actions/challenges-admin';
 import { AIDescriptionGenerator } from '@/components/admin/AIDescriptionGenerator';
 import { YouTubeVideoPicker, SelectedYouTubeVideo } from '@/components/youtube/YouTubeVideoPicker';
+import { PrizeSection } from '@/components/admin/challenges';
+import type { PrizeInput } from '@/lib/supabase/types';
 
 type ChallengeType = 'fisico' | 'engajamento' | 'participe' | 'atos_amor';
 type GoalType = 'repetitions' | 'time';
-type RewardType = 'coins' | 'money';
 
 export default function EditarDesafioPage() {
   const router = useRouter();
@@ -23,15 +24,14 @@ export default function EditarDesafioPage() {
   const [selectedIconCategory, setSelectedIconCategory] = useState('Fitness');
   const [selectedVideo, setSelectedVideo] = useState<SelectedYouTubeVideo | null>(null);
   const [thumbnailUrl, setThumbnailUrl] = useState<string>('');
-  const [thumbnailMessage, setThumbnailMessage] = useState<string>('');
-  const [isGeneratingThumbnail, setIsGeneratingThumbnail] = useState(false);
+  const [isSavingThumbnail, setIsSavingThumbnail] = useState(false);
+  const [prizes, setPrizes] = useState<PrizeInput[]>([]);
 
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     type: 'fisico' as ChallengeType,
     icon: '💪',
-    reward_type: 'coins' as RewardType,
     coins_reward: 10,
     prize_amount: '',
     num_winners: '',
@@ -46,7 +46,6 @@ export default function EditarDesafioPage() {
     noEndDate: false,
   });
 
-  // Carregar dados do desafio via server action
   useEffect(() => {
     let isMounted = true;
 
@@ -70,17 +69,11 @@ export default function EditarDesafioPage() {
 
         const challenge = result.data;
 
-        // Determinar tipo de recompensa baseado nos dados existentes
-        const hasMoneyReward = challenge.prize_amount && challenge.prize_amount > 0;
-        const rewardType: RewardType = hasMoneyReward ? 'money' : 'coins';
-
-        // Preencher formulário com dados existentes
         setFormData({
           title: challenge.title || '',
           description: challenge.description || '',
           type: challenge.type as ChallengeType,
           icon: challenge.icon || '💪',
-          reward_type: rewardType,
           coins_reward: challenge.coins_reward || 10,
           prize_amount: challenge.prize_amount ? String(challenge.prize_amount) : '',
           num_winners: challenge.num_winners ? String(challenge.num_winners) : '',
@@ -95,7 +88,6 @@ export default function EditarDesafioPage() {
           noEndDate: !challenge.ends_at,
         });
 
-        // Se tem video URL, criar preview
         if (challenge.record_video_url) {
           const videoId = challenge.record_video_url.match(/[?&]v=([^&]+)/)?.[1];
           if (videoId) {
@@ -107,11 +99,22 @@ export default function EditarDesafioPage() {
           }
         }
 
-        // Carregar thumbnail se existir
         setThumbnailUrl(challenge.thumbnail_url || '');
 
+        const prizesResult = await getChallengePrizes(challengeId);
+        if (prizesResult.data && isMounted) {
+          setPrizes(prizesResult.data.map(p => ({
+            type: p.type,
+            name: p.name,
+            description: p.description || undefined,
+            value: p.value || undefined,
+            quantity: p.quantity,
+            image_url: p.image_url || undefined,
+          })));
+        }
+
         setIsLoadingData(false);
-      } catch (err) {
+      } catch {
         if (isMounted) {
           setError('Erro ao carregar desafio');
           setIsLoadingData(false);
@@ -136,12 +139,10 @@ export default function EditarDesafioPage() {
       description: formData.description || null,
       type: formData.type,
       icon: formData.icon,
-      // Se reward_type é moedas, usa coins_reward; se é dinheiro, coins = 0
-      coins_reward: formData.reward_type === 'coins' ? formData.coins_reward : 0,
+      coins_reward: formData.coins_reward,
       instagram_embed_url: formData.instagram_embed_url || null,
-      // Se reward_type é dinheiro, usa prize_amount
-      prize_amount: formData.reward_type === 'money' && formData.prize_amount ? parseFloat(formData.prize_amount) : null,
-      num_winners: formData.reward_type === 'money' && formData.num_winners ? parseInt(formData.num_winners) : null,
+      prize_amount: formData.prize_amount ? parseFloat(formData.prize_amount) : null,
+      num_winners: formData.num_winners ? parseInt(formData.num_winners) : null,
       goal_type: formData.type === 'fisico' ? formData.goal_type : null,
       goal_value: formData.goal_value ? parseInt(formData.goal_value) : null,
       record_video_url: formData.record_video_url || null,
@@ -157,37 +158,56 @@ export default function EditarDesafioPage() {
       return;
     }
 
+    const prizesResult = await saveChallengePrizes(challengeId, prizes);
+    if (prizesResult.error) {
+      console.error('Erro ao salvar prêmios:', prizesResult.error);
+    }
+
     router.push('/admin/desafios');
     router.refresh();
   };
 
-  const handleGenerateThumbnail = async () => {
-    if (!formData.title) return;
+  const handleSaveThumbnail = async () => {
+    if (!thumbnailUrl.trim()) return;
 
-    setIsGeneratingThumbnail(true);
-    setThumbnailMessage('Gerando thumbnail com IA...');
-
+    setIsSavingThumbnail(true);
     try {
-      const result = await regenerateChallengeThumbnail(challengeId);
+      const result = await updateChallengeThumbnail(challengeId, thumbnailUrl.trim());
       if (result.error) {
-        setThumbnailMessage(`Erro: ${result.error}`);
-      } else if (result.data?.thumbnail_url) {
-        setThumbnailUrl(result.data.thumbnail_url);
-        setThumbnailMessage('Thumbnail gerada com sucesso!');
+        setError(result.error);
       }
-    } catch (err) {
-      setThumbnailMessage('Erro ao gerar thumbnail');
+    } catch {
+      setError('Erro ao salvar thumbnail');
     }
-    setIsGeneratingThumbnail(false);
+    setIsSavingThumbnail(false);
+  };
+
+  const handleRemoveThumbnail = async () => {
+    setIsSavingThumbnail(true);
+    try {
+      const result = await updateChallengeThumbnail(challengeId, null);
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setThumbnailUrl('');
+      }
+    } catch {
+      setError('Erro ao remover thumbnail');
+    }
+    setIsSavingThumbnail(false);
   };
 
   const iconCategories: Record<string, string[]> = {
-    'Fitness': ['💪', '🏋️', '🏃', '🚴', '🧘', '🤸', '⚡', '🔥', '💯', '🏅', '🥇', '🥈', '🥉', '🎖️'],
-    'Esportes': ['⚽', '🏀', '🏈', '⚾', '🎾', '🏐', '🏉', '🎱', '🥏', '🏓', '🏸', '🥅', '⛳', '🏒'],
-    'Água': ['🏊', '🤽', '🚣', '🏄', '🤿', '🛶', '⛵', '🚤'],
-    'Lutas': ['🥊', '🤼', '🥋', '🎿', '⛷️', '🏂', '⛸️', '🧗', '🏇', '🎳', '🛹', '🛼'],
-    'Aventura': ['🚶', '🥾', '⛰️', '🏕️', '🌲', '🌊', '☀️', '🌙', '🏔️', '🌋'],
-    'Geral': ['🎯', '⭐', '🏆', '🎁', '❤️', '📸', '🎬', '💬', '🎉', '✨', '👏', '🙌'],
+    'Fitness': ['💪', '🏋️', '🏋️‍♀️', '🏃', '🏃‍♀️', '🚴', '🚴‍♀️', '🧘', '🧘‍♀️', '🤸', '🤸‍♀️', '⚡', '🔥', '💯', '🏅', '🥇', '🥈', '🥉', '🎖️', '🦾', '💓', '🫀'],
+    'Amor': ['💝', '❤️', '💕', '💗', '💖', '🫶', '🤝', '🙏', '👴', '👵', '🐕', '🐈', '🌳', '🩸', '🤲', '💞', '💘', '🥰', '😇', '👼', '🕊️', '🌹', '💐', '🎀'],
+    'Esportes': ['⚽', '🏀', '🏈', '⚾', '🎾', '🏐', '🏉', '🎱', '🥏', '🏓', '🏸', '🥅', '⛳', '🏒', '🥍', '🏑', '🥎', '🏏', '🎯'],
+    'Água': ['🏊', '🏊‍♀️', '🤽', '🤽‍♀️', '🚣', '🚣‍♀️', '🏄', '🏄‍♀️', '🤿', '🛶', '⛵', '🚤', '🌊', '🐠', '🐬', '🐳', '🦈'],
+    'Lutas': ['🥊', '🤼', '🤼‍♀️', '🥋', '🎿', '⛷️', '🏂', '⛸️', '🧗', '🧗‍♀️', '🏇', '🎳', '🛹', '🛼', '🤺'],
+    'Aventura': ['🚶', '🚶‍♀️', '🥾', '⛰️', '🏕️', '🌲', '🌊', '☀️', '🌙', '🏔️', '🌋', '🏜️', '🗻', '🌄', '🌅', '🌠', '🏞️', '🎪'],
+    'Comida': ['🍎', '🍊', '🍋', '🍌', '🥑', '🥦', '🥕', '🥗', '🍳', '🥚', '🍞', '🥛', '🧃', '💧', '🍵', '🥤', '🍽️'],
+    'Animais': ['🐕', '🐈', '🐦', '🐠', '🐢', '🐰', '🦁', '🐻', '🦊', '🦋', '🐝', '🦅', '🦉', '🐴', '🦒', '🐘', '🦏'],
+    'Prêmios': ['🏆', '🎁', '💰', '💵', '💎', '👑', '🎉', '🎊', '🎈', '🎀', '🎗️', '🏅', '🥇', '🎫', '🎟️', '💳'],
+    'Geral': ['🎯', '⭐', '✨', '📸', '🎬', '💬', '👏', '🙌', '👍', '✅', '❤️‍🔥', '🔔', '📣', '📢', '🎤', '📱', '💻', '🎮'],
   };
 
   if (isLoadingData) {
@@ -199,7 +219,6 @@ export default function EditarDesafioPage() {
     );
   }
 
-  // Se houve erro ao carregar (ex: desafio não encontrado)
   if (error && !formData.title) {
     return (
       <div className="max-w-2xl mx-auto py-12 text-center">
@@ -221,14 +240,14 @@ export default function EditarDesafioPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Tipo de Desafio */}
         <Card className="p-5">
           <h2 className="font-bold text-gray-900 mb-4">Tipo de Desafio</h2>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
               { value: 'fisico', label: 'Fisico', icon: '💪', desc: 'Exercicios e metas' },
-              { value: 'engajamento', label: 'Engajamento', icon: '💬', desc: 'Comentar/curtir posts' },
-              { value: 'participe', label: 'Participe', icon: '🎁', desc: 'Sorteios e prêmios' },
+              { value: 'atos_amor', label: 'Atos de Amor', icon: '💝', desc: 'Boas acoes' },
+              { value: 'engajamento', label: 'Engajamento', icon: '💬', desc: 'Comentar/curtir' },
+              { value: 'participe', label: 'Participe', icon: '🎁', desc: 'Sorteios' },
             ].map((type) => (
               <button
                 key={type.value}
@@ -248,7 +267,6 @@ export default function EditarDesafioPage() {
           </div>
         </Card>
 
-        {/* Informacoes Basicas */}
         <Card className="p-5 space-y-4">
           <h2 className="font-bold text-gray-900">Informacoes Basicas</h2>
 
@@ -272,10 +290,10 @@ export default function EditarDesafioPage() {
               ))}
             </div>
 
-            <div className="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-lg">
-              {iconCategories[selectedIconCategory].map((icon) => (
+            <div className="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-lg max-h-40 overflow-y-auto">
+              {iconCategories[selectedIconCategory].map((icon, idx) => (
                 <button
-                  key={icon}
+                  key={`${icon}-${idx}`}
                   type="button"
                   onClick={() => setFormData({ ...formData, icon })}
                   className={`w-10 h-10 flex items-center justify-center rounded-lg text-xl transition-all ${
@@ -331,158 +349,71 @@ export default function EditarDesafioPage() {
             />
           </div>
 
-          {/* Tipo de Recompensa */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Tipo de Recompensa *
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Recompensa em Coracoes *
             </label>
-            <div className="grid grid-cols-2 gap-3">
-              <button
+            <Input
+              type="number"
+              value={formData.coins_reward}
+              onChange={(e) => setFormData({ ...formData, coins_reward: parseInt(e.target.value) || 0 })}
+              min="0"
+              required
+            />
+          </div>
+        </Card>
+
+        <Card className="p-5 space-y-4">
+          <h2 className="font-bold text-gray-900">Imagem do Desafio (opcional)</h2>
+          <p className="text-sm text-gray-500">
+            Cole a URL de uma imagem para usar como thumbnail do desafio.
+          </p>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">URL da Imagem</label>
+            <div className="flex gap-2">
+              <Input
+                type="url"
+                value={thumbnailUrl}
+                onChange={(e) => setThumbnailUrl(e.target.value)}
+                placeholder="https://exemplo.com/imagem.jpg"
+                className="flex-1"
+              />
+              <Button
                 type="button"
-                onClick={() => setFormData({ ...formData, reward_type: 'coins' })}
-                className={`p-3 rounded-lg border-2 text-center transition-all ${
-                  formData.reward_type === 'coins'
-                    ? 'border-indigo-500 bg-indigo-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
+                variant="outline"
+                onClick={handleSaveThumbnail}
+                disabled={isSavingThumbnail || !thumbnailUrl.trim()}
               >
-                <span className="text-xl">❤️</span>
-                <p className="font-medium text-gray-900 mt-1">Moedas</p>
-                <p className="text-xs text-gray-500">Créditos para trocar por prêmios</p>
-              </button>
-              <button
-                type="button"
-                onClick={() => setFormData({ ...formData, reward_type: 'money' })}
-                className={`p-3 rounded-lg border-2 text-center transition-all ${
-                  formData.reward_type === 'money'
-                    ? 'border-indigo-500 bg-indigo-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <span className="text-xl">💵</span>
-                <p className="font-medium text-gray-900 mt-1">Dinheiro</p>
-                <p className="text-xs text-gray-500">Prêmio em reais via PIX</p>
-              </button>
+                {isSavingThumbnail ? 'Salvando...' : 'Salvar'}
+              </Button>
             </div>
           </div>
 
-          {/* Campo de Moedas - aparece quando reward_type é coins */}
-          {formData.reward_type === 'coins' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Quantidade de Moedas *
-              </label>
-              <Input
-                type="number"
-                value={formData.coins_reward}
-                onChange={(e) => setFormData({ ...formData, coins_reward: parseInt(e.target.value) || 0 })}
-                min="1"
-                required
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Moedas que o usuário ganha ao completar o desafio
-              </p>
-            </div>
-          )}
-
-          {/* Campos de Dinheiro - aparecem quando reward_type é money */}
-          {formData.reward_type === 'money' && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Valor do Prêmio (R$) *
-                </label>
-                <Input
-                  type="number"
-                  value={formData.prize_amount}
-                  onChange={(e) => setFormData({ ...formData, prize_amount: e.target.value })}
-                  placeholder="100.00"
-                  min="0"
-                  step="0.01"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Número de Ganhadores
-                </label>
-                <Input
-                  type="number"
-                  value={formData.num_winners}
-                  onChange={(e) => setFormData({ ...formData, num_winners: e.target.value })}
-                  placeholder="1"
-                  min="1"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Quantas pessoas podem ganhar este prêmio (padrão: 1)
-                </p>
-              </div>
-            </div>
-          )}
-        </Card>
-
-        {/* Thumbnail com IA */}
-        <Card className="p-5 space-y-4">
-          <h2 className="font-bold text-gray-900">Thumbnail do Desafio</h2>
-          <p className="text-sm text-gray-500">
-            Gere uma imagem personalizada para o desafio usando inteligência artificial.
-          </p>
-
-          {/* Preview da thumbnail atual */}
           {thumbnailUrl && (
-            <div className="relative aspect-video w-full max-w-md rounded-lg overflow-hidden bg-gray-100">
-              <img
-                src={thumbnailUrl}
-                alt="Thumbnail do desafio"
-                className="w-full h-full object-cover"
-              />
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-gray-700">Preview:</p>
+              <div className="relative aspect-video w-full max-w-md rounded-lg overflow-hidden bg-gray-100">
+                <img
+                  src={thumbnailUrl}
+                  alt="Preview da thumbnail"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleRemoveThumbnail}
+                disabled={isSavingThumbnail}
+                className="text-red-600 hover:text-red-700"
+              >
+                Remover Imagem
+              </Button>
             </div>
-          )}
-
-          {/* Mensagem de feedback */}
-          {thumbnailMessage && (
-            <div className={`p-3 rounded-lg text-sm ${
-              thumbnailMessage.includes('sucesso')
-                ? 'bg-green-50 text-green-700'
-                : thumbnailMessage.includes('Gerando')
-                ? 'bg-blue-50 text-blue-700'
-                : 'bg-red-50 text-red-700'
-            }`}>
-              {thumbnailMessage}
-            </div>
-          )}
-
-          {/* Botão de gerar */}
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleGenerateThumbnail}
-            disabled={isGeneratingThumbnail || !formData.title}
-            className="w-full sm:w-auto"
-          >
-            {isGeneratingThumbnail ? (
-              <span className="flex items-center gap-2">
-                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
-                Gerando com IA...
-              </span>
-            ) : thumbnailUrl ? (
-              'Regenerar Thumbnail com IA'
-            ) : (
-              'Gerar Thumbnail com IA'
-            )}
-          </Button>
-
-          {!formData.title && (
-            <p className="text-xs text-amber-600">
-              Preencha o título do desafio para gerar a thumbnail.
-            </p>
           )}
         </Card>
 
-        {/* Configurações do Sorteio - apenas para engajamento/participe */}
         {(formData.type === 'engajamento' || formData.type === 'participe') && (
           <Card className="p-5 space-y-4">
             <h2 className="font-bold text-gray-900">Configurações do Sorteio</h2>
@@ -501,7 +432,12 @@ export default function EditarDesafioPage() {
           </Card>
         )}
 
-        {/* Campos especificos para Fisico */}
+        <PrizeSection
+          prizes={prizes}
+          onChange={setPrizes}
+          disabled={isLoading}
+        />
+
         {formData.type === 'fisico' && (
           <Card className="p-5 space-y-4">
             <h2 className="font-bold text-gray-900">Configurações do Desafio Fisico</h2>
@@ -592,7 +528,6 @@ export default function EditarDesafioPage() {
           </Card>
         )}
 
-        {/* Datas */}
         <Card className="p-5 space-y-4">
           <h2 className="font-bold text-gray-900">Periodo de Validade (opcional)</h2>
 
@@ -642,14 +577,12 @@ export default function EditarDesafioPage() {
           )}
         </Card>
 
-        {/* Erro */}
         {error && (
           <div className="p-4 bg-red-50 text-red-700 rounded-lg">
             {error}
           </div>
         )}
 
-        {/* Botoes */}
         <div className="flex gap-3">
           <Button
             type="button"
