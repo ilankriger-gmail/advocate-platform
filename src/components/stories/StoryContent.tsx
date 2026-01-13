@@ -5,7 +5,8 @@ import { useState, useEffect } from 'react';
 import YouTubeEmbed from '@/components/posts/YouTubeEmbed';
 import InstagramEmbed from '@/components/posts/InstagramEmbed';
 import { RichTextDisplay } from '@/components/editor/RichTextEditor';
-import type { StoryMediaType } from '@/types/story';
+import { LinkedContentCard } from './LinkedContentCard';
+import type { StoryMediaType, LinkedContentType } from '@/types/story';
 
 interface StoryContentProps {
   mediaUrl: string[];
@@ -15,6 +16,11 @@ interface StoryContentProps {
   title?: string | null;
   content?: string | null;
   caption?: string | null;
+  linkedContentType?: LinkedContentType | null;
+  linkedContentId?: string | null;
+  linkedContentTitle?: string;
+  linkedContentImage?: string | null;
+  linkedContentSubtitle?: string;
   currentImageIndex?: number;
   onPauseTimer?: () => void;
   onResumeTimer?: () => void;
@@ -28,6 +34,11 @@ export function StoryContent({
   title,
   content,
   caption,
+  linkedContentType,
+  linkedContentId,
+  linkedContentTitle,
+  linkedContentImage,
+  linkedContentSubtitle,
   currentImageIndex = 0,
   onPauseTimer,
   onResumeTimer,
@@ -116,12 +127,23 @@ export function StoryContent({
         )}
 
         {/* Overlay inferior com caption e botão de conteúdo */}
-        <div className="absolute bottom-16 left-0 right-0 px-4 z-10">
+        <div className="absolute bottom-16 left-0 right-0 px-4 z-10 space-y-2">
+          {/* Card de conteúdo vinculado */}
+          {linkedContentType && linkedContentId && linkedContentTitle && (
+            <LinkedContentCard
+              type={linkedContentType}
+              id={linkedContentId}
+              title={linkedContentTitle}
+              image={linkedContentImage}
+              subtitle={linkedContentSubtitle}
+            />
+          )}
+
           {/* Botão para ver conteúdo rico */}
           {hasRichContent && (
             <button
               onClick={toggleContent}
-              className="w-full mb-2 py-2 px-4 bg-white/90 backdrop-blur-sm rounded-lg text-center text-sm font-medium text-gray-900 hover:bg-white transition-colors"
+              className="w-full py-2 px-4 bg-white/90 backdrop-blur-sm rounded-lg text-center text-sm font-medium text-gray-900 hover:bg-white transition-colors"
             >
               {showContent ? 'Ocultar detalhes' : 'Ver detalhes'}
             </button>

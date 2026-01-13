@@ -5,6 +5,9 @@
 // Tipo de mídia do story
 export type StoryMediaType = 'image' | 'carousel' | 'youtube' | 'instagram';
 
+// Tipo de conteúdo vinculado
+export type LinkedContentType = 'challenge' | 'reward' | 'ranking';
+
 // Story base
 export interface Story {
   id: string;
@@ -17,6 +20,8 @@ export interface Story {
   instagram_url: string | null;
   caption: string | null;
   position: number;
+  linked_content_type: LinkedContentType | null;
+  linked_content_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -59,6 +64,17 @@ export interface CreateStoryData {
   youtube_url?: string;
   instagram_url?: string;
   caption?: string;
+  linked_content_type?: LinkedContentType;
+  linked_content_id?: string;
+}
+
+// Dados de conteúdo vinculado para exibição
+export interface LinkedContent {
+  type: LinkedContentType;
+  id: string;
+  title: string;
+  image?: string;
+  subtitle?: string;
 }
 
 // Dados para atualizar story

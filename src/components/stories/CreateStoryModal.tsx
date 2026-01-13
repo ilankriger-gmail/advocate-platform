@@ -1,25 +1,28 @@
 'use client';
 
 import { useState } from 'react';
-import { X, ImageIcon, Youtube, Instagram } from 'lucide-react';
+import { X, ImageIcon, Youtube, Instagram, LinkIcon } from 'lucide-react';
 import { Button } from '@/components/ui';
 import MediaUploader from '@/components/posts/MediaUploader';
-import YouTubeInput from '@/components/posts/YouTubeInput';
+import { YouTubeVideoPicker, SelectedYouTubeVideo } from '@/components/youtube/YouTubeVideoPicker';
 import InstagramInput from '@/components/posts/InstagramInput';
 import RichTextEditor from '@/components/editor/RichTextEditor';
+import { ContentPicker } from './ContentPicker';
 import { createStory } from '@/actions/stories';
+import { LinkedContent } from '@/types/story';
 
 interface CreateStoryModalProps {
   onClose: () => void;
   onSuccess: () => void;
 }
 
-type MediaTab = 'images' | 'youtube' | 'instagram';
+type MediaTab = 'images' | 'youtube' | 'instagram' | 'content';
 
 const tabs: { id: MediaTab; label: string; icon: React.ReactNode }[] = [
   { id: 'images', label: 'Imagens', icon: <ImageIcon className="w-4 h-4" /> },
   { id: 'youtube', label: 'YouTube', icon: <Youtube className="w-4 h-4" /> },
   { id: 'instagram', label: 'Instagram', icon: <Instagram className="w-4 h-4" /> },
+  { id: 'content', label: 'Conteúdo', icon: <LinkIcon className="w-4 h-4" /> },
 ];
 
 export function CreateStoryModal({ onClose, onSuccess }: CreateStoryModalProps) {
@@ -32,33 +35,46 @@ export function CreateStoryModal({ onClose, onSuccess }: CreateStoryModalProps) 
   const [mediaTab, setMediaTab] = useState<MediaTab>('images');
   const [images, setImages] = useState<string[]>([]);
   const [youtubeUrl, setYoutubeUrl] = useState('');
+  const [selectedYoutubeVideo, setSelectedYoutubeVideo] = useState<SelectedYouTubeVideo | null>(null);
   const [instagramUrl, setInstagramUrl] = useState('');
+  const [linkedContent, setLinkedContent] = useState<LinkedContent | null>(null);
 
   // Estado do form
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Validação - deve ter alguma mídia
+  // Validação - deve ter alguma mídia ou conteúdo vinculado
   const hasImages = images.length > 0;
   const hasYoutube = youtubeUrl.trim() !== '';
   const hasInstagram = instagramUrl.trim() !== '';
-  const hasMedia = hasImages || hasYoutube || hasInstagram;
+  const hasLinkedContent = linkedContent !== null;
+  const hasMedia = hasImages || hasYoutube || hasInstagram || hasLinkedContent;
 
   // Limpar outras mídias ao trocar de tab
   const handleTabChange = (tab: MediaTab) => {
     setMediaTab(tab);
     // Limpar mídias das outras tabs
     if (tab !== 'images') setImages([]);
-    if (tab !== 'youtube') setYoutubeUrl('');
+    if (tab !== 'youtube') {
+      setYoutubeUrl('');
+      setSelectedYoutubeVideo(null);
+    }
     if (tab !== 'instagram') setInstagramUrl('');
+    if (tab !== 'content') setLinkedContent(null);
     setError(null);
+  };
+
+  // Handler para seleção de vídeo do YouTube
+  const handleYoutubeSelect = (video: SelectedYouTubeVideo) => {
+    setYoutubeUrl(video.url);
+    setSelectedYoutubeVideo(video);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!hasMedia) {
-      setError('Adicione pelo menos uma mídia (imagem, YouTube ou Instagram)');
+      setError('Adicione pelo menos uma mídia (imagem, YouTube, Instagram ou conteúdo)');
       return;
     }
 
@@ -76,14 +92,26 @@ export function CreateStoryModal({ onClose, onSuccess }: CreateStoryModalProps) 
         mediaType = 'carousel';
       }
 
+      // Se tem conteúdo vinculado mas não tem mídia, usar imagem do conteúdo
+      let finalImages = hasImages ? images : undefined;
+      if (hasLinkedContent && !hasImages && !hasYoutube && !hasInstagram) {
+        // Usar imagem do conteúdo vinculado se disponível
+        if (linkedContent?.image) {
+          finalImages = [linkedContent.image];
+          mediaType = 'image';
+        }
+      }
+
       const result = await createStory({
         title: title.trim() || undefined,
         content: content.trim() || undefined,
-        media_url: hasImages ? images : undefined,
+        media_url: finalImages,
         media_type: mediaType,
         youtube_url: hasYoutube ? youtubeUrl : undefined,
         instagram_url: hasInstagram ? instagramUrl : undefined,
         caption: caption.trim() || undefined,
+        linked_content_type: linkedContent?.type,
+        linked_content_id: linkedContent?.id,
       });
 
       if (result.error) {
@@ -196,11 +224,36 @@ export function CreateStoryModal({ onClose, onSuccess }: CreateStoryModalProps) 
               )}
 
               {mediaTab === 'youtube' && (
-                <YouTubeInput
-                  value={youtubeUrl}
-                  onChange={setYoutubeUrl}
-                  disabled={submitting}
-                />
+                <div className="space-y-4">
+                  <YouTubeVideoPicker onSelect={handleYoutubeSelect} />
+
+                  {/* Preview do vídeo selecionado */}
+                  {selectedYoutubeVideo && (
+                    <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <p className="text-xs text-green-600 font-medium mb-2">Vídeo selecionado:</p>
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={selectedYoutubeVideo.thumbnail}
+                          alt={selectedYoutubeVideo.title}
+                          className="w-20 h-12 object-cover rounded"
+                        />
+                        <p className="text-sm font-medium text-gray-900 line-clamp-2 flex-1">
+                          {selectedYoutubeVideo.title}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setYoutubeUrl('');
+                            setSelectedYoutubeVideo(null);
+                          }}
+                          className="text-gray-400 hover:text-red-500"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               )}
 
               {mediaTab === 'instagram' && (
@@ -208,6 +261,13 @@ export function CreateStoryModal({ onClose, onSuccess }: CreateStoryModalProps) 
                   value={instagramUrl}
                   onChange={setInstagramUrl}
                   disabled={submitting}
+                />
+              )}
+
+              {mediaTab === 'content' && (
+                <ContentPicker
+                  onSelect={setLinkedContent}
+                  selectedContent={linkedContent}
                 />
               )}
             </div>

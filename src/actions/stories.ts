@@ -72,6 +72,8 @@ export async function getStoriesForBar(): Promise<ActionResponse<CreatorStories[
         instagram_url: story.instagram_url,
         caption: story.caption,
         position: story.position,
+        linked_content_type: story.linked_content_type as Story['linked_content_type'],
+        linked_content_id: story.linked_content_id,
         created_at: story.created_at,
         updated_at: story.updated_at,
       };
@@ -160,6 +162,8 @@ export async function getCreatorStories(creatorId: string): Promise<ActionRespon
       instagram_url: story.instagram_url,
       caption: story.caption,
       position: story.position,
+      linked_content_type: story.linked_content_type as Story['linked_content_type'],
+      linked_content_id: story.linked_content_id,
       created_at: story.created_at,
       updated_at: story.updated_at,
       author: story.author as { id: string; full_name: string | null; avatar_url: string | null } | null,
@@ -199,13 +203,14 @@ export async function createStory(data: CreateStoryData): Promise<ActionResponse
       return { error: 'Apenas criadores e administradores podem criar stories' };
     }
 
-    // Validar dados - deve ter imagens OU youtube OU instagram
+    // Validar dados - deve ter imagens OU youtube OU instagram OU conteúdo vinculado
     const hasImages = data.media_url && data.media_url.length > 0;
     const hasYoutube = data.youtube_url && data.youtube_url.trim() !== '';
     const hasInstagram = data.instagram_url && data.instagram_url.trim() !== '';
+    const hasLinkedContent = data.linked_content_type && data.linked_content_id;
 
-    if (!hasImages && !hasYoutube && !hasInstagram) {
-      return { error: 'É necessário adicionar pelo menos uma mídia (imagem, YouTube ou Instagram)' };
+    if (!hasImages && !hasYoutube && !hasInstagram && !hasLinkedContent) {
+      return { error: 'É necessário adicionar pelo menos uma mídia (imagem, YouTube, Instagram ou conteúdo)' };
     }
 
     // Determinar tipo de mídia
@@ -244,6 +249,8 @@ export async function createStory(data: CreateStoryData): Promise<ActionResponse
         instagram_url: hasInstagram ? data.instagram_url : null,
         caption: data.caption || null,
         position: nextPosition,
+        linked_content_type: data.linked_content_type || null,
+        linked_content_id: data.linked_content_id || null,
       })
       .select()
       .single();
@@ -264,6 +271,8 @@ export async function createStory(data: CreateStoryData): Promise<ActionResponse
         ...story,
         media_url: story.media_url || [],
         media_type: story.media_type as Story['media_type'],
+        linked_content_type: story.linked_content_type as Story['linked_content_type'],
+        linked_content_id: story.linked_content_id,
       },
     };
   } catch (err) {

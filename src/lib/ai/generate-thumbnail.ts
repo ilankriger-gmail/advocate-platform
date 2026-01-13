@@ -53,14 +53,14 @@ export async function generateChallengeThumbnail(
     // 1. Construir prompt baseado nos dados do desafio
     const prompt = buildThumbnailPrompt(input);
 
-    // 2. Chamar DALL-E 3 para gerar imagem
+    // 2. Chamar DALL-E 3 para gerar imagem (natural = mais realista)
     const response = await client.images.generate({
       model: 'dall-e-3',
       prompt,
       n: 1,
       size: '1024x1024',
-      quality: 'standard',
-      style: 'vivid',
+      quality: 'hd',
+      style: 'natural',
     });
 
     const imageData = response.data;
@@ -126,83 +126,83 @@ export async function generateChallengeThumbnail(
 
 /**
  * Constrói o prompt para DALL-E baseado nos dados do desafio
+ * Gera imagens REALISTAS no estilo de fotografia profissional
  */
 function buildThumbnailPrompt(input: ChallengeThumbnailInput): string {
-  // Mapear tipo para tema visual
+  // Mapear tipo para cena realista
   const themeByType: Record<string, string> = {
-    fisico: 'A person doing dynamic exercise (push-ups, squats, running, jumping). Athletic and energetic pose. Fitness and sports theme.',
-    engajamento: 'Social media engagement icons like hearts, comments, shares, and connections. Digital community and interaction theme.',
-    participe: 'Celebration elements like confetti, gift boxes, prize ribbons, and lottery elements. Winning and giveaway theme.',
+    fisico: 'Athletic person performing exercise with perfect form. Professional fitness photography in modern gym or outdoor setting.',
+    engajamento: 'Person happily using smartphone, social media engagement moment. Lifestyle photography with warm natural lighting.',
+    participe: 'Exciting prize presentation scene with luxury gift boxes, golden confetti, celebration atmosphere. Product photography style.',
   };
 
-  // Mapear ícones comuns para elementos visuais
+  // Mapear ícones para descrições de cenas realistas
   const iconHints: Record<string, string> = {
-    '💪': 'muscular arm, strength, bicep flex',
-    '🏋️': 'weightlifting, barbell, gym equipment',
-    '🏃': 'running person, jogging, cardio',
-    '🚴': 'cycling, bicycle, spinning',
-    '🧘': 'yoga pose, meditation, stretching',
-    '🤸': 'gymnastics, acrobatics, flexibility',
-    '⚡': 'energy bolt, power, speed',
-    '🔥': 'flames, fire, intensity',
-    '🎁': 'gift box, present, surprise',
-    '🎯': 'target, bullseye, goal',
-    '⭐': 'star, achievement, excellence',
-    '🏆': 'trophy, championship, winner',
-    '❤️': 'heart, love, passion',
-    '💬': 'speech bubble, comments, conversation',
-    '📸': 'camera, photo, social media',
+    '💪': 'athletic person showing strong arm muscles, fitness model flexing bicep',
+    '🏋️': 'person lifting heavy barbell in gym, professional weightlifting form',
+    '🏃': 'athletic runner in motion outdoors, dynamic running photography',
+    '🚴': 'cyclist riding bike on scenic road, cycling action shot',
+    '🧘': 'person in peaceful yoga pose, serene meditation moment',
+    '🤸': 'flexible athlete doing gymnastic move, acrobatic pose',
+    '⚡': 'explosive workout moment, high intensity training action',
+    '🔥': 'intense workout with sweat, athlete pushing limits',
+    '🎁': 'beautiful wrapped gift box being revealed, luxury present',
+    '🎯': 'achievement moment, person celebrating reaching goal',
+    '⭐': 'winner moment, person celebrating success',
+    '🏆': 'champion holding golden trophy, victory celebration',
+    '❤️': 'person making heart gesture with hands, showing love',
+    '💬': 'person engaged happily with phone, social conversation',
+    '📸': 'content creator taking photo, smartphone photography moment',
   };
 
-  const iconHint = iconHints[input.icon] || `stylized representation of ${input.icon} emoji`;
+  const iconHint = iconHints[input.icon] || `realistic scene of ${input.icon}`;
   const theme = themeByType[input.type] || themeByType.fisico;
 
-  // Adicionar contexto baseado no tipo
-  let contextHint = '';
+  // Contexto específico do exercício
+  let exerciseContext = '';
   if (input.type === 'fisico' && input.goal_type) {
-    if (input.goal_type === 'repetitions' && input.goal_value) {
-      contextHint = `The challenge involves completing ${input.goal_value} repetitions of an exercise.`;
-    } else if (input.goal_type === 'time' && input.goal_value) {
-      contextHint = `The challenge involves maintaining a position for ${input.goal_value} seconds.`;
+    if (input.goal_type === 'repetitions') {
+      exerciseContext = 'Capture the dynamic moment of exercise repetition, showing effort and determination.';
+    } else if (input.goal_type === 'time') {
+      exerciseContext = 'Show someone holding a challenging position with focus and endurance.';
     }
   }
 
-  if (input.type === 'participe' && input.prize_amount) {
-    contextHint = 'This is a prize giveaway challenge with exciting rewards.';
+  if (input.type === 'participe') {
+    exerciseContext = 'Create an exciting atmosphere of winning and prizes, luxurious and aspirational.';
   }
 
-  return `Create a vibrant, modern digital illustration for a fitness/social challenge app.
+  return `Create a PHOTOREALISTIC, high-quality image for a fitness challenge app.
 
-STYLE REQUIREMENTS:
-- Flat design with bold, saturated colors
-- Clean and minimalist composition
-- Professional app-quality artwork
-- Soft gradient background
-- NO TEXT, NO WORDS, NO LETTERS in the image
-- NO realistic human faces (use stylized/abstract figures if needed)
+PHOTOGRAPHY STYLE:
+- Professional stock photography quality
+- Cinematic lighting with dramatic shadows and highlights
+- Sharp focus, high resolution details
+- Modern, aspirational aesthetic
+- Real photograph look, NOT illustration or cartoon
 
-THEME AND ELEMENTS:
+SCENE:
 ${theme}
 
-MAIN VISUAL ELEMENT:
-Incorporate a ${iconHint} as a central or prominent design element.
+SUBJECT:
+${iconHint}
 
-COLOR PALETTE:
-Energetic and motivational colors - use vibrant combinations of:
-- Pinks, magentas, and reds for energy
-- Purples and indigos for premium feel
-- Cyans and teals for freshness
-- Oranges and yellows for warmth
+${exerciseContext}
+
+TECHNICAL REQUIREMENTS:
+- Dramatic, motivational lighting (golden hour or professional studio)
+- Shallow depth of field for cinematic look
+- Clean, non-distracting background
+- Person shown from back, side, or partial view (avoid direct face)
 
 MOOD:
-Empowering, achievable, fun, and motivational.
+Inspiring, powerful, achievable, motivational
 
-CHALLENGE CONTEXT:
-Title: "${input.title}"
-${contextHint}
+CHALLENGE TITLE: "${input.title}"
 
-IMPORTANT:
-- Keep the design abstract and iconographic
-- Suitable for a mobile app card/banner
-- The image should work well as a 16:9 thumbnail when cropped`;
+CRITICAL RULES:
+- NO text, words, letters, or watermarks
+- Must look like a real photograph
+- Professional sports/fitness photography style
+- Make viewers want to participate in this challenge`;
 }
