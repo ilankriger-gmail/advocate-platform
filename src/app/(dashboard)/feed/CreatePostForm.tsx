@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Card, Button, Textarea, Input, Select } from '@/components/ui';
+import { Card, Button, Textarea, Input } from '@/components/ui';
 import { useToastHelpers } from '@/components/ui/Toast';
 import { usePosts } from '@/hooks';
 
@@ -19,7 +19,6 @@ export function CreatePostForm({ onHelpRequestCreated }: CreatePostFormProps) {
     title: '',
     content: '',
     media_url: '',
-    type: 'community' as 'creator' | 'community',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -29,7 +28,7 @@ export function CreatePostForm({ onHelpRequestCreated }: CreatePostFormProps) {
       title: formData.title,
       content: formData.content,
       media_url: formData.media_url ? [formData.media_url] : undefined,
-      type: formData.type,
+      type: 'community',
     });
 
     if (result.success) {
@@ -41,7 +40,7 @@ export function CreatePostForm({ onHelpRequestCreated }: CreatePostFormProps) {
         );
       } else if (result.contentCategory === 'help_request') {
         // Mostrar alerta especial para pedido de ajuda
-        setFormData({ title: '', content: '', media_url: '', type: 'community' });
+        setFormData({ title: '', content: '', media_url: '' });
         setIsExpanded(false);
         setShowHelpRequestAlert(true);
         // Notificar o componente pai para mudar para a aba de ajuda
@@ -51,11 +50,11 @@ export function CreatePostForm({ onHelpRequestCreated }: CreatePostFormProps) {
           'Em revisão',
           result.message || 'Sua publicação será analisada e publicada em breve.'
         );
-        setFormData({ title: '', content: '', media_url: '', type: 'community' });
+        setFormData({ title: '', content: '', media_url: '' });
         setIsExpanded(false);
       } else {
         toast.success('Publicado!', 'Sua publicação foi criada com sucesso.');
-        setFormData({ title: '', content: '', media_url: '', type: 'community' });
+        setFormData({ title: '', content: '', media_url: '' });
         setIsExpanded(false);
       }
     } else if (result.error) {
@@ -172,27 +171,13 @@ export function CreatePostForm({ onHelpRequestCreated }: CreatePostFormProps) {
           required
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Select
-            label="Tipo de Post"
-            name="type"
-            value={formData.type}
-            onChange={handleChange}
-            options={[
-              { value: 'community', label: 'Comunidade' },
-              { value: 'creator', label: 'Criador' },
-            ]}
-          />
-
-          <Input
-            label="URL da Mídia"
-            name="media_url"
-            value={formData.media_url}
-            onChange={handleChange}
-            placeholder="https://..."
-            hint="Opcional"
-          />
-        </div>
+        <Input
+          label="URL da Mídia (opcional)"
+          name="media_url"
+          value={formData.media_url}
+          onChange={handleChange}
+          placeholder="https://..."
+        />
 
         {error && (
           <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm">

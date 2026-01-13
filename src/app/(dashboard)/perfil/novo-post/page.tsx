@@ -10,7 +10,7 @@ import MediaUploader from '@/components/posts/MediaUploader';
 import YouTubeInput from '@/components/posts/YouTubeInput';
 import InstagramInput from '@/components/posts/InstagramInput';
 import { Button } from '@/components/ui';
-import type { MediaType, PostType } from '@/types/post';
+import type { MediaType } from '@/types/post';
 
 // Carregar editor dinamicamente para evitar problemas de SSR
 const RichTextEditor = dynamic(
@@ -32,7 +32,6 @@ export default function NovoPostPage() {
   // Estado do formulário
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [postType, setPostType] = useState<PostType>('community');
   const [mediaTab, setMediaTab] = useState<MediaTab>('none');
   const [images, setImages] = useState<string[]>([]);
   const [youtubeUrl, setYoutubeUrl] = useState('');
@@ -106,7 +105,7 @@ export default function NovoPostPage() {
       const result = await createPost({
         title: title.trim(),
         content,
-        type: postType,
+        type: 'community',
         media_type: mediaType,
         media_url: mediaUrl,
         youtube_url: youtubeUrlFinal,
@@ -204,39 +203,6 @@ export default function NovoPostPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Tipo de Post */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Tipo de Post
-          </label>
-          <div className="flex gap-4">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                name="postType"
-                value="community"
-                checked={postType === 'community'}
-                onChange={() => setPostType('community')}
-                className="w-4 h-4 text-purple-600"
-              />
-              <span className="text-gray-700">Comunidade</span>
-            </label>
-            {isCreator && (
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="postType"
-                  value="creator"
-                  checked={postType === 'creator'}
-                  onChange={() => setPostType('creator')}
-                  className="w-4 h-4 text-purple-600"
-                />
-                <span className="text-gray-700">Criador</span>
-              </label>
-            )}
-          </div>
-        </div>
-
         {/* Título */}
         <div>
           <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">

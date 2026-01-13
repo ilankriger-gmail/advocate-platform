@@ -140,7 +140,7 @@ export async function createPost(data: CreatePostData): Promise<CreatePostRespon
         media_type: data.media_type || 'none',
         youtube_url: data.youtube_url || null,
         instagram_url: data.instagram_url || null,
-        type: data.type,
+        type: 'community', // Todos os posts são do tipo comunidade
         status: postStatus,
         moderation_score: moderationScore,
         moderation_flags: moderationFlags,
