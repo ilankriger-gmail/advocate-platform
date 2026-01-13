@@ -48,18 +48,19 @@ export default function EditarDesafioPage() {
   // Carregar dados do desafio
   useEffect(() => {
     async function loadChallenge() {
-      const supabase = createClient();
-      const { data: challenge, error } = await supabase
-        .from('challenges')
-        .select('*')
-        .eq('id', challengeId)
-        .single();
+      try {
+        const supabase = createClient();
+        const { data: challenge, error } = await supabase
+          .from('challenges')
+          .select('*')
+          .eq('id', challengeId)
+          .single();
 
-      if (error || !challenge) {
-        setError('Desafio não encontrado');
-        setIsLoadingData(false);
-        return;
-      }
+        if (error || !challenge) {
+          setError('Desafio não encontrado');
+          setIsLoadingData(false);
+          return;
+        }
 
       // Preencher formulário com dados existentes
       setFormData({
@@ -78,7 +79,7 @@ export default function EditarDesafioPage() {
         profile_to_tag: challenge.profile_to_tag || '',
         starts_at: challenge.starts_at ? challenge.starts_at.slice(0, 16) : '',
         ends_at: challenge.ends_at ? challenge.ends_at.slice(0, 16) : '',
-        noEndDate: !challenge.starts_at && !challenge.ends_at,
+        noEndDate: !challenge.ends_at,
       });
 
       // Se tem video URL, criar preview
@@ -99,6 +100,11 @@ export default function EditarDesafioPage() {
       }
 
       setIsLoadingData(false);
+      } catch (err) {
+        console.error('Erro ao carregar desafio:', err);
+        setError('Erro ao carregar desafio');
+        setIsLoadingData(false);
+      }
     }
 
     loadChallenge();

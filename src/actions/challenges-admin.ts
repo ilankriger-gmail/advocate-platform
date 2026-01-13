@@ -347,15 +347,16 @@ export async function createChallenge(data: {
       title: challenge.title
     });
 
-    // Gerar thumbnail com IA (não bloqueia resposta em caso de erro)
+    // Gerar thumbnail e emoji com IA (não bloqueia resposta em caso de erro)
     try {
-      challengesAdminLogger.info('Gerando thumbnail com DALL-E...', {
+      challengesAdminLogger.info('Gerando thumbnail e emoji com IA...', {
         challengeId: maskId(challenge.id)
       });
 
       const thumbnailResult = await generateChallengeThumbnail({
         challengeId: challenge.id,
         title: data.title,
+        description: data.description,
         type: data.type,
         icon: data.icon || '🎯',
         goal_type: data.goal_type,
@@ -365,14 +366,22 @@ export async function createChallenge(data: {
       });
 
       if (thumbnailResult.success && thumbnailResult.url) {
-        // Atualizar o desafio com a URL da thumbnail
+        // Atualizar o desafio com a URL da thumbnail e emoji gerado
+        const updateData: { thumbnail_url: string; icon?: string } = {
+          thumbnail_url: thumbnailResult.url,
+        };
+        if (thumbnailResult.emoji) {
+          updateData.icon = thumbnailResult.emoji;
+        }
+
         await supabase
           .from('challenges')
-          .update({ thumbnail_url: thumbnailResult.url })
+          .update(updateData)
           .eq('id', challenge.id);
 
-        challengesAdminLogger.info('Thumbnail gerada e salva com sucesso', {
-          challengeId: maskId(challenge.id)
+        challengesAdminLogger.info('Thumbnail e emoji gerados com sucesso', {
+          challengeId: maskId(challenge.id),
+          emoji: thumbnailResult.emoji
         });
       } else {
         challengesAdminLogger.warn('Falha ao gerar thumbnail (desafio criado sem thumbnail)', {
@@ -645,15 +654,16 @@ export async function regenerateChallengeThumbnail(
       return { error: 'Desafio não encontrado' };
     }
 
-    challengesAdminLogger.info('Regenerando thumbnail para desafio existente', {
+    challengesAdminLogger.info('Regenerando thumbnail e emoji para desafio existente', {
       challengeId: maskId(challengeId),
       title: challenge.title
     });
 
-    // Gerar thumbnail com IA
+    // Gerar thumbnail e emoji com IA
     const thumbnailResult = await generateChallengeThumbnail({
       challengeId: challenge.id,
       title: challenge.title,
+      description: challenge.description,
       type: challenge.type as 'fisico' | 'engajamento' | 'participe',
       icon: challenge.icon || '🎯',
       goal_type: challenge.goal_type,
@@ -670,10 +680,17 @@ export async function regenerateChallengeThumbnail(
       return { error: thumbnailResult.error || 'Erro ao gerar thumbnail' };
     }
 
-    // Atualizar o desafio com a nova thumbnail
+    // Atualizar o desafio com a nova thumbnail e emoji
+    const updateData: { thumbnail_url: string; icon?: string } = {
+      thumbnail_url: thumbnailResult.url,
+    };
+    if (thumbnailResult.emoji) {
+      updateData.icon = thumbnailResult.emoji;
+    }
+
     const { error: updateError } = await supabase
       .from('challenges')
-      .update({ thumbnail_url: thumbnailResult.url })
+      .update(updateData)
       .eq('id', challengeId);
 
     if (updateError) {
@@ -684,8 +701,9 @@ export async function regenerateChallengeThumbnail(
       return { error: 'Erro ao salvar thumbnail' };
     }
 
-    challengesAdminLogger.info('Thumbnail regenerada com sucesso', {
-      challengeId: maskId(challengeId)
+    challengesAdminLogger.info('Thumbnail e emoji regenerados com sucesso', {
+      challengeId: maskId(challengeId),
+      emoji: thumbnailResult.emoji
     });
 
     revalidatePath('/desafios');
@@ -693,7 +711,7 @@ export async function regenerateChallengeThumbnail(
     revalidatePath(`/admin/desafios/${challengeId}`);
     revalidatePath(`/admin/desafios/${challengeId}/editar`);
 
-    return { success: true, data: { thumbnail_url: thumbnailResult.url } };
+    return { success: true, data: { thumbnail_url: thumbnailResult.url, icon: thumbnailResult.emoji } };
   } catch (err) {
     challengesAdminLogger.error('Erro inesperado ao regenerar thumbnail', {
       error: sanitizeError(err)

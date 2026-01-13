@@ -103,6 +103,7 @@ export const createMockChallenge = (
     type: 'fisico',
     icon: '🏃',
     is_active: true,
+    thumbnail_url: null,
     instagram_embed_url: null,
     prize_amount: null,
     num_winners: 1,

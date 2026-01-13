@@ -23,6 +23,7 @@ function getOpenAIClient(): OpenAI | null {
 export interface ChallengeThumbnailInput {
   challengeId: string;
   title: string;
+  description?: string | null;
   type: 'fisico' | 'engajamento' | 'participe';
   icon: string;
   goal_type?: 'repetitions' | 'time' | null;
@@ -32,12 +33,85 @@ export interface ChallengeThumbnailInput {
 }
 
 /**
- * Gera uma thumbnail para um desafio usando DALL-E 3
- * @returns URL permanente no Supabase Storage ou null em caso de erro
+ * Gera um emoji adequado para um desafio usando GPT
+ * @returns Emoji sugerido ou emoji padrão em caso de erro
+ */
+export async function generateChallengeEmoji(
+  title: string,
+  description: string | null,
+  type: 'fisico' | 'engajamento' | 'participe'
+): Promise<string> {
+  const client = getOpenAIClient();
+
+  if (!client) {
+    console.error('[AI Emoji] OpenAI não configurada, usando emoji padrão');
+    return getDefaultEmoji(type);
+  }
+
+  try {
+    console.log('[AI Emoji] Gerando emoji para desafio:', title);
+
+    const response = await client.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content: `Você é um assistente que sugere emojis para desafios de uma plataforma fitness/gamificação.
+Retorne APENAS um único emoji, sem texto adicional, sem explicação.
+
+Tipos de desafio e emojis sugeridos:
+- fisico: exercícios físicos - use emojis como 💪🏋️🏃🚴🧘🤸⚡🔥🏆
+- engajamento: redes sociais - use emojis como ❤️💬📸🔥⭐✨📱
+- participe: sorteios/prêmios - use emojis como 🎁🎯🏆⭐🎉🎊🎰
+
+Escolha o emoji que melhor representa o desafio baseado no título e descrição.`,
+        },
+        {
+          role: 'user',
+          content: `Título: ${title}
+Descrição: ${description || 'Sem descrição'}
+Tipo: ${type}`,
+        },
+      ],
+      max_tokens: 10,
+      temperature: 0.7,
+    });
+
+    const emoji = response.choices[0]?.message?.content?.trim();
+
+    // Validar se é um emoji válido (verificação básica)
+    if (emoji && emoji.length <= 4) {
+      console.log('[AI Emoji] Emoji gerado:', emoji);
+      return emoji;
+    }
+
+    console.warn('[AI Emoji] Resposta inválida, usando padrão');
+    return getDefaultEmoji(type);
+  } catch (error) {
+    console.error('[AI Emoji] Erro ao gerar emoji:', error);
+    return getDefaultEmoji(type);
+  }
+}
+
+/**
+ * Retorna emoji padrão baseado no tipo de desafio
+ */
+function getDefaultEmoji(type: 'fisico' | 'engajamento' | 'participe'): string {
+  const defaults: Record<string, string> = {
+    fisico: '💪',
+    engajamento: '❤️',
+    participe: '🎁',
+  };
+  return defaults[type] || '🎯';
+}
+
+/**
+ * Gera uma thumbnail para um desafio usando DALL-E 3 e também gera emoji
+ * @returns URL permanente no Supabase Storage e emoji sugerido
  */
 export async function generateChallengeThumbnail(
   input: ChallengeThumbnailInput
-): Promise<{ success: boolean; url?: string; error?: string }> {
+): Promise<{ success: boolean; url?: string; emoji?: string; error?: string }> {
   const client = getOpenAIClient();
 
   if (!client) {
@@ -48,12 +122,19 @@ export async function generateChallengeThumbnail(
   }
 
   try {
-    console.log('[AI Thumbnail] Gerando thumbnail para desafio:', input.title);
+    console.log('[AI Thumbnail] Gerando thumbnail e emoji para desafio:', input.title);
 
-    // 1. Construir prompt baseado nos dados do desafio
+    // 1. Gerar emoji em paralelo com a thumbnail
+    const emojiPromise = generateChallengeEmoji(
+      input.title,
+      input.description || null,
+      input.type
+    );
+
+    // 2. Construir prompt baseado nos dados do desafio
     const prompt = buildThumbnailPrompt(input);
 
-    // 2. Chamar DALL-E 3 para gerar imagem (natural = mais realista)
+    // 3. Chamar DALL-E 3 para gerar imagem (natural = mais realista)
     const response = await client.images.generate({
       model: 'dall-e-3',
       prompt,
@@ -76,7 +157,7 @@ export async function generateChallengeThumbnail(
 
     console.log('[AI Thumbnail] Imagem gerada, fazendo upload para Storage...');
 
-    // 3. Baixar imagem da URL temporária
+    // 4. Baixar imagem da URL temporária
     const imageResponse = await fetch(imageUrl);
     if (!imageResponse.ok) {
       throw new Error(`Erro ao baixar imagem: ${imageResponse.status}`);
@@ -85,7 +166,7 @@ export async function generateChallengeThumbnail(
     const imageBlob = await imageResponse.blob();
     const imageArrayBuffer = await imageBlob.arrayBuffer();
 
-    // 4. Upload para Supabase Storage (usando admin client para bypassar RLS)
+    // 5. Upload para Supabase Storage (usando admin client para bypassar RLS)
     const supabase = createAdminClient();
     const fileName = `${input.challengeId}.png`;
 
@@ -104,16 +185,21 @@ export async function generateChallengeThumbnail(
       };
     }
 
-    // 5. Obter URL pública
+    // 6. Obter URL pública
     const { data: publicUrlData } = supabase.storage
       .from('challenge-thumbnails')
       .getPublicUrl(fileName);
 
+    // 7. Aguardar geração do emoji
+    const generatedEmoji = await emojiPromise;
+
     console.log('[AI Thumbnail] Thumbnail salva com sucesso:', publicUrlData.publicUrl);
+    console.log('[AI Thumbnail] Emoji gerado:', generatedEmoji);
 
     return {
       success: true,
       url: publicUrlData.publicUrl,
+      emoji: generatedEmoji,
     };
   } catch (error) {
     console.error('[AI Thumbnail] Erro ao gerar thumbnail:', error);

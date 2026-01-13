@@ -10,6 +10,7 @@ interface Challenge {
   title: string;
   description: string | null;
   icon: string;
+  thumbnail_url?: string | null;
   goal_type: 'repetitions' | 'time' | null;
   goal_value: number | null;
   record_video_url: string | null;
@@ -58,25 +59,48 @@ export function PhysicalChallengeCard({
     <>
       <Accordion type="single">
         <AccordionItem value={challenge.id}>
-          <AccordionTrigger className="p-4">
-            <div className="flex items-center gap-3 w-full">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center flex-shrink-0">
-                <span className="text-xl">{challenge.icon}</span>
-              </div>
-              <div className="flex-1 text-left min-w-0">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-gray-900 truncate">{challenge.title}</h3>
-                  {getStatusBadge()}
+          <AccordionTrigger className="p-0 hover:no-underline">
+            <div className="relative w-full overflow-hidden rounded-t-xl">
+              {/* Background: Thumbnail ou Gradiente */}
+              {challenge.thumbnail_url ? (
+                <>
+                  <img
+                    src={challenge.thumbnail_url}
+                    alt=""
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30" />
+                </>
+              ) : (
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-cyan-500" />
+              )}
+
+              {/* Conteúdo */}
+              <div className="relative z-10 p-4 flex items-center gap-3 w-full">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                  challenge.thumbnail_url ? 'bg-white/20 backdrop-blur-sm' : 'bg-white/20'
+                }`}>
+                  <span className="text-xl">{challenge.icon}</span>
                 </div>
-                {challenge.goal_value && (
-                  <p className="text-sm text-gray-500">
-                    Meta: {challenge.goal_value} {goalLabel}
-                  </p>
-                )}
+                <div className="flex-1 text-left min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h3 className={`font-semibold truncate ${challenge.thumbnail_url ? 'text-white' : 'text-white'}`}>
+                      {challenge.title}
+                    </h3>
+                    {getStatusBadge()}
+                  </div>
+                  {challenge.goal_value && (
+                    <p className={`text-sm ${challenge.thumbnail_url ? 'text-white/80' : 'text-white/80'}`}>
+                      Meta: {challenge.goal_value} {goalLabel}
+                    </p>
+                  )}
+                </div>
+                <span className={`text-sm font-medium whitespace-nowrap flex-shrink-0 ${
+                  challenge.thumbnail_url ? 'text-white' : 'text-white'
+                }`}>
+                  +{challenge.coins_reward} ❤️
+                </span>
               </div>
-              <span className="text-sm font-medium text-blue-500 whitespace-nowrap flex-shrink-0">
-                +{challenge.coins_reward} ❤️
-              </span>
             </div>
           </AccordionTrigger>
           <AccordionContent>

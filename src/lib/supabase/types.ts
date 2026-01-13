@@ -316,6 +316,7 @@ export interface Challenge {
   description: string | null;
   type: ChallengeType;
   icon: string;
+  thumbnail_url: string | null;
   is_active: boolean;
   // Para engajamento
   instagram_embed_url: string | null;
