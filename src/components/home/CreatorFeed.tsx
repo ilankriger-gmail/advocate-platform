@@ -50,14 +50,14 @@ export function CreatorFeed({ posts }: CreatorFeedProps) {
 function CreatorPostCard({ post, featured }: { post: PostWithAuthor; featured?: boolean }) {
   const hasMedia = post.media_url && post.media_url.length > 0;
 
-  if (featured && hasMedia) {
+  if (featured && hasMedia && post.media_url) {
     return (
       <Card className="overflow-hidden group cursor-pointer hover:shadow-lg transition-shadow">
         {/* Featured image */}
-        <div className="relative aspect-vídeo bg-gray-100">
+        <div className="relative aspect-video bg-gray-100">
           <img
-            src={post.media_url![0]}
-            alt={post.title}
+            src={post.media_url[0]}
+            alt={post.title || 'Post'}
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />

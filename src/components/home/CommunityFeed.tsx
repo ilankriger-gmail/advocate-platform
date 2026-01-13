@@ -59,11 +59,11 @@ function CommunityPostCard({ post }: { post: PostWithAuthor }) {
 
   return (
     <Card className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer">
-      {hasMedia && (
-        <div className="aspect-vídeo bg-gray-100">
+      {hasMedia && post.media_url && (
+        <div className="aspect-video bg-gray-100">
           <img
-            src={post.media_url![0]}
-            alt={post.title}
+            src={post.media_url[0]}
+            alt={post.title || 'Post'}
             className="w-full h-full object-cover"
           />
         </div>

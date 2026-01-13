@@ -36,7 +36,7 @@ export async function approveParticipation(
     // Buscar participação e desafio
     const { data: participation } = await supabase
       .from('challenge_participants')
-      .select('*, challenges(coins_reward)')
+      .select('*, challenges:challenge_id(coins_reward)')
       .eq('id', participationId)
       .single();
 
@@ -44,10 +44,9 @@ export async function approveParticipation(
       return { error: 'Participacao nao encontrada' };
     }
 
-    const coinsReward =
-      customCoins !== undefined
-        ? customCoins
-        : ((participation as any).challenges?.coins_reward || 0);
+    // Extrair coins_reward do desafio relacionado
+    const challengeData = participation.challenges as { coins_reward: number } | null;
+    const coinsReward = customCoins !== undefined ? customCoins : (challengeData?.coins_reward || 0);
 
     // Aprovar participação
     const { error: updateError } = await supabase
@@ -74,19 +73,21 @@ export async function approveParticipation(
 
       // Fallback se a função RPC não existir
       if (coinsError) {
+        // Usar maybeSingle para não falhar se não existir
         const { data: userCoins } = await supabase
           .from('user_coins')
           .select('balance')
           .eq('user_id', participation.user_id)
-          .single();
+          .maybeSingle();
 
+        // Usar upsert para criar ou atualizar
         await supabase
           .from('user_coins')
-          .update({
+          .upsert({
+            user_id: participation.user_id,
             balance: (userCoins?.balance || 0) + coinsReward,
             updated_at: new Date().toISOString(),
-          })
-          .eq('user_id', participation.user_id);
+          }, { onConflict: 'user_id' });
       }
 
       // Registrar transação

@@ -6,7 +6,7 @@ import Image from 'next/image';
 interface ImageCarouselProps {
   images: string[];
   alt?: string;
-  aspectRatio?: 'square' | 'vídeo' | 'portrait' | 'auto';
+  aspectRatio?: 'square' | 'video' | 'portrait' | 'auto';
 }
 
 // Distancia minima em pixels para considerar um swipe
@@ -64,7 +64,7 @@ export default function ImageCarousel({
     return (
       <div className={`relative w-full overflow-hidden rounded-lg bg-gray-100 ${
         aspectRatio === 'square' ? 'aspect-square' :
-        aspectRatio === 'vídeo' ? 'aspect-vídeo' :
+        aspectRatio === 'video' ? 'aspect-video' :
         aspectRatio === 'portrait' ? 'aspect-[4/5]' :
         'aspect-auto'
       }`}>
@@ -85,7 +85,7 @@ export default function ImageCarousel({
       <div
         className={`relative w-full overflow-hidden rounded-lg bg-gray-100 ${
           aspectRatio === 'square' ? 'aspect-square' :
-          aspectRatio === 'vídeo' ? 'aspect-vídeo' :
+          aspectRatio === 'video' ? 'aspect-video' :
           aspectRatio === 'portrait' ? 'aspect-[4/5]' :
           'aspect-auto min-h-[200px]'
         }`}

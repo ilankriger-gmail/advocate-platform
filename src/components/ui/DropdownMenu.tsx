@@ -87,7 +87,7 @@ export function DropdownMenu({ children, className }: DropdownMenuProps) {
   useEffect(() => {
     if (!isOpen) return;
 
-    const handleEscape = (event: KeyboardEvent) => {
+    const handleEscape = (event: globalThis.KeyboardEvent) => {
       if (event.key === 'Escape') {
         setIsOpen(false);
         setFocusedIndex(-1);
@@ -95,9 +95,9 @@ export function DropdownMenu({ children, className }: DropdownMenuProps) {
       }
     };
 
-    document.addEventListener('keydown', handleEscape as any);
+    document.addEventListener('keydown', handleEscape);
     return () => {
-      document.removeEventListener('keydown', handleEscape as any);
+      document.removeEventListener('keydown', handleEscape);
     };
   }, [isOpen]);
 
@@ -311,7 +311,12 @@ export function DropdownMenuItem({
 
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      handleClick(e as any);
+      onClick?.();
+      setIsOpen(false);
+      setFocusedIndex(-1);
+      setTimeout(() => {
+        triggerRef.current?.focus();
+      }, 0);
     }
   };
 
@@ -331,10 +336,8 @@ export function DropdownMenuItem({
   );
 
   const commonProps = {
-    ref: itemRef as any,
-    role: 'menuitem',
+    role: 'menuitem' as const,
     tabIndex: isFocused ? 0 : -1,
-    disabled,
     onClick: handleClick,
     onKeyDown: handleKeyDown,
     onMouseEnter: handleMouseEnter,
@@ -344,6 +347,7 @@ export function DropdownMenuItem({
   if (href && !disabled) {
     return (
       <a
+        ref={itemRef as React.RefObject<HTMLAnchorElement>}
         {...commonProps}
         href={href}
         className={cn('block', baseClassName)}
@@ -355,8 +359,10 @@ export function DropdownMenuItem({
 
   return (
     <button
+      ref={itemRef as React.RefObject<HTMLButtonElement>}
       {...commonProps}
       type="button"
+      disabled={disabled}
       className={baseClassName}
     >
       {children}
