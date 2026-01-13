@@ -46,6 +46,7 @@ export default async function AdminDashboardPage() {
     { count: pendingLeads },
     { count: totalLeads },
     { count: analyzedLeads },
+    { count: totalStories },
   ] = await Promise.all([
     supabase.from('posts').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
     supabase.from('challenges').select('*', { count: 'exact', head: true }).eq('is_active', true),
@@ -58,6 +59,7 @@ export default async function AdminDashboardPage() {
     supabase.from('nps_leads').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
     supabase.from('nps_leads').select('*', { count: 'exact', head: true }),
     supabase.from('nps_leads').select('*', { count: 'exact', head: true }).not('ai_score', 'is', null),
+    supabase.from('stories').select('*', { count: 'exact', head: true }),
   ]);
 
   const stats = [
@@ -68,6 +70,14 @@ export default async function AdminDashboardPage() {
       href: '/admin/posts',
       color: 'border-l-yellow-500',
       description: 'Aguardando moderação',
+    },
+    {
+      title: 'Stories',
+      value: totalStories || 0,
+      icon: '📱',
+      href: '/admin/stories',
+      color: 'border-l-pink-500',
+      description: 'Stories dos criadores',
     },
     {
       title: 'Desafios Ativos',
@@ -168,6 +178,13 @@ export default async function AdminDashboardPage() {
           >
             <span className="text-xl sm:text-2xl">✅</span>
             <span className="text-xs sm:text-sm text-yellow-700 font-medium text-center">Moderar Posts</span>
+          </Link>
+          <Link
+            href="/admin/stories"
+            className="flex flex-col items-center justify-center gap-1.5 sm:gap-2 p-3 sm:p-4 min-h-[80px] bg-pink-50 rounded-lg hover:bg-pink-100 transition-colors"
+          >
+            <span className="text-xl sm:text-2xl">📱</span>
+            <span className="text-xs sm:text-sm text-pink-700 font-medium text-center">Ver Stories</span>
           </Link>
           <Link
             href="/admin/premios"
