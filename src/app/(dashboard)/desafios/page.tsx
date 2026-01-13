@@ -101,12 +101,12 @@ export default async function DesafiosPage() {
       `)
       .eq('user_id', user.id)
       .order('created_at', { ascending: false }),
-    // Buscar saldo de corações
+    // Buscar saldo de corações (maybeSingle para usuários novos sem registro)
     supabase
       .from('user_coins')
       .select('balance')
       .eq('user_id', user.id)
-      .single()
+      .maybeSingle()
   ]);
 
   // Cast para o tipo correto

@@ -289,7 +289,7 @@ function PostRankingItem({ post, rank, metric, metricLabel }: PostRankingItemPro
           {author?.full_name || 'Usuário'}
         </p>
         <p className="text-sm text-gray-700 truncate">
-          {post.content?.slice(0, 40)}...
+          {post.content ? `${post.content.slice(0, 40)}...` : 'Sem texto'}
         </p>
       </div>
       <div className="text-right">
