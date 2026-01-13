@@ -32,7 +32,7 @@ export interface ChallengeThumbnailInput {
   challengeId: string;
   title: string;
   description?: string | null;
-  type: 'fisico' | 'engajamento' | 'participe';
+  type: 'fisico' | 'engajamento' | 'participe' | 'atos_amor';
   icon: string;
   goal_type?: 'repetitions' | 'time' | null;
   goal_value?: number | null;
@@ -47,7 +47,7 @@ export interface ChallengeThumbnailInput {
 export async function generateChallengeEmoji(
   title: string,
   description: string | null,
-  type: 'fisico' | 'engajamento' | 'participe'
+  type: 'fisico' | 'engajamento' | 'participe' | 'atos_amor'
 ): Promise<string> {
   const client = getOpenAIClient();
 
@@ -108,11 +108,12 @@ Tipo: ${type}`,
 /**
  * Retorna emoji padrão baseado no tipo de desafio
  */
-function getDefaultEmoji(type: 'fisico' | 'engajamento' | 'participe'): string {
+function getDefaultEmoji(type: 'fisico' | 'engajamento' | 'participe' | 'atos_amor'): string {
   const defaults: Record<string, string> = {
     fisico: '💪',
     engajamento: '❤️',
     participe: '🎁',
+    atos_amor: '💝',
   };
   return defaults[type] || '🎯';
 }

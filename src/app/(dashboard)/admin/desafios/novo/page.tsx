@@ -9,7 +9,7 @@ import { YouTubeVideoPicker, SelectedYouTubeVideo } from '@/components/youtube/Y
 import { PrizeSection } from '@/components/admin/challenges';
 import type { PrizeInput } from '@/lib/supabase/types';
 
-type ChallengeType = 'fisico' | 'engajamento' | 'participe';
+type ChallengeType = 'fisico' | 'engajamento' | 'participe' | 'atos_amor';
 type GoalType = 'repetitions' | 'time';
 
 export default function NovoChallengeDesafioPage() {
@@ -37,6 +37,8 @@ export default function NovoChallengeDesafioPage() {
     record_video_url: '',
     hashtag: '',
     profile_to_tag: '',
+    // Atos de Amor
+    action_instructions: '',
     // Datas
     starts_at: '',
     ends_at: '',
@@ -62,6 +64,7 @@ export default function NovoChallengeDesafioPage() {
       record_video_url: formData.record_video_url || null,
       hashtag: formData.hashtag || null,
       profile_to_tag: formData.profile_to_tag || null,
+      action_instructions: formData.type === 'atos_amor' ? formData.action_instructions || null : null,
       starts_at: formData.starts_at || null,
       ends_at: formData.noEndDate ? null : (formData.ends_at || null),
     });
@@ -87,11 +90,12 @@ export default function NovoChallengeDesafioPage() {
 
   const iconCategories: Record<string, string[]> = {
     'Fitness': ['💪', '🏋️', '🏃', '🚴', '🧘', '🤸', '⚡', '🔥', '💯', '🏅', '🥇', '🥈', '🥉', '🎖️'],
+    'Amor': ['💝', '❤️', '💕', '💗', '💖', '🫶', '🤝', '🙏', '👴', '👵', '🐕', '🐈', '🌳', '🩸'],
     'Esportes': ['⚽', '🏀', '🏈', '⚾', '🎾', '🏐', '🏉', '🎱', '🥏', '🏓', '🏸', '🥅', '⛳', '🏒'],
     'Água': ['🏊', '🤽', '🚣', '🏄', '🤿', '🛶', '⛵', '🚤'],
     'Lutas': ['🥊', '🤼', '🥋', '🎿', '⛷️', '🏂', '⛸️', '🧗', '🏇', '🎳', '🛹', '🛼'],
     'Aventura': ['🚶', '🥾', '⛰️', '🏕️', '🌲', '🌊', '☀️', '🌙', '🏔️', '🌋'],
-    'Geral': ['🎯', '⭐', '🏆', '🎁', '❤️', '📸', '🎬', '💬', '🎉', '✨', '👏', '🙌'],
+    'Geral': ['🎯', '⭐', '🏆', '🎁', '📸', '🎬', '💬', '🎉', '✨', '👏', '🙌', '🍞'],
   };
 
   return (
@@ -105,9 +109,10 @@ export default function NovoChallengeDesafioPage() {
         {/* Tipo de Desafio */}
         <Card className="p-5">
           <h2 className="font-bold text-gray-900 mb-4">Tipo de Desafio</h2>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
               { value: 'fisico', label: 'Fisico', icon: '💪', desc: 'Exercicios e metas' },
+              { value: 'atos_amor', label: 'Atos de Amor', icon: '💝', desc: 'Boas acoes e bondade' },
               { value: 'engajamento', label: 'Engajamento', icon: '💬', desc: 'Comentar/curtir posts' },
               { value: 'participe', label: 'Participe', icon: '🎁', desc: 'Sorteios e prêmios' },
             ].map((type) => (
@@ -254,6 +259,37 @@ export default function NovoChallengeDesafioPage() {
           onChange={setPrizes}
           disabled={isLoading}
         />
+
+        {/* Campos especificos para Atos de Amor */}
+        {formData.type === 'atos_amor' && (
+          <Card className="p-5 space-y-4">
+            <h2 className="font-bold text-gray-900">Configurações do Ato de Amor</h2>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Instruções do Ato de Amor *
+              </label>
+              <Textarea
+                value={formData.action_instructions}
+                onChange={(e) => setFormData({ ...formData, action_instructions: e.target.value })}
+                placeholder="Descreva o que a pessoa precisa fazer para completar este ato de amor...&#10;&#10;Exemplo:&#10;• Ajude uma pessoa idosa a carregar sacolas&#10;• Grave um vídeo mostrando a ação&#10;• Poste no YouTube com o vídeo público"
+                rows={5}
+                required
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Estas instruções aparecerão para o usuário no momento de participar do desafio.
+              </p>
+            </div>
+
+            <div className="p-3 bg-rose-50 rounded-lg border border-rose-200">
+              <p className="text-sm text-rose-700">
+                <strong>Como funciona:</strong> O usuário fará o ato de amor, gravará um vídeo,
+                postará no YouTube e enviará o link. A IA irá assistir o vídeo e validar
+                automaticamente se o ato foi realizado.
+              </p>
+            </div>
+          </Card>
+        )}
 
         {/* Campos especificos para Fisico */}
         {formData.type === 'fisico' && (

@@ -267,7 +267,7 @@ export async function markWinnerPaid(winnerId: string): Promise<ActionResponse> 
 export async function createChallenge(data: {
   title: string;
   description?: string | null;
-  type: 'engajamento' | 'fisico' | 'participe';
+  type: 'engajamento' | 'fisico' | 'participe' | 'atos_amor';
   icon?: string;
   coins_reward: number;
   // Para engajamento/participe
@@ -280,6 +280,8 @@ export async function createChallenge(data: {
   record_video_url?: string | null;
   hashtag?: string | null;
   profile_to_tag?: string | null;
+  // Para atos de amor
+  action_instructions?: string | null;
   // Controle
   starts_at?: string | null;
   ends_at?: string | null;
@@ -306,7 +308,7 @@ export async function createChallenge(data: {
 
     const supabase = await createClient();
 
-    // Mapear 'participe' para 'engajamento' no banco (constraint só aceita 'engajamento' e 'fisico')
+    // Mapear 'participe' para 'engajamento' no banco (constraint aceita 'engajamento', 'fisico' e 'atos_amor')
     const dbType = data.type === 'participe' ? 'engajamento' : data.type;
 
     const { data: challenge, error } = await supabase
@@ -329,6 +331,8 @@ export async function createChallenge(data: {
         record_video_url: data.record_video_url || null,
         hashtag: data.hashtag || null,
         profile_to_tag: data.profile_to_tag || null,
+        // Atos de Amor
+        action_instructions: data.action_instructions || null,
         // Controle
         starts_at: data.starts_at || null,
         ends_at: data.ends_at || null,
@@ -417,7 +421,7 @@ export async function updateChallenge(
   data: {
     title: string;
     description?: string | null;
-    type: 'engajamento' | 'fisico' | 'participe';
+    type: 'engajamento' | 'fisico' | 'participe' | 'atos_amor';
     icon?: string;
     coins_reward: number;
     // Para engajamento/participe
@@ -430,6 +434,8 @@ export async function updateChallenge(
     record_video_url?: string | null;
     hashtag?: string | null;
     profile_to_tag?: string | null;
+    // Para atos de amor
+    action_instructions?: string | null;
     // Controle
     starts_at?: string | null;
     ends_at?: string | null;
@@ -472,6 +478,8 @@ export async function updateChallenge(
         record_video_url: data.record_video_url || null,
         hashtag: data.hashtag || null,
         profile_to_tag: data.profile_to_tag || null,
+        // Atos de Amor
+        action_instructions: data.action_instructions || null,
         // Controle
         starts_at: data.starts_at || null,
         ends_at: data.ends_at || null,

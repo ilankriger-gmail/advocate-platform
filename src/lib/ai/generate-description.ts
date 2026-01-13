@@ -21,7 +21,7 @@ function getOpenAIClient(): OpenAI | null {
  */
 export interface ChallengeDescriptionInput {
   title: string;
-  type: 'fisico' | 'engajamento' | 'participe';
+  type: 'fisico' | 'engajamento' | 'participe' | 'atos_amor';
   icon?: string;
   coinsReward?: number;
   goalType?: 'repetitions' | 'time' | null;
@@ -30,6 +30,7 @@ export interface ChallengeDescriptionInput {
   profileToTag?: string;
   prizeAmount?: number | null;
   numWinners?: number | null;
+  actionInstructions?: string;
 }
 
 /**
@@ -91,6 +92,7 @@ function buildDescriptionPrompt(input: ChallengeDescriptionInput): string {
     fisico: 'Desafio Físico',
     engajamento: 'Desafio de Engajamento',
     participe: 'Desafio Participe (Sorteio)',
+    atos_amor: 'Atos de Amor',
   };
 
   let contextDetails = '';
