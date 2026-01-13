@@ -56,89 +56,72 @@ export async function getOverviewMetrics(
     const previousStartStr = previousStartDate.toISOString();
     const nowStr = now.toISOString();
 
-    // Total de usuários
-    const { count: totalUsers } = await supabase
-      .from('users')
-      .select('*', { count: 'exact', head: true });
+    // Executar queries em paralelo para melhor performance
+    const [
+      // Contadores básicos
+      { count: totalUsers },
+      { count: newUsers },
+      { count: previousNewUsers },
+      // Atividade no período atual
+      { data: activePosts },
+      { data: activeChallenges },
+      { data: activeEvents },
+      // Atividade no período anterior
+      { data: prevActivePosts },
+      { data: prevActiveChallenges },
+      // Posts
+      { count: totalPosts },
+      { count: previousPosts },
+      // Desafios
+      { count: totalChallenges },
+      { count: completedChallenges },
+    ] = await Promise.all([
+      // Total de usuários
+      supabase.from('users').select('*', { count: 'exact', head: true }),
+      // Novos usuários no período
+      supabase.from('users').select('*', { count: 'exact', head: true })
+        .gte('created_at', startDateStr).lte('created_at', nowStr),
+      // Novos usuários no período anterior
+      supabase.from('users').select('*', { count: 'exact', head: true })
+        .gte('created_at', previousStartStr).lt('created_at', startDateStr),
+      // Usuários ativos - posts no período atual
+      supabase.from('posts').select('user_id').gte('created_at', startDateStr),
+      // Usuários ativos - desafios no período atual
+      supabase.from('challenge_participants').select('user_id').gte('created_at', startDateStr),
+      // Usuários ativos - eventos no período atual
+      supabase.from('event_registrations').select('user_id').gte('created_at', startDateStr),
+      // Posts no período anterior
+      supabase.from('posts').select('user_id')
+        .gte('created_at', previousStartStr).lt('created_at', startDateStr),
+      // Desafios no período anterior
+      supabase.from('challenge_participants').select('user_id')
+        .gte('created_at', previousStartStr).lt('created_at', startDateStr),
+      // Posts no período atual
+      supabase.from('posts').select('*', { count: 'exact', head: true })
+        .gte('created_at', startDateStr),
+      // Posts no período anterior (count)
+      supabase.from('posts').select('*', { count: 'exact', head: true })
+        .gte('created_at', previousStartStr).lt('created_at', startDateStr),
+      // Desafios no período
+      supabase.from('challenge_participants').select('*', { count: 'exact', head: true })
+        .gte('created_at', startDateStr),
+      // Desafios completados no período
+      supabase.from('challenge_participants').select('*', { count: 'exact', head: true })
+        .eq('status', 'approved').gte('created_at', startDateStr),
+    ]);
 
-    // Novos usuários no período
-    const { count: newUsers } = await supabase
-      .from('users')
-      .select('*', { count: 'exact', head: true })
-      .gte('created_at', startDateStr)
-      .lte('created_at', nowStr);
-
-    // Novos usuários no período anterior
-    const { count: previousNewUsers } = await supabase
-      .from('users')
-      .select('*', { count: 'exact', head: true })
-      .gte('created_at', previousStartStr)
-      .lt('created_at', startDateStr);
-
-    // Usuários ativos (criaram post, participaram de desafio ou evento)
-    const { data: activePosts } = await supabase
-      .from('posts')
-      .select('user_id')
-      .gte('created_at', startDateStr);
-
-    const { data: activeChallenges } = await supabase
-      .from('challenge_participants')
-      .select('user_id')
-      .gte('created_at', startDateStr);
-
-    const { data: activeEvents } = await supabase
-      .from('event_registrations')
-      .select('user_id')
-      .gte('created_at', startDateStr);
-
+    // Calcular usuários ativos no período atual
     const activeUserIds = new Set<string>();
     activePosts?.forEach(p => activeUserIds.add(p.user_id));
     activeChallenges?.forEach(c => activeUserIds.add(c.user_id));
     activeEvents?.forEach(e => activeUserIds.add(e.user_id));
     const activeUsers = activeUserIds.size;
 
-    // Usuários ativos no período anterior
-    const { data: prevActivePosts } = await supabase
-      .from('posts')
-      .select('user_id')
-      .gte('created_at', previousStartStr)
-      .lt('created_at', startDateStr);
-
-    const { data: prevActiveChallenges } = await supabase
-      .from('challenge_participants')
-      .select('user_id')
-      .gte('created_at', previousStartStr)
-      .lt('created_at', startDateStr);
-
+    // Calcular usuários ativos no período anterior
     const prevActiveUserIds = new Set<string>();
     prevActivePosts?.forEach(p => prevActiveUserIds.add(p.user_id));
     prevActiveChallenges?.forEach(c => prevActiveUserIds.add(c.user_id));
     const previousActiveUsers = prevActiveUserIds.size;
-
-    // Posts no período
-    const { count: totalPosts } = await supabase
-      .from('posts')
-      .select('*', { count: 'exact', head: true })
-      .gte('created_at', startDateStr);
-
-    // Posts no período anterior
-    const { count: previousPosts } = await supabase
-      .from('posts')
-      .select('*', { count: 'exact', head: true })
-      .gte('created_at', previousStartStr)
-      .lt('created_at', startDateStr);
-
-    // Desafios
-    const { count: totalChallenges } = await supabase
-      .from('challenge_participants')
-      .select('*', { count: 'exact', head: true })
-      .gte('created_at', startDateStr);
-
-    const { count: completedChallenges } = await supabase
-      .from('challenge_participants')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'approved')
-      .gte('created_at', startDateStr);
 
     // Taxa de retenção D7 (usuários que registraram há 7+ dias e voltaram)
     const retentionStartDate = new Date(now);
@@ -303,42 +286,34 @@ export async function getEngagementFunnel(
     const startDateStr = startDate.toISOString();
     const endDateStr = endDate.toISOString();
 
-    // 1. VIEW: Usuários que registraram para desafios ou eventos (ponto de entrada do funil)
-    // Buscar todos os usuários que se registraram em desafios
-    const { data: challengeParticipants } = await supabase
-      .from('challenge_participants')
-      .select('user_id')
-      .gte('created_at', startDateStr)
-      .lte('created_at', endDateStr);
+    // Buscar todos os dados do funil em paralelo
+    const [
+      { data: challengeParticipants },
+      { data: eventRegistrations },
+      { data: completedChallenges },
+      { data: checkedInEvents },
+    ] = await Promise.all([
+      // 1. VIEW: Usuários que registraram para desafios
+      supabase.from('challenge_participants').select('user_id')
+        .gte('created_at', startDateStr).lte('created_at', endDateStr),
+      // Usuários que registraram em eventos
+      supabase.from('event_registrations').select('user_id')
+        .gte('created_at', startDateStr).lte('created_at', endDateStr),
+      // 3. COMPLETE: Desafios completados
+      supabase.from('challenge_participants').select('user_id')
+        .eq('status', 'approved').gte('created_at', startDateStr).lte('created_at', endDateStr),
+      // Eventos com check-in
+      supabase.from('event_registrations').select('user_id')
+        .not('check_in_time', 'is', null).gte('created_at', startDateStr).lte('created_at', endDateStr),
+    ]);
 
-    // Buscar todos os usuários que se registraram em eventos
-    const { data: eventRegistrations } = await supabase
-      .from('event_registrations')
-      .select('user_id')
-      .gte('created_at', startDateStr)
-      .lte('created_at', endDateStr);
-
+    // 1. VIEW: Combinar participantes
     const viewUsers = new Set<string>();
     challengeParticipants?.forEach((p) => viewUsers.add(p.user_id));
     eventRegistrations?.forEach((r) => viewUsers.add(r.user_id));
 
     // 2. PARTICIPATE: Mesmo que VIEW (usuários que se registraram)
     const participateUsers = new Set<string>(viewUsers);
-
-    // 3. COMPLETE: Usuários que completaram desafios (status approved) ou fizeram check-in em eventos
-    const { data: completedChallenges } = await supabase
-      .from('challenge_participants')
-      .select('user_id')
-      .eq('status', 'approved')
-      .gte('created_at', startDateStr)
-      .lte('created_at', endDateStr);
-
-    const { data: checkedInEvents } = await supabase
-      .from('event_registrations')
-      .select('user_id')
-      .not('check_in_time', 'is', null)
-      .gte('created_at', startDateStr)
-      .lte('created_at', endDateStr);
 
     const completeUsers = new Set<string>();
     completedChallenges?.forEach((c) => completeUsers.add(c.user_id));
@@ -463,29 +438,22 @@ export async function getActivityBreakdown(
     startDate.setDate(startDate.getDate() - periodDays);
     const startDateStr = startDate.toISOString();
 
-    // Contar posts
-    const { count: postsCount } = await supabase
-      .from('posts')
-      .select('*', { count: 'exact', head: true })
-      .gte('created_at', startDateStr);
-
-    // Contar participações em desafios
-    const { count: challengesCount } = await supabase
-      .from('challenge_participants')
-      .select('*', { count: 'exact', head: true })
-      .gte('created_at', startDateStr);
-
-    // Contar registros em eventos
-    const { count: eventsCount } = await supabase
-      .from('event_registrations')
-      .select('*', { count: 'exact', head: true })
-      .gte('created_at', startDateStr);
-
-    // Contar resgates de recompensas
-    const { count: rewardsCount } = await supabase
-      .from('redemptions')
-      .select('*', { count: 'exact', head: true })
-      .gte('created_at', startDateStr);
+    // Executar todas as contagens em paralelo
+    const [
+      { count: postsCount },
+      { count: challengesCount },
+      { count: eventsCount },
+      { count: rewardsCount },
+    ] = await Promise.all([
+      supabase.from('posts').select('*', { count: 'exact', head: true })
+        .gte('created_at', startDateStr),
+      supabase.from('challenge_participants').select('*', { count: 'exact', head: true })
+        .gte('created_at', startDateStr),
+      supabase.from('event_registrations').select('*', { count: 'exact', head: true })
+        .gte('created_at', startDateStr),
+      supabase.from('redemptions').select('*', { count: 'exact', head: true })
+        .gte('created_at', startDateStr),
+    ]);
 
     return {
       success: true,
@@ -600,16 +568,11 @@ export async function getUserSegmentAnalysis(
       { name: 'Veteranos (>90d)', count: tenureGroups.veteran, percentage: (tenureGroups.veteran / totalUsers) * 100, avgEngagement: 0 },
     ];
 
-    // Por Engajamento (baseado em atividades recentes)
-    const { data: recentPosts } = await supabase
-      .from('posts')
-      .select('user_id')
-      .gte('created_at', startDate.toISOString());
-
-    const { data: recentChallenges } = await supabase
-      .from('challenge_participants')
-      .select('user_id')
-      .gte('created_at', startDate.toISOString());
+    // Por Engajamento (baseado em atividades recentes) - queries em paralelo
+    const [{ data: recentPosts }, { data: recentChallenges }] = await Promise.all([
+      supabase.from('posts').select('user_id').gte('created_at', startDate.toISOString()),
+      supabase.from('challenge_participants').select('user_id').gte('created_at', startDate.toISOString()),
+    ]);
 
     const userActivityCount = new Map<string, number>();
     recentPosts?.forEach(p => {
@@ -679,29 +642,20 @@ export async function getTrendData(
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - periodDays);
 
-    // Buscar posts com data
-    const { data: posts } = await supabase
-      .from('posts')
-      .select('created_at')
-      .gte('created_at', startDate.toISOString());
+    const startDateStr = startDate.toISOString();
 
-    // Buscar desafios com data
-    const { data: challenges } = await supabase
-      .from('challenge_participants')
-      .select('created_at')
-      .gte('created_at', startDate.toISOString());
-
-    // Buscar eventos com data
-    const { data: events } = await supabase
-      .from('event_registrations')
-      .select('created_at')
-      .gte('created_at', startDate.toISOString());
-
-    // Buscar novos usuários com data
-    const { data: users } = await supabase
-      .from('users')
-      .select('created_at')
-      .gte('created_at', startDate.toISOString());
+    // Buscar todos os dados em paralelo
+    const [
+      { data: posts },
+      { data: challenges },
+      { data: events },
+      { data: users },
+    ] = await Promise.all([
+      supabase.from('posts').select('created_at').gte('created_at', startDateStr),
+      supabase.from('challenge_participants').select('created_at').gte('created_at', startDateStr),
+      supabase.from('event_registrations').select('created_at').gte('created_at', startDateStr),
+      supabase.from('users').select('created_at').gte('created_at', startDateStr),
+    ]);
 
     // Agrupar por dia
     const dailyData = new Map<string, TrendDataPoint>();
