@@ -43,7 +43,7 @@ export async function getLandingPageChallenge(id: string): Promise<ActionRespons
         .eq('status', 'active')
         .single(),
       supabase
-        .from('challenge_submissions')
+        .from('challenge_participants')
         .select('id', { count: 'exact', head: true })
         .eq('challenge_id', id)
     ]);
