@@ -3,14 +3,18 @@
  */
 
 // Tipo de mídia do story
-export type StoryMediaType = 'image' | 'carousel';
+export type StoryMediaType = 'image' | 'carousel' | 'youtube' | 'instagram';
 
 // Story base
 export interface Story {
   id: string;
   user_id: string;
+  title: string | null;
+  content: string | null;
   media_url: string[];
   media_type: StoryMediaType;
+  youtube_url: string | null;
+  instagram_url: string | null;
   caption: string | null;
   position: number;
   created_at: string;
@@ -48,14 +52,20 @@ export interface CreatorStories {
 
 // Dados para criar story
 export interface CreateStoryData {
-  media_url: string[];
+  title?: string;
+  content?: string;
+  media_url?: string[];
   media_type: StoryMediaType;
+  youtube_url?: string;
+  instagram_url?: string;
   caption?: string;
 }
 
 // Dados para atualizar story
 export interface UpdateStoryData {
   id: string;
+  title?: string;
+  content?: string;
   caption?: string;
   position?: number;
 }

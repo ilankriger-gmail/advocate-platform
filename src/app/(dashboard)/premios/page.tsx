@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getSiteSettings } from '@/lib/config/site';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, Badge } from '@/components/ui';
+import { RewardClaimButton } from './RewardClaimButton';
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings([
@@ -21,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function PrêmiosPage() {
+export default async function PremiosPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -83,14 +84,16 @@ export default async function PrêmiosPage() {
         </div>
       </Card>
 
-      {/* Prêmios Disponiveis */}
+      {/* Prêmios Disponíveis */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Prêmios Disponiveis</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Prêmios Disponíveis</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {rewards && rewards.length > 0 ? (
             rewards.map((reward) => {
               const progress = Math.min((balance / reward.coins_required) * 100, 100);
               const canClaim = balance >= reward.coins_required;
+              const isPhysical = reward.type === 'physical';
+              const hasStock = reward.quantity_available === null || reward.quantity_available > 0;
 
               return (
                 <Card key={reward.id} className="overflow-hidden">
@@ -107,17 +110,39 @@ export default async function PrêmiosPage() {
                         🎁
                       </div>
                     )}
-                    {/* Badge de tipo */}
-                    {reward.type && (
-                      <span className="absolute top-2 right-2 px-2 py-1 bg-white/90 backdrop-blur rounded-lg text-xs font-medium">
-                        {reward.type === 'digital' ? '💻 Digital' : '📦 Físico'}
-                      </span>
+                    {/* Badges */}
+                    <div className="absolute top-2 right-2 flex flex-col gap-1">
+                      {isPhysical && (
+                        <span className="px-2 py-1 bg-amber-500 text-white rounded-lg text-xs font-medium">
+                          📦 Físico
+                        </span>
+                      )}
+                      {!isPhysical && (
+                        <span className="px-2 py-1 bg-blue-500 text-white rounded-lg text-xs font-medium">
+                          💻 Digital
+                        </span>
+                      )}
+                    </div>
+                    {/* Badge de série limitada para físicos */}
+                    {isPhysical && (
+                      <div className="absolute bottom-2 left-2">
+                        <span className="px-2 py-1 bg-black/70 text-white rounded text-xs">
+                          Série Limitada
+                        </span>
+                      </div>
                     )}
                   </div>
 
                   <div className="p-4">
                     <h3 className="font-semibold text-gray-900">{reward.name}</h3>
                     <p className="text-sm text-gray-500 mt-1 line-clamp-2">{reward.description}</p>
+
+                    {/* Informação sobre entrega para físicos */}
+                    {isPhysical && (
+                      <p className="text-xs text-amber-600 mt-2">
+                        * Você precisará informar seu endereço para receber em casa
+                      </p>
+                    )}
 
                     {/* Barra de Progresso */}
                     <div className="mt-4">
@@ -142,7 +167,7 @@ export default async function PrêmiosPage() {
                           Faltam {reward.coins_required - balance} corações
                         </p>
                       )}
-                      {canClaim && (
+                      {canClaim && hasStock && (
                         <p className="text-xs text-green-600 mt-1 font-medium">
                           Você pode resgatar este prêmio!
                         </p>
@@ -154,22 +179,26 @@ export default async function PrêmiosPage() {
                       <span className="text-indigo-600 font-bold text-lg">
                         {reward.coins_required} ❤️
                       </span>
-                      <button
-                        disabled={!canClaim}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                          canClaim
-                            ? 'bg-green-500 text-white hover:bg-green-600'
-                            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                        }`}
-                      >
-                        {canClaim ? '✓ Resgatar' : 'Resgatar'}
-                      </button>
+                      <RewardClaimButton
+                        reward={{
+                          id: reward.id,
+                          name: reward.name,
+                          type: reward.type || 'digital',
+                          coins_required: reward.coins_required,
+                        }}
+                        canClaim={canClaim && hasStock}
+                      />
                     </div>
 
                     {/* Estoque baixo */}
-                    {reward.quantity_available !== null && reward.quantity_available <= 10 && (
+                    {reward.quantity_available !== null && reward.quantity_available <= 10 && reward.quantity_available > 0 && (
                       <p className="text-xs text-orange-500 mt-2">
                         🔥 Apenas {reward.quantity_available} disponíveis!
+                      </p>
+                    )}
+                    {reward.quantity_available !== null && reward.quantity_available <= 0 && (
+                      <p className="text-xs text-red-500 mt-2 font-medium">
+                        Esgotado
                       </p>
                     )}
                   </div>
@@ -184,7 +213,7 @@ export default async function PrêmiosPage() {
         </div>
       </div>
 
-      {/* Historico de Resgates */}
+      {/* Histórico de Resgates */}
       <div>
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Meus Resgates</h2>
         <Card className="divide-y divide-gray-100">

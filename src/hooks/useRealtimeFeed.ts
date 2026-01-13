@@ -29,8 +29,9 @@ export function useRealtimeFeed({ type, enabled = true }: UseRealtimeFeedOptions
     // Determinar filtro baseado no tipo de feed
     // Para help_request, filtrar por content_category
     // Para creator/community, filtrar por type
+    // Para following/all, não há filtro simples (complexo demais para realtime)
     const getFilter = () => {
-      if (type === 'all') return undefined;
+      if (type === 'all' || type === 'following') return undefined;
       if (type === 'help_request') return `content_category=eq.help_request`;
       return `type=eq.${type}`;
     };
@@ -69,7 +70,9 @@ export function useRealtimeFeed({ type, enabled = true }: UseRealtimeFeedOptions
           const oldPost = payload.old as { status: string };
 
           // Verificar se o post corresponde ao tipo de feed atual
+          // Para 'following', não temos como verificar aqui sem buscar os follows do usuário
           const matchesFeed = type === 'all'
+            || type === 'following' // Aceitar todos para 'following' (simplificação)
             || (type === 'help_request' && updatedPost.content_category === 'help_request')
             || (type !== 'help_request' && updatedPost.type === type);
 

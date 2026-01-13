@@ -10,9 +10,27 @@ import { logger, sanitizeError } from '@/lib';
 const rewardsLogger = logger.withContext('[Rewards]');
 
 /**
- * Resgatar uma recompensa
+ * Interface para endereço de entrega
  */
-export async function claimReward(rewardId: string): Promise<ActionResponse<RewardClaim>> {
+export interface DeliveryAddress {
+  cep: string;
+  street: string;
+  number: string;
+  complement?: string;
+  neighborhood: string;
+  city: string;
+  state: string;
+}
+
+/**
+ * Resgatar uma recompensa
+ * @param rewardId ID da recompensa
+ * @param deliveryAddress Endereço de entrega (obrigatório para prêmios físicos)
+ */
+export async function claimReward(
+  rewardId: string,
+  deliveryAddress?: DeliveryAddress
+): Promise<ActionResponse<RewardClaim>> {
   try {
     const supabase = await createClient();
 
@@ -30,11 +48,24 @@ export async function claimReward(rewardId: string): Promise<ActionResponse<Rewa
       .single();
 
     if (rewardError || !reward) {
-      return { error: 'Recompensa nao encontrada' };
+      return { error: 'Recompensa não encontrada' };
+    }
+
+    // Verificar se é prêmio físico e exige endereço
+    if (reward.type === 'physical' && !deliveryAddress) {
+      return { error: 'Endereço de entrega é obrigatório para prêmios físicos' };
+    }
+
+    // Validar endereço se fornecido
+    if (deliveryAddress) {
+      if (!deliveryAddress.cep || !deliveryAddress.street || !deliveryAddress.number ||
+          !deliveryAddress.neighborhood || !deliveryAddress.city || !deliveryAddress.state) {
+        return { error: 'Preencha todos os campos obrigatórios do endereço' };
+      }
     }
 
     // Verificar estoque
-    if (reward.quantity_available <= 0) {
+    if (reward.quantity_available !== null && reward.quantity_available <= 0) {
       return { error: 'Estoque esgotado' };
     }
 
@@ -49,7 +80,7 @@ export async function claimReward(rewardId: string): Promise<ActionResponse<Rewa
       return { error: 'Saldo insuficiente' };
     }
 
-    // Criar resgate
+    // Criar resgate com endereço de entrega
     const { data: claim, error: claimError } = await supabase
       .from('reward_claims')
       .insert({
@@ -57,11 +88,13 @@ export async function claimReward(rewardId: string): Promise<ActionResponse<Rewa
         reward_id: rewardId,
         status: 'pending',
         coins_spent: reward.coins_required,
+        delivery_address: deliveryAddress || null,
       })
       .select()
       .single();
 
     if (claimError) {
+      rewardsLogger.error('Erro ao criar resgate', { error: sanitizeError(claimError) });
       return { error: 'Erro ao criar resgate' };
     }
 
@@ -80,7 +113,7 @@ export async function claimReward(rewardId: string): Promise<ActionResponse<Rewa
       return { error: 'Erro ao deduzir saldo' };
     }
 
-    // Registrar transacao
+    // Registrar transação
     await supabase
       .from('coin_transactions')
       .insert({
@@ -91,18 +124,27 @@ export async function claimReward(rewardId: string): Promise<ActionResponse<Rewa
         reference_id: claim.id,
       });
 
-    // Decrementar estoque
-    await supabase
-      .from('rewards')
-      .update({
-        quantity_available: reward.quantity_available - 1,
-      })
-      .eq('id', rewardId);
+    // Decrementar estoque (se não for ilimitado)
+    if (reward.quantity_available !== null) {
+      await supabase
+        .from('rewards')
+        .update({
+          quantity_available: reward.quantity_available - 1,
+        })
+        .eq('id', rewardId);
+    }
+
+    rewardsLogger.info('Resgate criado com sucesso', {
+      claimId: claim.id,
+      rewardId,
+      hasDeliveryAddress: !!deliveryAddress
+    });
 
     revalidatePath('/premios');
     revalidatePath('/dashboard');
     return { success: true, data: claim };
-  } catch {
+  } catch (err) {
+    rewardsLogger.error('Erro ao resgatar recompensa', { error: sanitizeError(err) });
     return { error: 'Erro interno do servidor' };
   }
 }

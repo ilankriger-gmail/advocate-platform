@@ -8,7 +8,7 @@ import { logger, sanitizeError } from '@/lib';
 const feedLogger = logger.withContext('[Feed]');
 
 export type FeedSortType = 'new' | 'top' | 'hot';
-export type FeedType = 'creator' | 'community' | 'all' | 'help_request';
+export type FeedType = 'creator' | 'community' | 'all' | 'help_request' | 'following';
 
 /**
  * Cursor composto para ordenação 'top'
@@ -146,7 +146,27 @@ export async function getFeedPosts({
     .eq('status', 'approved');
 
   // Filtrar por tipo ou categoria
-  if (type === 'help_request') {
+  if (type === 'following') {
+    // Feed de usuários que o usuário atual segue
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return { data: [], nextCursor: null, hasMore: false };
+    }
+
+    // Buscar IDs de quem o usuário segue
+    const { data: following } = await supabase
+      .from('user_follows')
+      .select('following_id')
+      .eq('follower_id', user.id);
+
+    const followingIds = following?.map((f) => f.following_id) || [];
+
+    if (followingIds.length === 0) {
+      return { data: [], nextCursor: null, hasMore: false };
+    }
+
+    query = query.in('user_id', followingIds);
+  } else if (type === 'help_request') {
     // Pedidos de ajuda - filtrar por content_category
     query = query.eq('content_category', 'help_request');
   } else if (type !== 'all') {

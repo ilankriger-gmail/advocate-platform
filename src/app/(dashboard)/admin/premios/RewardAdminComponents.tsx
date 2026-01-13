@@ -2,8 +2,10 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Card, Button, Input, Textarea } from '@/components/ui';
 import { toggleRewardActive, createReward, approveClaim, markClaimShipped, markClaimDelivered } from '@/actions/rewards-admin';
+import { Pencil } from 'lucide-react';
 
 interface RewardActionsProps {
   reward: {
@@ -18,21 +20,26 @@ export function RewardActions({ reward }: RewardActionsProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleToggle = async () => {
-    console.log('RewardActions: Iniciando toggle', { rewardId: reward.id, isActive: reward.is_active, newValue: !reward.is_active });
     setIsLoading(true);
     const result = await toggleRewardActive(reward.id, !reward.is_active);
-    console.log('RewardActions: Resultado:', result);
     if (result.success) {
-      console.log('RewardActions: Sucesso! Fazendo refresh...');
       router.refresh();
-    } else {
-      console.log('RewardActions: Erro:', result.error);
     }
     setIsLoading(false);
   };
 
   return (
     <div className="flex gap-2">
+      <Link href={`/admin/premios/${reward.id}/editar`}>
+        <Button
+          size="sm"
+          variant="outline"
+          className="border-indigo-300 text-indigo-600 hover:bg-indigo-50"
+        >
+          <Pencil className="w-3 h-3 mr-1" />
+          Editar
+        </Button>
+      </Link>
       <Button
         onClick={handleToggle}
         disabled={isLoading}

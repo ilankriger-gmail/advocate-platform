@@ -64,8 +64,12 @@ export async function getStoriesForBar(): Promise<ActionResponse<CreatorStories[
       const storyData: Story = {
         id: story.id,
         user_id: story.user_id,
-        media_url: story.media_url,
-        media_type: story.media_type as 'image' | 'carousel',
+        title: story.title,
+        content: story.content,
+        media_url: story.media_url || [],
+        media_type: story.media_type as Story['media_type'],
+        youtube_url: story.youtube_url,
+        instagram_url: story.instagram_url,
         caption: story.caption,
         position: story.position,
         created_at: story.created_at,
@@ -148,8 +152,12 @@ export async function getCreatorStories(creatorId: string): Promise<ActionRespon
     const typedStories: StoryWithAuthor[] = (stories || []).map((story) => ({
       id: story.id,
       user_id: story.user_id,
-      media_url: story.media_url,
-      media_type: story.media_type as 'image' | 'carousel',
+      title: story.title,
+      content: story.content,
+      media_url: story.media_url || [],
+      media_type: story.media_type as Story['media_type'],
+      youtube_url: story.youtube_url,
+      instagram_url: story.instagram_url,
       caption: story.caption,
       position: story.position,
       created_at: story.created_at,
@@ -191,9 +199,25 @@ export async function createStory(data: CreateStoryData): Promise<ActionResponse
       return { error: 'Apenas criadores e administradores podem criar stories' };
     }
 
-    // Validar dados
-    if (!data.media_url || data.media_url.length === 0) {
-      return { error: 'É necessário adicionar pelo menos uma imagem' };
+    // Validar dados - deve ter imagens OU youtube OU instagram
+    const hasImages = data.media_url && data.media_url.length > 0;
+    const hasYoutube = data.youtube_url && data.youtube_url.trim() !== '';
+    const hasInstagram = data.instagram_url && data.instagram_url.trim() !== '';
+
+    if (!hasImages && !hasYoutube && !hasInstagram) {
+      return { error: 'É necessário adicionar pelo menos uma mídia (imagem, YouTube ou Instagram)' };
+    }
+
+    // Determinar tipo de mídia
+    let mediaType = data.media_type;
+    if (hasYoutube) {
+      mediaType = 'youtube';
+    } else if (hasInstagram) {
+      mediaType = 'instagram';
+    } else if (hasImages && data.media_url!.length > 1) {
+      mediaType = 'carousel';
+    } else {
+      mediaType = 'image';
     }
 
     // Buscar a maior position atual do usuário
@@ -212,8 +236,12 @@ export async function createStory(data: CreateStoryData): Promise<ActionResponse
       .from('stories')
       .insert({
         user_id: user.id,
-        media_url: data.media_url,
-        media_type: data.media_type || 'image',
+        title: data.title || null,
+        content: data.content || null,
+        media_url: hasImages ? data.media_url : [],
+        media_type: mediaType,
+        youtube_url: hasYoutube ? data.youtube_url : null,
+        instagram_url: hasInstagram ? data.instagram_url : null,
         caption: data.caption || null,
         position: nextPosition,
       })
@@ -234,7 +262,8 @@ export async function createStory(data: CreateStoryData): Promise<ActionResponse
     return {
       data: {
         ...story,
-        media_type: story.media_type as 'image' | 'carousel',
+        media_url: story.media_url || [],
+        media_type: story.media_type as Story['media_type'],
       },
     };
   } catch (err) {

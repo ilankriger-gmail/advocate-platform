@@ -6,6 +6,7 @@ import { getInitialFeedPosts } from '@/actions/feed';
 import { getCommunityStats } from '@/actions/stats';
 import { HeroSection, FeedTabs, LeaderboardWidget } from '@/components/home';
 import { StoriesBar, StoriesBarSkeleton } from '@/components/stories';
+import { SuggestedUsers } from '@/components/social';
 import { Card, Skeleton } from '@/components/ui';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -55,12 +56,13 @@ function FeedLoading() {
 }
 
 // Async component para carregar os posts iniciais (SSR)
-async function FeedSection() {
+async function FeedSection({ isLoggedIn }: { isLoggedIn: boolean }) {
   const communityPosts = await getInitialFeedPosts('community', 10);
 
   return (
     <FeedTabs
       initialCommunityPosts={communityPosts}
+      isLoggedIn={isLoggedIn}
     />
   );
 }
@@ -89,17 +91,18 @@ export default async function HomePage() {
         <main className="lg:col-span-8 order-1">
           <div className="max-w-[500px] mx-auto">
             <Suspense fallback={<FeedLoading />}>
-              <FeedSection />
+              <FeedSection isLoggedIn={isLoggedIn} />
             </Suspense>
           </div>
         </main>
 
-        {/* Sidebar - Leaderboard */}
+        {/* Sidebar - Leaderboard e Sugestões */}
         <aside className="lg:col-span-4 order-2">
-          <div className="lg:sticky lg:top-20">
+          <div className="lg:sticky lg:top-20 space-y-6">
             <Suspense fallback={<Card className="p-4"><Skeleton className="h-48" /></Card>}>
               <LeaderboardWidget />
             </Suspense>
+            {isLoggedIn && <SuggestedUsers limit={5} />}
           </div>
         </aside>
       </div>

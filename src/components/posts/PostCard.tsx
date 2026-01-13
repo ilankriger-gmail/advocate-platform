@@ -92,12 +92,20 @@ export const PostCard = memo(function PostCard({
     return (
       <>
         <div className="flex items-start gap-3 p-3 bg-surface-50 rounded-xl hover:bg-surface-100 transition-colors">
-          <Avatar
-            name={author.full_name || 'Usuário'}
-            src={author.avatar_url || undefined}
-            size="sm"
-          />
+          <Link href={`/profile/${author.id}`}>
+            <Avatar
+              name={author.full_name || 'Usuário'}
+              src={author.avatar_url || undefined}
+              size="sm"
+            />
+          </Link>
           <div className="flex-1 min-w-0">
+            <Link
+              href={`/profile/${author.id}`}
+              className="font-medium text-surface-900 hover:text-primary-600 transition-colors"
+            >
+              {author.full_name || 'Usuário'}
+            </Link>
             <h4 className="font-medium text-surface-900 truncate">{post.title}</h4>
             <p className="text-sm text-surface-500 truncate">{textContent}</p>
             <div className="flex items-center gap-3 mt-1 text-xs text-surface-400">

@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import type { ActionResponse } from './types';
 import { verifyAdminOrCreator, getAuthenticatedUser } from './utils';
 import { logger, maskId, sanitizeError } from '@/lib';
+import { generateRewardThumbnail } from '@/lib/ai/generate-reward-thumbnail';
 
 // Logger contextualizado para o módulo de recompensas admin
 const rewardsAdminLogger = logger.withContext('[RewardsAdmin]');
@@ -482,6 +483,179 @@ export async function deleteReward(rewardId: string): Promise<ActionResponse> {
     return { success: true };
   } catch (err) {
     rewardsAdminLogger.error('Erro inesperado ao deletar recompensa', {
+      rewardId: maskId(rewardId),
+      error: sanitizeError(err)
+    });
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+/**
+ * Gerar thumbnail com IA para uma recompensa
+ */
+export async function generateRewardThumbnailAction(
+  rewardId: string,
+  data: {
+    name: string;
+    description?: string | null;
+    type: 'digital' | 'physical';
+    coins_cost: number;
+  }
+): Promise<ActionResponse<{ url: string }>> {
+  rewardsAdminLogger.info('Iniciando geração de thumbnail para recompensa', {
+    rewardId: maskId(rewardId),
+    name: data.name
+  });
+
+  try {
+    // Verificar autenticação
+    const userCheck = await getAuthenticatedUser();
+    if (userCheck.error) {
+      return { error: userCheck.error };
+    }
+    const user = userCheck.data!;
+
+    // Verificar se é admin/creator
+    const authCheck = await verifyAdminOrCreator(user.id);
+    if (authCheck.error) {
+      return { error: authCheck.error };
+    }
+
+    // Gerar thumbnail
+    const result = await generateRewardThumbnail({
+      rewardId,
+      name: data.name,
+      description: data.description,
+      type: data.type,
+      coins_cost: data.coins_cost,
+    });
+
+    if (!result.success || !result.url) {
+      rewardsAdminLogger.error('Falha ao gerar thumbnail', {
+        rewardId: maskId(rewardId),
+        error: result.error
+      });
+      return { error: result.error || 'Erro ao gerar imagem' };
+    }
+
+    // Atualizar a recompensa com a nova URL
+    const supabase = await createClient();
+    const { error: updateError } = await supabase
+      .from('rewards')
+      .update({ image_url: result.url })
+      .eq('id', rewardId);
+
+    if (updateError) {
+      rewardsAdminLogger.error('Erro ao atualizar URL da imagem', {
+        rewardId: maskId(rewardId),
+        error: sanitizeError(updateError)
+      });
+      return { error: 'Erro ao salvar imagem na recompensa' };
+    }
+
+    rewardsAdminLogger.info('Thumbnail gerada com sucesso', {
+      rewardId: maskId(rewardId)
+    });
+
+    revalidatePath('/admin/premios');
+    revalidatePath('/premios');
+
+    return { success: true, data: { url: result.url } };
+  } catch (err) {
+    rewardsAdminLogger.error('Erro inesperado ao gerar thumbnail', {
+      rewardId: maskId(rewardId),
+      error: sanitizeError(err)
+    });
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+/**
+ * Upload de imagem para recompensa
+ */
+export async function uploadRewardImage(
+  rewardId: string,
+  imageData: string // Base64 encoded image
+): Promise<ActionResponse<{ url: string }>> {
+  rewardsAdminLogger.info('Iniciando upload de imagem para recompensa', {
+    rewardId: maskId(rewardId)
+  });
+
+  try {
+    // Verificar autenticação
+    const userCheck = await getAuthenticatedUser();
+    if (userCheck.error) {
+      return { error: userCheck.error };
+    }
+    const user = userCheck.data!;
+
+    // Verificar se é admin/creator
+    const authCheck = await verifyAdminOrCreator(user.id);
+    if (authCheck.error) {
+      return { error: authCheck.error };
+    }
+
+    const supabase = await createClient();
+
+    // Converter base64 para buffer
+    const base64Data = imageData.replace(/^data:image\/\w+;base64,/, '');
+    const buffer = Buffer.from(base64Data, 'base64');
+
+    // Determinar tipo de arquivo
+    const mimeMatch = imageData.match(/^data:(image\/\w+);base64,/);
+    const contentType = mimeMatch ? mimeMatch[1] : 'image/png';
+    const extension = contentType.split('/')[1];
+
+    const fileName = `${rewardId}.${extension}`;
+
+    // Upload para Supabase Storage
+    const { error: uploadError } = await supabase.storage
+      .from('reward-images')
+      .upload(fileName, buffer, {
+        contentType,
+        upsert: true,
+      });
+
+    if (uploadError) {
+      rewardsAdminLogger.error('Erro ao fazer upload de imagem', {
+        rewardId: maskId(rewardId),
+        error: sanitizeError(uploadError)
+      });
+      return { error: `Erro ao fazer upload: ${uploadError.message}` };
+    }
+
+    // Obter URL pública
+    const { data: publicUrlData } = supabase.storage
+      .from('reward-images')
+      .getPublicUrl(fileName);
+
+    // Adicionar timestamp para cache busting
+    const urlWithTimestamp = `${publicUrlData.publicUrl}?t=${Date.now()}`;
+
+    // Atualizar a recompensa com a nova URL
+    const { error: updateError } = await supabase
+      .from('rewards')
+      .update({ image_url: urlWithTimestamp })
+      .eq('id', rewardId);
+
+    if (updateError) {
+      rewardsAdminLogger.error('Erro ao atualizar URL da imagem', {
+        rewardId: maskId(rewardId),
+        error: sanitizeError(updateError)
+      });
+      return { error: 'Erro ao salvar imagem na recompensa' };
+    }
+
+    rewardsAdminLogger.info('Imagem enviada com sucesso', {
+      rewardId: maskId(rewardId)
+    });
+
+    revalidatePath('/admin/premios');
+    revalidatePath('/premios');
+
+    return { success: true, data: { url: urlWithTimestamp } };
+  } catch (err) {
+    rewardsAdminLogger.error('Erro inesperado ao fazer upload de imagem', {
       rewardId: maskId(rewardId),
       error: sanitizeError(err)
     });

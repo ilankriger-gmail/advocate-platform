@@ -216,6 +216,7 @@ export function InfiniteFeed({ type, sort = 'new', initialPosts }: InfiniteFeedP
       community: 'Nenhum post da comunidade ainda.',
       all: 'Nenhum post ainda.',
       help_request: 'Nenhum pedido de ajuda no momento.',
+      following: 'Você ainda não segue ninguém ou as pessoas que você segue não publicaram nada.',
     };
 
     return (

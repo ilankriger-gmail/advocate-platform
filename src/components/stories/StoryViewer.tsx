@@ -220,7 +220,13 @@ export function StoryViewer({
       <StoryContent
         mediaUrl={currentStory.media_url}
         mediaType={currentStory.media_type}
+        youtubeUrl={currentStory.youtube_url}
+        instagramUrl={currentStory.instagram_url}
+        title={currentStory.title}
+        content={currentStory.content}
         caption={currentStory.caption}
+        onPauseTimer={() => setIsPaused(true)}
+        onResumeTimer={() => setIsPaused(false)}
       />
 
       {/* Botões de navegação (desktop) */}

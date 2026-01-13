@@ -1,10 +1,12 @@
 import { notFound, redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getPublicProfile } from '@/actions/profile';
-import { getUserStats, getPosts } from '@/lib/supabase/queries';
+import { getPublicProfileById, checkIsFollowing, getProfileStatsById } from '@/actions/social';
+import { getPosts } from '@/lib/supabase/queries';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, Avatar, Badge } from '@/components/ui';
 import { PostCard } from '@/components/posts/PostCard';
+import { FollowButton } from '@/components/social/FollowButton';
 import { formatDate } from '@/lib/utils';
 
 interface PageProps {
@@ -31,8 +33,11 @@ export default async function PublicProfilePage({ params }: PageProps) {
     notFound();
   }
 
-  // Buscar estatisticas publicas
-  const stats = await getUserStats(id);
+  // Buscar estatísticas públicas e status de follow em paralelo
+  const [stats, isFollowing] = await Promise.all([
+    getProfileStatsById(id),
+    checkIsFollowing(id),
+  ]);
 
   // Buscar posts aprovados do usuário
   const posts = await getPosts({ userId: id, status: 'approved' });
@@ -62,6 +67,26 @@ export default async function PublicProfilePage({ params }: PageProps) {
                 Criador
               </Badge>
             )}
+
+            {/* Botão Seguir */}
+            <div className="mt-4">
+              <FollowButton
+                userId={id}
+                initialIsFollowing={isFollowing}
+              />
+            </div>
+
+            {/* Contadores de Seguidores */}
+            <div className="mt-4 flex justify-center gap-6 text-sm">
+              <div className="text-center">
+                <span className="font-bold text-gray-900">{stats?.followers_count || 0}</span>
+                <span className="text-gray-500 ml-1">seguidores</span>
+              </div>
+              <div className="text-center">
+                <span className="font-bold text-gray-900">{stats?.following_count || 0}</span>
+                <span className="text-gray-500 ml-1">seguindo</span>
+              </div>
+            </div>
 
             {profile.bio && (
               <p className="mt-4 text-sm text-gray-600">{profile.bio}</p>
@@ -102,7 +127,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-gray-500">Posts Aprovados</span>
-                <span className="font-medium">{stats?.approved_posts || 0}</span>
+                <span className="font-medium">{stats?.posts_count || 0}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-gray-500">Curtidas Recebidas</span>
