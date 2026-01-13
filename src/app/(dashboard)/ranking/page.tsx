@@ -1,251 +1,86 @@
-'use client';
-
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
+import { Metadata } from 'next';
+import { redirect } from 'next/navigation';
+import { createClient } from '@/lib/supabase/server';
+import { getSiteSettings } from '@/lib/config/site';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Card, Skeleton } from '@/components/ui';
-import {
-  CategorySelector,
-  LeaderboardList,
-  UserRankCard,
-} from '@/components/leaderboard';
-import {
-  fetchRelativeLeaderboard,
-  fetchUserRank,
-} from '@/actions/leaderboard';
-import type {
-  LeaderboardEntry,
-  UserRanking,
-  LeaderboardCategory,
-} from '@/lib/supabase/types';
 
-/**
- * Página de Rankings - exibe ranking relativo (usuários próximos)
- * Mostra 5 acima + usuário atual + 5 abaixo
- */
-export default function RankingPage() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState<string | null>(null);
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings([
+    'seo_ranking_title',
+    'seo_ranking_description',
+  ]);
 
-  // Estado do filtro de categoria
-  const [category, setCategory] = useState<LeaderboardCategory>('combined');
+  return {
+    title: settings.seo_ranking_title || 'Ranking',
+    description: settings.seo_ranking_description || 'Veja sua posição no ranking da comunidade',
+  };
+}
 
-  // Estados dos dados
-  const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([]);
-  const [userRank, setUserRank] = useState<UserRanking | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
-  const [loadingUserRank, setLoadingUserRank] = useState(false);
+export default async function RankingPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  // Verificar autenticação e carregar dados iniciais
-  useEffect(() => {
-    async function checkAuth() {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-
-      if (!user) {
-        router.push('/login');
-        return;
-      }
-
-      setUserId(user.id);
-      setLoading(false);
-    }
-
-    checkAuth();
-  }, [router]);
-
-  // Carregar dados do leaderboard quando a categoria mudar
-  useEffect(() => {
-    if (loading) return;
-
-    async function loadLeaderboard() {
-      setLoadingLeaderboard(true);
-      setError(null);
-
-      const result = await fetchRelativeLeaderboard(category);
-
-      if (result.error) {
-        setError(result.error);
-        setLeaderboardData([]);
-      } else {
-        setLeaderboardData(result.data || []);
-      }
-
-      setLoadingLeaderboard(false);
-    }
-
-    loadLeaderboard();
-  }, [category, loading]);
-
-  // Carregar ranking do usuário quando categoria mudar
-  useEffect(() => {
-    if (loading || !userId) return;
-
-    async function loadUserRank() {
-      setLoadingUserRank(true);
-
-      const result = await fetchUserRank(category);
-
-      if (result.error) {
-        setUserRank(null);
-      } else {
-        setUserRank(result.data || null);
-      }
-
-      setLoadingUserRank(false);
-    }
-
-    loadUserRank();
-  }, [category, loading, userId]);
-
-  // Loading inicial
-  if (loading) {
-    return (
-      <div className="space-y-6 sm:space-y-8">
-        <Skeleton className="h-14 sm:h-16 w-full" />
-        <Skeleton className="h-28 sm:h-32 w-full" />
-        <Skeleton className="h-56 sm:h-64 w-full" />
-      </div>
-    );
+  if (!user) {
+    redirect('/login');
   }
 
   return (
     <div className="space-y-6 sm:space-y-8">
-      {/* Header */}
       <PageHeader
-        title="Rankings"
-        description="Veja sua posição e os participantes próximos a você"
+        title="Ranking"
+        description="Veja sua posição na comunidade"
       />
 
-      {/* Seletor de Categoria */}
-      <div>
-        <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
-          Escolha uma categoria
-        </h2>
-        <CategorySelector
-          activeCategory={category}
-          onCategoryChange={setCategory}
-        />
+      {/* Em breve */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-yellow-400 via-amber-500 to-orange-500 p-1">
+        <div className="relative bg-white rounded-xl p-8 sm:p-12">
+          {/* Elementos decorativos */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-yellow-100 to-amber-100 rounded-full blur-3xl opacity-50 -translate-y-1/2 translate-x-1/2" />
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-br from-orange-100 to-amber-100 rounded-full blur-2xl opacity-50 translate-y-1/2 -translate-x-1/2" />
+
+          <div className="relative text-center">
+            {/* Ícone animado */}
+            <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-yellow-100 to-amber-100 mb-6">
+              <span className="text-4xl sm:text-5xl animate-bounce">🏆</span>
+            </div>
+
+            {/* Badge "Em Breve" */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-yellow-500 to-amber-500 text-white text-sm font-medium mb-4">
+              <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
+              Em Breve
+            </div>
+
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
+              Sistema de Ranking Chegando!
+            </h2>
+
+            <p className="text-gray-600 mb-6 max-w-md mx-auto">
+              Estamos preparando um sistema de ranking incrível para você competir
+              com outros membros da comunidade e ganhar recompensas exclusivas!
+            </p>
+
+            {/* Features do ranking */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-lg mx-auto">
+              <div className="flex flex-col items-center p-4 rounded-xl bg-gray-50">
+                <span className="text-2xl mb-2">🥇</span>
+                <span className="text-sm text-gray-600 font-medium">Top 10 Semanal</span>
+              </div>
+              <div className="flex flex-col items-center p-4 rounded-xl bg-gray-50">
+                <span className="text-2xl mb-2">💎</span>
+                <span className="text-sm text-gray-600 font-medium">Níveis de Tier</span>
+              </div>
+              <div className="flex flex-col items-center p-4 rounded-xl bg-gray-50">
+                <span className="text-2xl mb-2">🎁</span>
+                <span className="text-sm text-gray-600 font-medium">Prêmios Especiais</span>
+              </div>
+            </div>
+
+            <p className="text-sm text-gray-400 mt-6">
+              Continue completando desafios! Seus pontos já estão sendo contabilizados.
+            </p>
+          </div>
+        </div>
       </div>
-
-      {/* Ranking do Usuário */}
-      {loadingUserRank ? (
-        <Skeleton className="h-28 sm:h-32 w-full" />
-      ) : userRank ? (
-        <div>
-          <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
-            Sua Posição
-          </h2>
-          <UserRankCard ranking={userRank} />
-        </div>
-      ) : null}
-
-      {/* Erro */}
-      {error && (
-        <Card className="p-4 sm:p-6 bg-red-50 border-red-200">
-          <div className="flex items-center gap-3">
-            <span className="text-2xl sm:text-3xl">⚠️</span>
-            <div>
-              <h3 className="font-semibold text-red-900 text-sm sm:text-base">Erro ao carregar ranking</h3>
-              <p className="text-red-700 text-xs sm:text-sm">{error}</p>
-            </div>
-          </div>
-        </Card>
-      )}
-
-      {/* Lista de Ranking Relativo */}
-      <div>
-        <div className="flex items-center justify-between mb-3 sm:mb-4">
-          <h2 className="text-base sm:text-lg font-semibold text-gray-900">
-            Participantes Próximos
-          </h2>
-          {!loadingLeaderboard && leaderboardData.length > 0 && (
-            <div className="text-xs sm:text-sm text-gray-500">
-              {leaderboardData.length} participantes
-            </div>
-          )}
-        </div>
-
-        <LeaderboardList
-          entries={leaderboardData}
-          currentUserId={userId}
-          isLoading={loadingLeaderboard}
-        />
-      </div>
-
-      {/* Informação adicional */}
-      <Card className="p-4 sm:p-6 bg-blue-50 border-blue-200">
-        <div className="flex items-start gap-3">
-          <span className="text-xl sm:text-2xl">💡</span>
-          <div className="flex-1">
-            <h3 className="font-semibold text-blue-900 mb-2 text-sm sm:text-base">
-              Como subir no ranking?
-            </h3>
-            <ul className="space-y-1 text-xs sm:text-sm text-blue-800">
-              <li className="flex items-start gap-2">
-                <span className="text-blue-500">•</span>
-                <span>Complete desafios para ganhar moedas e pontos</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-blue-500">•</span>
-                <span>Mantenha-se ativo e engajado na comunidade</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-blue-500">•</span>
-                <span>Alcance novos tiers (Bronze → Silver → Gold → Diamond)</span>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </Card>
-
-      {/* Legenda de Tiers */}
-      <Card className="p-4 sm:p-6">
-        <h3 className="font-semibold text-gray-900 mb-3 sm:mb-4 text-sm sm:text-base">
-          Entenda os Tiers
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-amber-700 flex items-center justify-center text-white font-bold text-sm sm:text-base">
-              🥉
-            </div>
-            <div>
-              <p className="font-medium text-gray-900 text-sm sm:text-base">Bronze</p>
-              <p className="text-xs text-gray-500">0 - 99 pontos</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-400 flex items-center justify-center text-white font-bold text-sm sm:text-base">
-              🥈
-            </div>
-            <div>
-              <p className="font-medium text-gray-900 text-sm sm:text-base">Silver</p>
-              <p className="text-xs text-gray-500">100 - 499 pontos</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-yellow-400 flex items-center justify-center text-white font-bold text-sm sm:text-base">
-              🥇
-            </div>
-            <div>
-              <p className="font-medium text-gray-900 text-sm sm:text-base">Gold</p>
-              <p className="text-xs text-gray-500">500 - 999 pontos</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold text-sm sm:text-base">
-              💎
-            </div>
-            <div>
-              <p className="font-medium text-gray-900 text-sm sm:text-base">Diamond</p>
-              <p className="text-xs text-gray-500">1000+ pontos</p>
-            </div>
-          </div>
-        </div>
-      </Card>
     </div>
   );
 }
