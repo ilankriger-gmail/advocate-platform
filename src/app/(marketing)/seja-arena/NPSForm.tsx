@@ -205,21 +205,29 @@ export function NPSForm({ siteName, creatorName, logoUrl, sourceData }: NPSFormP
               alt={siteName}
               width={120}
               height={40}
-              className="h-12 w-auto mx-auto mb-8 opacity-60"
+              className="h-12 w-auto mx-auto mb-4 opacity-60"
               priority
             />
           ) : (
             <img
               src={logoUrl}
               alt={siteName}
-              className="h-12 w-auto mx-auto mb-8 opacity-60"
+              className="h-12 w-auto mx-auto mb-4 opacity-60"
             />
           )}
 
+          {/* Estimativa de tempo */}
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 text-green-700 rounded-full text-sm font-medium mb-6">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Leva menos de 2 minutos</span>
+          </div>
+
           {/* Step indicator */}
-          <span className="inline-block text-sm text-pink-500 font-medium mb-4">
+          <div className="inline-block text-sm text-pink-500 font-medium mb-4">
             {currentStep} / {totalSteps}
-          </span>
+          </div>
 
           {/* Title */}
           <h2 className="text-xl sm:text-2xl md:text-3xl font-medium text-surface-800 mb-6 sm:mb-8 leading-snug px-2">

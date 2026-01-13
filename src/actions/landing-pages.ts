@@ -11,15 +11,19 @@ export interface LandingPageData {
   description: string | null;
   imageUrl: string | null;
   // Específicos de challenge
-  challengeType?: 'engajamento' | 'fisico' | 'participe';
+  challengeType?: 'engajamento' | 'fisico' | 'participe' | 'atos_amor';
   coinsReward?: number;
   goalType?: 'repetitions' | 'time' | null;
   goalValue?: number | null;
   icon?: string;
+  endsAt?: string | null;
+  // Contadores
+  participantsCount?: number;
   // Específicos de reward
   coinsRequired?: number;
   rewardType?: 'digital' | 'physical';
   quantityAvailable?: number | null;
+  redemptionsCount?: number;
 }
 
 /**
@@ -29,17 +33,27 @@ export async function getLandingPageChallenge(id: string): Promise<ActionRespons
   try {
     const supabase = await createClient();
 
-    const { data: challenge, error } = await supabase
-      .from('challenges')
-      .select('*')
-      .eq('id', id)
-      .eq('is_active', true)
-      .eq('status', 'active')
-      .single();
+    // Buscar desafio e contar participantes em paralelo
+    const [challengeResult, participantsResult] = await Promise.all([
+      supabase
+        .from('challenges')
+        .select('*')
+        .eq('id', id)
+        .eq('is_active', true)
+        .eq('status', 'active')
+        .single(),
+      supabase
+        .from('challenge_submissions')
+        .select('id', { count: 'exact', head: true })
+        .eq('challenge_id', id)
+    ]);
 
-    if (error || !challenge) {
+    if (challengeResult.error || !challengeResult.data) {
       return { error: 'Desafio não encontrado' };
     }
+
+    const challenge = challengeResult.data;
+    const participantsCount = participantsResult.count || 0;
 
     return {
       data: {
@@ -48,11 +62,13 @@ export async function getLandingPageChallenge(id: string): Promise<ActionRespons
         title: challenge.title,
         description: challenge.description,
         imageUrl: challenge.thumbnail_url,
-        challengeType: challenge.type as 'engajamento' | 'fisico' | 'participe',
+        challengeType: challenge.type as 'engajamento' | 'fisico' | 'participe' | 'atos_amor',
         coinsReward: challenge.coins_reward,
         goalType: challenge.goal_type,
         goalValue: challenge.goal_value,
         icon: challenge.icon,
+        endsAt: challenge.ends_at,
+        participantsCount,
       },
     };
   } catch {
@@ -67,16 +83,26 @@ export async function getLandingPageReward(id: string): Promise<ActionResponse<L
   try {
     const supabase = await createClient();
 
-    const { data: reward, error } = await supabase
-      .from('rewards')
-      .select('*')
-      .eq('id', id)
-      .eq('is_active', true)
-      .single();
+    // Buscar prêmio e contar resgates em paralelo
+    const [rewardResult, redemptionsResult] = await Promise.all([
+      supabase
+        .from('rewards')
+        .select('*')
+        .eq('id', id)
+        .eq('is_active', true)
+        .single(),
+      supabase
+        .from('redemptions')
+        .select('id', { count: 'exact', head: true })
+        .eq('reward_id', id)
+    ]);
 
-    if (error || !reward) {
+    if (rewardResult.error || !rewardResult.data) {
       return { error: 'Prêmio não encontrado' };
     }
+
+    const reward = rewardResult.data;
+    const redemptionsCount = redemptionsResult.count || 0;
 
     return {
       data: {
@@ -88,6 +114,7 @@ export async function getLandingPageReward(id: string): Promise<ActionResponse<L
         coinsRequired: reward.coins_required,
         rewardType: reward.type as 'digital' | 'physical',
         quantityAvailable: reward.quantity_available,
+        redemptionsCount,
       },
     };
   } catch {

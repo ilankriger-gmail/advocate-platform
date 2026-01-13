@@ -297,4 +297,58 @@
   .progress-bar-fill {
     @apply h-full bg-gradient-to-r from-primary-500 to-accent-500 transition-all duration-500 ease-out;
   }
+
+  /* Enhanced CTA button hover effect */
+  .cta-button {
+    @apply relative overflow-hidden transition-all duration-300;
+  }
+  .cta-button::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .cta-button:hover::before {
+    opacity: 1;
+  }
+  .cta-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(236, 72, 153, 0.3);
+  }
+  .cta-button:active {
+    transform: translateY(0);
+  }
+
+  /* Bounce animation for success states */
+  @keyframes bounce-in {
+    0% { transform: scale(0.3); opacity: 0; }
+    50% { transform: scale(1.05); }
+    70% { transform: scale(0.9); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .animate-bounce-in {
+    animation: bounce-in 0.5s ease-out;
+  }
+
+  /* Shake animation for error states */
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+    20%, 40%, 60%, 80% { transform: translateX(4px); }
+  }
+  .animate-shake {
+    animation: shake 0.5s ease-out;
+  }
+
+  /* Pulse ring animation for emphasis */
+  @keyframes pulse-ring {
+    0% { box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(236, 72, 153, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(236, 72, 153, 0); }
+  }
+  .animate-pulse-ring {
+    animation: pulse-ring 1.5s infinite;
+  }
 }
