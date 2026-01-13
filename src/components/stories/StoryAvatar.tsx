@@ -109,7 +109,7 @@ export function StoryAvatar({
       <div className={`${styles.outer} flex items-center justify-center`}>
         <div className={`w-full h-full rounded-full ${ringGradient} ${styles.ring} flex items-center justify-center`}>
           {/* Avatar interno */}
-          <div className={`${styles.inner} rounded-full bg-white overflow-hidden flex items-center justify-center`}>
+          <div className={`${styles.inner} rounded-full bg-white overflow-hidden flex items-center justify-center relative`}>
             {showFallback ? (
               <div
                 className={`w-full h-full flex items-center justify-center ${bgColor} text-white font-medium text-sm`}
