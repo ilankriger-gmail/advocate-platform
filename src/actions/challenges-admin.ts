@@ -622,6 +622,49 @@ export async function markPrizeSent(
 }
 
 /**
+ * Buscar desafio para edição (admin)
+ */
+export async function getChallengeForEdit(challengeId: string): Promise<ActionResponse> {
+  try {
+    // Verificar autenticação
+    const userCheck = await getAuthenticatedUser();
+    if (userCheck.error) {
+      return userCheck;
+    }
+    const user = userCheck.data!;
+
+    // Verificar se é admin/creator
+    const authCheck = await verifyAdminOrCreator(user.id);
+    if (authCheck.error) {
+      return authCheck;
+    }
+
+    const supabase = await createClient();
+
+    const { data: challenge, error } = await supabase
+      .from('challenges')
+      .select('*')
+      .eq('id', challengeId)
+      .single();
+
+    if (error || !challenge) {
+      challengesAdminLogger.error('Desafio não encontrado para edição', {
+        challengeId: maskId(challengeId),
+        error: error ? sanitizeError(error) : 'not found'
+      });
+      return { error: 'Desafio não encontrado' };
+    }
+
+    return { success: true, data: challenge };
+  } catch (err) {
+    challengesAdminLogger.error('Erro ao buscar desafio para edição', {
+      error: sanitizeError(err)
+    });
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+/**
  * Regenerar thumbnail de um desafio existente (admin)
  */
 export async function regenerateChallengeThumbnail(

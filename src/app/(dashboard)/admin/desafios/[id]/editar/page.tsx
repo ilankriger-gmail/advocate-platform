@@ -3,10 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Card, Button, Input, Textarea } from '@/components/ui';
-import { updateChallenge, regenerateChallengeThumbnail } from '@/actions/challenges-admin';
+import { updateChallenge, regenerateChallengeThumbnail, getChallengeForEdit } from '@/actions/challenges-admin';
 import { AIDescriptionGenerator } from '@/components/admin/AIDescriptionGenerator';
 import { YouTubeVideoPicker, SelectedYouTubeVideo } from '@/components/youtube/YouTubeVideoPicker';
-import { createClient } from '@/lib/supabase/client';
 
 type ChallengeType = 'fisico' | 'engajamento' | 'participe';
 type GoalType = 'repetitions' | 'time';
@@ -45,50 +44,31 @@ export default function EditarDesafioPage() {
     noEndDate: false,
   });
 
-  // Carregar dados do desafio
+  // Carregar dados do desafio via server action
   useEffect(() => {
     let isMounted = true;
-    let timeoutId: NodeJS.Timeout;
 
     async function loadChallenge() {
-      console.log('[EditarDesafio] Iniciando carregamento, id:', challengeId);
-
-      // Timeout de segurança - 10 segundos max
-      timeoutId = setTimeout(() => {
-        console.error('[EditarDesafio] Timeout atingido');
-        if (isMounted) {
-          setError('Timeout ao carregar desafio. Tente novamente.');
-          setIsLoadingData(false);
-        }
-      }, 10000);
+      if (!challengeId) {
+        setError('ID do desafio não fornecido');
+        setIsLoadingData(false);
+        return;
+      }
 
       try {
-        const supabase = createClient();
-        console.log('[EditarDesafio] Supabase client criado');
-
-        const { data: challenge, error: queryError } = await supabase
-          .from('challenges')
-          .select('*')
-          .eq('id', challengeId)
-          .single();
-
-        clearTimeout(timeoutId);
-        console.log('[EditarDesafio] Query executada:', {
-          encontrado: !!challenge,
-          erro: queryError?.message
-        });
+        const result = await getChallengeForEdit(challengeId);
 
         if (!isMounted) return;
 
-        if (queryError || !challenge) {
-          console.error('[EditarDesafio] Desafio não encontrado:', queryError);
-          setError('Desafio não encontrado');
+        if (result.error || !result.data) {
+          setError(result.error || 'Desafio não encontrado');
           setIsLoadingData(false);
           return;
         }
 
+        const challenge = result.data;
+
         // Preencher formulário com dados existentes
-        console.log('[EditarDesafio] Preenchendo formulário...');
         setFormData({
           title: challenge.title || '',
           description: challenge.description || '',
@@ -125,11 +105,8 @@ export default function EditarDesafioPage() {
           setThumbnailUrl(challenge.thumbnail_url);
         }
 
-        console.log('[EditarDesafio] Carregamento concluído com sucesso');
         setIsLoadingData(false);
       } catch (err) {
-        clearTimeout(timeoutId);
-        console.error('[EditarDesafio] Erro inesperado:', err);
         if (isMounted) {
           setError('Erro ao carregar desafio');
           setIsLoadingData(false);
@@ -137,17 +114,10 @@ export default function EditarDesafioPage() {
       }
     }
 
-    if (challengeId) {
-      loadChallenge();
-    } else {
-      console.error('[EditarDesafio] ID do desafio não fornecido');
-      setError('ID do desafio não fornecido');
-      setIsLoadingData(false);
-    }
+    loadChallenge();
 
     return () => {
       isMounted = false;
-      clearTimeout(timeoutId);
     };
   }, [challengeId]);
 
