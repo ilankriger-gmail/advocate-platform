@@ -63,7 +63,12 @@ async function analyzeLeadInBackground(leadId: string, leadEmail: string, leadDa
     const minScore = parseInt(settings.nps_auto_approval_min_score || '70', 10);
 
     // Verificar se deve auto-aprovar
-    const shouldAutoApprove = autoApprovalEnabled && analysis.score >= minScore;
+    // Condições: score >= threshold E recomendação é "aprovar" E sentimento não é negativo
+    const shouldAutoApprove =
+      autoApprovalEnabled &&
+      analysis.score >= minScore &&
+      analysis.recommendation === 'aprovar' &&
+      analysis.sentiment !== 'negativo';
 
     const updateData: Record<string, unknown> = {
       ai_score: analysis.score,
