@@ -16,6 +16,7 @@ import { getSiteSettings } from '@/lib/config/site';
 import { analyzeLeadWithAI } from '@/lib/ai';
 import { validateEmail, checkRateLimit, RATE_LIMITS, auditLog } from '@/lib/security';
 import { logger, maskEmail, sanitizeError } from '@/lib';
+import { validateName, validateReason } from '@/lib/validation/nps-validation';
 
 // Logger contextualizado para o módulo de leads
 const leadsLogger = logger.withContext('[Leads]');
@@ -106,6 +107,77 @@ async function analyzeLeadInBackground(leadId: string, leadEmail: string, leadDa
 }
 
 /**
+ * Verificar se email já existe como conta ou lead
+ * Usado para avisar o usuário antes de submeter
+ */
+export async function checkExistingAccount(email: string): Promise<{
+  hasAccount: boolean;
+  hasPendingLead: boolean;
+  hasApprovedLead: boolean;
+  message?: string;
+  loginUrl?: string;
+}> {
+  try {
+    if (!email || !email.includes('@')) {
+      return { hasAccount: false, hasPendingLead: false, hasApprovedLead: false };
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const adminClient = createAdminClient();
+
+    // 1. Verificar se já tem conta de usuário
+    const { data: user } = await adminClient
+      .from('users')
+      .select('id')
+      .eq('email', normalizedEmail)
+      .maybeSingle();
+
+    if (user) {
+      return {
+        hasAccount: true,
+        hasPendingLead: false,
+        hasApprovedLead: false,
+        message: 'Você já tem uma conta! Faça login para acessar.',
+        loginUrl: '/login',
+      };
+    }
+
+    // 2. Verificar se já tem lead pendente/aprovado
+    const { data: lead } = await adminClient
+      .from('nps_leads')
+      .select('status')
+      .eq('email', normalizedEmail)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (lead?.status === 'pending') {
+      return {
+        hasAccount: false,
+        hasPendingLead: true,
+        hasApprovedLead: false,
+        message: 'Sua solicitação já está em análise. Aguarde nosso contato!',
+      };
+    }
+
+    if (lead?.status === 'approved') {
+      return {
+        hasAccount: false,
+        hasPendingLead: false,
+        hasApprovedLead: true,
+        message: 'Você já foi aprovado! Verifique seu email ou faça login.',
+        loginUrl: '/login',
+      };
+    }
+
+    return { hasAccount: false, hasPendingLead: false, hasApprovedLead: false };
+  } catch (err) {
+    leadsLogger.error('Erro ao verificar conta existente', { error: sanitizeError(err) });
+    return { hasAccount: false, hasPendingLead: false, hasApprovedLead: false };
+  }
+}
+
+/**
  * Submeter formulario NPS (público - sem autenticacao)
  * Retorna o leadId para acompanhamento do status
  */
@@ -125,18 +197,22 @@ export async function submitNpsLead(data: NpsLeadInsert): Promise<ActionResponse
       return { error: 'Nota deve estar entre 0 e 10' };
     }
 
-    if (!data.name || data.name.trim().length < 2) {
-      return { error: 'Nome e obrigatorio' };
+    // Validação de nome mais rigorosa
+    const nameValidation = validateName(data.name);
+    if (!nameValidation.valid) {
+      return { error: nameValidation.error || 'Nome inválido' };
     }
 
-    // Validacao de email melhorada
+    // Validacao de email
     const emailValidation = validateEmail(data.email);
     if (!emailValidation.valid) {
-      return { error: emailValidation.error || 'Email invalido' };
+      return { error: emailValidation.error || 'Email inválido' };
     }
 
-    if (!data.reason || data.reason.trim().length < 3) {
-      return { error: 'Por favor, explique o motivo da sua nota' };
+    // Validação de motivo mais rigorosa
+    const reasonValidation = validateReason(data.reason);
+    if (!reasonValidation.valid) {
+      return { error: reasonValidation.error || 'Por favor, explique o motivo da sua nota' };
     }
 
     const email = data.email.trim().toLowerCase();

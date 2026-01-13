@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { NPSScoreSelector } from './NPSScoreSelector';
-import { submitNpsLead } from '@/actions/leads';
+import { submitNpsLead, checkExistingAccount } from '@/actions/leads';
+import { validateName, validateReason, checkEmailTypo } from '@/lib/validation/nps-validation';
 
 interface NPSFormProps {
   siteName: string;
@@ -23,6 +24,14 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
   const [lgpdAccepted, setLgpdAccepted] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Estados para validações avançadas
+  const [emailSuggestion, setEmailSuggestion] = useState<string | null>(null);
+  const [accountStatus, setAccountStatus] = useState<{
+    message?: string;
+    loginUrl?: string;
+  } | null>(null);
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+
   // Sistema de steps - agora com 5 steps
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 5;
@@ -35,16 +44,28 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
       newErrors.score = 'Por favor, selecione uma nota';
     }
 
-    if (step === 2 && (!reason || reason.trim().length < 3)) {
-      newErrors.reason = 'Por favor, explique o motivo (minimo 3 caracteres)';
+    if (step === 2) {
+      const reasonResult = validateReason(reason);
+      if (!reasonResult.valid) {
+        newErrors.reason = reasonResult.error || 'Por favor, explique o motivo';
+      }
     }
 
-    if (step === 3 && (!name || name.trim().length < 2)) {
-      newErrors.name = 'Nome é obrigatório';
+    if (step === 3) {
+      const nameResult = validateName(name);
+      if (!nameResult.valid) {
+        newErrors.name = nameResult.error || 'Nome inválido';
+      }
     }
 
-    if (step === 4 && (!email || !email.includes('@'))) {
-      newErrors.email = 'Email inválido';
+    if (step === 4) {
+      if (!email || !email.includes('@')) {
+        newErrors.email = 'Email inválido';
+      }
+      // Se tem conta existente já identificada, mostra o erro
+      if (accountStatus?.message) {
+        newErrors.email = accountStatus.message;
+      }
     }
 
     // Step 5 (WhatsApp) é opcional, não precisa validar
@@ -54,7 +75,21 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
   };
 
   // Navegacao
-  const nextStep = () => {
+  const nextStep = async () => {
+    // Se está no step 4 (email), verificar conta existente antes de avançar
+    if (currentStep === 4 && email && email.includes('@')) {
+      setIsCheckingEmail(true);
+      const result = await checkExistingAccount(email);
+      setIsCheckingEmail(false);
+
+      if (result.hasAccount || result.hasPendingLead || result.hasApprovedLead) {
+        setAccountStatus({ message: result.message, loginUrl: result.loginUrl });
+        setErrors({ email: result.message || 'Email já cadastrado' });
+        return;
+      }
+      setAccountStatus(null);
+    }
+
     if (validateStep(currentStep)) {
       setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
     }
@@ -326,15 +361,61 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
               name="email"
               value={email}
               onChange={(e) => {
-                setEmail(e.target.value);
+                const newEmail = e.target.value;
+                setEmail(newEmail);
                 if (errors.email) setErrors({});
+                setAccountStatus(null);
+
+                // Verificar typo de domínio
+                const typoCheck = checkEmailTypo(newEmail);
+                if (typoCheck.hasTypo && typoCheck.correctedEmail) {
+                  setEmailSuggestion(typoCheck.correctedEmail);
+                } else {
+                  setEmailSuggestion(null);
+                }
               }}
               placeholder="seu@email.com"
               className={`typeform-input ${errors.email ? 'border-red-500' : ''}`}
               autoFocus={currentStep === 4}
             />
+
+            {/* Sugestão de correção de typo */}
+            {emailSuggestion && !errors.email && (
+              <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-xl">
+                <p className="text-sm text-yellow-800">
+                  Você quis dizer <strong>{emailSuggestion}</strong>?{' '}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail(emailSuggestion);
+                      setEmailSuggestion(null);
+                    }}
+                    className="text-yellow-700 underline font-medium hover:text-yellow-900"
+                  >
+                    Corrigir
+                  </button>
+                </p>
+              </div>
+            )}
+
+            {/* Mensagem de erro com link para login */}
             {errors.email && (
-              <p className="mt-2 text-sm text-red-500">{errors.email}</p>
+              <div className={`mt-2 text-sm ${accountStatus?.loginUrl ? 'p-3 bg-blue-50 border border-blue-200 rounded-xl' : ''}`}>
+                <p className={accountStatus?.loginUrl ? 'text-blue-800' : 'text-red-500'}>
+                  {errors.email}
+                  {accountStatus?.loginUrl && (
+                    <>
+                      {' '}
+                      <a
+                        href={accountStatus.loginUrl}
+                        className="text-blue-600 underline font-medium hover:text-blue-800"
+                      >
+                        Fazer login
+                      </a>
+                    </>
+                  )}
+                </p>
+              </div>
             )}
           </div>
 
@@ -351,10 +432,34 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
             <button
               type="button"
               onClick={nextStep}
+              disabled={isCheckingEmail}
               className="px-6 sm:px-8 py-2.5 sm:py-3 bg-pink-500 text-white text-sm sm:text-base font-medium rounded-full
-                       hover:bg-pink-600 transition-all duration-200"
+                       hover:bg-pink-600 disabled:opacity-60 disabled:cursor-not-allowed
+                       transition-all duration-200 flex items-center gap-2"
             >
-              Continuar
+              {isCheckingEmail ? (
+                <>
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      fill="none"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  Verificando...
+                </>
+              ) : (
+                'Continuar'
+              )}
             </button>
           </div>
 
