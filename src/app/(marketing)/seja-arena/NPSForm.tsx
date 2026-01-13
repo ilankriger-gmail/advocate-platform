@@ -205,14 +205,14 @@ export function NPSForm({ siteName, creatorName, logoUrl, sourceData }: NPSFormP
               alt={siteName}
               width={120}
               height={40}
-              className="h-12 w-auto mx-auto mb-4 opacity-60"
+              className="h-12 w-auto mx-auto mb-4"
               priority
             />
           ) : (
             <img
               src={logoUrl}
               alt={siteName}
-              className="h-12 w-auto mx-auto mb-4 opacity-60"
+              className="h-12 w-auto mx-auto mb-4"
             />
           )}
 

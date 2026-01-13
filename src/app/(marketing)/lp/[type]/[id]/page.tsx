@@ -112,35 +112,41 @@ function TypeBadge({ data }: { data: LandingPageData }) {
 
 // Componente para informações do desafio
 function ChallengeInfo({ data }: { data: LandingPageData }) {
+  const hasGoal = data.goalType && data.goalValue;
+
   return (
-    <div className="grid grid-cols-2 gap-4 mt-6">
+    <div className={`grid ${hasGoal ? 'grid-cols-2' : 'grid-cols-1'} gap-4 mt-6`}>
       {data.coinsReward && data.coinsReward > 0 && (
-        <div className="bg-pink-50 rounded-xl p-4 text-center">
-          <div className="flex items-center justify-center gap-2 text-pink-600 mb-1">
-            <Heart className="w-5 h-5 fill-current" />
-            <span className="text-2xl font-bold">{data.coinsReward}</span>
+        <div className="bg-gradient-to-br from-pink-500 to-rose-600 rounded-2xl p-5 text-center shadow-lg">
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <div className="bg-white/20 p-2 rounded-full">
+              <Heart className="w-6 h-6 text-white fill-current" />
+            </div>
+            <span className="text-4xl font-black text-white">{data.coinsReward.toLocaleString()}</span>
           </div>
-          <p className="text-sm text-pink-700">Corações de recompensa</p>
+          <p className="text-sm text-pink-100 font-medium">corações de recompensa</p>
         </div>
       )}
 
-      {data.goalType && data.goalValue && (
-        <div className="bg-blue-50 rounded-xl p-4 text-center">
-          <div className="flex items-center justify-center gap-2 text-blue-600 mb-1">
-            {data.goalType === 'repetitions' ? (
-              <Repeat className="w-5 h-5" />
-            ) : (
-              <Clock className="w-5 h-5" />
-            )}
-            <span className="text-2xl font-bold">
+      {hasGoal && (
+        <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-5 text-center shadow-lg">
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <div className="bg-white/20 p-2 rounded-full">
+              {data.goalType === 'repetitions' ? (
+                <Repeat className="w-6 h-6 text-white" />
+              ) : (
+                <Clock className="w-6 h-6 text-white" />
+              )}
+            </div>
+            <span className="text-4xl font-black text-white">
               {data.goalType === 'time'
                 ? `${data.goalValue}s`
                 : data.goalValue
               }
             </span>
           </div>
-          <p className="text-sm text-blue-700">
-            {data.goalType === 'repetitions' ? 'Repetições' : 'Segundos'}
+          <p className="text-sm text-blue-100 font-medium">
+            {data.goalType === 'repetitions' ? 'repetições' : 'segundos'}
           </p>
         </div>
       )}
@@ -150,28 +156,34 @@ function ChallengeInfo({ data }: { data: LandingPageData }) {
 
 // Componente para informações do prêmio
 function RewardInfo({ data }: { data: LandingPageData }) {
+  const hasQuantity = data.quantityAvailable !== undefined && data.quantityAvailable !== null;
+
   return (
-    <div className="grid grid-cols-2 gap-4 mt-6">
+    <div className={`grid ${hasQuantity ? 'grid-cols-2' : 'grid-cols-1'} gap-4 mt-6`}>
       {data.coinsRequired && (
-        <div className="bg-pink-50 rounded-xl p-4 text-center">
-          <div className="flex items-center justify-center gap-2 text-pink-600 mb-1">
-            <Heart className="w-5 h-5 fill-current" />
-            <span className="text-2xl font-bold">{data.coinsRequired}</span>
+        <div className="bg-gradient-to-br from-pink-500 to-rose-600 rounded-2xl p-5 text-center shadow-lg">
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <div className="bg-white/20 p-2 rounded-full">
+              <Heart className="w-6 h-6 text-white fill-current" />
+            </div>
+            <span className="text-4xl font-black text-white">{data.coinsRequired.toLocaleString()}</span>
           </div>
-          <p className="text-sm text-pink-700">Corações necessários</p>
+          <p className="text-sm text-pink-100 font-medium">corações necessários</p>
         </div>
       )}
 
-      {data.quantityAvailable !== undefined && data.quantityAvailable !== null && (
-        <div className="bg-green-50 rounded-xl p-4 text-center">
-          <div className="flex items-center justify-center gap-2 text-green-600 mb-1">
-            <Trophy className="w-5 h-5" />
-            <span className="text-2xl font-bold">
-              {data.quantityAvailable > 0 ? data.quantityAvailable : 'Esgotado'}
+      {hasQuantity && (
+        <div className={`bg-gradient-to-br ${data.quantityAvailable! > 0 ? 'from-emerald-500 to-green-600' : 'from-gray-400 to-gray-500'} rounded-2xl p-5 text-center shadow-lg`}>
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <div className="bg-white/20 p-2 rounded-full">
+              <Trophy className="w-6 h-6 text-white" />
+            </div>
+            <span className="text-4xl font-black text-white">
+              {data.quantityAvailable! > 0 ? data.quantityAvailable : '0'}
             </span>
           </div>
-          <p className="text-sm text-green-700">
-            {data.quantityAvailable > 0 ? 'Disponíveis' : 'Em breve'}
+          <p className="text-sm text-white/80 font-medium">
+            {data.quantityAvailable! > 0 ? 'disponíveis' : 'esgotado'}
           </p>
         </div>
       )}
@@ -198,28 +210,24 @@ function ParticipantCounter({ count, type }: { count: number; type: 'challenge' 
 // Componente do Criador - Mostra quem é o criador da comunidade
 function CreatorSection({ name, avatarUrl }: { name: string; avatarUrl?: string }) {
   return (
-    <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-4 my-6">
-      <div className="flex items-center gap-4">
+    <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-6 my-6">
+      <div className="flex flex-col items-center text-center">
         {avatarUrl ? (
-          <Image
+          <img
             src={avatarUrl}
             alt={name}
-            width={64}
-            height={64}
-            className="w-16 h-16 rounded-full object-cover border-2 border-purple-300 shadow-md"
+            className="w-20 h-20 rounded-full object-cover border-3 border-purple-300 shadow-lg mb-3"
           />
         ) : (
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center text-white text-2xl font-bold">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center text-white text-3xl font-bold mb-3">
             {name.charAt(0)}
           </div>
         )}
-        <div className="flex-1">
-          <p className="text-sm text-purple-700 font-medium mb-1">Comunidade oficial de</p>
-          <h3 className="font-bold text-gray-900 text-lg">{name}</h3>
-          <p className="text-xs text-gray-600 mt-1">
-            Participe dos desafios, ganhe corações e troque por prêmios reais!
-          </p>
-        </div>
+        <p className="text-sm text-purple-700 font-medium">Comunidade oficial de</p>
+        <h3 className="font-bold text-gray-900 text-xl mt-1">{name}</h3>
+        <p className="text-sm text-gray-600 mt-2">
+          Participe dos desafios, ganhe corações e troque por prêmios reais!
+        </p>
       </div>
     </div>
   );
@@ -234,22 +242,22 @@ function CashPrizeFomo() {
           <Banknote className="w-5 h-5 text-white" />
         </div>
         <div>
-          <h3 className="font-bold text-green-800 text-sm">Corações viram DINHEIRO!</h3>
-          <p className="text-xs text-green-600">Troque por PIX e prêmios reais</p>
+          <h3 className="font-bold text-green-800 text-sm">Ganhe corações!</h3>
+          <p className="text-xs text-green-600">Troque por produtos, experiências e dinheiro</p>
         </div>
       </div>
       <div className="grid grid-cols-3 gap-2 text-center">
         <div className="bg-white/70 rounded-lg p-2">
-          <Zap className="w-4 h-4 text-amber-500 mx-auto mb-1" />
-          <p className="text-xs font-medium text-gray-700">PIX Instantâneo</p>
-        </div>
-        <div className="bg-white/70 rounded-lg p-2">
           <Gift className="w-4 h-4 text-pink-500 mx-auto mb-1" />
-          <p className="text-xs font-medium text-gray-700">Prêmios Físicos</p>
+          <p className="text-xs font-medium text-gray-700">Produtos</p>
         </div>
         <div className="bg-white/70 rounded-lg p-2">
-          <Trophy className="w-4 h-4 text-purple-500 mx-auto mb-1" />
-          <p className="text-xs font-medium text-gray-700">Itens Exclusivos</p>
+          <Sparkles className="w-4 h-4 text-purple-500 mx-auto mb-1" />
+          <p className="text-xs font-medium text-gray-700">Experiências</p>
+        </div>
+        <div className="bg-white/70 rounded-lg p-2">
+          <Banknote className="w-4 h-4 text-green-500 mx-auto mb-1" />
+          <p className="text-xs font-medium text-gray-700">Dinheiro</p>
         </div>
       </div>
       <p className="text-xs text-center text-green-700 mt-3 font-medium">
@@ -265,19 +273,19 @@ function getHeadline(data: LandingPageData): { headline: string; subheadline: st
     const headlines: Record<string, { headline: string; subheadline: string }> = {
       fisico: {
         headline: `Ganhe ${data.coinsReward || 0} corações com este desafio!`,
-        subheadline: 'Troque por PIX, prêmios em dinheiro e muito mais!',
+        subheadline: 'Troque por produtos, experiências e dinheiro!',
       },
       engajamento: {
         headline: `Complete o desafio e ganhe ${data.coinsReward || 0} corações!`,
-        subheadline: 'Acumule e troque por prêmios em dinheiro!',
+        subheadline: 'Troque por produtos, experiências e dinheiro!',
       },
       participe: {
         headline: 'Participe e concorra a prêmios incríveis!',
-        subheadline: 'Corações viram PIX e prêmios reais!',
+        subheadline: 'Ganhe corações e troque por produtos, experiências e dinheiro!',
       },
       atos_amor: {
         headline: 'Faça a diferença com um ato de amor!',
-        subheadline: `Ganhe ${data.coinsReward || 0} corações e troque por PIX!`,
+        subheadline: `Ganhe ${data.coinsReward || 0} corações e troque por prêmios!`,
       },
     };
     return headlines[data.challengeType || 'engajamento'];
