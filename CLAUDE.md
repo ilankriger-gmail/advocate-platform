@@ -39,64 +39,6 @@
 - Documentação inline para decisões arquiteturais importantes
 - Revisão de código antes de merge de features significativas
 
-## Verificacao Obrigatoria (Claude)
-
-### ANTES de cada commit
-1. **`npm run build`** - Verificar se compila sem erros
-2. **`npm run typecheck`** - Verificar tipos TypeScript
-3. **`npm run lint`** - Verificar padroes de codigo
-4. Revisar TODAS as mudancas feitas na sessao
-
-### APOS editar arquivos .ts/.tsx
-1. Verificar se o arquivo salvo esta correto sintaticamente
-2. Em caso de duvida, rodar `npm run typecheck`
-3. Nao deixar imports nao utilizados
-
-### Comando rapido de verificacao completa
-```bash
-npm run verify  # Roda lint + typecheck + build
-```
-
-### Erros comuns a evitar
-- Não usar cores `primary-*` (usar `pink-500`, `red-500` explicitamente)
-- Não esquecer de exportar tipos/funções criados
-- Verificar se todas as props obrigatórias estão sendo passadas
-- Não deixar `console.log` em código de produção
-
-## Padrão de Textos em Português Brasil
-
-### Regra Obrigatória
-Todos os textos visíveis ao usuário DEVEM ter acentuação correta em português Brasil.
-
-### Exemplos de erros comuns a evitar:
-| Errado | Correto |
-|--------|---------|
-| voce | você |
-| nao | não |
-| coracao/coracoes | coração/corações |
-| acao/acoes | ação/ações |
-| participacao | participação |
-| posicao | posição |
-| secao | seção |
-| sera/serao | será/serão |
-| premio/premios | prêmio/prêmios |
-| disponivel | disponível |
-| fisico | físico |
-| proximo | próximo |
-
-### Onde aplicar:
-- Títulos e descrições de páginas
-- Labels de botões e formulários
-- Mensagens de erro e sucesso
-- Placeholders
-- Textos em cards e componentes
-
-### Onde NÃO aplicar (manter sem acento):
-- Nomes de variáveis e funções (padrão técnico)
-- Nomes de arquivos
-- Chaves de objetos
-- Comentários de código (opcional)
-
 ## Estrutura de Diretórios (Sugestão Inicial)
 ```
 app/
@@ -111,48 +53,22 @@ styles/             # Estilos globais
 public/             # Arquivos estáticos
 ```
 
-## Documentação de Arquitetura
+## Comandos
+- `npm run dev` - desenvolvimento local
+- `npx supabase gen types typescript --local > lib/database.types.ts` - gerar tipos
+- `npx supabase db push` - aplicar migrations
 
-Para um entendimento completo e detalhado da arquitetura do projeto, consulte a documentação técnica na pasta `docs/`:
+## Regras Adicionais
+- Usar `@/` para imports absolutos
+- Componentes Client devem ter `'use client'` no topo
+- Nunca expor service_role key no cliente
+- Usar Zod para validação de formulários
 
-### 📚 Documentos Principais
+## Regras de Idioma
 
-- **[ARCHITECTURE.md](./docs/ARCHITECTURE.md)** - Visão geral completa da arquitetura
-  - Stack tecnológica detalhada
-  - Princípios arquiteturais e padrões
-  - Diagramas de alto nível (Mermaid)
-  - Estrutura completa de diretórios
-  - Módulos e suas responsabilidades
-
-- **[README.md](./docs/README.md)** - Índice completo de toda a documentação
-
-### 🔄 Fluxos de Dados por Módulo
-
-Cada módulo possui documentação detalhada do fluxo de dados na pasta `docs/flows/`:
-
-- **[DATA_FLOW_AUTH.md](./docs/flows/DATA_FLOW_AUTH.md)** - Autenticação e autorização
-- **[DATA_FLOW_POSTS.md](./docs/flows/DATA_FLOW_POSTS.md)** - Posts e feed de conteúdo
-- **[DATA_FLOW_CHALLENGES.md](./docs/flows/DATA_FLOW_CHALLENGES.md)** - Desafios e participações
-- **[DATA_FLOW_EVENTS.md](./docs/flows/DATA_FLOW_EVENTS.md)** - Eventos e registros
-- **[DATA_FLOW_PROFILE_REWARDS.md](./docs/flows/DATA_FLOW_PROFILE_REWARDS.md)** - Perfil e recompensas
-
-### 🛠️ Documentação Técnica Especializada
-
-- **[COMPONENTS.md](./docs/COMPONENTS.md)** - Padrões e convenções de componentes
-- **[SERVER_ACTIONS.md](./docs/SERVER_ACTIONS.md)** - Guia de Server Actions
-- **[SECURITY_RLS.md](./docs/SECURITY_RLS.md)** - Políticas de segurança (RLS)
-- **[DATABASE.md](./docs/DATABASE.md)** - Modelo de dados e relacionamentos
-- **[MODULE_DEPENDENCIES.md](./docs/MODULE_DEPENDENCIES.md)** - Dependências entre módulos
-- **[AUTHORIZATION.md](./docs/AUTHORIZATION.md)** - Sistema de autorização
-
-### 💡 Onboarding de Desenvolvedores
-
-**Leitura recomendada para novos desenvolvedores:**
-
-1. Este arquivo (CLAUDE.md) - Princípios e regras do projeto
-2. [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) - Visão geral da arquitetura
-3. [docs/COMPONENTS.md](./docs/COMPONENTS.md) - Padrões de componentes
-4. [docs/SERVER_ACTIONS.md](./docs/SERVER_ACTIONS.md) - Como criar Server Actions
-5. Fluxos de dados específicos dos módulos que você irá trabalhar
-
-Esta documentação visual e técnica reduz significativamente o tempo de onboarding e ajuda a evitar bugs arquiteturais.
+- SEMPRE escreva textos em português com acentuação correta (é, ã, ç, etc.)
+- Nunca use "Repeticoes", use "Repetições"
+- Nunca use "Configuracoes", use "Configurações"
+- Nunca use "Descricao", use "Descrição"
+- Mantenha nomes de variáveis e código em inglês (sem acentos)
+- Textos visíveis ao usuário (labels, placeholders, mensagens) SEMPRE em português correto

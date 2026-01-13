@@ -17,6 +17,9 @@ export * from './analytics';
 // Tipos de Notificações
 export * from './notification';
 
+// Tipos de Stories
+export * from './story';
+
 // Re-export tipos do Supabase
 export type {
   // Database

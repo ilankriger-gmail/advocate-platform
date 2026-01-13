@@ -5,6 +5,7 @@ import { getSiteSettings } from '@/lib/config/site';
 import { getInitialFeedPosts } from '@/actions/feed';
 import { getCommunityStats } from '@/actions/stats';
 import { HeroSection, FeedTabs, LeaderboardWidget } from '@/components/home';
+import { StoriesBar, StoriesBarSkeleton } from '@/components/stories';
 import { Card, Skeleton } from '@/components/ui';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -80,6 +81,11 @@ export default async function HomePage() {
     <div className="space-y-6">
       {/* Hero Section - Banner (apenas para visitantes não logados) */}
       {!isLoggedIn && <HeroSection isLoggedIn={false} stats={stats} />}
+
+      {/* Stories - Barra horizontal estilo Instagram */}
+      <Suspense fallback={<StoriesBarSkeleton />}>
+        <StoriesBar />
+      </Suspense>
 
       {/* Main Content - Feed + Sidebar */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
