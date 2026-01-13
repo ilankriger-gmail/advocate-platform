@@ -217,9 +217,9 @@ function parseGeminiResponse(text: string): GeminiAnalysisResult {
 
     return {
       isValid: Boolean(parsed.isValid),
-      confidence: Math.min(100, Math.max(0, parseInt(parsed.confidence) || 0)),
+      confidence: Math.min(100, Math.max(0, parseInt(parsed.confidence, 10) || 0)),
       reason: String(parsed.reason || 'Sem detalhes'),
-      observedValue: parsed.observedValue ? parseInt(parsed.observedValue) : undefined,
+      observedValue: parsed.observedValue ? parseInt(parsed.observedValue, 10) : undefined,
     };
   } catch {
     return {

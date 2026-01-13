@@ -299,7 +299,7 @@ export function validatePhone(phone: string): ValidationResult {
   // Verificar se não é sequência simples (12345678901)
   const isSequence = digits.split('').every((d, i, arr) => {
     if (i === 0) return true;
-    return Math.abs(parseInt(d) - parseInt(arr[i - 1])) <= 1;
+    return Math.abs(parseInt(d, 10) - parseInt(arr[i - 1], 10)) <= 1;
   });
   if (isSequence && digits.length >= 10) {
     return { valid: false, error: 'Telefone inválido' };

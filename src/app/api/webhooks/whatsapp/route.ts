@@ -162,7 +162,7 @@ export async function POST(request: NextRequest) {
             if (mappedStatus) {
               const metadata: Record<string, unknown> = {
                 delivery_status: status,
-                status_timestamp: new Date(parseInt(timestamp) * 1000).toISOString(),
+                status_timestamp: new Date(parseInt(timestamp, 10) * 1000).toISOString(),
               };
 
               // Se falhou, adicionar detalhes do erro
