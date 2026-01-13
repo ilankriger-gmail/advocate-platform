@@ -463,3 +463,99 @@ export async function cancelAllLeadTasks(
     return { success: false, cancelled: 0, error: 'Erro ao cancelar tarefas' };
   }
 }
+
+// ============ ONBOARDING DE USUÁRIOS ============
+
+// Delays para emails de onboarding
+const ONBOARDING_EMAIL_2_DELAY = 24 * 60 * 60 * 1000; // 24 horas
+const ONBOARDING_EMAIL_3_DELAY = 72 * 60 * 60 * 1000; // 72 horas
+
+/**
+ * Inicia a sequência de onboarding para um novo usuário
+ * - Cria registro de onboarding
+ * - Envia Email 1 imediatamente
+ * - Agenda Email 2 para 24h
+ * - Agenda Email 3 para 72h
+ */
+export async function scheduleUserOnboarding(
+  userId: string,
+  userData: { email: string; name: string }
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = createAdminClient();
+
+    schedulerLogger.info('Iniciando onboarding para usuário', {
+      userId: maskId(userId),
+    });
+
+    // 1. Criar registro de onboarding (ou ignorar se já existe)
+    const { error: insertError } = await supabase
+      .from('user_onboarding')
+      .insert({
+        user_id: userId,
+      })
+      .select('id')
+      .single();
+
+    // Ignorar erro de duplicata (já tem onboarding)
+    if (insertError && insertError.code !== '23505') {
+      schedulerLogger.error('Erro ao criar registro de onboarding:', sanitizeError(insertError));
+      return { success: false, error: insertError.message };
+    }
+
+    // Se já existia, não enviar emails novamente
+    if (insertError?.code === '23505') {
+      schedulerLogger.debug('Onboarding já existe para usuário', { userId: maskId(userId) });
+      return { success: true };
+    }
+
+    // 2. Agendar Email 2 para 24h depois
+    const email2ScheduledFor = new Date(Date.now() + ONBOARDING_EMAIL_2_DELAY).toISOString();
+    await supabase
+      .from('scheduled_tasks')
+      .insert({
+        type: 'send_onboarding_email_2' as ScheduledTaskType,
+        lead_id: null, // Não é lead, é user
+        scheduled_for: email2ScheduledFor,
+        payload: {
+          user_id: userId,
+          email: userData.email,
+          name: userData.name,
+        },
+      });
+
+    schedulerLogger.debug('Email de onboarding 2 agendado', {
+      userId: maskId(userId),
+      scheduledFor: email2ScheduledFor,
+    });
+
+    // 3. Agendar Email 3 para 72h depois
+    const email3ScheduledFor = new Date(Date.now() + ONBOARDING_EMAIL_3_DELAY).toISOString();
+    await supabase
+      .from('scheduled_tasks')
+      .insert({
+        type: 'send_onboarding_email_3' as ScheduledTaskType,
+        lead_id: null,
+        scheduled_for: email3ScheduledFor,
+        payload: {
+          user_id: userId,
+          email: userData.email,
+          name: userData.name,
+        },
+      });
+
+    schedulerLogger.debug('Email de onboarding 3 agendado', {
+      userId: maskId(userId),
+      scheduledFor: email3ScheduledFor,
+    });
+
+    schedulerLogger.info('Onboarding agendado com sucesso', {
+      userId: maskId(userId),
+    });
+
+    return { success: true };
+  } catch (err) {
+    schedulerLogger.error('Erro ao agendar onboarding:', sanitizeError(err));
+    return { success: false, error: 'Erro ao agendar onboarding' };
+  }
+}

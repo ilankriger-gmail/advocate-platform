@@ -16,6 +16,7 @@ import {
   checkEmailOpened,
   sendApprovalWhatsApp,
   sendFollowupEmail,
+  sendOnboardingEmail,
   isMetaWhatsAppConfigured,
   scheduleWhatsAppFinal,
   cancelAllLeadTasks,
@@ -312,6 +313,76 @@ async function processSendWhatsAppFinal(task: ScheduledTask): Promise<{
 }
 
 /**
+ * Processa uma tarefa de email de onboarding
+ * Envia email para usuário que acabou de criar conta
+ */
+async function processOnboardingEmail(task: ScheduledTask, step: 1 | 2 | 3): Promise<{
+  success: boolean;
+  sentEmail: boolean;
+  error?: string;
+}> {
+  const payload = task.payload as { user_id?: string; email?: string; name?: string };
+
+  if (!payload.user_id || !payload.email || !payload.name) {
+    return { success: false, sentEmail: false, error: 'Dados do usuário não encontrados no payload' };
+  }
+
+  try {
+    const supabase = createAdminClient();
+
+    // Verificar se o usuário ainda existe e está ativo
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('id, email, full_name')
+      .eq('id', payload.user_id)
+      .single();
+
+    if (userError || !user) {
+      console.log(`[CRON] Usuário ${payload.user_id} não encontrado - cancelando onboarding`);
+      return { success: true, sentEmail: false };
+    }
+
+    // Verificar se o onboarding existe e esse email ainda não foi enviado
+    const { data: onboarding } = await supabase
+      .from('user_onboarding')
+      .select('*')
+      .eq('user_id', payload.user_id)
+      .single();
+
+    if (!onboarding) {
+      console.log(`[CRON] Registro de onboarding não encontrado para usuário ${payload.user_id}`);
+      return { success: true, sentEmail: false };
+    }
+
+    // Verificar se esse email já foi enviado
+    const emailSentField = `email_${step}_sent` as keyof typeof onboarding;
+    if (onboarding[emailSentField]) {
+      console.log(`[CRON] Email de onboarding ${step} já enviado para usuário ${payload.user_id}`);
+      return { success: true, sentEmail: false };
+    }
+
+    // Enviar email de onboarding
+    console.log(`[CRON] Enviando email de onboarding ${step} para ${payload.email}`);
+    const result = await sendOnboardingEmail({
+      to: payload.email,
+      name: payload.name,
+      userId: payload.user_id,
+      step,
+    });
+
+    if (!result.success) {
+      return { success: false, sentEmail: false, error: result.error };
+    }
+
+    console.log(`[CRON] Email de onboarding ${step} enviado com sucesso para ${payload.email}`);
+    return { success: true, sentEmail: true };
+  } catch (error) {
+    console.error(`[CRON] Erro ao processar email de onboarding ${step}:`, error);
+    return { success: false, sentEmail: false, error: 'Erro interno' };
+  }
+}
+
+/**
  * Processa uma tarefa agendada
  */
 async function processTask(task: ScheduledTask): Promise<{
@@ -346,6 +417,20 @@ async function processTask(task: ScheduledTask): Promise<{
         converted: whatsappResult.converted,
         error: whatsappResult.error,
       };
+
+    case 'send_onboarding_email_1':
+    case 'send_onboarding_email_2':
+    case 'send_onboarding_email_3': {
+      // Emails de onboarding para novos usuários
+      const step = parseInt(task.type.replace('send_onboarding_email_', '')) as 1 | 2 | 3;
+      const onboardingResult = await processOnboardingEmail(task, step);
+      return {
+        success: onboardingResult.success,
+        sentWhatsApp: false,
+        sentEmail: onboardingResult.sentEmail,
+        error: onboardingResult.error,
+      };
+    }
 
     case 'send_reminder':
       // TODO: Implementar lembretes

@@ -9,6 +9,7 @@ export {
   logEmailNotification,
   updateEmailNotificationStatus,
   checkEmailOpened,
+  sendOnboardingEmail,
 } from './email';
 
 // WhatsApp (Meta Cloud API)
@@ -35,4 +36,5 @@ export {
   markTaskFailed,
   incrementTaskAttempts,
   getTaskStats,
+  scheduleUserOnboarding,
 } from './scheduler';

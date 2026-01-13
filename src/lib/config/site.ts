@@ -62,7 +62,26 @@ export type SiteSettingKey =
   | 'seo_desafio_description_template'
   // NPS Auto-Aprovacao
   | 'nps_auto_approval_enabled'
-  | 'nps_auto_approval_min_score';
+  | 'nps_auto_approval_min_score'
+  // Onboarding Emails (após criar conta)
+  | 'email_onboarding1_subject'
+  | 'email_onboarding1_greeting'
+  | 'email_onboarding1_message'
+  | 'email_onboarding1_benefits'
+  | 'email_onboarding1_cta'
+  | 'email_onboarding1_footer'
+  | 'email_onboarding2_subject'
+  | 'email_onboarding2_greeting'
+  | 'email_onboarding2_message'
+  | 'email_onboarding2_benefits'
+  | 'email_onboarding2_cta'
+  | 'email_onboarding2_footer'
+  | 'email_onboarding3_subject'
+  | 'email_onboarding3_greeting'
+  | 'email_onboarding3_message'
+  | 'email_onboarding3_benefits'
+  | 'email_onboarding3_cta'
+  | 'email_onboarding3_footer';
 
 /**
  * Tipo para uma configuração do site
@@ -143,6 +162,27 @@ const DEFAULT_VALUES: Record<SiteSettingKey, string> = {
   // NPS Auto-Aprovacao
   nps_auto_approval_enabled: 'true',
   nps_auto_approval_min_score: '70',
+  // Onboarding Email 1 (boas-vindas)
+  email_onboarding1_subject: 'Bem-vindo à {{site_name}}!',
+  email_onboarding1_greeting: 'Olá {{name}}!',
+  email_onboarding1_message: 'Sua conta foi criada com sucesso! Estamos muito felizes em ter você na nossa comunidade.',
+  email_onboarding1_benefits: 'Participar de desafios e ganhar moedas,Completar exercícios físicos diários,Trocar moedas por prêmios incríveis,Conectar com a comunidade',
+  email_onboarding1_cta: 'Explorar a Plataforma',
+  email_onboarding1_footer: 'Qualquer dúvida, estamos aqui para ajudar!',
+  // Onboarding Email 2 (engajamento)
+  email_onboarding2_subject: '{{name}}, já completou seu primeiro desafio?',
+  email_onboarding2_greeting: 'E aí {{name}}!',
+  email_onboarding2_message: 'Você já viu os desafios disponíveis? Complete exercícios simples e acumule moedas para trocar por prêmios!',
+  email_onboarding2_benefits: 'Desafios físicos: flexões, abdominais e mais,Desafios de engajamento: curta, comente, compartilhe,Sorteios especiais com prêmios exclusivos,Ranking para competir com outros membros',
+  email_onboarding2_cta: 'Ver Desafios Disponíveis',
+  email_onboarding2_footer: 'Quanto mais você participa, mais moedas acumula!',
+  // Onboarding Email 3 (reengajamento)
+  email_onboarding3_subject: '{{name}}, suas moedas estão esperando!',
+  email_onboarding3_greeting: 'Oi {{name}}!',
+  email_onboarding3_message: 'Você sabia que pode trocar suas moedas por prêmios incríveis? Não deixe suas moedas paradas, venha participar dos desafios!',
+  email_onboarding3_benefits: 'Prêmios exclusivos esperando por você,Novos desafios toda semana,Comunidade ativa para te apoiar,Rankings e competições especiais',
+  email_onboarding3_cta: 'Resgatar Prêmios',
+  email_onboarding3_footer: 'Não perca a chance de ganhar prêmios!',
 };
 
 /**

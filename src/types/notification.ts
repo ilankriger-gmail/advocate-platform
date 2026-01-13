@@ -92,11 +92,14 @@ export interface NotificationLogUpdate {
  * Tipo da tarefa agendada
  */
 export type ScheduledTaskType =
-  | 'check_email_opened'    // Verificar se email foi aberto (legado)
-  | 'send_reminder'         // Enviar lembrete
-  | 'cleanup'               // Limpeza de dados antigos
-  | 'send_email_2'          // Enviar Email 2 (follow-up)
-  | 'send_whatsapp_final';  // Enviar WhatsApp final
+  | 'check_email_opened'       // Verificar se email foi aberto (legado)
+  | 'send_reminder'            // Enviar lembrete
+  | 'cleanup'                  // Limpeza de dados antigos
+  | 'send_email_2'             // Enviar Email 2 (follow-up para leads)
+  | 'send_whatsapp_final'      // Enviar WhatsApp final
+  | 'send_onboarding_email_1'  // Onboarding: Email de boas-vindas
+  | 'send_onboarding_email_2'  // Onboarding: Email de engajamento (24h)
+  | 'send_onboarding_email_3'; // Onboarding: Email de reengajamento (72h)
 
 /**
  * Status da tarefa agendada
