@@ -165,15 +165,22 @@ export async function getFeedPosts({
       return { data: [], nextCursor: null, hasMore: false };
     }
 
-    query = query.in('user_id', followingIds);
+    // Feed de seguindo - EXCLUIR pedidos de ajuda
+    query = query
+      .in('user_id', followingIds)
+      .or('content_category.is.null,content_category.neq.help_request');
   } else if (type === 'help_request') {
     // Pedidos de ajuda - filtrar por content_category
     query = query.eq('content_category', 'help_request');
   } else if (type !== 'all') {
-    // Feed normal (creator/community) - mostrar todos os posts incluindo pedidos de ajuda
-    query = query.eq('type', type);
+    // Feed normal (creator/community) - EXCLUIR pedidos de ajuda
+    query = query
+      .eq('type', type)
+      .or('content_category.is.null,content_category.neq.help_request');
+  } else {
+    // Feed 'all' - também excluir pedidos de ajuda (só aparecem na aba dedicada)
+    query = query.or('content_category.is.null,content_category.neq.help_request');
   }
-  // Feed 'all' não precisa de filtro adicional
 
   // Aplicar ordenação e paginação por cursor
   switch (sort) {
