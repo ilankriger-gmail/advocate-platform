@@ -3,18 +3,35 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Heart, Trophy, Target, Clock, Repeat, Gift, Package, Users, Sparkles } from 'lucide-react';
-import DOMPurify from 'isomorphic-dompurify';
 import { getLandingPageData, LandingPageData } from '@/actions/landing-pages';
 import { getSiteSettings } from '@/lib/config/site';
 import { Button } from '@/components/ui';
 import { CountdownTimer, ScarcityIndicator, FadeInSection } from '@/components/landing';
 
-// Função para sanitizar HTML e prevenir XSS
+// Função para sanitizar HTML (sem dependência de JSDOM para funcionar no Vercel)
+// Remove tags perigosas mantendo formatação básica
 function sanitizeHtml(html: string): string {
-  return DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'ol', 'li', 's', 'strike', 'span', 'h1', 'h2', 'h3'],
-    ALLOWED_ATTR: ['href', 'target', 'rel', 'class'],
+  // Lista de tags permitidas
+  const allowedTags = ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'ol', 'li', 's', 'strike', 'span', 'h1', 'h2', 'h3'];
+
+  // Remove scripts e event handlers
+  let clean = html
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/on\w+\s*=\s*"[^"]*"/gi, '')
+    .replace(/on\w+\s*=\s*'[^']*'/gi, '')
+    .replace(/javascript:/gi, '');
+
+  // Remove tags não permitidas mas mantém seu conteúdo
+  const tagPattern = /<\/?([a-z][a-z0-9]*)\b[^>]*>/gi;
+  clean = clean.replace(tagPattern, (match, tagName) => {
+    if (allowedTags.includes(tagName.toLowerCase())) {
+      // Limpa atributos perigosos mas mantém href, target, rel, class
+      return match.replace(/\s+(?!href|target|rel|class)[a-z-]+\s*=\s*["'][^"']*["']/gi, '');
+    }
+    return '';
   });
+
+  return clean;
 }
 
 interface PageProps {
