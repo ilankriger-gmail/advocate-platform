@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 // Cliente OpenAI inicializado lazily
 let openaiClient: OpenAI | null = null;
@@ -85,8 +85,8 @@ export async function generateChallengeThumbnail(
     const imageBlob = await imageResponse.blob();
     const imageArrayBuffer = await imageBlob.arrayBuffer();
 
-    // 4. Upload para Supabase Storage
-    const supabase = await createClient();
+    // 4. Upload para Supabase Storage (usando admin client para bypassar RLS)
+    const supabase = createAdminClient();
     const fileName = `${input.challengeId}.png`;
 
     const { data: uploadData, error: uploadError } = await supabase.storage
