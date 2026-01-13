@@ -7,6 +7,7 @@ import { Card, Button, Input, Textarea, Skeleton } from '@/components/ui';
 import { useProfile } from '@/hooks';
 import { createClient } from '@/lib/supabase/client';
 import ChangePasswordSection from '@/components/auth/ChangePasswordSection';
+import { AvatarUploader } from '@/components/profile/AvatarUploader';
 
 export default function EditarPerfilPage() {
   const router = useRouter();
@@ -123,13 +124,9 @@ export default function EditarPerfilPage() {
                 maxLength={160}
               />
 
-              <Input
-                label="URL do Avatar"
-                name="avatar_url"
-                value={formData.avatar_url}
-                onChange={handleChange}
-                placeholder="https://..."
-                hint="Opcional - URL de uma imagem de perfil"
+              <AvatarUploader
+                currentUrl={formData.avatar_url || null}
+                userName={formData.full_name}
               />
             </div>
           </div>

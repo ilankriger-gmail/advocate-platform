@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { ActionResponse } from '@/types/action';
 import type { UpdateProfileData } from '@/types/profile';
+import { validateFileMagicBytes } from '@/lib/security';
 
 /**
  * Atualizar perfil do usuário
@@ -114,4 +115,120 @@ export async function getPublicProfile(userId: string) {
   } catch {
     return null;
   }
+}
+
+/**
+ * Upload de avatar do usuário
+ */
+export async function uploadAvatar(formData: FormData): Promise<{
+  success: boolean;
+  error: string | null;
+  url?: string;
+}> {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { success: false, error: 'Usuário não autenticado' };
+  }
+
+  const file = formData.get('file') as File;
+  if (!file) {
+    return { success: false, error: 'Nenhum arquivo enviado' };
+  }
+
+  // Validar tipo de arquivo usando magic bytes
+  const validation = await validateFileMagicBytes(file, ['png', 'jpeg', 'webp']);
+  if (!validation.valid) {
+    return {
+      success: false,
+      error: validation.error || 'Tipo de arquivo não suportado. Use PNG, JPEG ou WebP.'
+    };
+  }
+
+  // Validar tamanho (max 2MB)
+  if (file.size > 2 * 1024 * 1024) {
+    return { success: false, error: 'Arquivo muito grande. Máximo 2MB.' };
+  }
+
+  // Upload para o storage
+  const fileExt = file.name.split('.').pop();
+  const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from('avatars')
+    .upload(fileName, file, {
+      contentType: file.type,
+      upsert: true,
+    });
+
+  if (uploadError) {
+    console.error('Erro no upload do avatar:', uploadError);
+    return { success: false, error: 'Erro ao fazer upload da imagem' };
+  }
+
+  // Obter URL pública
+  const { data: publicUrl } = supabase.storage
+    .from('avatars')
+    .getPublicUrl(fileName);
+
+  const avatarUrl = publicUrl.publicUrl;
+
+  // Atualizar perfil do usuário
+  const { error: updateError } = await supabase
+    .from('users')
+    .update({
+      avatar_url: avatarUrl,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', user.id);
+
+  if (updateError) {
+    console.error('Erro ao salvar URL do avatar:', updateError);
+    return { success: false, error: 'Erro ao salvar avatar no perfil' };
+  }
+
+  // Revalidar páginas
+  revalidatePath('/perfil');
+  revalidatePath('/perfil/editar');
+  revalidatePath('/dashboard');
+  revalidatePath('/', 'layout');
+
+  return { success: true, error: null, url: avatarUrl };
+}
+
+/**
+ * Remover avatar do usuário (volta ao padrão)
+ */
+export async function removeAvatar(): Promise<{
+  success: boolean;
+  error: string | null;
+}> {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { success: false, error: 'Usuário não autenticado' };
+  }
+
+  // Limpar avatar_url no perfil
+  const { error } = await supabase
+    .from('users')
+    .update({
+      avatar_url: null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', user.id);
+
+  if (error) {
+    return { success: false, error: 'Erro ao remover avatar' };
+  }
+
+  // Revalidar páginas
+  revalidatePath('/perfil');
+  revalidatePath('/perfil/editar');
+  revalidatePath('/dashboard');
+  revalidatePath('/', 'layout');
+
+  return { success: true, error: null };
 }
