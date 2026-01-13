@@ -247,40 +247,41 @@ function buildThumbnailPrompt(input: ChallengeThumbnailInput): string {
   const combinedText = `${titleLower} ${descLower}`;
 
   // Detectar exercícios específicos no texto
+  // Foco no MOVIMENTO e EXERCÍCIO, não no corpo da pessoa
   let specificExercise = '';
   const exerciseKeywords: Record<string, string> = {
-    'flexão': 'person doing push-ups on the ground, athletic form',
-    'flexões': 'person doing push-ups on the ground, athletic form',
-    'flexoes': 'person doing push-ups on the ground, athletic form',
-    'push-up': 'person doing push-ups on the ground, athletic form',
-    'pushup': 'person doing push-ups on the ground, athletic form',
-    'abdominal': 'person doing crunches or sit-ups, core workout',
-    'abdominais': 'person doing crunches or sit-ups, core workout',
-    'agachamento': 'person doing deep squat, leg exercise',
-    'agachamentos': 'person doing deep squat, leg exercise',
-    'squat': 'person doing deep squat, leg exercise',
-    'prancha': 'person holding plank position, core stability',
-    'plank': 'person holding plank position, core stability',
-    'burpee': 'person doing explosive burpee jump, full body exercise',
-    'burpees': 'person doing explosive burpee jump, full body exercise',
-    'corrida': 'athletic runner in motion outdoors, running',
-    'correr': 'athletic runner in motion outdoors, running',
-    'running': 'athletic runner in motion outdoors, running',
-    'pular': 'person jumping rope or doing jump exercise',
-    'pulo': 'person jumping rope or doing jump exercise',
-    'jump': 'person jumping rope or doing jump exercise',
-    'bicicleta': 'cyclist riding bike, cycling workout',
-    'bike': 'cyclist riding bike, cycling workout',
-    'yoga': 'person in yoga pose, peaceful fitness moment',
-    'alongamento': 'person stretching, flexibility exercise',
-    'stretch': 'person stretching, flexibility exercise',
-    'levantamento': 'person lifting weights, strength training',
-    'peso': 'person lifting dumbbells, weight training',
-    'haltere': 'person lifting dumbbells, weight training',
-    'barra': 'person doing pull-ups or barbell exercise',
-    'pull-up': 'person doing pull-ups on bar',
-    'polichinelo': 'person doing jumping jacks, cardio exercise',
-    'jumping jack': 'person doing jumping jacks, cardio exercise',
+    'flexão': 'push-up movement from side angle, hands on ground, focus on the exercise',
+    'flexões': 'push-up movement from side angle, hands on ground, focus on the exercise',
+    'flexoes': 'push-up movement from side angle, hands on ground, focus on the exercise',
+    'push-up': 'push-up movement from side angle, hands on ground, focus on the exercise',
+    'pushup': 'push-up movement from side angle, hands on ground, focus on the exercise',
+    'abdominal': 'crunch exercise movement, person on mat doing sit-ups',
+    'abdominais': 'crunch exercise movement, person on mat doing sit-ups',
+    'agachamento': 'squat exercise movement, legs bent, focus on the position',
+    'agachamentos': 'squat exercise movement, legs bent, focus on the position',
+    'squat': 'squat exercise movement, legs bent, focus on the position',
+    'prancha': 'plank position from side view, core exercise on mat',
+    'plank': 'plank position from side view, core exercise on mat',
+    'burpee': 'burpee jump movement, dynamic full body exercise',
+    'burpees': 'burpee jump movement, dynamic full body exercise',
+    'corrida': 'running outdoors, jogging in park or street',
+    'correr': 'running outdoors, jogging in park or street',
+    'running': 'running outdoors, jogging in park or street',
+    'pular': 'jump rope exercise, skipping movement',
+    'pulo': 'jump rope exercise, skipping movement',
+    'jump': 'jump rope exercise, skipping movement',
+    'bicicleta': 'cycling on bike, pedaling movement',
+    'bike': 'cycling on bike, pedaling movement',
+    'yoga': 'yoga pose, peaceful stretching moment',
+    'alongamento': 'stretching movement, flexibility exercise',
+    'stretch': 'stretching movement, flexibility exercise',
+    'levantamento': 'weight lifting movement, dumbbells or barbell',
+    'peso': 'dumbbell exercise, weight training movement',
+    'haltere': 'dumbbell exercise, weight training movement',
+    'barra': 'pull-up bar exercise, hanging movement',
+    'pull-up': 'pull-up bar exercise, hanging movement',
+    'polichinelo': 'jumping jacks movement, arms and legs spread',
+    'jumping jack': 'jumping jacks movement, arms and legs spread',
   };
 
   // Procurar exercício específico no texto
@@ -301,11 +302,12 @@ function buildThumbnailPrompt(input: ChallengeThumbnailInput): string {
     locationContext = 'beach fitness setting';
   }
 
-  // Contexto baseado no tipo
+  // Contexto baseado no tipo - foco no exercício, pessoas normais
   const themeByType: Record<string, string> = {
-    fisico: specificExercise || 'Athletic person performing exercise with perfect form',
+    fisico: specificExercise || 'Regular person doing exercise, focus on the movement not the body',
     engajamento: 'Person happily using smartphone, social media engagement moment',
     participe: 'Exciting prize presentation scene with gift boxes, celebration atmosphere',
+    atos_amor: 'Heartwarming moment of kindness, person helping another or showing care',
   };
 
   // Meta do desafio para contexto
@@ -320,7 +322,7 @@ function buildThumbnailPrompt(input: ChallengeThumbnailInput): string {
 
   const theme = themeByType[input.type] || themeByType.fisico;
 
-  return `Create a SQUARE thumbnail image for a fitness challenge.
+  return `Create a SQUARE thumbnail image for a fitness challenge app.
 
 CHALLENGE CONTEXT:
 Title: "${input.title}"
@@ -333,24 +335,38 @@ ${theme}
 LOCATION:
 ${locationContext}
 
+BODY TYPE (VERY IMPORTANT):
+- Show a REGULAR, EVERYDAY person with NORMAL/AVERAGE build
+- NOT a bodybuilder, fitness model, or extremely muscular person
+- NOT a professional athlete with visible six-pack abs
+- Think: regular person who exercises casually, not a gym enthusiast
+- Natural, relatable physique that everyday users can identify with
+
+FOCUS:
+- Emphasize the EXERCISE MOVEMENT and ACTION
+- Do NOT focus on the person's physique or muscles
+- Show the exercise being performed, not a pose showing off muscles
+- Camera angle should highlight the movement, not the body
+
 STYLE REQUIREMENTS:
-- Professional fitness photography
+- Clean, simple fitness photography
 - Square composition optimized for thumbnail/icon use
 - Bold, clear subject that reads well at small sizes
-- Dramatic lighting (golden hour or studio)
+- Soft, natural lighting (not dramatic bodybuilding-style lighting)
 - Clean background, no clutter
-- High contrast for visibility
 - Person shown from back, side, or partial view (no direct face)
 
 IMAGE CHARACTERISTICS:
 - Photorealistic, like a real photograph
-- Vibrant, energetic colors
-- Sharp focus on main subject
+- Warm, inviting colors (not harsh gym lighting)
+- Sharp focus on the exercise movement
 - Simple composition that works as small icon
 
 CRITICAL RULES:
 - NO text, words, letters, numbers, or watermarks
 - NO logos or brand elements
-- Must be inspiring and motivational
+- NO muscular/bodybuilder physiques
+- NO fitness model poses
+- Must feel approachable and achievable for regular people
 - Image should clearly represent: ${input.title}`;
 }
