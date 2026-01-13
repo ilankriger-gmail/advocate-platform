@@ -15,7 +15,7 @@ interface HeaderProps {
 }
 
 // Rotas onde o Header nao deve aparecer
-const HIDDEN_HEADER_ROUTES = ['/seja-arena', '/login', '/registro'];
+const HIDDEN_HEADER_ROUTES = ['/seja-arena', '/login', '/registro', '/lp'];
 
 // Domínio comece onde o Header nunca aparece
 const COMECE_DOMAIN = 'comece.omocodoteamo.com.br';

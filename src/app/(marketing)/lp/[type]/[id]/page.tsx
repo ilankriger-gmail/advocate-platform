@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Heart, Trophy, Target, Clock, Repeat, Gift, Package, Users, Sparkles } from 'lucide-react';
+import { Heart, Trophy, Target, Clock, Repeat, Gift, Package, Users, Sparkles, Banknote, Zap } from 'lucide-react';
 import { getLandingPageData, LandingPageData } from '@/actions/landing-pages';
 import { getSiteSettings } from '@/lib/config/site';
 import { Button } from '@/components/ui';
@@ -195,25 +195,59 @@ function ParticipantCounter({ count, type }: { count: number; type: 'challenge' 
   );
 }
 
+// Componente FOMO - Mostra que corações viram dinheiro
+function CashPrizeFomo() {
+  return (
+    <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4 my-6">
+      <div className="flex items-center gap-3 mb-3">
+        <div className="p-2 bg-green-500 rounded-full">
+          <Banknote className="w-5 h-5 text-white" />
+        </div>
+        <div>
+          <h3 className="font-bold text-green-800 text-sm">Corações viram DINHEIRO!</h3>
+          <p className="text-xs text-green-600">Troque por PIX e prêmios reais</p>
+        </div>
+      </div>
+      <div className="grid grid-cols-3 gap-2 text-center">
+        <div className="bg-white/70 rounded-lg p-2">
+          <Zap className="w-4 h-4 text-amber-500 mx-auto mb-1" />
+          <p className="text-xs font-medium text-gray-700">PIX Instantâneo</p>
+        </div>
+        <div className="bg-white/70 rounded-lg p-2">
+          <Gift className="w-4 h-4 text-pink-500 mx-auto mb-1" />
+          <p className="text-xs font-medium text-gray-700">Prêmios Físicos</p>
+        </div>
+        <div className="bg-white/70 rounded-lg p-2">
+          <Trophy className="w-4 h-4 text-purple-500 mx-auto mb-1" />
+          <p className="text-xs font-medium text-gray-700">Itens Exclusivos</p>
+        </div>
+      </div>
+      <p className="text-xs text-center text-green-700 mt-3 font-medium">
+        Quanto mais corações, mais chances de ganhar!
+      </p>
+    </div>
+  );
+}
+
 // Gerar headline impactante baseado no tipo
 function getHeadline(data: LandingPageData): { headline: string; subheadline: string } {
   if (data.type === 'challenge') {
     const headlines: Record<string, { headline: string; subheadline: string }> = {
       fisico: {
         headline: `Ganhe ${data.coinsReward || 0} corações com este desafio!`,
-        subheadline: 'Supere seus limites e seja recompensado',
+        subheadline: 'Troque por PIX, prêmios em dinheiro e muito mais!',
       },
       engajamento: {
         headline: `Complete o desafio e ganhe ${data.coinsReward || 0} corações!`,
-        subheadline: 'Participe, engaje e acumule recompensas',
+        subheadline: 'Acumule e troque por prêmios em dinheiro!',
       },
       participe: {
         headline: 'Participe e concorra a prêmios incríveis!',
-        subheadline: 'É simples, rápido e gratuito',
+        subheadline: 'Corações viram PIX e prêmios reais!',
       },
       atos_amor: {
         headline: 'Faça a diferença com um ato de amor!',
-        subheadline: `Ajude alguém e ganhe ${data.coinsReward || 0} corações`,
+        subheadline: `Ganhe ${data.coinsReward || 0} corações e troque por PIX!`,
       },
     };
     return headlines[data.challengeType || 'engajamento'];
@@ -392,6 +426,13 @@ export default async function LandingPage({ params }: PageProps) {
             <RewardInfo data={data} />
           )}
         </FadeInSection>
+
+        {/* FOMO - Corações viram dinheiro (apenas para desafios) */}
+        {data.type === 'challenge' && (
+          <FadeInSection delay={150}>
+            <CashPrizeFomo />
+          </FadeInSection>
+        )}
 
         {/* CTA Button */}
         <FadeInSection delay={200}>
