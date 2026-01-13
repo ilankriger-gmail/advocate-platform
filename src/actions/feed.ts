@@ -172,8 +172,12 @@ export async function getFeedPosts({
   } else if (type === 'help_request') {
     // Pedidos de ajuda - filtrar por content_category
     query = query.eq('content_category', 'help_request');
+  } else if (type === 'community') {
+    // Feed da comunidade - mostra todos os posts (creator + community), exceto pedidos de ajuda
+    // Isso garante que posts do criador (onboarding, etc) apareçam na aba comunidade
+    query = query.or('content_category.is.null,content_category.neq.help_request');
   } else if (type !== 'all') {
-    // Feed normal (creator/community) - EXCLUIR pedidos de ajuda
+    // Feed creator - só posts do criador
     query = query
       .eq('type', type)
       .or('content_category.is.null,content_category.neq.help_request');

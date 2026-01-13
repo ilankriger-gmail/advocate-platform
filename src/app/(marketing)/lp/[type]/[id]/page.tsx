@@ -384,11 +384,13 @@ export default async function LandingPage({ params }: PageProps) {
 
       {/* Conteúdo principal */}
       <main className="max-w-2xl mx-auto px-4 py-8">
-        {/* Seção do Criador - Comunidade oficial */}
-        <CreatorSection
-          name={settings.creator_name}
-          avatarUrl={settings.creator_avatar_url || undefined}
-        />
+        {/* Seção do Criador - Comunidade oficial (só mostra se tiver nome configurado) */}
+        {settings.creator_name && (
+          <CreatorSection
+            name={settings.creator_name}
+            avatarUrl={settings.creator_avatar_url || undefined}
+          />
+        )}
 
         {/* Headline impactante acima da dobra */}
         <div className="text-center mb-8">
