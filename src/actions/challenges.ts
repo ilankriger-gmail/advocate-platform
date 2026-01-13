@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
-import { analyzeVídeoChallenge, isValidYouTubeUrl, type AIVerdict } from '@/lib/gemini';
+import { analyzeVídeoChallenge, analyzeAtosAmorChallenge, isValidYouTubeUrl, type AIVerdict } from '@/lib/gemini';
 import { ActionResponse } from '@/types/action';
 import type { Challenge, ChallengeParticipant, ChallengeWinner, ParticipationWithChallenge } from '@/lib/supabase/types';
 import { logger, maskId, sanitizeError } from '@/lib';
@@ -52,7 +52,8 @@ export async function participateInChallenge(data: {
       return { error: 'Desafio não encontrado ou encerrado' };
     }
 
-    if (challenge.type !== 'fisico') {
+    // Verificar tipo de desafio (fisico e atos_amor aceitam participacao direta)
+    if (challenge.type !== 'fisico' && challenge.type !== 'atos_amor') {
       return { error: 'Este desafio não aceita participações diretas' };
     }
 
@@ -78,12 +79,24 @@ export async function participateInChallenge(data: {
     }
 
     // Analisar vídeo com IA (Gemini assiste o vídeo do YouTube)
-    const aiVerdict = await analyzeVídeoChallenge(
-      data.vídeoProofUrl,
-      challenge.goal_type,
-      challenge.goal_value,
-      challenge.title
-    );
+    let aiVerdict: AIVerdict;
+
+    if (challenge.type === 'atos_amor') {
+      // Para Atos de Amor, usar análise específica
+      aiVerdict = await analyzeAtosAmorChallenge(
+        data.vídeoProofUrl,
+        challenge.title,
+        challenge.action_instructions
+      );
+    } else {
+      // Para desafios físicos, usar análise de repetições/tempo
+      aiVerdict = await analyzeVídeoChallenge(
+        data.vídeoProofUrl,
+        challenge.goal_type,
+        challenge.goal_value,
+        challenge.title
+      );
+    }
 
     // Criar participacao com dados da análise de IA
     const { data: participation, error } = await supabase

@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { Dumbbell, Trophy } from 'lucide-react';
+import { Dumbbell, Trophy, Heart } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { getSiteSettings } from '@/lib/config/site';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -124,6 +124,7 @@ export default async function DesafiosPage() {
     c => c.type === 'participe' || c.type === 'engajamento'
   );
   const physicalChallenges = (challenges || []).filter(c => c.type === 'fisico');
+  const atosAmorChallenges = (challenges || []).filter(c => c.type === 'atos_amor');
 
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('pt-BR', {
@@ -308,6 +309,32 @@ export default async function DesafiosPage() {
               );
             })}
           </Accordion>
+        </section>
+      )}
+
+      {/* Atos de Amor */}
+      {atosAmorChallenges.length > 0 && (
+        <section className="space-y-4 sm:space-y-6">
+          {/* Header da Seção - Centralizado */}
+          <div className="flex flex-col items-center text-center gap-2">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-rose-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg shadow-rose-500/25">
+              <Heart className="w-7 h-7 sm:w-8 sm:h-8 text-white fill-white" />
+            </div>
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Atos de Amor</h2>
+              <p className="text-gray-500 text-xs sm:text-sm">Espalhe amor e ganhe recompensas</p>
+            </div>
+          </div>
+
+          <div className="max-w-2xl mx-auto space-y-3 sm:space-y-4">
+            {atosAmorChallenges.map((challenge) => (
+              <PhysicalChallengeCard
+                key={challenge.id}
+                challenge={challenge}
+                participation={participationMap.get(challenge.id)}
+              />
+            ))}
+          </div>
         </section>
       )}
 

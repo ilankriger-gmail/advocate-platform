@@ -3,7 +3,7 @@
 
 -- Criar tabela de prêmios
 CREATE TABLE IF NOT EXISTS challenge_prizes (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   challenge_id UUID NOT NULL REFERENCES challenges(id) ON DELETE CASCADE,
   type VARCHAR(20) NOT NULL CHECK (type IN ('physical', 'digital', 'money')),
   name VARCHAR(255) NOT NULL,

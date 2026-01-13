@@ -231,6 +231,158 @@ function parseGeminiResponse(text: string): GeminiAnalysisResult {
 }
 
 /**
+ * Analisa um vídeo de "Atos de Amor" usando Gemini
+ * ASSISTE o vídeo do YouTube e verifica se o ato de amor foi realizado
+ *
+ * @param videoUrl URL do vídeo do YouTube (deve ser público)
+ * @param challengeTitle Título do desafio (ex: "Ajudar um idoso")
+ * @param actionInstructions Instruções específicas do ato de amor
+ */
+export async function analyzeAtosAmorChallenge(
+  videoUrl: string,
+  challengeTitle: string,
+  actionInstructions?: string | null
+): Promise<AIVerdict> {
+  const apiKey = process.env.GEMINI_API_KEY;
+
+  // Se não tem API key, retorna verificação manual
+  if (!apiKey || apiKey === 'your-gemini-api-key') {
+    return {
+      isValid: false,
+      confidence: 0,
+      reason: 'API Gemini não configurada - verificação manual necessária',
+      analyzedAt: new Date().toISOString(),
+    };
+  }
+
+  // Validar que é URL do YouTube
+  const videoId = extractYouTubeId(videoUrl);
+  if (!videoId) {
+    return {
+      isValid: false,
+      confidence: 0,
+      reason: 'URL do YouTube inválida. Use youtube.com/watch?v=... ou youtu.be/...',
+      analyzedAt: new Date().toISOString(),
+    };
+  }
+
+  try {
+    const prompt = `Você é um verificador de "Atos de Amor" - desafios onde pessoas realizam boas ações e postam nas redes sociais.
+
+DESAFIO: ${challengeTitle}
+${actionInstructions ? `INSTRUÇÕES ESPECÍFICAS: ${actionInstructions}` : ''}
+
+ASSISTA o vídeo completo e analise:
+
+1. O vídeo mostra uma pessoa realizando um ATO DE AMOR genuíno?
+2. O ato corresponde ao desafio "${challengeTitle}"?
+3. A ação parece ser real e autêntica (não encenada)?
+4. O ato demonstra bondade, solidariedade ou amor ao próximo?
+
+CRITÉRIOS DE VALIDAÇÃO:
+- O ato deve ser claramente visível no vídeo
+- Deve haver interação real com outra pessoa ou ação concreta de bondade
+- O ato deve corresponder ao tema do desafio
+- Não validar vídeos claramente falsos ou encenados
+- Ser generoso na avaliação - o importante é o espírito de ajudar
+
+EXEMPLOS DE ATOS VÁLIDOS:
+- Ajudar alguém a carregar sacolas
+- Dar comida/água para alguém necessitado
+- Visitar ou ajudar idosos
+- Fazer doações
+- Ajudar animais de rua
+- Qualquer gesto genuíno de bondade
+
+Responda EXATAMENTE neste formato JSON (apenas o JSON, sem markdown):
+{
+  "isValid": true ou false,
+  "confidence": 0-100 (quão confiante você está),
+  "reason": "Explicação breve do que foi observado no vídeo"
+}`;
+
+    // SEGURANCA: AbortController para timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), GEMINI_TIMEOUT_MS);
+
+    // Usar gemini-2.0-flash com suporte a YouTube nativo
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        signal: controller.signal,
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  file_data: {
+                    file_uri: videoUrl,
+                  },
+                },
+                {
+                  text: prompt,
+                },
+              ],
+            },
+          ],
+          generationConfig: {
+            temperature: 0.3, // Um pouco mais flexível que desafios físicos
+            maxOutputTokens: 1000,
+          },
+        }),
+      }
+    );
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Gemini API error (Atos de Amor):', response.status, errorText);
+
+      if (errorText.includes('private') || errorText.includes('unavailable')) {
+        return {
+          isValid: false,
+          confidence: 0,
+          reason: 'Vídeo não acessível. Verifique se o vídeo está PÚBLICO no YouTube.',
+          analyzedAt: new Date().toISOString(),
+        };
+      }
+
+      return {
+        isValid: false,
+        confidence: 0,
+        reason: 'Erro ao conectar com API Gemini. Tente novamente.',
+        analyzedAt: new Date().toISOString(),
+      };
+    }
+
+    const data = await response.json();
+    const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    console.log('Gemini Atos de Amor analysis response:', textResponse);
+
+    const result = parseGeminiResponse(textResponse);
+
+    return {
+      ...result,
+      analyzedAt: new Date().toISOString(),
+    };
+  } catch (error) {
+    console.error('Error analyzing Atos de Amor video:', error);
+    return {
+      isValid: false,
+      confidence: 0,
+      reason: 'Erro ao analisar vídeo. Verifique se o vídeo é público.',
+      analyzedAt: new Date().toISOString(),
+    };
+  }
+}
+
+/**
  * Verifica se uma URL é do YouTube
  * SEGURANCA: Validacao rigorosa para prevenir URLs maliciosas
  */

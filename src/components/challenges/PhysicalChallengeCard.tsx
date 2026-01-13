@@ -11,12 +11,14 @@ interface Challenge {
   description: string | null;
   icon: string;
   thumbnail_url?: string | null;
+  type?: 'fisico' | 'atos_amor' | 'engajamento' | 'participe';
   goal_type: 'repetitions' | 'time' | null;
   goal_value: number | null;
   record_video_url: string | null;
   hashtag: string | null;
   profile_to_tag: string | null;
   coins_reward: number;
+  action_instructions?: string | null;
   raffle_enabled?: boolean;
   raffle_prize_amount?: number;
   raffle_frequency_days?: number;
@@ -41,6 +43,15 @@ export function PhysicalChallengeCard({
 
   const goalLabel = challenge.goal_type === 'time' ? 'segundos' : 'repetições';
   const hasParticipated = !!participation;
+  const isAtosAmor = challenge.type === 'atos_amor';
+
+  // Cores baseadas no tipo
+  const gradientColors = isAtosAmor
+    ? 'from-rose-600 to-pink-500'
+    : 'from-blue-600 to-cyan-500';
+  const buttonGradient = isAtosAmor
+    ? 'from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600'
+    : 'from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600';
 
   const getStatusBadge = () => {
     if (!participation) return null;
@@ -72,7 +83,7 @@ export function PhysicalChallengeCard({
                   <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30" />
                 </>
               ) : (
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-cyan-500" />
+                <div className={`absolute inset-0 bg-gradient-to-r ${gradientColors}`} />
               )}
 
               {/* Conteúdo */}
@@ -112,8 +123,25 @@ export function PhysicalChallengeCard({
                 </p>
               )}
 
-              {/* Meta */}
-              {challenge.goal_value && (
+              {/* Instruções do Ato de Amor */}
+              {isAtosAmor && challenge.action_instructions && (
+                <div className="flex items-start gap-3 p-3 bg-gradient-to-r from-rose-50 to-pink-50 rounded-xl border border-rose-100">
+                  <div className="w-8 h-8 bg-rose-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <span className="text-white text-sm">💝</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-rose-800 font-semibold text-sm mb-1">
+                      Como participar:
+                    </p>
+                    <p className="text-xs text-rose-600 whitespace-pre-line">
+                      {challenge.action_instructions}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Meta (apenas para desafios físicos) */}
+              {!isAtosAmor && challenge.goal_value && (
                 <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-100">
                   <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
                     <span className="text-white text-sm">🎯</span>
@@ -171,7 +199,7 @@ export function PhysicalChallengeCard({
                     )}
                     {participation.status === 'rejected' && (
                       <Button
-                        className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600"
+                        className={`w-full bg-gradient-to-r ${buttonGradient}`}
                         onClick={() => setIsModalOpen(true)}
                       >
                         Tentar Novamente
@@ -180,10 +208,10 @@ export function PhysicalChallengeCard({
                   </div>
                 ) : (
                   <Button
-                    className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600"
+                    className={`w-full bg-gradient-to-r ${buttonGradient}`}
                     onClick={() => setIsModalOpen(true)}
                   >
-                    Participar do Desafio
+                    {isAtosAmor ? 'Enviar Meu Ato de Amor' : 'Participar do Desafio'}
                   </Button>
                 )}
               </div>

@@ -8,11 +8,13 @@ import { participateInChallenge, type ParticipationResult } from '@/actions/chal
 interface Challenge {
   id: string;
   title: string;
+  type?: 'fisico' | 'atos_amor' | 'engajamento' | 'participe';
   goal_type: 'repetitions' | 'time' | null;
   goal_value: number | null;
   hashtag: string | null;
   profile_to_tag: string | null;
   coins_reward: number;
+  action_instructions?: string | null;
 }
 
 interface ChallengeParticipationModalProps {
@@ -67,14 +69,20 @@ export function ChallengeParticipationModal({
     router.refresh();
   };
 
+  const isAtosAmor = challenge.type === 'atos_amor';
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    const resultValue = parseInt(formData.resultValue);
-    if (isNaN(resultValue) || resultValue <= 0) {
-      setError('Informe um valor válido');
-      return;
+    // Para desafios físicos, validar resultado
+    let resultValue = 1; // Default para atos de amor
+    if (!isAtosAmor) {
+      resultValue = parseInt(formData.resultValue, 10);
+      if (isNaN(resultValue) || resultValue <= 0) {
+        setError('Informe um valor válido');
+        return;
+      }
     }
 
     // Validar que é YouTube
@@ -113,14 +121,22 @@ export function ChallengeParticipationModal({
     return /youtube\.com\/watch|youtu\.be\/|youtube\.com\/shorts\//.test(url);
   };
 
-  // Passos de análise
-  const analysisSteps = [
-    { label: 'Conectando ao YouTube', icon: '🔗' },
-    { label: 'Carregando vídeo', icon: '📥' },
-    { label: 'Assistindo conteúdo', icon: '👀' },
-    { label: 'Contando repetições', icon: '🔢' },
-    { label: 'Finalizando análise', icon: '✨' },
-  ];
+  // Passos de análise (diferentes para atos de amor)
+  const analysisSteps = isAtosAmor
+    ? [
+        { label: 'Conectando ao YouTube', icon: '🔗' },
+        { label: 'Carregando vídeo', icon: '📥' },
+        { label: 'Assistindo conteúdo', icon: '👀' },
+        { label: 'Verificando ato de amor', icon: '💝' },
+        { label: 'Finalizando análise', icon: '✨' },
+      ]
+    : [
+        { label: 'Conectando ao YouTube', icon: '🔗' },
+        { label: 'Carregando vídeo', icon: '📥' },
+        { label: 'Assistindo conteúdo', icon: '👀' },
+        { label: 'Contando repetições', icon: '🔢' },
+        { label: 'Finalizando análise', icon: '✨' },
+      ];
 
   // Tela de análise em andamento
   const renderAnalyzingStage = () => (
@@ -233,21 +249,23 @@ export function ChallengeParticipationModal({
                 </div>
               </div>
 
-              {/* Valores */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-white rounded-lg p-3 border">
-                  <p className="text-xs text-gray-500 mb-1">Seu resultado</p>
-                  <p className="font-bold text-gray-900">
-                    {participation.result_value} {goalLabel}
-                  </p>
+              {/* Valores (apenas para desafios físicos) */}
+              {!isAtosAmor && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-white rounded-lg p-3 border">
+                    <p className="text-xs text-gray-500 mb-1">Seu resultado</p>
+                    <p className="font-bold text-gray-900">
+                      {participation.result_value} {goalLabel}
+                    </p>
+                  </div>
+                  <div className="bg-white rounded-lg p-3 border">
+                    <p className="text-xs text-gray-500 mb-1">IA contou</p>
+                    <p className="font-bold text-gray-900">
+                      {observedValue ?? '-'} {observedValue ? goalLabel : ''}
+                    </p>
+                  </div>
                 </div>
-                <div className="bg-white rounded-lg p-3 border">
-                  <p className="text-xs text-gray-500 mb-1">IA contou</p>
-                  <p className="font-bold text-gray-900">
-                    {observedValue ?? '-'} {observedValue ? goalLabel : ''}
-                  </p>
-                </div>
-              </div>
+              )}
 
               {/* Motivo */}
               {reason && (
@@ -317,20 +335,37 @@ export function ChallengeParticipationModal({
         </p>
       </div>
 
-      {/* Resultado */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Seu resultado ({goalLabel}) *
-        </label>
-        <Input
-          type="number"
-          value={formData.resultValue}
-          onChange={(e) => setFormData({ ...formData, resultValue: e.target.value })}
-          placeholder={`Ex: ${challenge.goal_value || 50}`}
-          min="1"
-          required
-        />
-      </div>
+      {/* Resultado (apenas para desafios físicos) */}
+      {!isAtosAmor && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Seu resultado ({goalLabel}) *
+          </label>
+          <Input
+            type="number"
+            value={formData.resultValue}
+            onChange={(e) => setFormData({ ...formData, resultValue: e.target.value })}
+            placeholder={`Ex: ${challenge.goal_value || 50}`}
+            min="1"
+            required
+          />
+        </div>
+      )}
+
+      {/* Instruções do Ato de Amor */}
+      {isAtosAmor && challenge.action_instructions && (
+        <div className="p-4 bg-gradient-to-r from-rose-50 to-pink-50 rounded-lg border border-rose-200">
+          <div className="flex items-start gap-3">
+            <span className="text-2xl">💝</span>
+            <div>
+              <p className="font-semibold text-rose-800 mb-1">O que fazer:</p>
+              <p className="text-sm text-rose-700 whitespace-pre-line">
+                {challenge.action_instructions}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Link do YouTube */}
       <div>
