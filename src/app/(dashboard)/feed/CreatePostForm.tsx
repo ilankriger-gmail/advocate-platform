@@ -1,14 +1,20 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Card, Button, Textarea, Input, Select } from '@/components/ui';
 import { useToastHelpers } from '@/components/ui/Toast';
 import { usePosts } from '@/hooks';
 
-export function CreatePostForm() {
+interface CreatePostFormProps {
+  onHelpRequestCreated?: () => void;
+}
+
+export function CreatePostForm({ onHelpRequestCreated }: CreatePostFormProps) {
   const { create, isPending, error } = usePosts();
   const toast = useToastHelpers();
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showHelpRequestAlert, setShowHelpRequestAlert] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -34,12 +40,12 @@ export function CreatePostForm() {
           result.message || 'Conteúdo viola nossas diretrizes.'
         );
       } else if (result.contentCategory === 'help_request') {
-        toast.info(
-          'Pedido de Ajuda',
-          'Sua publicação aparecerá na comunidade e também na aba "Pedidos de Ajuda".'
-        );
+        // Mostrar alerta especial para pedido de ajuda
         setFormData({ title: '', content: '', media_url: '', type: 'community' });
         setIsExpanded(false);
+        setShowHelpRequestAlert(true);
+        // Notificar o componente pai para mudar para a aba de ajuda
+        onHelpRequestCreated?.();
       } else if (result.moderationStatus === 'pending_review') {
         toast.info(
           'Em revisão',
@@ -56,6 +62,55 @@ export function CreatePostForm() {
       toast.error('Erro', result.error);
     }
   };
+
+  // Alerta especial para pedidos de ajuda
+  if (showHelpRequestAlert) {
+    return (
+      <Card className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+        <div className="flex items-start gap-4">
+          <div className="p-3 bg-blue-100 rounded-full flex-shrink-0">
+            <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+          </div>
+          <div className="flex-1">
+            <h3 className="text-lg font-semibold text-blue-900">Pedido de Ajuda Publicado!</h3>
+            <p className="text-blue-700 mt-1">
+              Identificamos que sua publicação é um pedido de ajuda. Ela aparecerá na <strong>Comunidade</strong> e também tem uma aba especial dedicada a conectar quem precisa com quem pode ajudar.
+            </p>
+            <div className="mt-4 p-3 bg-white/60 rounded-lg border border-blue-200">
+              <p className="text-sm text-blue-800 flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Confira a aba <strong>"Pedidos de Ajuda"</strong> para ver outros pedidos da comunidade
+              </p>
+            </div>
+            <div className="mt-4 flex gap-3">
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => {
+                  setShowHelpRequestAlert(false);
+                  onHelpRequestCreated?.();
+                }}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                Ver aba Pedidos de Ajuda
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowHelpRequestAlert(false)}
+              >
+                Fechar
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Card>
+    );
+  }
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>

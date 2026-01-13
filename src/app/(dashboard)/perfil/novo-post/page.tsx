@@ -9,6 +9,7 @@ import { getCurrentProfile } from '@/actions/profile';
 import MediaUploader from '@/components/posts/MediaUploader';
 import YouTubeInput from '@/components/posts/YouTubeInput';
 import InstagramInput from '@/components/posts/InstagramInput';
+import { Button } from '@/components/ui';
 import type { MediaType, PostType } from '@/types/post';
 
 // Carregar editor dinamicamente para evitar problemas de SSR
@@ -37,6 +38,7 @@ export default function NovoPostPage() {
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [instagramUrl, setInstagramUrl] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [showHelpRequestAlert, setShowHelpRequestAlert] = useState(false);
 
   // Buscar status de criador do servidor
   const [isCreator, setIsCreator] = useState(false);
@@ -113,12 +115,69 @@ export default function NovoPostPage() {
 
       if (result.error) {
         setError(result.error);
+      } else if (result.contentCategory === 'help_request') {
+        // Mostrar alerta especial para pedido de ajuda
+        setShowHelpRequestAlert(true);
       } else {
         router.push('/');
         router.refresh();
       }
     });
   };
+
+  // Tela de sucesso para pedido de ajuda
+  if (showHelpRequestAlert) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-8">
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-8">
+          <div className="flex flex-col items-center text-center">
+            <div className="p-4 bg-blue-100 rounded-full mb-4">
+              <svg className="w-12 h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+            </div>
+
+            <h1 className="text-2xl font-bold text-blue-900 mb-2">
+              Pedido de Ajuda Publicado!
+            </h1>
+
+            <p className="text-blue-700 mb-6 max-w-md">
+              Identificamos que sua publicação é um pedido de ajuda. Ela aparecerá na <strong>Comunidade</strong> e também tem uma aba especial dedicada.
+            </p>
+
+            <div className="bg-white/70 border border-blue-200 rounded-xl p-4 mb-6 w-full max-w-md">
+              <div className="flex items-center gap-3 text-left">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="font-semibold text-blue-900">Aba Especial: Pedidos de Ajuda</p>
+                  <p className="text-sm text-blue-700">
+                    Existe uma aba dedicada para conectar quem precisa de ajuda com quem pode ajudar!
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 w-full max-w-md">
+              <Link href="/?tab=ajuda" className="flex-1">
+                <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                  Ver Pedidos de Ajuda
+                </Button>
+              </Link>
+              <Link href="/" className="flex-1">
+                <Button variant="outline" className="w-full">
+                  Ir para Comunidade
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const mediaTabs: { id: MediaTab; label: string; icon: string; creatorOnly?: boolean }[] = [
     { id: 'none', label: 'Sem mídia', icon: '📝' },
