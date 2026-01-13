@@ -82,6 +82,7 @@ export const createMockReward = (overrides: Partial<Reward> = {}): Reward => {
     coins_required: 100,
     quantity_available: 10,
     is_active: true,
+    slug: null,
     created_at: now,
     ...overrides,
   };
@@ -116,6 +117,7 @@ export const createMockChallenge = (
     starts_at: now,
     ends_at: null,
     status: 'active',
+    slug: null,
     created_at: now,
     ...overrides,
   };

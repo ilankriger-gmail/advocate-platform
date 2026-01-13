@@ -276,6 +276,7 @@ export interface Event {
   meeting_url: string | null;
   image_url: string | null;
   is_active: boolean;
+  slug: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -318,6 +319,7 @@ export interface Challenge {
   icon: string;
   thumbnail_url: string | null;
   is_active: boolean;
+  slug: string | null;
   // Para engajamento
   instagram_embed_url: string | null;
   prize_amount: number | null;
@@ -478,6 +480,7 @@ export interface Reward {
   coins_required: number;
   quantity_available: number;
   is_active: boolean;
+  slug: string | null;
   created_at: string;
 }
 
