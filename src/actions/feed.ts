@@ -170,10 +170,8 @@ export async function getFeedPosts({
     // Pedidos de ajuda - filtrar por content_category
     query = query.eq('content_category', 'help_request');
   } else if (type !== 'all') {
-    // Feed normal (creator/community) - excluir pedidos de ajuda
-    query = query
-      .eq('type', type)
-      .or('content_category.is.null,content_category.neq.help_request');
+    // Feed normal (creator/community) - mostrar todos os posts incluindo pedidos de ajuda
+    query = query.eq('type', type);
   }
   // Feed 'all' não precisa de filtro adicional
 
