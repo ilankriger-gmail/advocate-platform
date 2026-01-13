@@ -49,12 +49,13 @@ interface SettingsTabsProps {
   settings: SiteSetting[];
   logoUrl: string;
   faviconUrl: string;
+  creatorAvatarUrl: string;
 }
 
 /**
  * Componente de abas para configuracoes
  */
-export function SettingsTabs({ settings, logoUrl, faviconUrl }: SettingsTabsProps) {
+export function SettingsTabs({ settings, logoUrl, faviconUrl, creatorAvatarUrl }: SettingsTabsProps) {
   const [activeTab, setActiveTab] = useState<TabId>('general');
 
   return (
@@ -87,7 +88,7 @@ export function SettingsTabs({ settings, logoUrl, faviconUrl }: SettingsTabsProp
           <GeneralSettings initialSettings={settings} />
         )}
         {activeTab === 'images' && (
-          <ImageSettings initialLogoUrl={logoUrl} initialFaviconUrl={faviconUrl} />
+          <ImageSettings initialLogoUrl={logoUrl} initialFaviconUrl={faviconUrl} initialCreatorAvatarUrl={creatorAvatarUrl} />
         )}
         {activeTab === 'seo' && (
           <SeoSettings initialSettings={settings} />

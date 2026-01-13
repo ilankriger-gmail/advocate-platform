@@ -23,16 +23,18 @@ export default async function AdminConfiguracoesPage() {
     .select('*')
     .order('key');
 
-  // Buscar logo e favicon separadamente para passar como props
+  // Buscar logo, favicon e avatar do criador separadamente para passar como props
   const logoSetting = settings?.find(s => s.key === 'logo_url');
   const faviconSetting = settings?.find(s => s.key === 'favicon_url');
+  const creatorAvatarSetting = settings?.find(s => s.key === 'creator_avatar_url');
 
   const logoUrl = logoSetting?.value || '/logo.png';
   const faviconUrl = faviconSetting?.value || '/favicon.svg';
+  const creatorAvatarUrl = creatorAvatarSetting?.value || '';
 
-  // Filtrar settings para remover logo_url e favicon_url (gerenciados separadamente)
+  // Filtrar settings para remover imagens (gerenciadas separadamente)
   const textSettings = (settings || []).filter(
-    s => s.key !== 'logo_url' && s.key !== 'favicon_url'
+    s => s.key !== 'logo_url' && s.key !== 'favicon_url' && s.key !== 'creator_avatar_url'
   ) as SiteSetting[];
 
   if (error) {
@@ -60,6 +62,7 @@ export default async function AdminConfiguracoesPage() {
         settings={textSettings}
         logoUrl={logoUrl}
         faviconUrl={faviconUrl}
+        creatorAvatarUrl={creatorAvatarUrl}
       />
     </div>
   );

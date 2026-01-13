@@ -558,6 +558,151 @@ export async function updateAutoApprovalSettings(
 }
 
 /**
+ * Upload de imagem do criador (avatar que aparece nas landing pages)
+ */
+export async function uploadCreatorAvatar(formData: FormData): Promise<{
+  success: boolean;
+  error: string | null;
+  url?: string;
+}> {
+  const supabase = await createClient();
+
+  // Verificar se o usuário é admin/creator
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, error: 'Usuário não autenticado' };
+  }
+
+  const { data: profile } = await supabase
+    .from('users')
+    .select('is_creator')
+    .eq('id', user.id)
+    .single();
+
+  if (!profile?.is_creator) {
+    return { success: false, error: 'Acesso negado' };
+  }
+
+  const file = formData.get('file') as File;
+
+  if (!file) {
+    return { success: false, error: 'Nenhum arquivo enviado' };
+  }
+
+  // Validar tipo de arquivo usando magic bytes
+  const validation = await validateFileMagicBytes(file, ['png', 'jpeg', 'webp']);
+  if (!validation.valid) {
+    const fileName = file.name.length > 30
+      ? `${file.name.substring(0, 27)}...`
+      : file.name;
+
+    let errorMessage: string;
+
+    if (validation.error?.includes('não reconhecido') || validation.error?.includes('inválido')) {
+      errorMessage = `"${fileName}": Tipo de arquivo não suportado. Use apenas: PNG, JPEG ou WebP.`;
+    } else if (validation.error?.includes('muito pequeno')) {
+      errorMessage = `"${fileName}": Arquivo corrompido ou muito pequeno para ser uma imagem válida.`;
+    } else {
+      errorMessage = `"${fileName}": ${validation.error || 'Arquivo inválido'}. Formatos aceitos: PNG, JPEG e WebP.`;
+    }
+
+    return { success: false, error: errorMessage };
+  }
+
+  // Validar tamanho (max 2MB)
+  if (file.size > 2 * 1024 * 1024) {
+    const fileName = file.name.length > 30
+      ? `${file.name.substring(0, 27)}...`
+      : file.name;
+    return { success: false, error: `"${fileName}": Arquivo muito grande. Máximo 2MB.` };
+  }
+
+  // Upload para o storage
+  const fileExt = file.name.split('.').pop();
+  const fileName = `creator-avatar-${Date.now()}.${fileExt}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from('site-assets')
+    .upload(fileName, file, {
+      contentType: file.type,
+      upsert: true,
+    });
+
+  if (uploadError) {
+    settingsLogger.error('Erro no upload da imagem do criador', { error: sanitizeError(uploadError) });
+    return { success: false, error: 'Erro ao fazer upload da imagem' };
+  }
+
+  // Obter URL pública
+  const { data: publicUrl } = supabase.storage
+    .from('site-assets')
+    .getPublicUrl(fileName);
+
+  const avatarUrl = publicUrl.publicUrl;
+
+  // Salvar URL na configuração
+  const { error: updateError } = await supabase
+    .from('site_settings')
+    .upsert({
+      key: 'creator_avatar_url',
+      value: avatarUrl,
+      label: 'Imagem do Criador',
+      description: 'Imagem de perfil do criador que aparece nas landing pages',
+      field_type: 'text',
+    }, { onConflict: 'key' });
+
+  if (updateError) {
+    settingsLogger.error('Erro ao salvar URL da imagem do criador', { error: sanitizeError(updateError) });
+    return { success: false, error: 'Erro ao salvar configuração' };
+  }
+
+  // Revalidar
+  revalidatePath('/', 'layout');
+  revalidatePath('/lp', 'layout');
+  revalidatePath('/admin/configuracoes');
+
+  return { success: true, error: null, url: avatarUrl };
+}
+
+/**
+ * Resetar imagem do criador para o padrão (vazio)
+ */
+export async function resetCreatorAvatar(): Promise<{
+  success: boolean;
+  error: string | null;
+}> {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { success: false, error: 'Usuário não autenticado' };
+  }
+
+  const { data: profile } = await supabase
+    .from('users')
+    .select('is_creator')
+    .eq('id', user.id)
+    .single();
+
+  if (!profile?.is_creator) {
+    return { success: false, error: 'Acesso negado' };
+  }
+
+  // Remover configuração (volta ao padrão vazio)
+  await supabase
+    .from('site_settings')
+    .delete()
+    .eq('key', 'creator_avatar_url');
+
+  revalidatePath('/', 'layout');
+  revalidatePath('/lp', 'layout');
+  revalidatePath('/admin/configuracoes');
+
+  return { success: true, error: null };
+}
+
+/**
  * Resetar uma configuração para o valor padrão
  */
 export async function resetSiteSetting(key: SiteSettingKey): Promise<{

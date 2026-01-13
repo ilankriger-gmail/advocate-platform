@@ -4,21 +4,23 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Card } from '@/components/ui';
-import { uploadLogo, resetLogo, uploadFavicon, resetFavicon } from '@/actions/settings';
+import { uploadLogo, resetLogo, uploadFavicon, resetFavicon, uploadCreatorAvatar, resetCreatorAvatar } from '@/actions/settings';
 
 interface ImageSettingsProps {
   initialLogoUrl: string;
   initialFaviconUrl: string;
+  initialCreatorAvatarUrl: string;
 }
 
 /**
- * Componente para upload de logo e favicon
+ * Componente para upload de logo, favicon e imagem do criador
  */
-export function ImageSettings({ initialLogoUrl, initialFaviconUrl }: ImageSettingsProps) {
+export function ImageSettings({ initialLogoUrl, initialFaviconUrl, initialCreatorAvatarUrl }: ImageSettingsProps) {
   return (
     <div className="space-y-6">
       <LogoUploader initialUrl={initialLogoUrl} />
       <FaviconUploader initialUrl={initialFaviconUrl} />
+      <CreatorAvatarUploader initialUrl={initialCreatorAvatarUrl} />
     </div>
   );
 }
@@ -355,6 +357,163 @@ function ResetIcon() {
   return (
     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+    </svg>
+  );
+}
+
+// ============ Creator Avatar Uploader ============
+function CreatorAvatarUploader({ initialUrl }: { initialUrl: string }) {
+  const router = useRouter();
+  const [currentAvatar, setCurrentAvatar] = useState(initialUrl);
+  const [uploading, setUploading] = useState(false);
+  const [resetting, setResetting] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setMessage(null);
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const result = await uploadCreatorAvatar(formData);
+
+    if (result.success && result.url) {
+      setCurrentAvatar(result.url);
+      setMessage({ type: 'success', text: 'Imagem atualizada com sucesso!' });
+      router.refresh();
+    } else {
+      setMessage({ type: 'error', text: result.error || 'Erro ao fazer upload' });
+    }
+
+    setUploading(false);
+    if (e.target) {
+      e.target.value = '';
+    }
+  };
+
+  const handleReset = async () => {
+    setResetting(true);
+    setMessage(null);
+
+    const result = await resetCreatorAvatar();
+
+    if (result.success) {
+      setCurrentAvatar('');
+      setMessage({ type: 'success', text: 'Imagem removida!' });
+      router.refresh();
+    } else {
+      setMessage({ type: 'error', text: result.error || 'Erro ao remover imagem' });
+    }
+
+    setResetting(false);
+  };
+
+  const hasAvatar = currentAvatar && currentAvatar.length > 0;
+
+  return (
+    <Card className="p-6">
+      <h2 className="text-lg font-semibold text-gray-900 mb-4">
+        Imagem do Criador
+      </h2>
+      <p className="text-sm text-gray-500 mb-4">
+        A foto de perfil do criador que aparece nas landing pages. Aceita PNG, JPG ou WebP (max 2MB). Recomendado: imagem quadrada.
+      </p>
+
+      {message && (
+        <div className={`mb-4 p-3 rounded-lg ${
+          message.type === 'success'
+            ? 'bg-green-50 text-green-700 border border-green-200'
+            : 'bg-red-50 text-red-700 border border-red-200'
+        }`}>
+          {message.text}
+        </div>
+      )}
+
+      <div className="flex items-center gap-6">
+        {/* Preview do avatar atual */}
+        <div className="flex flex-col items-center gap-2">
+          <div className="w-24 h-24 border-2 border-dashed border-gray-300 rounded-full flex items-center justify-center bg-gray-50 overflow-hidden">
+            {hasAvatar ? (
+              <img
+                src={currentAvatar}
+                alt="Avatar do criador"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="text-4xl text-gray-400">👤</div>
+            )}
+          </div>
+          <span className="text-xs text-gray-500">
+            {hasAvatar ? 'Personalizada' : 'Sem imagem'}
+          </span>
+        </div>
+
+        {/* Botoes de acao */}
+        <div className="flex flex-col gap-2">
+          <label className="cursor-pointer">
+            <input
+              type="file"
+              accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"
+              onChange={handleFileChange}
+              className="hidden"
+              disabled={uploading}
+            />
+            <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              uploading
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-indigo-600 text-white hover:bg-indigo-700 cursor-pointer'
+            }`}>
+              {uploading ? (
+                <>
+                  <LoadingSpinner />
+                  Enviando...
+                </>
+              ) : (
+                <>
+                  <UploadIcon />
+                  {hasAvatar ? 'Trocar imagem' : 'Enviar imagem'}
+                </>
+              )}
+            </span>
+          </label>
+
+          {hasAvatar && (
+            <button
+              onClick={handleReset}
+              disabled={resetting}
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                resetting
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-red-100 text-red-700 hover:bg-red-200'
+              }`}
+            >
+              {resetting ? (
+                <>
+                  <LoadingSpinner />
+                  Removendo...
+                </>
+              ) : (
+                <>
+                  <TrashIcon />
+                  Remover imagem
+                </>
+              )}
+            </button>
+          )}
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+function TrashIcon() {
+  return (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
     </svg>
   );
 }
