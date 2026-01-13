@@ -147,17 +147,18 @@ export async function generateChallengeThumbnail(
     const prompt = buildThumbnailPrompt(input);
     console.log('[AI Thumbnail] Prompt criado, chamando DALL-E 3...');
 
-    // 3. Chamar DALL-E 3 para gerar imagem (com timeout de 90s)
+    // 3. Chamar DALL-E 3 para gerar imagem quadrada (com timeout de 60s)
+    // Usa quality 'standard' para thumbnails menores e geração mais rápida
     const response = await withTimeout(
       client.images.generate({
         model: 'dall-e-3',
         prompt,
         n: 1,
-        size: '1024x1024',
-        quality: 'hd',
-        style: 'natural',
+        size: '1024x1024', // Quadrado para thumbnail
+        quality: 'standard', // Standard para thumbnails (mais rápido e menor)
+        style: 'vivid', // Vivid para cores mais vibrantes em thumbnails
       }),
-      90000,
+      60000,
       'Geração de imagem DALL-E'
     );
 
@@ -236,83 +237,119 @@ export async function generateChallengeThumbnail(
 
 /**
  * Constrói o prompt para DALL-E baseado nos dados do desafio
- * Gera imagens REALISTAS no estilo de fotografia profissional
+ * Gera imagens REALISTAS inspiradas no título e descrição
  */
 function buildThumbnailPrompt(input: ChallengeThumbnailInput): string {
-  // Mapear tipo para cena realista
-  const themeByType: Record<string, string> = {
-    fisico: 'Athletic person performing exercise with perfect form. Professional fitness photography in modern gym or outdoor setting.',
-    engajamento: 'Person happily using smartphone, social media engagement moment. Lifestyle photography with warm natural lighting.',
-    participe: 'Exciting prize presentation scene with luxury gift boxes, golden confetti, celebration atmosphere. Product photography style.',
+  // Extrair palavras-chave do título e descrição para contextualizar a imagem
+  const titleLower = input.title.toLowerCase();
+  const descLower = (input.description || '').toLowerCase();
+  const combinedText = `${titleLower} ${descLower}`;
+
+  // Detectar exercícios específicos no texto
+  let specificExercise = '';
+  const exerciseKeywords: Record<string, string> = {
+    'flexão': 'person doing push-ups on the ground, athletic form',
+    'flexões': 'person doing push-ups on the ground, athletic form',
+    'flexoes': 'person doing push-ups on the ground, athletic form',
+    'push-up': 'person doing push-ups on the ground, athletic form',
+    'pushup': 'person doing push-ups on the ground, athletic form',
+    'abdominal': 'person doing crunches or sit-ups, core workout',
+    'abdominais': 'person doing crunches or sit-ups, core workout',
+    'agachamento': 'person doing deep squat, leg exercise',
+    'agachamentos': 'person doing deep squat, leg exercise',
+    'squat': 'person doing deep squat, leg exercise',
+    'prancha': 'person holding plank position, core stability',
+    'plank': 'person holding plank position, core stability',
+    'burpee': 'person doing explosive burpee jump, full body exercise',
+    'burpees': 'person doing explosive burpee jump, full body exercise',
+    'corrida': 'athletic runner in motion outdoors, running',
+    'correr': 'athletic runner in motion outdoors, running',
+    'running': 'athletic runner in motion outdoors, running',
+    'pular': 'person jumping rope or doing jump exercise',
+    'pulo': 'person jumping rope or doing jump exercise',
+    'jump': 'person jumping rope or doing jump exercise',
+    'bicicleta': 'cyclist riding bike, cycling workout',
+    'bike': 'cyclist riding bike, cycling workout',
+    'yoga': 'person in yoga pose, peaceful fitness moment',
+    'alongamento': 'person stretching, flexibility exercise',
+    'stretch': 'person stretching, flexibility exercise',
+    'levantamento': 'person lifting weights, strength training',
+    'peso': 'person lifting dumbbells, weight training',
+    'haltere': 'person lifting dumbbells, weight training',
+    'barra': 'person doing pull-ups or barbell exercise',
+    'pull-up': 'person doing pull-ups on bar',
+    'polichinelo': 'person doing jumping jacks, cardio exercise',
+    'jumping jack': 'person doing jumping jacks, cardio exercise',
   };
 
-  // Mapear ícones para descrições de cenas realistas
-  const iconHints: Record<string, string> = {
-    '💪': 'athletic person showing strong arm muscles, fitness model flexing bicep',
-    '🏋️': 'person lifting heavy barbell in gym, professional weightlifting form',
-    '🏃': 'athletic runner in motion outdoors, dynamic running photography',
-    '🚴': 'cyclist riding bike on scenic road, cycling action shot',
-    '🧘': 'person in peaceful yoga pose, serene meditation moment',
-    '🤸': 'flexible athlete doing gymnastic move, acrobatic pose',
-    '⚡': 'explosive workout moment, high intensity training action',
-    '🔥': 'intense workout with sweat, athlete pushing limits',
-    '🎁': 'beautiful wrapped gift box being revealed, luxury present',
-    '🎯': 'achievement moment, person celebrating reaching goal',
-    '⭐': 'winner moment, person celebrating success',
-    '🏆': 'champion holding golden trophy, victory celebration',
-    '❤️': 'person making heart gesture with hands, showing love',
-    '💬': 'person engaged happily with phone, social conversation',
-    '📸': 'content creator taking photo, smartphone photography moment',
-  };
-
-  const iconHint = iconHints[input.icon] || `realistic scene of ${input.icon}`;
-  const theme = themeByType[input.type] || themeByType.fisico;
-
-  // Contexto específico do exercício
-  let exerciseContext = '';
-  if (input.type === 'fisico' && input.goal_type) {
-    if (input.goal_type === 'repetitions') {
-      exerciseContext = 'Capture the dynamic moment of exercise repetition, showing effort and determination.';
-    } else if (input.goal_type === 'time') {
-      exerciseContext = 'Show someone holding a challenging position with focus and endurance.';
+  // Procurar exercício específico no texto
+  for (const [keyword, description] of Object.entries(exerciseKeywords)) {
+    if (combinedText.includes(keyword)) {
+      specificExercise = description;
+      break;
     }
   }
 
-  if (input.type === 'participe') {
-    exerciseContext = 'Create an exciting atmosphere of winning and prizes, luxurious and aspirational.';
+  // Detectar contexto do local
+  let locationContext = 'modern gym or outdoor fitness area';
+  if (combinedText.includes('casa') || combinedText.includes('home')) {
+    locationContext = 'home workout space, living room';
+  } else if (combinedText.includes('ar livre') || combinedText.includes('parque') || combinedText.includes('outdoor')) {
+    locationContext = 'outdoor park or nature setting';
+  } else if (combinedText.includes('praia') || combinedText.includes('beach')) {
+    locationContext = 'beach fitness setting';
   }
 
-  return `Create a PHOTOREALISTIC, high-quality image for a fitness challenge app.
+  // Contexto baseado no tipo
+  const themeByType: Record<string, string> = {
+    fisico: specificExercise || 'Athletic person performing exercise with perfect form',
+    engajamento: 'Person happily using smartphone, social media engagement moment',
+    participe: 'Exciting prize presentation scene with gift boxes, celebration atmosphere',
+  };
 
-PHOTOGRAPHY STYLE:
-- Professional stock photography quality
-- Cinematic lighting with dramatic shadows and highlights
-- Sharp focus, high resolution details
-- Modern, aspirational aesthetic
-- Real photograph look, NOT illustration or cartoon
+  // Meta do desafio para contexto
+  let goalContext = '';
+  if (input.type === 'fisico' && input.goal_value) {
+    if (input.goal_type === 'repetitions') {
+      goalContext = `Challenge involves ${input.goal_value} repetitions - show intense workout moment`;
+    } else if (input.goal_type === 'time') {
+      goalContext = `Challenge involves holding position for ${input.goal_value} seconds - show endurance and focus`;
+    }
+  }
 
-SCENE:
+  const theme = themeByType[input.type] || themeByType.fisico;
+
+  return `Create a SQUARE thumbnail image for a fitness challenge.
+
+CHALLENGE CONTEXT:
+Title: "${input.title}"
+Description: "${input.description || 'Fitness challenge'}"
+${goalContext}
+
+MAIN SUBJECT:
 ${theme}
 
-SUBJECT:
-${iconHint}
+LOCATION:
+${locationContext}
 
-${exerciseContext}
+STYLE REQUIREMENTS:
+- Professional fitness photography
+- Square composition optimized for thumbnail/icon use
+- Bold, clear subject that reads well at small sizes
+- Dramatic lighting (golden hour or studio)
+- Clean background, no clutter
+- High contrast for visibility
+- Person shown from back, side, or partial view (no direct face)
 
-TECHNICAL REQUIREMENTS:
-- Dramatic, motivational lighting (golden hour or professional studio)
-- Shallow depth of field for cinematic look
-- Clean, non-distracting background
-- Person shown from back, side, or partial view (avoid direct face)
-
-MOOD:
-Inspiring, powerful, achievable, motivational
-
-CHALLENGE TITLE: "${input.title}"
+IMAGE CHARACTERISTICS:
+- Photorealistic, like a real photograph
+- Vibrant, energetic colors
+- Sharp focus on main subject
+- Simple composition that works as small icon
 
 CRITICAL RULES:
-- NO text, words, letters, or watermarks
-- Must look like a real photograph
-- Professional sports/fitness photography style
-- Make viewers want to participate in this challenge`;
+- NO text, words, letters, numbers, or watermarks
+- NO logos or brand elements
+- Must be inspiring and motivational
+- Image should clearly represent: ${input.title}`;
 }

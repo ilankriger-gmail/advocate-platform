@@ -98,7 +98,8 @@ export function useToast() {
 
     if (duration > 0) {
       setTimeout(() => {
-        removeToast(id);
+        // Usar setToasts diretamente para evitar stale closure com removeToast
+        setToasts((prev) => prev.filter((t) => t.id !== id));
       }, duration);
     }
 
