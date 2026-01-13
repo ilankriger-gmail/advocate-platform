@@ -47,6 +47,7 @@ export default async function AdminDashboardPage() {
     { count: totalLeads },
     { count: analyzedLeads },
     { count: totalStories },
+    { count: totalComments },
   ] = await Promise.all([
     supabase.from('posts').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
     supabase.from('challenges').select('*', { count: 'exact', head: true }).eq('is_active', true),
@@ -60,6 +61,7 @@ export default async function AdminDashboardPage() {
     supabase.from('nps_leads').select('*', { count: 'exact', head: true }),
     supabase.from('nps_leads').select('*', { count: 'exact', head: true }).not('ai_score', 'is', null),
     supabase.from('stories').select('*', { count: 'exact', head: true }),
+    supabase.from('post_comments').select('*', { count: 'exact', head: true }).eq('is_deleted', false),
   ]);
 
   const stats = [
@@ -78,6 +80,14 @@ export default async function AdminDashboardPage() {
       href: '/admin/stories',
       color: 'border-l-pink-500',
       description: 'Stories dos criadores',
+    },
+    {
+      title: 'Comentários',
+      value: totalComments || 0,
+      icon: '💬',
+      href: '/admin/comentarios',
+      color: 'border-l-blue-500',
+      description: 'Comentários ativos',
     },
     {
       title: 'Desafios Ativos',
@@ -185,6 +195,13 @@ export default async function AdminDashboardPage() {
           >
             <span className="text-xl sm:text-2xl">📱</span>
             <span className="text-xs sm:text-sm text-pink-700 font-medium text-center">Ver Stories</span>
+          </Link>
+          <Link
+            href="/admin/comentarios"
+            className="flex flex-col items-center justify-center gap-1.5 sm:gap-2 p-3 sm:p-4 min-h-[80px] bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+          >
+            <span className="text-xl sm:text-2xl">💬</span>
+            <span className="text-xs sm:text-sm text-blue-700 font-medium text-center">Comentários</span>
           </Link>
           <Link
             href="/admin/premios"
