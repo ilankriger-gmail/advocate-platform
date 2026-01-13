@@ -3,14 +3,13 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Card, Button, Input, Textarea } from '@/components/ui';
-import { updateChallenge, regenerateChallengeThumbnail, getChallengeForEdit, getChallengePrizes, saveChallengePrizes } from '@/actions/challenges-admin';
+import { updateChallenge, getChallengeForEdit, regenerateChallengeThumbnail } from '@/actions/challenges-admin';
 import { AIDescriptionGenerator } from '@/components/admin/AIDescriptionGenerator';
 import { YouTubeVideoPicker, SelectedYouTubeVideo } from '@/components/youtube/YouTubeVideoPicker';
-import { PrizeSection } from '@/components/admin/challenges';
-import type { PrizeInput } from '@/lib/supabase/types';
 
-type ChallengeType = 'fisico' | 'engajamento' | 'participe';
+type ChallengeType = 'fisico' | 'engajamento' | 'participe' | 'atos_amor';
 type GoalType = 'repetitions' | 'time';
+type RewardType = 'coins' | 'money';
 
 export default function EditarDesafioPage() {
   const router = useRouter();
@@ -23,20 +22,20 @@ export default function EditarDesafioPage() {
 
   const [selectedIconCategory, setSelectedIconCategory] = useState('Fitness');
   const [selectedVideo, setSelectedVideo] = useState<SelectedYouTubeVideo | null>(null);
-  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
+  const [thumbnailUrl, setThumbnailUrl] = useState<string>('');
+  const [thumbnailMessage, setThumbnailMessage] = useState<string>('');
   const [isGeneratingThumbnail, setIsGeneratingThumbnail] = useState(false);
-  const [thumbnailMessage, setThumbnailMessage] = useState<string | null>(null);
-  const [prizes, setPrizes] = useState<PrizeInput[]>([]);
 
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     type: 'fisico' as ChallengeType,
     icon: '💪',
+    reward_type: 'coins' as RewardType,
     coins_reward: 10,
-    instagram_embed_url: '',
     prize_amount: '',
     num_winners: '',
+    instagram_embed_url: '',
     goal_type: 'repetitions' as GoalType,
     goal_value: '',
     record_video_url: '',
@@ -71,16 +70,21 @@ export default function EditarDesafioPage() {
 
         const challenge = result.data;
 
+        // Determinar tipo de recompensa baseado nos dados existentes
+        const hasMoneyReward = challenge.prize_amount && challenge.prize_amount > 0;
+        const rewardType: RewardType = hasMoneyReward ? 'money' : 'coins';
+
         // Preencher formulário com dados existentes
         setFormData({
           title: challenge.title || '',
           description: challenge.description || '',
           type: challenge.type as ChallengeType,
           icon: challenge.icon || '💪',
+          reward_type: rewardType,
           coins_reward: challenge.coins_reward || 10,
-          instagram_embed_url: challenge.instagram_embed_url || '',
           prize_amount: challenge.prize_amount ? String(challenge.prize_amount) : '',
           num_winners: challenge.num_winners ? String(challenge.num_winners) : '',
+          instagram_embed_url: challenge.instagram_embed_url || '',
           goal_type: (challenge.goal_type as GoalType) || 'repetitions',
           goal_value: challenge.goal_value ? String(challenge.goal_value) : '',
           record_video_url: challenge.record_video_url || '',
@@ -104,22 +108,7 @@ export default function EditarDesafioPage() {
         }
 
         // Carregar thumbnail se existir
-        if (challenge.thumbnail_url) {
-          setThumbnailUrl(challenge.thumbnail_url);
-        }
-
-        // Carregar prêmios existentes
-        const prizesResult = await getChallengePrizes(challengeId);
-        if (prizesResult.data && isMounted) {
-          setPrizes(prizesResult.data.map(p => ({
-            type: p.type,
-            name: p.name,
-            description: p.description || undefined,
-            value: p.value || undefined,
-            quantity: p.quantity,
-            image_url: p.image_url || undefined,
-          })));
-        }
+        setThumbnailUrl(challenge.thumbnail_url || '');
 
         setIsLoadingData(false);
       } catch (err) {
@@ -147,10 +136,12 @@ export default function EditarDesafioPage() {
       description: formData.description || null,
       type: formData.type,
       icon: formData.icon,
-      coins_reward: formData.coins_reward,
+      // Se reward_type é moedas, usa coins_reward; se é dinheiro, coins = 0
+      coins_reward: formData.reward_type === 'coins' ? formData.coins_reward : 0,
       instagram_embed_url: formData.instagram_embed_url || null,
-      prize_amount: formData.prize_amount ? parseFloat(formData.prize_amount) : null,
-      num_winners: formData.num_winners ? parseInt(formData.num_winners) : null,
+      // Se reward_type é dinheiro, usa prize_amount
+      prize_amount: formData.reward_type === 'money' && formData.prize_amount ? parseFloat(formData.prize_amount) : null,
+      num_winners: formData.reward_type === 'money' && formData.num_winners ? parseInt(formData.num_winners) : null,
       goal_type: formData.type === 'fisico' ? formData.goal_type : null,
       goal_value: formData.goal_value ? parseInt(formData.goal_value) : null,
       record_video_url: formData.record_video_url || null,
@@ -166,46 +157,27 @@ export default function EditarDesafioPage() {
       return;
     }
 
-    // Salvar prêmios
-    const prizesResult = await saveChallengePrizes(challengeId, prizes);
-    if (prizesResult.error) {
-      console.error('Erro ao salvar prêmios:', prizesResult.error);
-      // Não bloquear a atualização do desafio por erro nos prêmios
-    }
-
     router.push('/admin/desafios');
     router.refresh();
   };
 
   const handleGenerateThumbnail = async () => {
+    if (!formData.title) return;
+
     setIsGeneratingThumbnail(true);
-    setThumbnailMessage('Gerando imagem com IA... isso pode levar até 60 segundos.');
+    setThumbnailMessage('Gerando thumbnail com IA...');
 
     try {
       const result = await regenerateChallengeThumbnail(challengeId);
-
       if (result.error) {
         setThumbnailMessage(`Erro: ${result.error}`);
-        setIsGeneratingThumbnail(false);
-        return;
-      }
-
-      // Atualizar thumbnail na interface
-      if (result.data?.thumbnail_url) {
+      } else if (result.data?.thumbnail_url) {
         setThumbnailUrl(result.data.thumbnail_url);
         setThumbnailMessage('Thumbnail gerada com sucesso!');
-
-        // Atualizar emoji se foi gerado
-        if (result.data.icon) {
-          setFormData(prev => ({ ...prev, icon: result.data.icon }));
-        }
-      } else {
-        setThumbnailMessage('Erro: Nenhuma imagem foi retornada');
       }
     } catch (err) {
-      setThumbnailMessage(`Erro inesperado: ${err instanceof Error ? err.message : 'Tente novamente'}`);
+      setThumbnailMessage('Erro ao gerar thumbnail');
     }
-
     setIsGeneratingThumbnail(false);
   };
 
@@ -359,18 +331,94 @@ export default function EditarDesafioPage() {
             />
           </div>
 
+          {/* Tipo de Recompensa */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Recompensa em Coracoes *
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Tipo de Recompensa *
             </label>
-            <Input
-              type="number"
-              value={formData.coins_reward}
-              onChange={(e) => setFormData({ ...formData, coins_reward: parseInt(e.target.value) || 0 })}
-              min="0"
-              required
-            />
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, reward_type: 'coins' })}
+                className={`p-3 rounded-lg border-2 text-center transition-all ${
+                  formData.reward_type === 'coins'
+                    ? 'border-indigo-500 bg-indigo-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <span className="text-xl">❤️</span>
+                <p className="font-medium text-gray-900 mt-1">Moedas</p>
+                <p className="text-xs text-gray-500">Créditos para trocar por prêmios</p>
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, reward_type: 'money' })}
+                className={`p-3 rounded-lg border-2 text-center transition-all ${
+                  formData.reward_type === 'money'
+                    ? 'border-indigo-500 bg-indigo-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <span className="text-xl">💵</span>
+                <p className="font-medium text-gray-900 mt-1">Dinheiro</p>
+                <p className="text-xs text-gray-500">Prêmio em reais via PIX</p>
+              </button>
+            </div>
           </div>
+
+          {/* Campo de Moedas - aparece quando reward_type é coins */}
+          {formData.reward_type === 'coins' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Quantidade de Moedas *
+              </label>
+              <Input
+                type="number"
+                value={formData.coins_reward}
+                onChange={(e) => setFormData({ ...formData, coins_reward: parseInt(e.target.value) || 0 })}
+                min="1"
+                required
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Moedas que o usuário ganha ao completar o desafio
+              </p>
+            </div>
+          )}
+
+          {/* Campos de Dinheiro - aparecem quando reward_type é money */}
+          {formData.reward_type === 'money' && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Valor do Prêmio (R$) *
+                </label>
+                <Input
+                  type="number"
+                  value={formData.prize_amount}
+                  onChange={(e) => setFormData({ ...formData, prize_amount: e.target.value })}
+                  placeholder="100.00"
+                  min="0"
+                  step="0.01"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Número de Ganhadores
+                </label>
+                <Input
+                  type="number"
+                  value={formData.num_winners}
+                  onChange={(e) => setFormData({ ...formData, num_winners: e.target.value })}
+                  placeholder="1"
+                  min="1"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Quantas pessoas podem ganhar este prêmio (padrão: 1)
+                </p>
+              </div>
+            </div>
+          )}
         </Card>
 
         {/* Thumbnail com IA */}
@@ -452,13 +500,6 @@ export default function EditarDesafioPage() {
             </div>
           </Card>
         )}
-
-        {/* Prêmios do Desafio - disponível para todos os tipos */}
-        <PrizeSection
-          prizes={prizes}
-          onChange={setPrizes}
-          disabled={isLoading}
-        />
 
         {/* Campos especificos para Fisico */}
         {formData.type === 'fisico' && (

@@ -3,14 +3,13 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, Button, Input, Textarea } from '@/components/ui';
-import { createChallenge, saveChallengePrizes } from '@/actions/challenges-admin';
+import { createChallenge } from '@/actions/challenges-admin';
 import { AIDescriptionGenerator } from '@/components/admin/AIDescriptionGenerator';
 import { YouTubeVideoPicker, SelectedYouTubeVideo } from '@/components/youtube/YouTubeVideoPicker';
-import { PrizeSection } from '@/components/admin/challenges';
-import type { PrizeInput } from '@/lib/supabase/types';
 
 type ChallengeType = 'fisico' | 'engajamento' | 'participe' | 'atos_amor';
 type GoalType = 'repetitions' | 'time';
+type RewardType = 'coins' | 'money';
 
 export default function NovoChallengeDesafioPage() {
   const router = useRouter();
@@ -19,18 +18,19 @@ export default function NovoChallengeDesafioPage() {
 
   const [selectedIconCategory, setSelectedIconCategory] = useState('Fitness');
   const [selectedVideo, setSelectedVideo] = useState<SelectedYouTubeVideo | null>(null);
-  const [prizes, setPrizes] = useState<PrizeInput[]>([]);
 
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     type: 'fisico' as ChallengeType,
     icon: '💪',
+    // Tipo de recompensa: moedas ou dinheiro
+    reward_type: 'coins' as RewardType,
     coins_reward: 10,
-    // Campos para engajamento/participe
-    instagram_embed_url: '',
     prize_amount: '',
     num_winners: '',
+    // Campos para engajamento/participe
+    instagram_embed_url: '',
     // Campos para fisico
     goal_type: 'repetitions' as GoalType,
     goal_value: '',
@@ -55,10 +55,12 @@ export default function NovoChallengeDesafioPage() {
       description: formData.description || null,
       type: formData.type,
       icon: formData.icon,
-      coins_reward: formData.coins_reward,
+      // Se reward_type é moedas, usa coins_reward; se é dinheiro, coins = 0
+      coins_reward: formData.reward_type === 'coins' ? formData.coins_reward : 0,
       instagram_embed_url: formData.instagram_embed_url || null,
-      prize_amount: formData.prize_amount ? parseFloat(formData.prize_amount) : null,
-      num_winners: formData.num_winners ? parseInt(formData.num_winners) : null,
+      // Se reward_type é dinheiro, usa prize_amount
+      prize_amount: formData.reward_type === 'money' && formData.prize_amount ? parseFloat(formData.prize_amount) : null,
+      num_winners: formData.reward_type === 'money' && formData.num_winners ? parseInt(formData.num_winners) : null,
       goal_type: formData.type === 'fisico' ? formData.goal_type : null,
       goal_value: formData.goal_value ? parseInt(formData.goal_value) : null,
       record_video_url: formData.record_video_url || null,
@@ -73,15 +75,6 @@ export default function NovoChallengeDesafioPage() {
       setError(result.error);
       setIsLoading(false);
       return;
-    }
-
-    // Salvar prêmios se houver
-    if (prizes.length > 0 && result.data?.id) {
-      const prizesResult = await saveChallengePrizes(result.data.id, prizes);
-      if (prizesResult.error) {
-        console.error('Erro ao salvar prêmios:', prizesResult.error);
-        // Não bloquear a criação do desafio por erro nos prêmios
-      }
     }
 
     router.push('/admin/desafios');
@@ -220,18 +213,94 @@ export default function NovoChallengeDesafioPage() {
             />
           </div>
 
+          {/* Tipo de Recompensa */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Recompensa em Coracoes *
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Tipo de Recompensa *
             </label>
-            <Input
-              type="number"
-              value={formData.coins_reward}
-              onChange={(e) => setFormData({ ...formData, coins_reward: parseInt(e.target.value) || 0 })}
-              min="0"
-              required
-            />
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, reward_type: 'coins' })}
+                className={`p-3 rounded-lg border-2 text-center transition-all ${
+                  formData.reward_type === 'coins'
+                    ? 'border-indigo-500 bg-indigo-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <span className="text-xl">❤️</span>
+                <p className="font-medium text-gray-900 mt-1">Moedas</p>
+                <p className="text-xs text-gray-500">Créditos para trocar por prêmios</p>
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, reward_type: 'money' })}
+                className={`p-3 rounded-lg border-2 text-center transition-all ${
+                  formData.reward_type === 'money'
+                    ? 'border-indigo-500 bg-indigo-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <span className="text-xl">💵</span>
+                <p className="font-medium text-gray-900 mt-1">Dinheiro</p>
+                <p className="text-xs text-gray-500">Prêmio em reais via PIX</p>
+              </button>
+            </div>
           </div>
+
+          {/* Campo de Moedas - aparece quando reward_type é coins */}
+          {formData.reward_type === 'coins' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Quantidade de Moedas *
+              </label>
+              <Input
+                type="number"
+                value={formData.coins_reward}
+                onChange={(e) => setFormData({ ...formData, coins_reward: parseInt(e.target.value) || 0 })}
+                min="1"
+                required
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Moedas que o usuário ganha ao completar o desafio
+              </p>
+            </div>
+          )}
+
+          {/* Campos de Dinheiro - aparecem quando reward_type é money */}
+          {formData.reward_type === 'money' && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Valor do Prêmio (R$) *
+                </label>
+                <Input
+                  type="number"
+                  value={formData.prize_amount}
+                  onChange={(e) => setFormData({ ...formData, prize_amount: e.target.value })}
+                  placeholder="100.00"
+                  min="0"
+                  step="0.01"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Número de Ganhadores
+                </label>
+                <Input
+                  type="number"
+                  value={formData.num_winners}
+                  onChange={(e) => setFormData({ ...formData, num_winners: e.target.value })}
+                  placeholder="1"
+                  min="1"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Quantas pessoas podem ganhar este prêmio (padrão: 1)
+                </p>
+              </div>
+            </div>
+          )}
         </Card>
 
         {/* Configurações do Sorteio - apenas para engajamento/participe */}
@@ -252,13 +321,6 @@ export default function NovoChallengeDesafioPage() {
             </div>
           </Card>
         )}
-
-        {/* Prêmios do Desafio - disponível para todos os tipos */}
-        <PrizeSection
-          prizes={prizes}
-          onChange={setPrizes}
-          disabled={isLoading}
-        />
 
         {/* Campos especificos para Atos de Amor */}
         {formData.type === 'atos_amor' && (
