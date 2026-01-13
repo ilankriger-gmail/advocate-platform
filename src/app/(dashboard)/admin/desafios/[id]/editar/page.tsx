@@ -47,8 +47,20 @@ export default function EditarDesafioPage() {
 
   // Carregar dados do desafio
   useEffect(() => {
+    let isMounted = true;
+    let timeoutId: NodeJS.Timeout;
+
     async function loadChallenge() {
       console.log('[EditarDesafio] Iniciando carregamento, id:', challengeId);
+
+      // Timeout de segurança - 10 segundos max
+      timeoutId = setTimeout(() => {
+        console.error('[EditarDesafio] Timeout atingido');
+        if (isMounted) {
+          setError('Timeout ao carregar desafio. Tente novamente.');
+          setIsLoadingData(false);
+        }
+      }, 10000);
 
       try {
         const supabase = createClient();
@@ -60,14 +72,18 @@ export default function EditarDesafioPage() {
           .eq('id', challengeId)
           .single();
 
+        clearTimeout(timeoutId);
         console.log('[EditarDesafio] Query executada:', {
           encontrado: !!challenge,
           erro: queryError?.message
         });
 
+        if (!isMounted) return;
+
         if (queryError || !challenge) {
           console.error('[EditarDesafio] Desafio não encontrado:', queryError);
           setError('Desafio não encontrado');
+          setIsLoadingData(false);
           return;
         }
 
@@ -110,13 +126,14 @@ export default function EditarDesafioPage() {
         }
 
         console.log('[EditarDesafio] Carregamento concluído com sucesso');
-      } catch (err) {
-        console.error('[EditarDesafio] Erro inesperado:', err);
-        setError('Erro ao carregar desafio');
-      } finally {
-        // Garantir que loading é desativado em qualquer caso
-        console.log('[EditarDesafio] Finalizando loading');
         setIsLoadingData(false);
+      } catch (err) {
+        clearTimeout(timeoutId);
+        console.error('[EditarDesafio] Erro inesperado:', err);
+        if (isMounted) {
+          setError('Erro ao carregar desafio');
+          setIsLoadingData(false);
+        }
       }
     }
 
@@ -127,6 +144,11 @@ export default function EditarDesafioPage() {
       setError('ID do desafio não fornecido');
       setIsLoadingData(false);
     }
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timeoutId);
+    };
   }, [challengeId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
