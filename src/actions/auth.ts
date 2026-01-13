@@ -88,6 +88,12 @@ export async function register(formData: FormData): Promise<AuthResponse> {
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
   const confirmPassword = formData.get('confirmPassword') as string;
+  const ageConfirmed = formData.get('ageConfirmed');
+
+  // Validacao de idade (COPPA compliance)
+  if (!ageConfirmed) {
+    return { error: 'Você precisa confirmar que tem 13 anos ou mais' };
+  }
 
   // Validacoes basicas
   if (!name || !email || !password) {

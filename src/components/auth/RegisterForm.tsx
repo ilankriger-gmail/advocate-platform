@@ -228,6 +228,24 @@ export default function RegisterForm({ prefilledEmail }: RegisterFormProps) {
         </div>
       </div>
 
+      {/* Confirmação de idade (13+) */}
+      <div className="flex items-start">
+        <div className="flex items-center h-5">
+          <input
+            id="ageConfirmed"
+            name="ageConfirmed"
+            type="checkbox"
+            required
+            className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+          />
+        </div>
+        <div className="ml-3 text-sm">
+          <label htmlFor="ageConfirmed" className="text-gray-600">
+            Confirmo que tenho 13 anos ou mais
+          </label>
+        </div>
+      </div>
+
       <div>
         <button
           type="submit"

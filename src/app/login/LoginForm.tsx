@@ -73,6 +73,7 @@ export default function LoginForm({ siteName, subtitle, logoUrl = '/logo.png' }:
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -123,6 +124,12 @@ export default function LoginForm({ siteName, subtitle, logoUrl = '/logo.png' }:
 
     if (!email || !password || !name) {
       setError('Preencha todos os campos');
+      setIsSigningIn(false);
+      return;
+    }
+
+    if (!ageConfirmed) {
+      setError('Você precisa confirmar que tem 13 anos ou mais');
       setIsSigningIn(false);
       return;
     }
@@ -389,6 +396,23 @@ export default function LoginForm({ siteName, subtitle, logoUrl = '/logo.png' }:
                   required
                 />
               </div>
+              {/* Confirmação de idade (13+) */}
+              <div className="flex items-start">
+                <div className="flex items-center h-5">
+                  <input
+                    id="ageConfirmed"
+                    type="checkbox"
+                    checked={ageConfirmed}
+                    onChange={(e) => setAgeConfirmed(e.target.checked)}
+                    className="h-4 w-4 rounded border-gray-300 text-gray-600 focus:ring-gray-500"
+                  />
+                </div>
+                <div className="ml-3 text-sm">
+                  <label htmlFor="ageConfirmed" className="text-gray-600">
+                    Confirmo que tenho 13 anos ou mais
+                  </label>
+                </div>
+              </div>
               <button
                 type="submit"
                 disabled={isSigningIn}
@@ -407,13 +431,13 @@ export default function LoginForm({ siteName, subtitle, logoUrl = '/logo.png' }:
 
             <div className="mt-4 flex items-center justify-between text-sm">
               <button
-                onClick={() => { setAuthMode('select'); setError(''); setSuccess(''); }}
+                onClick={() => { setAuthMode('select'); setError(''); setSuccess(''); setAgeConfirmed(false); }}
                 className="text-gray-500 hover:text-gray-700"
               >
                 Voltar
               </button>
               <button
-                onClick={() => { setAuthMode('login'); setError(''); setSuccess(''); }}
+                onClick={() => { setAuthMode('login'); setError(''); setSuccess(''); setAgeConfirmed(false); }}
                 className="text-gray-700 font-medium hover:text-gray-900 underline"
               >
                 Já tenho conta
