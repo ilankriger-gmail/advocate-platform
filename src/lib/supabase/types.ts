@@ -367,6 +367,38 @@ export interface ChallengeWinner {
   created_at: string;
 }
 
+/**
+ * Tipos de prêmio disponíveis para desafios
+ */
+export type PrizeType = 'physical' | 'digital' | 'money';
+
+/**
+ * Prêmio de um desafio (físico, digital ou dinheiro)
+ */
+export interface ChallengePrize {
+  id: string;
+  challenge_id: string;
+  type: PrizeType;
+  name: string;
+  description: string | null;
+  value: number | null;
+  quantity: number;
+  image_url: string | null;
+  created_at: string;
+}
+
+/**
+ * Input para criar/editar prêmio (sem id e challenge_id)
+ */
+export interface PrizeInput {
+  type: PrizeType;
+  name: string;
+  description?: string;
+  value?: number;
+  quantity: number;
+  image_url?: string;
+}
+
 export interface ChallengeWithStats extends Challenge {
   participants_count: number;
   user_participation?: ChallengeParticipant | null;

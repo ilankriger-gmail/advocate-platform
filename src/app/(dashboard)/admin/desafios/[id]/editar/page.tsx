@@ -3,9 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Card, Button, Input, Textarea } from '@/components/ui';
-import { updateChallenge, regenerateChallengeThumbnail, getChallengeForEdit } from '@/actions/challenges-admin';
+import { updateChallenge, regenerateChallengeThumbnail, getChallengeForEdit, getChallengePrizes, saveChallengePrizes } from '@/actions/challenges-admin';
 import { AIDescriptionGenerator } from '@/components/admin/AIDescriptionGenerator';
 import { YouTubeVideoPicker, SelectedYouTubeVideo } from '@/components/youtube/YouTubeVideoPicker';
+import { PrizeSection } from '@/components/admin/challenges';
+import type { PrizeInput } from '@/lib/supabase/types';
 
 type ChallengeType = 'fisico' | 'engajamento' | 'participe';
 type GoalType = 'repetitions' | 'time';
@@ -24,6 +26,7 @@ export default function EditarDesafioPage() {
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const [isGeneratingThumbnail, setIsGeneratingThumbnail] = useState(false);
   const [thumbnailMessage, setThumbnailMessage] = useState<string | null>(null);
+  const [prizes, setPrizes] = useState<PrizeInput[]>([]);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -105,6 +108,19 @@ export default function EditarDesafioPage() {
           setThumbnailUrl(challenge.thumbnail_url);
         }
 
+        // Carregar prêmios existentes
+        const prizesResult = await getChallengePrizes(challengeId);
+        if (prizesResult.data && isMounted) {
+          setPrizes(prizesResult.data.map(p => ({
+            type: p.type,
+            name: p.name,
+            description: p.description || undefined,
+            value: p.value || undefined,
+            quantity: p.quantity,
+            image_url: p.image_url || undefined,
+          })));
+        }
+
         setIsLoadingData(false);
       } catch (err) {
         if (isMounted) {
@@ -150,26 +166,44 @@ export default function EditarDesafioPage() {
       return;
     }
 
+    // Salvar prêmios
+    const prizesResult = await saveChallengePrizes(challengeId, prizes);
+    if (prizesResult.error) {
+      console.error('Erro ao salvar prêmios:', prizesResult.error);
+      // Não bloquear a atualização do desafio por erro nos prêmios
+    }
+
     router.push('/admin/desafios');
     router.refresh();
   };
 
   const handleGenerateThumbnail = async () => {
     setIsGeneratingThumbnail(true);
-    setThumbnailMessage(null);
+    setThumbnailMessage('Gerando imagem com IA... isso pode levar até 60 segundos.');
 
-    const result = await regenerateChallengeThumbnail(challengeId);
+    try {
+      const result = await regenerateChallengeThumbnail(challengeId);
 
-    if (result.error) {
-      setThumbnailMessage(result.error);
-      setIsGeneratingThumbnail(false);
-      return;
-    }
+      if (result.error) {
+        setThumbnailMessage(`Erro: ${result.error}`);
+        setIsGeneratingThumbnail(false);
+        return;
+      }
 
-    // Atualizar thumbnail na interface
-    if (result.data?.thumbnail_url) {
-      setThumbnailUrl(result.data.thumbnail_url);
-      setThumbnailMessage('Thumbnail gerada com sucesso!');
+      // Atualizar thumbnail na interface
+      if (result.data?.thumbnail_url) {
+        setThumbnailUrl(result.data.thumbnail_url);
+        setThumbnailMessage('Thumbnail gerada com sucesso!');
+
+        // Atualizar emoji se foi gerado
+        if (result.data.icon) {
+          setFormData(prev => ({ ...prev, icon: result.data.icon }));
+        }
+      } else {
+        setThumbnailMessage('Erro: Nenhuma imagem foi retornada');
+      }
+    } catch (err) {
+      setThumbnailMessage(`Erro inesperado: ${err instanceof Error ? err.message : 'Tente novamente'}`);
     }
 
     setIsGeneratingThumbnail(false);
@@ -362,6 +396,8 @@ export default function EditarDesafioPage() {
             <div className={`p-3 rounded-lg text-sm ${
               thumbnailMessage.includes('sucesso')
                 ? 'bg-green-50 text-green-700'
+                : thumbnailMessage.includes('Gerando')
+                ? 'bg-blue-50 text-blue-700'
                 : 'bg-red-50 text-red-700'
             }`}>
               {thumbnailMessage}
@@ -398,7 +434,7 @@ export default function EditarDesafioPage() {
           )}
         </Card>
 
-        {/* Campos específicos para Engajamento/Participe */}
+        {/* Configurações do Sorteio - apenas para engajamento/participe */}
         {(formData.type === 'engajamento' || formData.type === 'participe') && (
           <Card className="p-5 space-y-4">
             <h2 className="font-bold text-gray-900">Configurações do Sorteio</h2>
@@ -414,35 +450,15 @@ export default function EditarDesafioPage() {
                 placeholder="https://instagram.com/p/..."
               />
             </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Valor do Prêmio (R$)
-                </label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={formData.prize_amount}
-                  onChange={(e) => setFormData({ ...formData, prize_amount: e.target.value })}
-                  placeholder="100.00"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Número de Ganhadores
-                </label>
-                <Input
-                  type="number"
-                  value={formData.num_winners}
-                  onChange={(e) => setFormData({ ...formData, num_winners: e.target.value })}
-                  placeholder="1"
-                  min="1"
-                />
-              </div>
-            </div>
           </Card>
         )}
+
+        {/* Prêmios do Desafio - disponível para todos os tipos */}
+        <PrizeSection
+          prizes={prizes}
+          onChange={setPrizes}
+          disabled={isLoading}
+        />
 
         {/* Campos especificos para Fisico */}
         {formData.type === 'fisico' && (

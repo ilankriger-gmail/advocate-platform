@@ -755,9 +755,260 @@ export async function regenerateChallengeThumbnail(
     revalidatePath(`/admin/desafios/${challengeId}`);
     revalidatePath(`/admin/desafios/${challengeId}/editar`);
 
-    return { success: true, data: { thumbnail_url: thumbnailResult.url, icon: thumbnailResult.emoji } };
+    // Adicionar timestamp para evitar cache do navegador
+    const thumbnailUrlWithCache = `${thumbnailResult.url}?t=${Date.now()}`;
+
+    return { success: true, data: { thumbnail_url: thumbnailUrlWithCache, icon: thumbnailResult.emoji } };
   } catch (err) {
     challengesAdminLogger.error('Erro inesperado ao regenerar thumbnail', {
+      error: sanitizeError(err)
+    });
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+// ============================================================
+// CRUD de Prêmios de Desafios
+// ============================================================
+
+import type { ChallengePrize, PrizeInput } from '@/lib/supabase/types';
+
+/**
+ * Buscar prêmios de um desafio
+ */
+export async function getChallengePrizes(
+  challengeId: string
+): Promise<ActionResponse<ChallengePrize[]>> {
+  try {
+    const supabase = await createClient();
+
+    const { data: prizes, error } = await supabase
+      .from('challenge_prizes')
+      .select('*')
+      .eq('challenge_id', challengeId)
+      .order('type', { ascending: true })
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      challengesAdminLogger.error('Erro ao buscar prêmios', {
+        challengeId: maskId(challengeId),
+        error: sanitizeError(error)
+      });
+      return { error: 'Erro ao carregar prêmios' };
+    }
+
+    return { data: prizes || [] };
+  } catch (err) {
+    challengesAdminLogger.error('Erro inesperado ao buscar prêmios', {
+      error: sanitizeError(err)
+    });
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+/**
+ * Adicionar prêmio a um desafio
+ */
+export async function addChallengePrize(
+  challengeId: string,
+  prize: PrizeInput
+): Promise<ActionResponse<ChallengePrize>> {
+  try {
+    // Verificar autenticação
+    const userCheck = await getAuthenticatedUser();
+    if (userCheck.error) {
+      return { error: userCheck.error };
+    }
+    const user = userCheck.data!;
+
+    // Verificar se é admin/creator
+    const authCheck = await verifyAdminOrCreator(user.id);
+    if (authCheck.error) {
+      return { error: authCheck.error };
+    }
+
+    const supabase = await createClient();
+
+    // Validar dados
+    if (!prize.name || prize.name.trim() === '') {
+      return { error: 'Nome do prêmio é obrigatório' };
+    }
+
+    if (prize.quantity < 1) {
+      return { error: 'Quantidade deve ser pelo menos 1' };
+    }
+
+    const { data: newPrize, error } = await supabase
+      .from('challenge_prizes')
+      .insert({
+        challenge_id: challengeId,
+        type: prize.type,
+        name: prize.name.trim(),
+        description: prize.description?.trim() || null,
+        value: prize.value || null,
+        quantity: prize.quantity,
+        image_url: prize.image_url || null,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      challengesAdminLogger.error('Erro ao adicionar prêmio', {
+        challengeId: maskId(challengeId),
+        error: sanitizeError(error)
+      });
+      return { error: 'Erro ao adicionar prêmio' };
+    }
+
+    challengesAdminLogger.info('Prêmio adicionado com sucesso', {
+      challengeId: maskId(challengeId),
+      prizeId: maskId(newPrize.id),
+      type: prize.type
+    });
+
+    revalidatePath(`/admin/desafios/${challengeId}`);
+    revalidatePath(`/admin/desafios/${challengeId}/editar`);
+
+    return { data: newPrize };
+  } catch (err) {
+    challengesAdminLogger.error('Erro inesperado ao adicionar prêmio', {
+      error: sanitizeError(err)
+    });
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+/**
+ * Remover prêmio de um desafio
+ */
+export async function removeChallengePrize(
+  prizeId: string
+): Promise<ActionResponse> {
+  try {
+    // Verificar autenticação
+    const userCheck = await getAuthenticatedUser();
+    if (userCheck.error) {
+      return { error: userCheck.error };
+    }
+    const user = userCheck.data!;
+
+    // Verificar se é admin/creator
+    const authCheck = await verifyAdminOrCreator(user.id);
+    if (authCheck.error) {
+      return { error: authCheck.error };
+    }
+
+    const supabase = await createClient();
+
+    // Buscar prêmio para obter o challenge_id (para revalidar cache)
+    const { data: prize } = await supabase
+      .from('challenge_prizes')
+      .select('challenge_id')
+      .eq('id', prizeId)
+      .single();
+
+    const { error } = await supabase
+      .from('challenge_prizes')
+      .delete()
+      .eq('id', prizeId);
+
+    if (error) {
+      challengesAdminLogger.error('Erro ao remover prêmio', {
+        prizeId: maskId(prizeId),
+        error: sanitizeError(error)
+      });
+      return { error: 'Erro ao remover prêmio' };
+    }
+
+    challengesAdminLogger.info('Prêmio removido com sucesso', {
+      prizeId: maskId(prizeId)
+    });
+
+    if (prize?.challenge_id) {
+      revalidatePath(`/admin/desafios/${prize.challenge_id}`);
+      revalidatePath(`/admin/desafios/${prize.challenge_id}/editar`);
+    }
+
+    return { success: true };
+  } catch (err) {
+    challengesAdminLogger.error('Erro inesperado ao remover prêmio', {
+      error: sanitizeError(err)
+    });
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+/**
+ * Salvar todos os prêmios de um desafio (substituir existentes)
+ */
+export async function saveChallengePrizes(
+  challengeId: string,
+  prizes: PrizeInput[]
+): Promise<ActionResponse<ChallengePrize[]>> {
+  try {
+    // Verificar autenticação
+    const userCheck = await getAuthenticatedUser();
+    if (userCheck.error) {
+      return { error: userCheck.error };
+    }
+    const user = userCheck.data!;
+
+    // Verificar se é admin/creator
+    const authCheck = await verifyAdminOrCreator(user.id);
+    if (authCheck.error) {
+      return { error: authCheck.error };
+    }
+
+    const supabase = await createClient();
+
+    // Deletar prêmios existentes
+    await supabase
+      .from('challenge_prizes')
+      .delete()
+      .eq('challenge_id', challengeId);
+
+    // Inserir novos prêmios se houver
+    if (prizes.length === 0) {
+      revalidatePath(`/admin/desafios/${challengeId}`);
+      revalidatePath(`/admin/desafios/${challengeId}/editar`);
+      return { data: [] };
+    }
+
+    const prizesToInsert = prizes.map(prize => ({
+      challenge_id: challengeId,
+      type: prize.type,
+      name: prize.name.trim(),
+      description: prize.description?.trim() || null,
+      value: prize.value || null,
+      quantity: prize.quantity || 1,
+      image_url: prize.image_url || null,
+    }));
+
+    const { data: newPrizes, error } = await supabase
+      .from('challenge_prizes')
+      .insert(prizesToInsert)
+      .select();
+
+    if (error) {
+      challengesAdminLogger.error('Erro ao salvar prêmios', {
+        challengeId: maskId(challengeId),
+        error: sanitizeError(error)
+      });
+      return { error: 'Erro ao salvar prêmios' };
+    }
+
+    challengesAdminLogger.info('Prêmios salvos com sucesso', {
+      challengeId: maskId(challengeId),
+      count: prizes.length
+    });
+
+    revalidatePath(`/admin/desafios/${challengeId}`);
+    revalidatePath(`/admin/desafios/${challengeId}/editar`);
+    revalidatePath('/desafios');
+
+    return { data: newPrizes || [] };
+  } catch (err) {
+    challengesAdminLogger.error('Erro inesperado ao salvar prêmios', {
       error: sanitizeError(err)
     });
     return { error: 'Erro interno do servidor' };

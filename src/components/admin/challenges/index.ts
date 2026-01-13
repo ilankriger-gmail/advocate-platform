@@ -1,0 +1,1 @@
+export { PrizeSection } from './PrizeSection';
