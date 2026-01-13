@@ -276,7 +276,7 @@ export async function createChallenge(data: {
   // Para físico
   goal_type?: 'repetitions' | 'time' | null;
   goal_value?: number | null;
-  record_vídeo_url?: string | null;
+  record_video_url?: string | null;
   hashtag?: string | null;
   profile_to_tag?: string | null;
   // Controle
@@ -325,7 +325,7 @@ export async function createChallenge(data: {
         // Físico
         goal_type: data.goal_type || null,
         goal_value: data.goal_value || null,
-        record_video_url: data.record_vídeo_url || null,
+        record_video_url: data.record_video_url || null,
         hashtag: data.hashtag || null,
         profile_to_tag: data.profile_to_tag || null,
         // Controle
@@ -417,7 +417,7 @@ export async function updateChallenge(
     // Para físico
     goal_type?: 'repetitions' | 'time' | null;
     goal_value?: number | null;
-    record_vídeo_url?: string | null;
+    record_video_url?: string | null;
     hashtag?: string | null;
     profile_to_tag?: string | null;
     // Controle
@@ -459,7 +459,7 @@ export async function updateChallenge(
         // Físico
         goal_type: data.goal_type || null,
         goal_value: data.goal_value || null,
-        record_video_url: data.record_vídeo_url || null,
+        record_video_url: data.record_video_url || null,
         hashtag: data.hashtag || null,
         profile_to_tag: data.profile_to_tag || null,
         // Controle
@@ -608,6 +608,96 @@ export async function markPrizeSent(
     revalidatePath('/admin/desafios');
     return { success: true };
   } catch {
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+/**
+ * Regenerar thumbnail de um desafio existente (admin)
+ */
+export async function regenerateChallengeThumbnail(
+  challengeId: string
+): Promise<ActionResponse> {
+  try {
+    // Verificar autenticação
+    const userCheck = await getAuthenticatedUser();
+    if (userCheck.error) {
+      return userCheck;
+    }
+    const user = userCheck.data!;
+
+    // Verificar se é admin/creator
+    const authCheck = await verifyAdminOrCreator(user.id);
+    if (authCheck.error) {
+      return authCheck;
+    }
+
+    const supabase = await createClient();
+
+    // Buscar dados do desafio
+    const { data: challenge, error: fetchError } = await supabase
+      .from('challenges')
+      .select('*')
+      .eq('id', challengeId)
+      .single();
+
+    if (fetchError || !challenge) {
+      return { error: 'Desafio não encontrado' };
+    }
+
+    challengesAdminLogger.info('Regenerando thumbnail para desafio existente', {
+      challengeId: maskId(challengeId),
+      title: challenge.title
+    });
+
+    // Gerar thumbnail com IA
+    const thumbnailResult = await generateChallengeThumbnail({
+      challengeId: challenge.id,
+      title: challenge.title,
+      type: challenge.type as 'fisico' | 'engajamento' | 'participe',
+      icon: challenge.icon || '🎯',
+      goal_type: challenge.goal_type,
+      goal_value: challenge.goal_value,
+      coins_reward: challenge.coins_reward || 0,
+      prize_amount: challenge.prize_amount,
+    });
+
+    if (!thumbnailResult.success || !thumbnailResult.url) {
+      challengesAdminLogger.error('Falha ao gerar thumbnail', {
+        challengeId: maskId(challengeId),
+        error: thumbnailResult.error
+      });
+      return { error: thumbnailResult.error || 'Erro ao gerar thumbnail' };
+    }
+
+    // Atualizar o desafio com a nova thumbnail
+    const { error: updateError } = await supabase
+      .from('challenges')
+      .update({ thumbnail_url: thumbnailResult.url })
+      .eq('id', challengeId);
+
+    if (updateError) {
+      challengesAdminLogger.error('Erro ao salvar thumbnail', {
+        challengeId: maskId(challengeId),
+        error: sanitizeError(updateError)
+      });
+      return { error: 'Erro ao salvar thumbnail' };
+    }
+
+    challengesAdminLogger.info('Thumbnail regenerada com sucesso', {
+      challengeId: maskId(challengeId)
+    });
+
+    revalidatePath('/desafios');
+    revalidatePath('/admin/desafios');
+    revalidatePath(`/admin/desafios/${challengeId}`);
+    revalidatePath(`/admin/desafios/${challengeId}/editar`);
+
+    return { success: true, data: { thumbnail_url: thumbnailResult.url } };
+  } catch (err) {
+    challengesAdminLogger.error('Erro inesperado ao regenerar thumbnail', {
+      error: sanitizeError(err)
+    });
     return { error: 'Erro interno do servidor' };
   }
 }

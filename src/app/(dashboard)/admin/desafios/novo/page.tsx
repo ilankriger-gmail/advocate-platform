@@ -31,7 +31,7 @@ export default function NovoChallengeDesafioPage() {
     // Campos para fisico
     goal_type: 'repetitions' as GoalType,
     goal_value: '',
-    record_vídeo_url: '',
+    record_video_url: '',
     hashtag: '',
     profile_to_tag: '',
     // Datas
@@ -56,7 +56,7 @@ export default function NovoChallengeDesafioPage() {
       num_winners: formData.num_winners ? parseInt(formData.num_winners) : null,
       goal_type: formData.type === 'fisico' ? formData.goal_type : null,
       goal_value: formData.goal_value ? parseInt(formData.goal_value) : null,
-      record_vídeo_url: formData.record_vídeo_url || null,
+      record_video_url: formData.record_video_url || null,
       hashtag: formData.hashtag || null,
       profile_to_tag: formData.profile_to_tag || null,
       starts_at: formData.starts_at || null,
@@ -299,14 +299,14 @@ export default function NovoChallengeDesafioPage() {
               <div className="flex gap-2">
                 <Input
                   type="url"
-                  value={formData.record_vídeo_url}
-                  onChange={(e) => setFormData({ ...formData, record_vídeo_url: e.target.value })}
+                  value={formData.record_video_url}
+                  onChange={(e) => setFormData({ ...formData, record_video_url: e.target.value })}
                   placeholder="https://youtube.com/..."
                   className="flex-1"
                 />
                 <YouTubeVideoPicker
                   onSelect={(video) => {
-                    setFormData({ ...formData, record_vídeo_url: video.url });
+                    setFormData({ ...formData, record_video_url: video.url });
                     setSelectedVideo(video);
                   }}
                 />

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Card, Button, Input, Textarea } from '@/components/ui';
-import { updateChallenge } from '@/actions/challenges-admin';
+import { updateChallenge, regenerateChallengeThumbnail } from '@/actions/challenges-admin';
 import { AIDescriptionGenerator } from '@/components/admin/AIDescriptionGenerator';
 import { YouTubeVideoPicker, SelectedYouTubeVideo } from '@/components/youtube/YouTubeVideoPicker';
 import { createClient } from '@/lib/supabase/client';
@@ -22,6 +22,9 @@ export default function EditarDesafioPage() {
 
   const [selectedIconCategory, setSelectedIconCategory] = useState('Fitness');
   const [selectedVideo, setSelectedVideo] = useState<SelectedYouTubeVideo | null>(null);
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
+  const [isGeneratingThumbnail, setIsGeneratingThumbnail] = useState(false);
+  const [thumbnailMessage, setThumbnailMessage] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -34,7 +37,7 @@ export default function EditarDesafioPage() {
     num_winners: '',
     goal_type: 'repetitions' as GoalType,
     goal_value: '',
-    record_vídeo_url: '',
+    record_video_url: '',
     hashtag: '',
     profile_to_tag: '',
     starts_at: '',
@@ -70,7 +73,7 @@ export default function EditarDesafioPage() {
         num_winners: challenge.num_winners ? String(challenge.num_winners) : '',
         goal_type: (challenge.goal_type as GoalType) || 'repetitions',
         goal_value: challenge.goal_value ? String(challenge.goal_value) : '',
-        record_vídeo_url: challenge.record_video_url || '',
+        record_video_url: challenge.record_video_url || '',
         hashtag: challenge.hashtag || '',
         profile_to_tag: challenge.profile_to_tag || '',
         starts_at: challenge.starts_at ? challenge.starts_at.slice(0, 16) : '',
@@ -84,10 +87,15 @@ export default function EditarDesafioPage() {
         if (videoId) {
           setSelectedVideo({
             url: challenge.record_video_url,
-            title: 'Video atual',
+            title: 'Vídeo atual',
             thumbnail: `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`,
           });
         }
+      }
+
+      // Carregar thumbnail se existir
+      if (challenge.thumbnail_url) {
+        setThumbnailUrl(challenge.thumbnail_url);
       }
 
       setIsLoadingData(false);
@@ -112,7 +120,7 @@ export default function EditarDesafioPage() {
       num_winners: formData.num_winners ? parseInt(formData.num_winners) : null,
       goal_type: formData.type === 'fisico' ? formData.goal_type : null,
       goal_value: formData.goal_value ? parseInt(formData.goal_value) : null,
-      record_vídeo_url: formData.record_vídeo_url || null,
+      record_video_url: formData.record_video_url || null,
       hashtag: formData.hashtag || null,
       profile_to_tag: formData.profile_to_tag || null,
       starts_at: formData.starts_at || null,
@@ -127,6 +135,27 @@ export default function EditarDesafioPage() {
 
     router.push('/admin/desafios');
     router.refresh();
+  };
+
+  const handleGenerateThumbnail = async () => {
+    setIsGeneratingThumbnail(true);
+    setThumbnailMessage(null);
+
+    const result = await regenerateChallengeThumbnail(challengeId);
+
+    if (result.error) {
+      setThumbnailMessage(result.error);
+      setIsGeneratingThumbnail(false);
+      return;
+    }
+
+    // Atualizar thumbnail na interface
+    if (result.data?.thumbnail_url) {
+      setThumbnailUrl(result.data.thumbnail_url);
+      setThumbnailMessage('Thumbnail gerada com sucesso!');
+    }
+
+    setIsGeneratingThumbnail(false);
   };
 
   const iconCategories: Record<string, string[]> = {
@@ -279,7 +308,66 @@ export default function EditarDesafioPage() {
           </div>
         </Card>
 
-        {/* Campos especificos para Engajamento/Participe */}
+        {/* Thumbnail com IA */}
+        <Card className="p-5 space-y-4">
+          <h2 className="font-bold text-gray-900">Thumbnail do Desafio</h2>
+          <p className="text-sm text-gray-500">
+            Gere uma imagem personalizada para o desafio usando inteligência artificial.
+          </p>
+
+          {/* Preview da thumbnail atual */}
+          {thumbnailUrl && (
+            <div className="relative aspect-video w-full max-w-md rounded-lg overflow-hidden bg-gray-100">
+              <img
+                src={thumbnailUrl}
+                alt="Thumbnail do desafio"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+
+          {/* Mensagem de feedback */}
+          {thumbnailMessage && (
+            <div className={`p-3 rounded-lg text-sm ${
+              thumbnailMessage.includes('sucesso')
+                ? 'bg-green-50 text-green-700'
+                : 'bg-red-50 text-red-700'
+            }`}>
+              {thumbnailMessage}
+            </div>
+          )}
+
+          {/* Botão de gerar */}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleGenerateThumbnail}
+            disabled={isGeneratingThumbnail || !formData.title}
+            className="w-full sm:w-auto"
+          >
+            {isGeneratingThumbnail ? (
+              <span className="flex items-center gap-2">
+                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                Gerando com IA...
+              </span>
+            ) : thumbnailUrl ? (
+              'Regenerar Thumbnail com IA'
+            ) : (
+              'Gerar Thumbnail com IA'
+            )}
+          </Button>
+
+          {!formData.title && (
+            <p className="text-xs text-amber-600">
+              Preencha o título do desafio para gerar a thumbnail.
+            </p>
+          )}
+        </Card>
+
+        {/* Campos específicos para Engajamento/Participe */}
         {(formData.type === 'engajamento' || formData.type === 'participe') && (
           <Card className="p-5 space-y-4">
             <h2 className="font-bold text-gray-900">Configurações do Sorteio</h2>
@@ -361,14 +449,14 @@ export default function EditarDesafioPage() {
               <div className="flex gap-2">
                 <Input
                   type="url"
-                  value={formData.record_vídeo_url}
-                  onChange={(e) => setFormData({ ...formData, record_vídeo_url: e.target.value })}
+                  value={formData.record_video_url}
+                  onChange={(e) => setFormData({ ...formData, record_video_url: e.target.value })}
                   placeholder="https://youtube.com/..."
                   className="flex-1"
                 />
                 <YouTubeVideoPicker
                   onSelect={(video) => {
-                    setFormData({ ...formData, record_vídeo_url: video.url });
+                    setFormData({ ...formData, record_video_url: video.url });
                     setSelectedVideo(video);
                   }}
                 />
