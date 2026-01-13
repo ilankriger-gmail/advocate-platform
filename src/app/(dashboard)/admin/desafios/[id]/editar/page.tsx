@@ -48,70 +48,85 @@ export default function EditarDesafioPage() {
   // Carregar dados do desafio
   useEffect(() => {
     async function loadChallenge() {
-      console.log('[EditarDesafio] Carregando desafio:', challengeId);
+      console.log('[EditarDesafio] Iniciando carregamento, id:', challengeId);
+
       try {
         const supabase = createClient();
+        console.log('[EditarDesafio] Supabase client criado');
+
         const { data: challenge, error: queryError } = await supabase
           .from('challenges')
           .select('*')
           .eq('id', challengeId)
           .single();
 
-        console.log('[EditarDesafio] Resultado:', { challenge: !!challenge, error: queryError });
+        console.log('[EditarDesafio] Query executada:', {
+          encontrado: !!challenge,
+          erro: queryError?.message
+        });
 
         if (queryError || !challenge) {
-          console.error('[EditarDesafio] Erro:', queryError);
+          console.error('[EditarDesafio] Desafio não encontrado:', queryError);
           setError('Desafio não encontrado');
-          setIsLoadingData(false);
           return;
         }
 
-      // Preencher formulário com dados existentes
-      setFormData({
-        title: challenge.title || '',
-        description: challenge.description || '',
-        type: challenge.type as ChallengeType,
-        icon: challenge.icon || '💪',
-        coins_reward: challenge.coins_reward || 10,
-        instagram_embed_url: challenge.instagram_embed_url || '',
-        prize_amount: challenge.prize_amount ? String(challenge.prize_amount) : '',
-        num_winners: challenge.num_winners ? String(challenge.num_winners) : '',
-        goal_type: (challenge.goal_type as GoalType) || 'repetitions',
-        goal_value: challenge.goal_value ? String(challenge.goal_value) : '',
-        record_video_url: challenge.record_video_url || '',
-        hashtag: challenge.hashtag || '',
-        profile_to_tag: challenge.profile_to_tag || '',
-        starts_at: challenge.starts_at ? challenge.starts_at.slice(0, 16) : '',
-        ends_at: challenge.ends_at ? challenge.ends_at.slice(0, 16) : '',
-        noEndDate: !challenge.ends_at,
-      });
+        // Preencher formulário com dados existentes
+        console.log('[EditarDesafio] Preenchendo formulário...');
+        setFormData({
+          title: challenge.title || '',
+          description: challenge.description || '',
+          type: challenge.type as ChallengeType,
+          icon: challenge.icon || '💪',
+          coins_reward: challenge.coins_reward || 10,
+          instagram_embed_url: challenge.instagram_embed_url || '',
+          prize_amount: challenge.prize_amount ? String(challenge.prize_amount) : '',
+          num_winners: challenge.num_winners ? String(challenge.num_winners) : '',
+          goal_type: (challenge.goal_type as GoalType) || 'repetitions',
+          goal_value: challenge.goal_value ? String(challenge.goal_value) : '',
+          record_video_url: challenge.record_video_url || '',
+          hashtag: challenge.hashtag || '',
+          profile_to_tag: challenge.profile_to_tag || '',
+          starts_at: challenge.starts_at ? challenge.starts_at.slice(0, 16) : '',
+          ends_at: challenge.ends_at ? challenge.ends_at.slice(0, 16) : '',
+          noEndDate: !challenge.ends_at,
+        });
 
-      // Se tem video URL, criar preview
-      if (challenge.record_video_url) {
-        const videoId = challenge.record_video_url.match(/[?&]v=([^&]+)/)?.[1];
-        if (videoId) {
-          setSelectedVideo({
-            url: challenge.record_video_url,
-            title: 'Vídeo atual',
-            thumbnail: `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`,
-          });
+        // Se tem video URL, criar preview
+        if (challenge.record_video_url) {
+          const videoId = challenge.record_video_url.match(/[?&]v=([^&]+)/)?.[1];
+          if (videoId) {
+            setSelectedVideo({
+              url: challenge.record_video_url,
+              title: 'Vídeo atual',
+              thumbnail: `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`,
+            });
+          }
         }
-      }
 
-      // Carregar thumbnail se existir
-      if (challenge.thumbnail_url) {
-        setThumbnailUrl(challenge.thumbnail_url);
-      }
+        // Carregar thumbnail se existir
+        if (challenge.thumbnail_url) {
+          setThumbnailUrl(challenge.thumbnail_url);
+        }
 
-      setIsLoadingData(false);
+        console.log('[EditarDesafio] Carregamento concluído com sucesso');
       } catch (err) {
-        console.error('Erro ao carregar desafio:', err);
+        console.error('[EditarDesafio] Erro inesperado:', err);
         setError('Erro ao carregar desafio');
+      } finally {
+        // Garantir que loading é desativado em qualquer caso
+        console.log('[EditarDesafio] Finalizando loading');
         setIsLoadingData(false);
       }
     }
 
-    loadChallenge();
+    if (challengeId) {
+      loadChallenge();
+    } else {
+      console.error('[EditarDesafio] ID do desafio não fornecido');
+      setError('ID do desafio não fornecido');
+      setIsLoadingData(false);
+    }
   }, [challengeId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
