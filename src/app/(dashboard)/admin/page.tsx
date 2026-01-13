@@ -90,6 +90,14 @@ export default async function AdminDashboardPage() {
       description: 'Comentários ativos',
     },
     {
+      title: 'Engajamento',
+      value: 0,
+      icon: '📊',
+      href: '/admin/engajamento',
+      color: 'border-l-purple-500',
+      description: 'Votos, shares, saves',
+    },
+    {
       title: 'Desafios Ativos',
       value: activeChallenges || 0,
       icon: '🎯',
