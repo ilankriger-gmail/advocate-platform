@@ -164,17 +164,57 @@ export default async function EventosPage() {
         </div>
       )}
 
-      {/* Sem eventos */}
+      {/* Sem eventos - Em breve */}
       {(!events || events.length === 0) && (
-        <Card className="p-8 sm:p-12 text-center">
-          <div className="text-5xl sm:text-6xl mb-3 sm:mb-4">📅</div>
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
-            Nenhum evento disponível
-          </h2>
-          <p className="text-sm sm:text-base text-gray-500">
-            Novos eventos serão anunciados em breve!
-          </p>
-        </Card>
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-1">
+          <div className="relative bg-white rounded-xl p-8 sm:p-12">
+            {/* Elementos decorativos */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full blur-3xl opacity-50 -translate-y-1/2 translate-x-1/2" />
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-br from-pink-100 to-purple-100 rounded-full blur-2xl opacity-50 translate-y-1/2 -translate-x-1/2" />
+
+            <div className="relative text-center">
+              {/* Ícone animado */}
+              <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 mb-6">
+                <span className="text-4xl sm:text-5xl animate-bounce">🎉</span>
+              </div>
+
+              {/* Badge "Em Breve" */}
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-sm font-medium mb-4">
+                <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                Em Breve
+              </div>
+
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
+                Eventos Incríveis Chegando!
+              </h2>
+
+              <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                Estamos preparando eventos exclusivos para a comunidade.
+                Lives, encontros, desafios em grupo e muito mais!
+              </p>
+
+              {/* Features dos eventos */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-lg mx-auto">
+                <div className="flex flex-col items-center p-4 rounded-xl bg-gray-50">
+                  <span className="text-2xl mb-2">🎬</span>
+                  <span className="text-sm text-gray-600 font-medium">Lives Exclusivas</span>
+                </div>
+                <div className="flex flex-col items-center p-4 rounded-xl bg-gray-50">
+                  <span className="text-2xl mb-2">🤝</span>
+                  <span className="text-sm text-gray-600 font-medium">Encontros</span>
+                </div>
+                <div className="flex flex-col items-center p-4 rounded-xl bg-gray-50">
+                  <span className="text-2xl mb-2">🏆</span>
+                  <span className="text-sm text-gray-600 font-medium">Competições</span>
+                </div>
+              </div>
+
+              <p className="text-sm text-gray-400 mt-6">
+                Fique ligado! Você será notificado quando novos eventos estiverem disponíveis.
+              </p>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
