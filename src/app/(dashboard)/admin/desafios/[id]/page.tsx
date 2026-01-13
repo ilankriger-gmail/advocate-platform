@@ -61,7 +61,7 @@ export default async function AdminDesafioDetalhesPage({ params }: PageProps) {
   const getTypeBadge = () => {
     switch (challenge.type) {
       case 'fisico':
-        return <Badge className="bg-blue-100 text-blue-700">Fisico</Badge>;
+        return <Badge className="bg-blue-100 text-blue-700">Físico</Badge>;
       case 'engajamento':
         return <Badge className="bg-purple-100 text-purple-700">Engajamento</Badge>;
       case 'participe':
@@ -71,14 +71,29 @@ export default async function AdminDesafioDetalhesPage({ params }: PageProps) {
     }
   };
 
-  const goalLabel = challenge.goal_type === 'time' ? 'segundos' : 'repeticoes';
+  const goalLabel = challenge.goal_type === 'time' ? 'segundos' : 'repetições';
 
   return (
     <div className="space-y-6">
+      {/* Banner com Thumbnail */}
+      {challenge.thumbnail_url && (
+        <div className="relative h-48 md:h-64 -mx-4 md:-mx-6 lg:-mx-8 -mt-6 mb-6 overflow-hidden rounded-b-2xl">
+          <img
+            src={challenge.thumbnail_url}
+            alt={challenge.title}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+          <div className="absolute bottom-4 left-4 md:left-6 lg:left-8">
+            <span className="text-5xl drop-shadow-lg">{challenge.icon}</span>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-start gap-4">
-          <span className="text-4xl">{challenge.icon}</span>
+          {!challenge.thumbnail_url && <span className="text-4xl">{challenge.icon}</span>}
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold text-gray-900">{challenge.title}</h1>

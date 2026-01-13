@@ -125,7 +125,7 @@ export default function EditarDesafioPage() {
       return;
     }
 
-    router.push(`/admin/desafios/${challengeId}`);
+    router.push('/admin/desafios');
     router.refresh();
   };
 

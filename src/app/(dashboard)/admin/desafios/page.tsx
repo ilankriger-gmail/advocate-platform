@@ -170,6 +170,7 @@ interface ChallengeCardProps {
     is_active: boolean;
     coins_reward: number;
     prize_amount?: number | null;
+    thumbnail_url?: string | null;
     totalParticipants: number;
     pendingCount: number;
     approvedCount: number;
@@ -208,13 +209,27 @@ function ChallengeAdminCard({ challenge }: ChallengeCardProps) {
   return (
     <Card className={`overflow-hidden hover:shadow-xl transition-all duration-300 h-full ${!challenge.is_active ? 'opacity-70 grayscale-[30%]' : ''}`}>
       <Link href={`/admin/desafios/${challenge.id}`} className="block">
-        {/* Header com gradiente */}
-        <div className={`${getHeaderGradient()} p-5 text-white relative overflow-hidden`}>
-          {/* Pattern de fundo */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute -right-4 -top-4 w-24 h-24 bg-white rounded-full" />
-            <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-white rounded-full" />
-          </div>
+        {/* Header com thumbnail ou gradiente */}
+        <div className={`${!challenge.thumbnail_url ? getHeaderGradient() : ''} p-5 text-white relative overflow-hidden min-h-[120px]`}>
+          {/* Thumbnail de fundo quando disponível */}
+          {challenge.thumbnail_url && (
+            <>
+              <img
+                src={challenge.thumbnail_url}
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+              {/* Overlay escuro para legibilidade */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-black/20" />
+            </>
+          )}
+          {/* Pattern de fundo (apenas quando não há thumbnail) */}
+          {!challenge.thumbnail_url && (
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute -right-4 -top-4 w-24 h-24 bg-white rounded-full" />
+              <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-white rounded-full" />
+            </div>
+          )}
 
           <div className="relative flex items-center gap-4">
             <div className="w-14 h-14 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center">
@@ -227,7 +242,7 @@ function ChallengeAdminCard({ challenge }: ChallengeCardProps) {
               </div>
               <div className="flex items-center gap-3 mt-1">
                 <span className="text-white/90 text-sm font-medium">
-                  +{challenge.coins_reward} coracoes
+                  +{challenge.coins_reward} corações
                 </span>
                 {challenge.prize_amount && (
                   <span className="text-white/70 text-sm">

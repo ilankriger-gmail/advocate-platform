@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import type { ActionResponse } from './types';
 import { verifyAdminOrCreator, getAuthenticatedUser } from './utils';
 import { logger, maskId, sanitizeError } from '@/lib';
+import { generateChallengeThumbnail } from '@/lib/ai/generate-thumbnail';
 
 // Logger contextualizado para o módulo de desafios admin
 const challengesAdminLogger = logger.withContext('[ChallengesAdmin]');
@@ -345,6 +346,48 @@ export async function createChallenge(data: {
       challengeId: maskId(challenge.id),
       title: challenge.title
     });
+
+    // Gerar thumbnail com IA (não bloqueia resposta em caso de erro)
+    try {
+      challengesAdminLogger.info('Gerando thumbnail com DALL-E...', {
+        challengeId: maskId(challenge.id)
+      });
+
+      const thumbnailResult = await generateChallengeThumbnail({
+        challengeId: challenge.id,
+        title: data.title,
+        type: data.type,
+        icon: data.icon || '🎯',
+        goal_type: data.goal_type,
+        goal_value: data.goal_value,
+        coins_reward: data.coins_reward,
+        prize_amount: data.prize_amount,
+      });
+
+      if (thumbnailResult.success && thumbnailResult.url) {
+        // Atualizar o desafio com a URL da thumbnail
+        await supabase
+          .from('challenges')
+          .update({ thumbnail_url: thumbnailResult.url })
+          .eq('id', challenge.id);
+
+        challengesAdminLogger.info('Thumbnail gerada e salva com sucesso', {
+          challengeId: maskId(challenge.id)
+        });
+      } else {
+        challengesAdminLogger.warn('Falha ao gerar thumbnail (desafio criado sem thumbnail)', {
+          challengeId: maskId(challenge.id),
+          error: thumbnailResult.error
+        });
+      }
+    } catch (thumbnailError) {
+      // Não falhar a criação do desafio se a thumbnail falhar
+      challengesAdminLogger.warn('Erro ao gerar thumbnail (desafio criado sem thumbnail)', {
+        challengeId: maskId(challenge.id),
+        error: sanitizeError(thumbnailError)
+      });
+    }
+
     revalidatePath('/desafios');
     revalidatePath('/admin/desafios');
     return { success: true, data: challenge };

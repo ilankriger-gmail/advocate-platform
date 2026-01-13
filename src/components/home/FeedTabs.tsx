@@ -10,22 +10,17 @@ import type { FeedSortType } from '@/actions/feed';
 import type { PostWithAuthor } from '@/types/post';
 
 interface FeedTabsProps {
-  initialCreatorPosts?: PostWithAuthor[];
   initialCommunityPosts?: PostWithAuthor[];
   initialHelpRequestPosts?: PostWithAuthor[];
 }
 
-export function FeedTabs({ initialCreatorPosts, initialCommunityPosts, initialHelpRequestPosts }: FeedTabsProps) {
-  const [activeTab, setActiveTab] = useState<'novidades' | 'comunidade' | 'ajuda'>('novidades');
+export function FeedTabs({ initialCommunityPosts, initialHelpRequestPosts }: FeedTabsProps) {
+  const [activeTab, setActiveTab] = useState<'comunidade' | 'ajuda'>('comunidade');
   const [sort, setSort] = useState<FeedSortType>('new');
   const queryClient = useQueryClient();
 
   // Realtime para novos posts
-  const feedType = activeTab === 'novidades'
-    ? 'creator'
-    : activeTab === 'comunidade'
-      ? 'community'
-      : 'help_request';
+  const feedType = activeTab === 'comunidade' ? 'community' : 'help_request';
   const { newPostsCount, resetCount } = useRealtimeFeed({
     type: feedType,
     enabled: sort === 'new', // Só mostrar indicador na ordenação "Novos"
@@ -42,7 +37,7 @@ export function FeedTabs({ initialCreatorPosts, initialCommunityPosts, initialHe
   }, [queryClient, feedType, sort, resetCount]);
 
   // Handler para trocar de tab
-  const handleTabChange = (tab: 'novidades' | 'comunidade' | 'ajuda') => {
+  const handleTabChange = (tab: 'comunidade' | 'ajuda') => {
     setActiveTab(tab);
     resetCount(); // Resetar contador ao trocar de tab
   };
@@ -56,16 +51,6 @@ export function FeedTabs({ initialCreatorPosts, initialCommunityPosts, initialHe
       <div className="sticky top-0 bg-white z-10 pb-2">
         {/* Tabs */}
         <div className="flex border-b border-gray-200">
-          <button
-            onClick={() => handleTabChange('novidades')}
-            className={`flex-1 py-3 text-center font-semibold text-sm transition-colors ${
-              activeTab === 'novidades'
-                ? 'text-purple-600 border-b-2 border-purple-600'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            Novidades
-          </button>
           <button
             onClick={() => handleTabChange('comunidade')}
             className={`flex-1 py-3 text-center font-semibold text-sm transition-colors ${
@@ -118,14 +103,6 @@ export function FeedTabs({ initialCreatorPosts, initialCommunityPosts, initialHe
 
       {/* Feed com Infinite Scroll */}
       <div className="mt-4">
-        {activeTab === 'novidades' && (
-          <InfiniteFeed
-            key={`creator-${sort}`}
-            type="creator"
-            sort={sort}
-            initialPosts={sort === 'new' ? initialCreatorPosts : undefined}
-          />
-        )}
         {activeTab === 'comunidade' && (
           <InfiniteFeed
             key={`community-${sort}`}

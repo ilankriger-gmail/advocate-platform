@@ -56,14 +56,10 @@ function FeedLoading() {
 
 // Async component para carregar os posts iniciais (SSR)
 async function FeedSection() {
-  const [creatorPosts, communityPosts] = await Promise.all([
-    getInitialFeedPosts('creator', 10),
-    getInitialFeedPosts('community', 10),
-  ]);
+  const communityPosts = await getInitialFeedPosts('community', 10);
 
   return (
     <FeedTabs
-      initialCreatorPosts={creatorPosts}
       initialCommunityPosts={communityPosts}
     />
   );
