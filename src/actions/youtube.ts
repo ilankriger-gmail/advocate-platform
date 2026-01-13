@@ -52,13 +52,23 @@ interface YouTubeVideoStatsResponse {
  * Busca o Channel ID a partir do handle (@username)
  */
 async function getChannelIdFromHandle(handle: string): Promise<string | null> {
+  if (!YOUTUBE_API_KEY) {
+    return null;
+  }
+
   const params = new URLSearchParams({
     part: 'id',
     forHandle: handle.replace('@', ''),
-    key: YOUTUBE_API_KEY!,
+    key: YOUTUBE_API_KEY,
   });
 
   const res = await fetch(`https://www.googleapis.com/youtube/v3/channels?${params}`);
+
+  if (!res.ok) {
+    youtubeLogger.error('Erro ao buscar channel ID', { status: res.status });
+    return null;
+  }
+
   const data: YouTubeChannelResponse = await res.json();
 
   return data.items?.[0]?.id || null;
@@ -99,6 +109,12 @@ export async function searchYouTubeVideos(query?: string): Promise<{
     }
 
     const res = await fetch(`https://www.googleapis.com/youtube/v3/search?${params}`);
+
+    if (!res.ok) {
+      youtubeLogger.error('Erro ao buscar vídeos do YouTube', { status: res.status });
+      return { error: `Erro na API do YouTube: ${res.status}` };
+    }
+
     const data: YouTubeSearchResponse = await res.json();
 
     if (data.error) {

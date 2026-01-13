@@ -36,7 +36,7 @@ export function CreatePostForm() {
       } else if (result.contentCategory === 'help_request') {
         toast.info(
           'Pedido de Ajuda',
-          'Sua publicação aparecerá na aba "Pedidos de Ajuda" do feed.'
+          'Sua publicação aparecerá na comunidade e também na aba "Pedidos de Ajuda".'
         );
         setFormData({ title: '', content: '', media_url: '', type: 'community' });
         setIsExpanded(false);

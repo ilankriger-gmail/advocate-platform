@@ -189,7 +189,7 @@ export async function createPost(data: CreatePostData): Promise<CreatePostRespon
 
     // Mensagem especial para help_request
     if (contentCategory === 'help_request' && postStatus !== 'blocked') {
-      response.message = 'Sua publicação aparecerá na aba "Pedidos de Ajuda" do feed.';
+      response.message = 'Sua publicação aparecerá na comunidade e também na aba "Pedidos de Ajuda".';
     }
 
     return response;

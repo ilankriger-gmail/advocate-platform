@@ -5,6 +5,15 @@ import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import { useCallback, useState } from 'react';
 import { PromptModal } from '@/components/ui';
+import DOMPurify from 'dompurify';
+
+// Função para sanitizar HTML e prevenir XSS
+function sanitizeHtml(html: string): string {
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'ol', 'li', 's', 'strike', 'span'],
+    ALLOWED_ATTR: ['href', 'target', 'rel', 'class'],
+  });
+}
 
 interface RichTextEditorProps {
   content: string;
@@ -264,7 +273,7 @@ export function RichTextDisplay({ content }: { content: string }) {
   return (
     <div
       className="prose prose-sm max-w-none [&_a]:text-purple-600 [&_a]:underline [&_a:hover]:text-purple-800"
-      dangerouslySetInnerHTML={{ __html: content }}
+      dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }}
     />
   );
 }

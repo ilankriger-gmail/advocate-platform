@@ -3,9 +3,18 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Heart, Trophy, Target, Clock, Repeat, Gift, Package } from 'lucide-react';
+import DOMPurify from 'isomorphic-dompurify';
 import { getLandingPageData, LandingPageData } from '@/actions/landing-pages';
 import { getSiteSettings } from '@/lib/config/site';
 import { Button } from '@/components/ui';
+
+// Função para sanitizar HTML e prevenir XSS
+function sanitizeHtml(html: string): string {
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'ol', 'li', 's', 'strike', 'span', 'h1', 'h2', 'h3'],
+    ALLOWED_ATTR: ['href', 'target', 'rel', 'class'],
+  });
+}
 
 interface PageProps {
   params: Promise<{
@@ -231,7 +240,7 @@ export default async function LandingPage({ params }: PageProps) {
         {data.description && (
           <div
             className="prose prose-lg text-gray-600 mb-6"
-            dangerouslySetInnerHTML={{ __html: data.description }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(data.description) }}
           />
         )}
 
