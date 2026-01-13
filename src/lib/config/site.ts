@@ -9,6 +9,7 @@ export type SiteSettingKey =
   | 'site_description'
   | 'creator_name'
   | 'creator_handle'
+  | 'creator_avatar_url'
   | 'hero_title'
   | 'hero_subtitle'
   | 'login_title'
@@ -105,6 +106,7 @@ const DEFAULT_VALUES: Record<SiteSettingKey, string> = {
   site_description: 'Comunidade oficial do O Moço do Te Amo | NextlevelDJ',
   creator_name: 'O Moço do Te Amo',
   creator_handle: 'NextlevelDJ',
+  creator_avatar_url: '',
   hero_title: 'Arena Te Amo',
   hero_subtitle: 'Comunidade oficial do O Moço do Te Amo | NextlevelDJ',
   login_title: 'Arena Te Amo',

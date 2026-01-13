@@ -35,8 +35,7 @@ INSERT INTO challenges (
   status,
   requires_video_validation,
   action_instructions,
-  created_at,
-  updated_at
+  created_at
 ) VALUES
   (
     'O "Joinha" de Apoio',
@@ -48,7 +47,6 @@ INSERT INTO challenges (
     'active',
     true,
     'Encontre alguém trabalhando na rua (gari, guarda, entregador) e faça um joinha com um sorriso. Grave a reação!',
-    NOW(),
     NOW()
   ),
   (
@@ -61,7 +59,6 @@ INSERT INTO challenges (
     'active',
     true,
     'Quando um ônibus ou transporte escolar passar, acene com entusiasmo para os passageiros. Grave a reação deles!',
-    NOW(),
     NOW()
   ),
   (
@@ -74,7 +71,6 @@ INSERT INTO challenges (
     'active',
     true,
     'Ao atravessar na faixa de pedestres, agradeça de forma teatral ao motorista que parou. Seja criativo!',
-    NOW(),
     NOW()
   ),
   (
@@ -87,7 +83,6 @@ INSERT INTO challenges (
     'active',
     true,
     'Encontre um artista de rua e pare para assistir. Aplauda com entusiasmo e grave o momento!',
-    NOW(),
     NOW()
   ),
   (
@@ -100,7 +95,6 @@ INSERT INTO challenges (
     'active',
     true,
     'Ao ver um cachorro passeando, faça um gesto de carinho (coração ou joinha) para o dono. Grave a interação!',
-    NOW(),
     NOW()
   ),
   (
@@ -113,7 +107,6 @@ INSERT INTO challenges (
     'active',
     true,
     'Saia na rua e dê bom dia para várias pessoas. Grave as reações e o sorriso que você espalha!',
-    NOW(),
     NOW()
   );
 
@@ -123,7 +116,7 @@ INSERT INTO challenges (
 
 -- Tier Fácil: 2800 pontos (corda, embaixadinha, polichinelo)
 UPDATE challenges
-SET coins_reward = 2800, updated_at = NOW()
+SET coins_reward = 2800
 WHERE type = 'fisico'
 AND (
   LOWER(title) LIKE '%corda%'
@@ -133,7 +126,7 @@ AND (
 
 -- Tier Difícil: 600 pontos (todos os outros desafios físicos)
 UPDATE challenges
-SET coins_reward = 600, updated_at = NOW()
+SET coins_reward = 600
 WHERE type = 'fisico'
 AND LOWER(title) NOT LIKE '%corda%'
 AND LOWER(title) NOT LIKE '%embaixadinha%'

@@ -195,6 +195,36 @@ function ParticipantCounter({ count, type }: { count: number; type: 'challenge' 
   );
 }
 
+// Componente do Criador - Mostra quem é o criador da comunidade
+function CreatorSection({ name, avatarUrl }: { name: string; avatarUrl?: string }) {
+  return (
+    <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-4 my-6">
+      <div className="flex items-center gap-4">
+        {avatarUrl ? (
+          <Image
+            src={avatarUrl}
+            alt={name}
+            width={64}
+            height={64}
+            className="w-16 h-16 rounded-full object-cover border-2 border-purple-300 shadow-md"
+          />
+        ) : (
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center text-white text-2xl font-bold">
+            {name.charAt(0)}
+          </div>
+        )}
+        <div className="flex-1">
+          <p className="text-sm text-purple-700 font-medium mb-1">Comunidade oficial de</p>
+          <h3 className="font-bold text-gray-900 text-lg">{name}</h3>
+          <p className="text-xs text-gray-600 mt-1">
+            Participe dos desafios, ganhe corações e troque por prêmios reais!
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Componente FOMO - Mostra que corações viram dinheiro
 function CashPrizeFomo() {
   return (
@@ -312,7 +342,7 @@ export default async function LandingPage({ params }: PageProps) {
   }
 
   const data = result.data;
-  const settings = await getSiteSettings(['site_name', 'logo_url']);
+  const settings = await getSiteSettings(['site_name', 'logo_url', 'creator_name', 'creator_avatar_url']);
 
   // Construir URL de redirecionamento para o formulário NPS
   const sourceType = data.type === 'challenge' ? 'landing_challenge' : 'landing_reward';
@@ -346,6 +376,12 @@ export default async function LandingPage({ params }: PageProps) {
 
       {/* Conteúdo principal */}
       <main className="max-w-2xl mx-auto px-4 py-8">
+        {/* Seção do Criador - Comunidade oficial */}
+        <CreatorSection
+          name={settings.creator_name}
+          avatarUrl={settings.creator_avatar_url || undefined}
+        />
+
         {/* Headline impactante acima da dobra */}
         <div className="text-center mb-8">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
