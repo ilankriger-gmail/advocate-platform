@@ -1,6 +1,14 @@
 import OpenAI from 'openai';
 import { createAdminClient } from '@/lib/supabase/admin';
 
+// Timeout wrapper para evitar loading infinito
+function withTimeout<T>(promise: Promise<T>, ms: number, operation: string): Promise<T> {
+  const timeout = new Promise<never>((_, reject) =>
+    setTimeout(() => reject(new Error(`Timeout: ${operation} demorou mais de ${ms / 1000}s`)), ms)
+  );
+  return Promise.race([promise, timeout]);
+}
+
 // Cliente OpenAI inicializado lazily
 let openaiClient: OpenAI | null = null;
 
@@ -51,12 +59,13 @@ export async function generateChallengeEmoji(
   try {
     console.log('[AI Emoji] Gerando emoji para desafio:', title);
 
-    const response = await client.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'system',
-          content: `Você é um assistente que sugere emojis para desafios de uma plataforma fitness/gamificação.
+    const response = await withTimeout(
+      client.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: `Você é um assistente que sugere emojis para desafios de uma plataforma fitness/gamificação.
 Retorne APENAS um único emoji, sem texto adicional, sem explicação.
 
 Tipos de desafio e emojis sugeridos:
@@ -65,17 +74,20 @@ Tipos de desafio e emojis sugeridos:
 - participe: sorteios/prêmios - use emojis como 🎁🎯🏆⭐🎉🎊🎰
 
 Escolha o emoji que melhor representa o desafio baseado no título e descrição.`,
-        },
-        {
-          role: 'user',
-          content: `Título: ${title}
+          },
+          {
+            role: 'user',
+            content: `Título: ${title}
 Descrição: ${description || 'Sem descrição'}
 Tipo: ${type}`,
-        },
-      ],
-      max_tokens: 10,
-      temperature: 0.7,
-    });
+          },
+        ],
+        max_tokens: 10,
+        temperature: 0.7,
+      }),
+      15000,
+      'Geração de emoji GPT'
+    );
 
     const emoji = response.choices[0]?.message?.content?.trim();
 
@@ -133,16 +145,23 @@ export async function generateChallengeThumbnail(
 
     // 2. Construir prompt baseado nos dados do desafio
     const prompt = buildThumbnailPrompt(input);
+    console.log('[AI Thumbnail] Prompt criado, chamando DALL-E 3...');
 
-    // 3. Chamar DALL-E 3 para gerar imagem (natural = mais realista)
-    const response = await client.images.generate({
-      model: 'dall-e-3',
-      prompt,
-      n: 1,
-      size: '1024x1024',
-      quality: 'hd',
-      style: 'natural',
-    });
+    // 3. Chamar DALL-E 3 para gerar imagem (com timeout de 90s)
+    const response = await withTimeout(
+      client.images.generate({
+        model: 'dall-e-3',
+        prompt,
+        n: 1,
+        size: '1024x1024',
+        quality: 'hd',
+        style: 'natural',
+      }),
+      90000,
+      'Geração de imagem DALL-E'
+    );
+
+    console.log('[AI Thumbnail] Resposta DALL-E recebida');
 
     const imageData = response.data;
     if (!imageData || imageData.length === 0 || !imageData[0].url) {
@@ -154,14 +173,19 @@ export async function generateChallengeThumbnail(
     }
 
     const imageUrl = imageData[0].url;
+    console.log('[AI Thumbnail] Imagem gerada, fazendo download...');
 
-    console.log('[AI Thumbnail] Imagem gerada, fazendo upload para Storage...');
-
-    // 4. Baixar imagem da URL temporária
-    const imageResponse = await fetch(imageUrl);
+    // 4. Baixar imagem da URL temporária (com timeout de 30s)
+    const imageResponse = await withTimeout(
+      fetch(imageUrl),
+      30000,
+      'Download da imagem'
+    );
     if (!imageResponse.ok) {
       throw new Error(`Erro ao baixar imagem: ${imageResponse.status}`);
     }
+
+    console.log('[AI Thumbnail] Download concluído, fazendo upload para Storage...');
 
     const imageBlob = await imageResponse.blob();
     const imageArrayBuffer = await imageBlob.arrayBuffer();
