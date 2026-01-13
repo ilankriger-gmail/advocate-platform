@@ -98,6 +98,14 @@ export default async function AdminDashboardPage() {
       description: 'Votos, shares, saves',
     },
     {
+      title: 'Grafo Social',
+      value: 0,
+      icon: '👥',
+      href: '/admin/seguidores',
+      color: 'border-l-indigo-500',
+      description: 'Seguidores e conexões',
+    },
+    {
       title: 'Desafios Ativos',
       value: activeChallenges || 0,
       icon: '🎯',
