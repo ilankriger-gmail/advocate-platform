@@ -558,6 +558,10 @@ export interface NpsLead {
   lgpd_consent_accepted: boolean;
   lgpd_consent_at: string | null;
   lgpd_consent_ip: string | null;
+  // Campos de origem (landing page)
+  source_type: 'landing_challenge' | 'landing_reward' | 'direct' | null;
+  source_id: string | null;
+  source_name: string | null;
 }
 
 export interface NpsLeadInsert {
@@ -567,6 +571,10 @@ export interface NpsLeadInsert {
   email: string;
   phone?: string | null;
   lgpdConsent?: boolean;
+  // Campos de origem (landing page)
+  sourceType?: 'landing_challenge' | 'landing_reward' | 'direct';
+  sourceId?: string;
+  sourceName?: string;
 }
 
 export interface NpsLeadWithApprover extends NpsLead {

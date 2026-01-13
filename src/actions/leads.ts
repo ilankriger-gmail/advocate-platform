@@ -245,6 +245,10 @@ export async function submitNpsLead(data: NpsLeadInsert): Promise<ActionResponse
         lgpd_consent_accepted: data.lgpdConsent || false,
         lgpd_consent_at: data.lgpdConsent ? new Date().toISOString() : null,
         lgpd_consent_ip: data.lgpdConsent ? clientIp : null,
+        // Campos de origem (landing page)
+        source_type: data.sourceType || 'direct',
+        source_id: data.sourceId || null,
+        source_name: data.sourceName || null,
       })
       .select('id')
       .single();

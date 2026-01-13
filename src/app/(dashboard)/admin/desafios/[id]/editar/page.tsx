@@ -48,15 +48,19 @@ export default function EditarDesafioPage() {
   // Carregar dados do desafio
   useEffect(() => {
     async function loadChallenge() {
+      console.log('[EditarDesafio] Carregando desafio:', challengeId);
       try {
         const supabase = createClient();
-        const { data: challenge, error } = await supabase
+        const { data: challenge, error: queryError } = await supabase
           .from('challenges')
           .select('*')
           .eq('id', challengeId)
           .single();
 
-        if (error || !challenge) {
+        console.log('[EditarDesafio] Resultado:', { challenge: !!challenge, error: queryError });
+
+        if (queryError || !challenge) {
+          console.error('[EditarDesafio] Erro:', queryError);
           setError('Desafio não encontrado');
           setIsLoadingData(false);
           return;
@@ -178,6 +182,20 @@ export default function EditarDesafioPage() {
       <div className="max-w-2xl mx-auto py-12 text-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
         <p className="text-gray-500 mt-4">Carregando desafio...</p>
+      </div>
+    );
+  }
+
+  // Se houve erro ao carregar (ex: desafio não encontrado)
+  if (error && !formData.title) {
+    return (
+      <div className="max-w-2xl mx-auto py-12 text-center">
+        <div className="text-red-500 text-6xl mb-4">!</div>
+        <h2 className="text-xl font-bold text-gray-900 mb-2">Erro</h2>
+        <p className="text-gray-500 mb-4">{error}</p>
+        <Button variant="outline" onClick={() => router.push('/admin/desafios')}>
+          Voltar para Desafios
+        </Button>
       </div>
     );
   }

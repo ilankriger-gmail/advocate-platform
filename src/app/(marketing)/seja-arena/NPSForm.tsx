@@ -7,13 +7,21 @@ import { NPSScoreSelector } from './NPSScoreSelector';
 import { submitNpsLead, checkExistingAccount } from '@/actions/leads';
 import { validateName, validateReason, checkEmailTypo, validatePhone } from '@/lib/validation/nps-validation';
 
+// Dados de origem (quando vem de uma landing page)
+export interface SourceData {
+  sourceType: 'landing_challenge' | 'landing_reward';
+  sourceId: string;
+  sourceName?: string;
+}
+
 interface NPSFormProps {
   siteName: string;
   creatorName: string;
   logoUrl: string;
+  sourceData?: SourceData;
 }
 
-export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
+export function NPSForm({ siteName, creatorName, logoUrl, sourceData }: NPSFormProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [score, setScore] = useState<number | null>(null);
@@ -139,6 +147,10 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
         email: email.trim(),
         phone: phone?.trim() || undefined,
         lgpdConsent: lgpdAccepted,
+        // Dados de origem (landing page)
+        sourceType: sourceData?.sourceType,
+        sourceId: sourceData?.sourceId,
+        sourceName: sourceData?.sourceName,
       });
 
       if (result.error) {
