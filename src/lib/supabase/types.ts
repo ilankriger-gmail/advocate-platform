@@ -379,10 +379,10 @@ export interface ChallengeWinner {
 /**
  * Tipos de prêmio disponíveis para desafios
  */
-export type PrizeType = 'physical' | 'digital' | 'money';
+export type PrizeType = 'money' | 'coins';
 
 /**
- * Prêmio de um desafio (físico, digital ou dinheiro)
+ * Prêmio de um desafio (dinheiro ou corações)
  */
 export interface ChallengePrize {
   id: string;

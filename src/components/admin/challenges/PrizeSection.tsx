@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Card, Button, Input } from '@/components/ui';
-import { Plus, X, DollarSign, Package, Smartphone } from 'lucide-react';
+import { Plus, X, DollarSign, Heart } from 'lucide-react';
 import type { PrizeInput, PrizeType } from '@/lib/supabase/types';
 
 interface PrizeSectionProps {
@@ -23,17 +23,11 @@ const prizeTypeConfig: Record<PrizeType, {
     description: 'PIX, transferência ou vale',
     color: 'green',
   },
-  physical: {
-    label: 'Físico',
-    icon: <Package className="w-5 h-5" />,
-    description: 'Produtos, camisetas, equipamentos',
-    color: 'blue',
-  },
-  digital: {
-    label: 'Digital',
-    icon: <Smartphone className="w-5 h-5" />,
-    description: 'Códigos, vouchers, e-books',
-    color: 'purple',
+  coins: {
+    label: 'Corações',
+    icon: <Heart className="w-5 h-5" />,
+    description: 'Moedas da plataforma para resgatar prêmios',
+    color: 'pink',
   },
 };
 

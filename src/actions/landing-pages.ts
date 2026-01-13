@@ -137,3 +137,93 @@ export async function getLandingPageData(
 
   return { error: 'Tipo inválido' };
 }
+
+/**
+ * Buscar dados de um desafio por slug para landing page (público)
+ */
+export async function getLandingPageChallengeBySlug(slug: string): Promise<ActionResponse<LandingPageData>> {
+  try {
+    const supabase = await createClient();
+
+    // Buscar desafio por slug
+    const { data: challenge, error } = await supabase
+      .from('challenges')
+      .select('*')
+      .eq('slug', slug)
+      .eq('is_active', true)
+      .eq('status', 'active')
+      .single();
+
+    if (error || !challenge) {
+      return { error: 'Desafio não encontrado' };
+    }
+
+    // Contar participantes
+    const { count: participantsCount } = await supabase
+      .from('challenge_participants')
+      .select('id', { count: 'exact', head: true })
+      .eq('challenge_id', challenge.id);
+
+    return {
+      data: {
+        type: 'challenge',
+        id: challenge.id,
+        title: challenge.title,
+        description: challenge.description,
+        imageUrl: challenge.thumbnail_url,
+        challengeType: challenge.type as 'engajamento' | 'fisico' | 'participe' | 'atos_amor',
+        coinsReward: challenge.coins_reward,
+        goalType: challenge.goal_type,
+        goalValue: challenge.goal_value,
+        icon: challenge.icon,
+        endsAt: challenge.ends_at,
+        participantsCount: participantsCount || 0,
+      },
+    };
+  } catch {
+    return { error: 'Erro ao carregar desafio' };
+  }
+}
+
+/**
+ * Buscar dados de um prêmio por slug para landing page (público)
+ */
+export async function getLandingPageRewardBySlug(slug: string): Promise<ActionResponse<LandingPageData>> {
+  try {
+    const supabase = await createClient();
+
+    // Buscar prêmio por slug
+    const { data: reward, error } = await supabase
+      .from('rewards')
+      .select('*')
+      .eq('slug', slug)
+      .eq('is_active', true)
+      .single();
+
+    if (error || !reward) {
+      return { error: 'Prêmio não encontrado' };
+    }
+
+    // Contar resgates
+    const { count: redemptionsCount } = await supabase
+      .from('redemptions')
+      .select('id', { count: 'exact', head: true })
+      .eq('reward_id', reward.id);
+
+    return {
+      data: {
+        type: 'reward',
+        id: reward.id,
+        title: reward.name,
+        description: reward.description,
+        imageUrl: reward.image_url,
+        coinsRequired: reward.coins_required,
+        rewardType: reward.type as 'digital' | 'physical',
+        quantityAvailable: reward.quantity_available,
+        redemptionsCount: redemptionsCount || 0,
+      },
+    };
+  } catch {
+    return { error: 'Erro ao carregar prêmio' };
+  }
+}

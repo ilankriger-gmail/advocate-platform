@@ -1,14 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { DollarSign, Package, Smartphone } from 'lucide-react';
+import { DollarSign, Heart } from 'lucide-react';
 import { Badge, Button, Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui';
 import { ChallengeParticipationModal } from './ChallengeParticipationModal';
 import YouTubeEmbed from '@/components/posts/YouTubeEmbed';
 
 interface ChallengePrize {
   id: string;
-  type: 'physical' | 'digital' | 'money';
+  type: 'money' | 'coins';
   name: string;
   description: string | null;
   value: number | null;
@@ -202,17 +202,11 @@ export function PhysicalChallengeCard({
                           iconBg: 'bg-green-500',
                           text: 'text-green-800',
                         },
-                        physical: {
-                          icon: <Package className="w-4 h-4" />,
-                          bg: 'bg-blue-50 border-blue-200',
-                          iconBg: 'bg-blue-500',
-                          text: 'text-blue-800',
-                        },
-                        digital: {
-                          icon: <Smartphone className="w-4 h-4" />,
-                          bg: 'bg-purple-50 border-purple-200',
-                          iconBg: 'bg-purple-500',
-                          text: 'text-purple-800',
+                        coins: {
+                          icon: <Heart className="w-4 h-4" />,
+                          bg: 'bg-pink-50 border-pink-200',
+                          iconBg: 'bg-pink-500',
+                          text: 'text-pink-800',
                         },
                       };
                       const config = prizeConfig[prize.type];

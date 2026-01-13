@@ -41,7 +41,78 @@ function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, '');
 }
 
+// Função para truncar texto HTML preservando tags
+function truncateHtml(html: string, maxLength: number): { truncated: string; wasTruncated: boolean } {
+  const plainText = stripHtml(html);
+
+  if (plainText.length <= maxLength) {
+    return { truncated: html, wasTruncated: false };
+  }
+
+  // Truncar pelo texto puro e adicionar reticências
+  let charCount = 0;
+  let result = '';
+  let inTag = false;
+  let tagBuffer = '';
+
+  for (let i = 0; i < html.length; i++) {
+    const char = html[i];
+
+    if (char === '<') {
+      inTag = true;
+      tagBuffer = '<';
+      continue;
+    }
+
+    if (inTag) {
+      tagBuffer += char;
+      if (char === '>') {
+        inTag = false;
+        result += tagBuffer;
+        tagBuffer = '';
+      }
+      continue;
+    }
+
+    if (charCount < maxLength) {
+      result += char;
+      charCount++;
+    } else {
+      // Chegou no limite, adicionar reticências
+      result += '...';
+      break;
+    }
+  }
+
+  // Fechar tags abertas (simplificado)
+  const openTags: string[] = [];
+  const tagRegex = /<\/?([a-z]+)[^>]*>/gi;
+  let match;
+
+  while ((match = tagRegex.exec(result)) !== null) {
+    const isClosing = match[0].startsWith('</');
+    const tagName = match[1].toLowerCase();
+
+    if (isClosing) {
+      const idx = openTags.lastIndexOf(tagName);
+      if (idx !== -1) openTags.splice(idx, 1);
+    } else if (!match[0].endsWith('/>')) {
+      openTags.push(tagName);
+    }
+  }
+
+  // Fechar tags abertas na ordem inversa
+  for (let i = openTags.length - 1; i >= 0; i--) {
+    result += `</${openTags[i]}>`;
+  }
+
+  return { truncated: result, wasTruncated: true };
+}
+
 // Memoizado para evitar re-renders desnecessários em listas
+// Limite de caracteres para truncar conteúdo
+const CONTENT_TRUNCATE_LIMIT = 300;
+
 export const PostCard = memo(function PostCard({
   post,
   userVote = null,
@@ -52,6 +123,7 @@ export const PostCard = memo(function PostCard({
   const { approve, reject, delete: deletePost, isPending } = usePosts();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const [isContentExpanded, setIsContentExpanded] = useState(false);
 
   const statusConfig = POST_STATUS[post.status];
   const voteScore = (post as unknown as Record<string, unknown>).vote_score as number || 0;
@@ -239,12 +311,27 @@ export const PostCard = memo(function PostCard({
         <h3 className="text-lg font-semibold text-surface-900 mb-2">
           {post.title}
         </h3>
-        {post.content && (
-          <div
-            className="prose prose-sm max-w-none text-surface-700 [&_a]:text-primary-600 [&_a]:underline [&_a:hover]:text-primary-800"
-            dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content) }}
-          />
-        )}
+        {post.content && (() => {
+          const { truncated, wasTruncated } = truncateHtml(post.content, CONTENT_TRUNCATE_LIMIT);
+          const displayContent = isContentExpanded ? post.content : truncated;
+
+          return (
+            <>
+              <div
+                className="prose prose-sm max-w-none text-surface-700 [&_a]:text-primary-600 [&_a]:underline [&_a:hover]:text-primary-800"
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(displayContent) }}
+              />
+              {wasTruncated && (
+                <button
+                  onClick={() => setIsContentExpanded(!isContentExpanded)}
+                  className="mt-2 text-sm font-medium text-primary-600 hover:text-primary-800 transition-colors"
+                >
+                  {isContentExpanded ? 'Ler menos' : 'Leia mais'}
+                </button>
+              )}
+            </>
+          );
+        })()}
       </div>
 
       {/* Media - Imagens/Carrossel */}

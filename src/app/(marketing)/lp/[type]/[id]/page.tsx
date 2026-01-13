@@ -400,7 +400,7 @@ export default async function LandingPage({ params }: PageProps) {
 
         {/* Hero Image */}
         {data.imageUrl ? (
-          <div className="relative aspect-video rounded-2xl overflow-hidden shadow-xl mb-6">
+          <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-lg mb-6">
             <Image
               src={data.imageUrl}
               alt={data.title}
@@ -412,18 +412,30 @@ export default async function LandingPage({ params }: PageProps) {
             />
           </div>
         ) : data.type === 'challenge' && data.icon ? (
-          <div className="aspect-video rounded-2xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center mb-6 shadow-xl">
-            <span className="text-8xl">{data.icon}</span>
+          <div className="aspect-[4/3] rounded-2xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center mb-6 shadow-lg">
+            <span className="text-7xl">{data.icon}</span>
           </div>
         ) : (
-          <div className="aspect-video rounded-2xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center mb-6 shadow-xl">
+          <div className="aspect-[4/3] rounded-2xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center mb-6 shadow-lg">
             {data.type === 'challenge' ? (
-              <Target className="w-24 h-24 text-white" />
+              <Target className="w-20 h-20 text-white" />
             ) : (
-              <Gift className="w-24 h-24 text-white" />
+              <Gift className="w-20 h-20 text-white" />
             )}
           </div>
         )}
+
+        {/* CTA Button - Topo */}
+        <div className="mb-6">
+          <Link href={npsUrl}>
+            <Button
+              size="lg"
+              className="cta-button w-full py-5 text-lg font-semibold shadow-lg"
+            >
+              {ctaText.primary}
+            </Button>
+          </Link>
+        </div>
 
         {/* Contador de participantes (social proof) */}
         <ParticipantCounter count={participantsCount || 0} type={data.type} />
@@ -461,6 +473,19 @@ export default async function LandingPage({ params }: PageProps) {
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(data.description) }}
           />
         )}
+
+        {/* CTA Button - Meio */}
+        <div className="my-6">
+          <Link href={npsUrl}>
+            <Button
+              size="lg"
+              variant="outline"
+              className="w-full py-4 text-base font-semibold border-2 border-primary-500 text-primary-600 hover:bg-primary-50"
+            >
+              {ctaText.primary}
+            </Button>
+          </Link>
+        </div>
 
         {/* Informações específicas */}
         <FadeInSection delay={100}>

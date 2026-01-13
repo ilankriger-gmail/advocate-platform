@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { Dumbbell, Trophy, Heart, DollarSign, Package, Smartphone } from 'lucide-react';
+import { Dumbbell, Trophy, Heart, DollarSign } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { getSiteSettings } from '@/lib/config/site';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -190,19 +190,24 @@ export default async function DesafiosPage() {
       </Card>
 
       {/* Desafios de Engajamento */}
-      {engagementChallenges.length > 0 && (
-        <section className="space-y-4 sm:space-y-6">
-          {/* Header da Seção */}
-          <div className="flex items-center gap-3 sm:gap-4">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/25">
-              <span className="text-xl sm:text-2xl">🎁</span>
-            </div>
-            <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Participe e Concorra</h2>
-              <p className="text-gray-500 text-xs sm:text-sm">Interaja no Instagram e ganhe prêmios em dinheiro</p>
-            </div>
+      <section className="space-y-4 sm:space-y-6">
+        {/* Header da Seção */}
+        <div className="flex items-center gap-3 sm:gap-4">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/25">
+            <span className="text-xl sm:text-2xl">🎁</span>
           </div>
+          <div>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+              Participe e Concorra
+              {engagementChallenges.length === 0 && (
+                <span className="ml-2 text-sm font-medium text-purple-500">(em breve)</span>
+              )}
+            </h2>
+            <p className="text-gray-500 text-xs sm:text-sm">Interaja no Instagram e ganhe prêmios em dinheiro</p>
+          </div>
+        </div>
 
+        {engagementChallenges.length > 0 ? (
           <Accordion type="single" className="space-y-2">
             {engagementChallenges.map((challenge) => {
               const challengeWinners = (winners || []).filter(
@@ -310,17 +315,11 @@ export default async function DesafiosPage() {
                                   iconBg: 'bg-green-500',
                                   text: 'text-green-800',
                                 },
-                                physical: {
-                                  icon: <Package className="w-4 h-4" />,
-                                  bg: 'bg-blue-50 border-blue-200',
-                                  iconBg: 'bg-blue-500',
-                                  text: 'text-blue-800',
-                                },
-                                digital: {
-                                  icon: <Smartphone className="w-4 h-4" />,
-                                  bg: 'bg-purple-50 border-purple-200',
-                                  iconBg: 'bg-purple-500',
-                                  text: 'text-purple-800',
+                                coins: {
+                                  icon: <Heart className="w-4 h-4" />,
+                                  bg: 'bg-pink-50 border-pink-200',
+                                  iconBg: 'bg-pink-500',
+                                  text: 'text-pink-800',
                                 },
                               };
                               const config = prizeConfig[prize.type];
@@ -389,23 +388,32 @@ export default async function DesafiosPage() {
               );
             })}
           </Accordion>
-        </section>
-      )}
+        ) : (
+          <Card className="p-6 text-center bg-purple-50/50 border-purple-100">
+            <p className="text-gray-500 text-sm">Novos desafios de engajamento serão lançados em breve!</p>
+          </Card>
+        )}
+      </section>
 
       {/* Atos de Amor */}
-      {atosAmorChallenges.length > 0 && (
-        <section className="space-y-4 sm:space-y-6">
-          {/* Header da Seção - Centralizado */}
-          <div className="flex flex-col items-center text-center gap-2">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-rose-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg shadow-rose-500/25">
-              <Heart className="w-7 h-7 sm:w-8 sm:h-8 text-white fill-white" />
-            </div>
-            <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Atos de Amor</h2>
-              <p className="text-gray-500 text-xs sm:text-sm">Espalhe amor e ganhe recompensas</p>
-            </div>
+      <section className="space-y-4 sm:space-y-6">
+        {/* Header da Seção - Centralizado */}
+        <div className="flex flex-col items-center text-center gap-2">
+          <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-rose-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg shadow-rose-500/25">
+            <Heart className="w-7 h-7 sm:w-8 sm:h-8 text-white fill-white" />
           </div>
+          <div>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+              Atos de Amor
+              {atosAmorChallenges.length === 0 && (
+                <span className="ml-2 text-sm font-medium text-rose-500">(em breve)</span>
+              )}
+            </h2>
+            <p className="text-gray-500 text-xs sm:text-sm">Espalhe amor e ganhe recompensas</p>
+          </div>
+        </div>
 
+        {atosAmorChallenges.length > 0 ? (
           <div className="max-w-2xl mx-auto space-y-3 sm:space-y-4">
             {atosAmorChallenges.map((challenge) => (
               <PhysicalChallengeCard
@@ -415,23 +423,32 @@ export default async function DesafiosPage() {
               />
             ))}
           </div>
-        </section>
-      )}
+        ) : (
+          <Card className="max-w-2xl mx-auto p-6 text-center bg-rose-50/50 border-rose-100">
+            <p className="text-gray-500 text-sm">Novos desafios de atos de amor serão lançados em breve!</p>
+          </Card>
+        )}
+      </section>
 
       {/* Desafios Físicos */}
-      {physicalChallenges.length > 0 && (
-        <section className="space-y-4 sm:space-y-6">
-          {/* Header da Seção - Centralizado */}
-          <div className="flex flex-col items-center text-center gap-2">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/25">
-              <Dumbbell className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
-            </div>
-            <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Desafios Físicos</h2>
-              <p className="text-gray-500 text-xs sm:text-sm">Supere metas e mostre sua força</p>
-            </div>
+      <section className="space-y-4 sm:space-y-6">
+        {/* Header da Seção - Centralizado */}
+        <div className="flex flex-col items-center text-center gap-2">
+          <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/25">
+            <Dumbbell className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
           </div>
+          <div>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+              Desafios Físicos
+              {physicalChallenges.length === 0 && (
+                <span className="ml-2 text-sm font-medium text-blue-500">(em breve)</span>
+              )}
+            </h2>
+            <p className="text-gray-500 text-xs sm:text-sm">Supere metas e mostre sua força</p>
+          </div>
+        </div>
 
+        {physicalChallenges.length > 0 ? (
           <div className="max-w-2xl mx-auto space-y-3 sm:space-y-4">
             {physicalChallenges.map((challenge) => (
               <PhysicalChallengeCard
@@ -441,8 +458,12 @@ export default async function DesafiosPage() {
               />
             ))}
           </div>
-        </section>
-      )}
+        ) : (
+          <Card className="max-w-2xl mx-auto p-6 text-center bg-blue-50/50 border-blue-100">
+            <p className="text-gray-500 text-sm">Novos desafios físicos serão lançados em breve!</p>
+          </Card>
+        )}
+      </section>
 
       {/* Minhas Participações */}
       {userParticipationsWithChallenge.length > 0 && (
@@ -468,23 +489,6 @@ export default async function DesafiosPage() {
         </section>
       )}
 
-      {/* Sem desafios */}
-      {challengesWithPrizes.length === 0 && (
-        <Card className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-100" />
-          <div className="relative p-8 sm:p-12 text-center">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 sm:mb-6 bg-gradient-to-br from-pink-100 to-purple-100 rounded-full flex items-center justify-center">
-              <span className="text-3xl sm:text-4xl">🎯</span>
-            </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
-              Nenhum desafio disponível
-            </h2>
-            <p className="text-sm sm:text-base text-gray-500 max-w-md mx-auto">
-              Fique atento! Novos desafios serão adicionados em breve para você participar e ganhar corações.
-            </p>
-          </div>
-        </Card>
-      )}
     </div>
   );
 }
