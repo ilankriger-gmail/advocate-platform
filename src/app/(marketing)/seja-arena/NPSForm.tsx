@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { NPSScoreSelector } from './NPSScoreSelector';
 import { submitNpsLead, checkExistingAccount } from '@/actions/leads';
-import { validateName, validateReason, checkEmailTypo } from '@/lib/validation/nps-validation';
+import { validateName, validateReason, checkEmailTypo, validatePhone } from '@/lib/validation/nps-validation';
 
 interface NPSFormProps {
   siteName: string;
@@ -59,16 +59,28 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
     }
 
     if (step === 4) {
-      if (!email || !email.includes('@')) {
-        newErrors.email = 'Email inválido';
+      // Validação mais rigorosa de email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!email || !emailRegex.test(email.trim())) {
+        newErrors.email = 'Email inválido. Use o formato: seu@email.com';
+      }
+      // Se tem sugestão de typo, alertar
+      else if (emailSuggestion) {
+        newErrors.email = `Você quis dizer ${emailSuggestion}? Clique em "Corrigir" ou verifique o email.`;
       }
       // Se tem conta existente já identificada, mostra o erro
-      if (accountStatus?.message) {
+      else if (accountStatus?.message) {
         newErrors.email = accountStatus.message;
       }
     }
 
-    // Step 5 (WhatsApp) é opcional, não precisa validar
+    // Step 5 (WhatsApp) - validar se preenchido
+    if (step === 5 && phone && phone.trim()) {
+      const phoneResult = validatePhone(phone);
+      if (!phoneResult.valid) {
+        newErrors.phone = phoneResult.error || 'Telefone inválido';
+      }
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -108,31 +120,45 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
       return;
     }
 
-    setIsLoading(true);
-
-    const result = await submitNpsLead({
-      score: score!,
-      reason: reason.trim(),
-      name: name.trim(),
-      email: email.trim(),
-      phone: phone?.trim() || undefined,
-      lgpdConsent: lgpdAccepted,
-    });
-
-    setIsLoading(false);
-
-    if (result.error) {
-      setErrors({ form: result.error });
-      return;
+    // Validar telefone se preenchido
+    if (phone && phone.trim()) {
+      const phoneResult = validatePhone(phone);
+      if (!phoneResult.valid) {
+        setErrors({ phone: phoneResult.error || 'Telefone inválido' });
+        return;
+      }
     }
 
-    // Redirecionar para o domínio comunidade (não comece)
-    const leadId = result.data?.leadId;
-    const baseUrl = 'https://comunidade.omocodoteamo.com.br';
-    if (leadId) {
-      window.location.href = `${baseUrl}/seja-arena/obrigado?leadId=${leadId}`;
-    } else {
-      window.location.href = `${baseUrl}/seja-arena/obrigado`;
+    setIsLoading(true);
+
+    try {
+      const result = await submitNpsLead({
+        score: score!,
+        reason: reason.trim(),
+        name: name.trim(),
+        email: email.trim(),
+        phone: phone?.trim() || undefined,
+        lgpdConsent: lgpdAccepted,
+      });
+
+      if (result.error) {
+        setErrors({ form: result.error });
+        return;
+      }
+
+      // Redirecionar para o domínio comunidade (não comece)
+      const leadId = result.data?.leadId;
+      const baseUrl = 'https://comunidade.omocodoteamo.com.br';
+      if (leadId) {
+        window.location.href = `${baseUrl}/seja-arena/obrigado?leadId=${leadId}`;
+      } else {
+        window.location.href = `${baseUrl}/seja-arena/obrigado`;
+      }
+    } catch (err) {
+      console.error('Erro ao enviar formulário:', err);
+      setErrors({ form: 'Erro ao enviar. Por favor, tente novamente.' });
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -496,12 +522,19 @@ export function NPSForm({ siteName, creatorName, logoUrl }: NPSFormProps) {
               id="phone"
               name="phone"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) => {
+                setPhone(e.target.value);
+                if (errors.phone) setErrors({});
+              }}
               placeholder="(00) 00000-0000"
-              className="typeform-input"
+              className={`typeform-input ${errors.phone ? 'border-red-500' : ''}`}
               autoFocus={currentStep === 5}
             />
-            <p className="mt-2 text-sm text-surface-400">Opcional</p>
+            {errors.phone ? (
+              <p className="mt-2 text-sm text-red-500">{errors.phone}</p>
+            ) : (
+              <p className="mt-2 text-sm text-surface-400">Opcional - formato: (00) 00000-0000</p>
+            )}
           </div>
 
           {/* LGPD Consent Checkbox */}

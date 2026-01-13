@@ -260,3 +260,50 @@ export function checkEmailTypo(email: string): {
 
   return { hasTypo: false };
 }
+
+/**
+ * Valida telefone brasileiro
+ *
+ * Regras:
+ * - Campo opcional (vazio é válido)
+ * - Se preenchido: 10-11 dígitos (com ou sem DDD)
+ * - Não pode ser só números repetidos (1111111111)
+ * - Não pode ser padrão de teclado
+ */
+export function validatePhone(phone: string): ValidationResult {
+  // Campo opcional - vazio é válido
+  if (!phone || phone.trim() === '') {
+    return { valid: true };
+  }
+
+  const trimmed = phone.trim();
+
+  // Remover caracteres não numéricos para validação
+  const digits = trimmed.replace(/\D/g, '');
+
+  // Se digitou algo mas não tem dígitos suficientes
+  if (digits.length === 0) {
+    return { valid: false, error: 'Telefone inválido' };
+  }
+
+  // Telefone brasileiro: 10-11 dígitos (DDD + número)
+  if (digits.length < 10 || digits.length > 11) {
+    return { valid: false, error: 'Telefone inválido. Use formato (00) 00000-0000' };
+  }
+
+  // Verificar se não é só números repetidos (11111111111)
+  if (/^(\d)\1+$/.test(digits)) {
+    return { valid: false, error: 'Telefone inválido' };
+  }
+
+  // Verificar se não é sequência simples (12345678901)
+  const isSequence = digits.split('').every((d, i, arr) => {
+    if (i === 0) return true;
+    return Math.abs(parseInt(d) - parseInt(arr[i - 1])) <= 1;
+  });
+  if (isSequence && digits.length >= 10) {
+    return { valid: false, error: 'Telefone inválido' };
+  }
+
+  return { valid: true };
+}

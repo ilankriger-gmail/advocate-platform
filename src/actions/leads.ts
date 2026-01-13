@@ -16,7 +16,7 @@ import { getSiteSettings } from '@/lib/config/site';
 import { analyzeLeadWithAI } from '@/lib/ai';
 import { validateEmail, checkRateLimit, RATE_LIMITS, auditLog } from '@/lib/security';
 import { logger, maskEmail, sanitizeError } from '@/lib';
-import { validateName, validateReason } from '@/lib/validation/nps-validation';
+import { validateName, validateReason, validatePhone } from '@/lib/validation/nps-validation';
 
 // Logger contextualizado para o módulo de leads
 const leadsLogger = logger.withContext('[Leads]');
@@ -213,6 +213,14 @@ export async function submitNpsLead(data: NpsLeadInsert): Promise<ActionResponse
     const reasonValidation = validateReason(data.reason);
     if (!reasonValidation.valid) {
       return { error: reasonValidation.error || 'Por favor, explique o motivo da sua nota' };
+    }
+
+    // Validação de telefone (opcional, mas se preenchido deve ser válido)
+    if (data.phone && data.phone.trim()) {
+      const phoneValidation = validatePhone(data.phone);
+      if (!phoneValidation.valid) {
+        return { error: phoneValidation.error || 'Telefone inválido' };
+      }
     }
 
     const email = data.email.trim().toLowerCase();
