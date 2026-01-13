@@ -4,6 +4,29 @@
  * Funções para validar nome, motivo e detectar typos em emails
  */
 
+// Palavras ofensivas/inapropriadas (português)
+const OFFENSIVE_WORDS = [
+  // Xingamentos comuns
+  'porco', 'porca', 'idiota', 'imbecil', 'burro', 'burra', 'otário', 'otaria',
+  'babaca', 'cuzão', 'cuzao', 'fdp', 'filhodaputa', 'filho da puta', 'puta',
+  'vagabundo', 'vagabunda', 'lixo', 'merda', 'bosta', 'cagado', 'cagada',
+  'arrombado', 'arrombada', 'viado', 'bicha', 'boiola', 'sapatão', 'sapatao',
+  'retardado', 'retardada', 'mongol', 'mongoloide', 'desgraça', 'desgraca',
+  'desgraçado', 'desgracado', 'maldito', 'maldita', 'cretino', 'cretina',
+  'imbecil', 'estúpido', 'estupido', 'estúpida', 'estupida', 'ignorante',
+  'nojento', 'nojenta', 'podre', 'inútil', 'inutil', 'fracassado', 'fracassada',
+  'trouxa', 'troxa', 'palhaço', 'palhaco', 'palhaça', 'palhaca', 'ridículo',
+  'ridiculo', 'ridícula', 'ridicula', 'patético', 'patetico', 'patética',
+  'patetica', 'vergonha', 'vergonhoso', 'vergonhosa', 'safado', 'safada',
+  'pilantra', 'golpista', 'ladrão', 'ladrao', 'ladra', 'mentiroso', 'mentirosa',
+  'falso', 'falsa', 'covarde', 'frouxo', 'frouxa', 'bundão', 'bundao',
+  // Palavrões
+  'caralho', 'cacete', 'porra', 'foder', 'fodase', 'foda-se', 'foda se',
+  'pau no cu', 'vai se fuder', 'vai tomar', 'vtnc', 'vsf', 'pqp',
+  // Ofensas ao criador
+  'golpe', 'scam', 'enganação', 'enganacao', 'fraude', 'fake', 'falcatrua',
+];
+
 // Padrões de teclado comuns (qwerty, numpad, etc)
 const KEYBOARD_PATTERNS = [
   'qwerty', 'qwertz', 'azerty', 'qwer', 'asdf', 'zxcv', 'wasd',
@@ -100,6 +123,24 @@ function isOnlyNumbers(text: string): boolean {
  */
 function isOnlySymbols(text: string): boolean {
   return /^[^a-zA-Z0-9áéíóúàèìòùâêîôûãõÁÉÍÓÚÀÈÌÒÙÂÊÎÔÛÃÕçÇ]+$/.test(text);
+}
+
+/**
+ * Verifica se contém palavras ofensivas
+ */
+function hasOffensiveContent(text: string): boolean {
+  const lower = text.toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, ''); // Remove acentos para comparação
+
+  return OFFENSIVE_WORDS.some(word => {
+    const normalizedWord = word
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+    // Verifica se a palavra está presente como palavra inteira ou parte significativa
+    const regex = new RegExp(`\\b${normalizedWord}\\b|${normalizedWord}`, 'i');
+    return regex.test(lower);
+  });
 }
 
 /**
@@ -209,6 +250,11 @@ export function validateReason(reason: string): ValidationResult {
   // Verificar padrões de teclado
   if (hasKeyboardPattern(trimmed)) {
     return { valid: false, error: 'Por favor, escreva uma resposta válida' };
+  }
+
+  // Verificar conteúdo ofensivo
+  if (hasOffensiveContent(trimmed)) {
+    return { valid: false, error: 'Por favor, escreva uma resposta respeitosa e construtiva' };
   }
 
   // Verificar caracteres repetidos excessivos (kkkkk, hahaha)
