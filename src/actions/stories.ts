@@ -243,7 +243,7 @@ export async function createStory(data: CreateStoryData): Promise<ActionResponse
         user_id: user.id,
         title: data.title || null,
         content: data.content || null,
-        media_url: hasImages ? data.media_url : [],
+        media_url: hasImages ? data.media_url : null,
         media_type: mediaType,
         youtube_url: hasYoutube ? data.youtube_url : null,
         instagram_url: hasInstagram ? data.instagram_url : null,

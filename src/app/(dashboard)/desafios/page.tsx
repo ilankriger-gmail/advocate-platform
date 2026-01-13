@@ -30,6 +30,7 @@ type Challenge = {
   description: string;
   type: 'participe' | 'engajamento' | 'fisico';
   icon: string;
+  thumbnail_url?: string | null;
   is_active: boolean;
   instagram_embed_url?: string;
   prize_amount?: number;
@@ -184,20 +185,41 @@ export default async function DesafiosPage() {
 
               return (
                 <AccordionItem key={challenge.id} value={challenge.id}>
-                  <AccordionTrigger>
-                    <div className="flex items-center gap-3 w-full">
-                      <span className="text-2xl">{challenge.icon}</span>
-                      <div className="flex-1 text-left">
-                        <h3 className="font-semibold text-gray-900">{challenge.title}</h3>
-                        {challenge.prize_amount && (
-                          <p className="text-sm text-pink-600">
-                            R$ {challenge.prize_amount.toFixed(2)} no Pix
-                          </p>
-                        )}
+                  <AccordionTrigger className="p-0 hover:no-underline">
+                    <div className="relative w-full overflow-hidden rounded-t-xl">
+                      {/* Background: Thumbnail ou Gradiente */}
+                      {challenge.thumbnail_url ? (
+                        <>
+                          <img
+                            src={challenge.thumbnail_url}
+                            alt=""
+                            className="absolute inset-0 w-full h-full object-cover"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30" />
+                        </>
+                      ) : (
+                        <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-500" />
+                      )}
+
+                      {/* Conteúdo */}
+                      <div className="relative z-10 p-4 flex items-center gap-3 w-full">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                          challenge.thumbnail_url ? 'bg-white/20 backdrop-blur-sm' : 'bg-white/20'
+                        }`}>
+                          <span className="text-xl">{challenge.icon}</span>
+                        </div>
+                        <div className="flex-1 text-left">
+                          <h3 className="font-semibold text-white">{challenge.title}</h3>
+                          {challenge.prize_amount && (
+                            <p className="text-sm text-white/90">
+                              R$ {challenge.prize_amount.toFixed(2)} no Pix
+                            </p>
+                          )}
+                        </div>
+                        <span className="text-sm font-medium text-white whitespace-nowrap">
+                          +{challenge.coins_reward} ❤️
+                        </span>
                       </div>
-                      <span className="text-sm font-medium text-pink-500 whitespace-nowrap">
-                        +{challenge.coins_reward} ❤️
-                      </span>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent>
