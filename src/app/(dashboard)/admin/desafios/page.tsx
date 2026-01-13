@@ -288,6 +288,13 @@ function ChallengeAdminCard({ challenge }: ChallengeCardProps) {
         <Link href={`/admin/desafios/${challenge.id}/editar`}>
           <Button size="sm" variant="outline">Editar</Button>
         </Link>
+        <Link href={`/lp/desafio/${challenge.id}`} target="_blank">
+          <Button size="sm" variant="outline" className="border-indigo-300 text-indigo-600 hover:bg-indigo-50">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </Button>
+        </Link>
         <ChallengeToggleButton
           challengeId={challenge.id}
           challengeName={challenge.title}
