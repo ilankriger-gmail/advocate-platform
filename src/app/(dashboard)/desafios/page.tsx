@@ -1,12 +1,12 @@
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { Dumbbell, Trophy, Heart } from 'lucide-react';
+import { Dumbbell, Trophy, Heart, DollarSign, Package, Smartphone } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { getSiteSettings } from '@/lib/config/site';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui';
 import { PhysicalChallengeCard, MyParticipationCard } from '@/components/challenges';
-import type { ParticipationWithChallenge } from '@/lib/supabase/types';
+import type { ParticipationWithChallenge, ChallengePrize } from '@/lib/supabase/types';
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings([
@@ -28,21 +28,26 @@ type Challenge = {
   id: string;
   title: string;
   description: string;
-  type: 'participe' | 'engajamento' | 'fisico';
+  type: 'participe' | 'engajamento' | 'fisico' | 'atos_amor';
   icon: string;
   thumbnail_url?: string | null;
   is_active: boolean;
   instagram_embed_url?: string;
   prize_amount?: number;
   num_winners?: number;
-  goal_type?: 'repetitions' | 'time';
-  goal_value?: number;
-  record_video_url?: string;
-  hashtag?: string;
-  profile_to_tag?: string;
+  goal_type: 'repetitions' | 'time' | null;
+  goal_value: number | null;
+  record_video_url: string | null;
+  hashtag: string | null;
+  profile_to_tag: string | null;
   coins_reward: number;
   starts_at?: string;
   ends_at?: string;
+  action_instructions?: string | null;
+  raffle_enabled?: boolean;
+  raffle_prize_amount?: number;
+  raffle_frequency_days?: number;
+  prizes?: ChallengePrize[];
 };
 
 type Winner = {
@@ -74,7 +79,8 @@ export default async function DesafiosPage() {
     { data: winners },
     { data: participations },
     { data: allUserParticipations },
-    { data: userCoins }
+    { data: userCoins },
+    { data: allPrizes }
   ] = await Promise.all([
     // Buscar desafios ativos
     supabase
@@ -106,7 +112,12 @@ export default async function DesafiosPage() {
       .from('user_coins')
       .select('balance')
       .eq('user_id', user.id)
-      .maybeSingle()
+      .maybeSingle(),
+    // Buscar todos os prêmios dos desafios
+    supabase
+      .from('challenge_prizes')
+      .select('*')
+      .order('type', { ascending: true })
   ]);
 
   // Cast para o tipo correto
@@ -119,12 +130,26 @@ export default async function DesafiosPage() {
     (participations || []).map(p => [p.challenge_id, p])
   );
 
+  // Mapa de prêmios por desafio
+  const prizesMap = new Map<string, ChallengePrize[]>();
+  (allPrizes || []).forEach((prize: ChallengePrize) => {
+    const existing = prizesMap.get(prize.challenge_id) || [];
+    existing.push(prize);
+    prizesMap.set(prize.challenge_id, existing);
+  });
+
+  // Adicionar prêmios aos desafios
+  const challengesWithPrizes = (challenges || []).map(c => ({
+    ...c,
+    prizes: prizesMap.get(c.id) || []
+  })) as Challenge[];
+
   // Agrupar por tipo
-  const engagementChallenges = (challenges || []).filter(
+  const engagementChallenges = challengesWithPrizes.filter(
     c => c.type === 'participe' || c.type === 'engajamento'
   );
-  const physicalChallenges = (challenges || []).filter(c => c.type === 'fisico');
-  const atosAmorChallenges = (challenges || []).filter(c => c.type === 'atos_amor');
+  const physicalChallenges = challengesWithPrizes.filter(c => c.type === 'fisico');
+  const atosAmorChallenges = challengesWithPrizes.filter(c => c.type === 'atos_amor');
 
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('pt-BR', {
@@ -270,6 +295,61 @@ export default async function DesafiosPage() {
                         </a>
                       )}
 
+                      {/* Prêmios do Desafio */}
+                      {challenge.prizes && challenge.prizes.length > 0 && (
+                        <div className="space-y-2">
+                          <p className="font-semibold text-gray-900 text-sm flex items-center gap-2">
+                            🎁 Prêmios
+                          </p>
+                          <div className="grid gap-2">
+                            {challenge.prizes.map((prize) => {
+                              const prizeConfig = {
+                                money: {
+                                  icon: <DollarSign className="w-4 h-4" />,
+                                  bg: 'bg-green-50 border-green-200',
+                                  iconBg: 'bg-green-500',
+                                  text: 'text-green-800',
+                                },
+                                physical: {
+                                  icon: <Package className="w-4 h-4" />,
+                                  bg: 'bg-blue-50 border-blue-200',
+                                  iconBg: 'bg-blue-500',
+                                  text: 'text-blue-800',
+                                },
+                                digital: {
+                                  icon: <Smartphone className="w-4 h-4" />,
+                                  bg: 'bg-purple-50 border-purple-200',
+                                  iconBg: 'bg-purple-500',
+                                  text: 'text-purple-800',
+                                },
+                              };
+                              const config = prizeConfig[prize.type];
+
+                              return (
+                                <div
+                                  key={prize.id}
+                                  className={`flex items-center gap-3 p-3 rounded-xl border ${config.bg}`}
+                                >
+                                  <div className={`w-8 h-8 ${config.iconBg} rounded-lg flex items-center justify-center flex-shrink-0 text-white`}>
+                                    {config.icon}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className={`font-semibold text-sm ${config.text}`}>
+                                      {prize.name}
+                                    </p>
+                                    <p className="text-xs text-gray-500">
+                                      {prize.value && `R$ ${prize.value.toFixed(2)}`}
+                                      {prize.value && prize.quantity > 1 && ' • '}
+                                      {prize.quantity > 1 && `${prize.quantity}x`}
+                                    </p>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
                       {/* Ganhadores */}
                       {challengeWinners.length > 0 && (
                         <div className="border-t pt-4">
@@ -389,7 +469,7 @@ export default async function DesafiosPage() {
       )}
 
       {/* Sem desafios */}
-      {(!challenges || challenges.length === 0) && (
+      {challengesWithPrizes.length === 0 && (
         <Card className="relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-100" />
           <div className="relative p-8 sm:p-12 text-center">

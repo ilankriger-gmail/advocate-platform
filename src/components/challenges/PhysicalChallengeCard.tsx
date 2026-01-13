@@ -1,9 +1,19 @@
 'use client';
 
 import { useState } from 'react';
+import { DollarSign, Package, Smartphone } from 'lucide-react';
 import { Badge, Button, Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui';
 import { ChallengeParticipationModal } from './ChallengeParticipationModal';
 import YouTubeEmbed from '@/components/posts/YouTubeEmbed';
+
+interface ChallengePrize {
+  id: string;
+  type: 'physical' | 'digital' | 'money';
+  name: string;
+  description: string | null;
+  value: number | null;
+  quantity: number;
+}
 
 interface Challenge {
   id: string;
@@ -22,6 +32,7 @@ interface Challenge {
   raffle_enabled?: boolean;
   raffle_prize_amount?: number;
   raffle_frequency_days?: number;
+  prizes?: ChallengePrize[];
 }
 
 interface Participation {
@@ -172,6 +183,61 @@ export function PhysicalChallengeCard({
                     <p className="text-xs text-purple-600">
                       Bata a meta e concorra ao sorteio mensal!
                     </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Prêmios do Desafio */}
+              {challenge.prizes && challenge.prizes.length > 0 && (
+                <div className="space-y-2">
+                  <p className="font-semibold text-gray-900 text-sm flex items-center gap-2">
+                    🎁 Prêmios
+                  </p>
+                  <div className="grid gap-2">
+                    {challenge.prizes.map((prize) => {
+                      const prizeConfig = {
+                        money: {
+                          icon: <DollarSign className="w-4 h-4" />,
+                          bg: 'bg-green-50 border-green-200',
+                          iconBg: 'bg-green-500',
+                          text: 'text-green-800',
+                        },
+                        physical: {
+                          icon: <Package className="w-4 h-4" />,
+                          bg: 'bg-blue-50 border-blue-200',
+                          iconBg: 'bg-blue-500',
+                          text: 'text-blue-800',
+                        },
+                        digital: {
+                          icon: <Smartphone className="w-4 h-4" />,
+                          bg: 'bg-purple-50 border-purple-200',
+                          iconBg: 'bg-purple-500',
+                          text: 'text-purple-800',
+                        },
+                      };
+                      const config = prizeConfig[prize.type];
+
+                      return (
+                        <div
+                          key={prize.id}
+                          className={`flex items-center gap-3 p-3 rounded-xl border ${config.bg}`}
+                        >
+                          <div className={`w-8 h-8 ${config.iconBg} rounded-lg flex items-center justify-center flex-shrink-0 text-white`}>
+                            {config.icon}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className={`font-semibold text-sm ${config.text}`}>
+                              {prize.name}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {prize.value && `R$ ${prize.value.toFixed(2)}`}
+                              {prize.value && prize.quantity > 1 && ' • '}
+                              {prize.quantity > 1 && `${prize.quantity}x`}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
