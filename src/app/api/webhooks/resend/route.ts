@@ -146,7 +146,12 @@ export async function POST(request: NextRequest) {
 
     const { type, data } = payload;
     const messageId = data.email_id;
-    const recipientEmail = data.to[0];
+    const recipientEmail = data.to?.[0];
+
+    if (!recipientEmail) {
+      console.error('[Webhook Resend] Email destinatário ausente na payload');
+      return NextResponse.json({ error: 'Missing recipient email' }, { status: 400 });
+    }
 
     // Mapear eventos para status
     let newStatus: 'delivered' | 'opened' | 'failed' | null = null;

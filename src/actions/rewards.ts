@@ -126,12 +126,17 @@ export async function claimReward(
 
     // Decrementar estoque (se não for ilimitado)
     if (reward.quantity_available !== null) {
-      await supabase
+      const { error: stockError } = await supabase
         .from('rewards')
         .update({
           quantity_available: reward.quantity_available - 1,
         })
         .eq('id', rewardId);
+
+      if (stockError) {
+        rewardsLogger.error('Erro ao decrementar estoque', { error: stockError.message, rewardId });
+        // Não falha a operação - resgate já foi criado
+      }
     }
 
     rewardsLogger.info('Resgate criado com sucesso', {
@@ -213,7 +218,11 @@ export async function cancelClaim(claimId: string): Promise<ActionResponse> {
     }
 
     // Devolver ao estoque
-    await supabase.rpc('increment_reward_stock', { reward_id: claim.reward_id });
+    const { error: stockError } = await supabase.rpc('increment_reward_stock', { reward_id: claim.reward_id });
+    if (stockError) {
+      console.error('Erro ao restaurar estoque:', stockError.message);
+      // Continua mesmo com erro - resgate já foi cancelado
+    }
 
     revalidatePath('/premios');
     revalidatePath('/dashboard');

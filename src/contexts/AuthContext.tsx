@@ -46,11 +46,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Função para buscar dados do perfil do usuário
   const fetchProfile = useCallback(async (userId: string) => {
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('users')
         .select('role, is_creator, full_name, avatar_url')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
+
+      // Ignorar erro PGRST116 (nenhum resultado) - usuário novo pode não ter perfil
+      if (error && error.code !== 'PGRST116') {
+        console.error('Erro ao buscar perfil:', error.message);
+        setProfile(null);
+        return;
+      }
 
       setProfile(data ? {
         role: data.role,
@@ -59,7 +66,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         avatar_url: data.avatar_url,
       } : null);
     } catch (error) {
-      console.error('Erro ao buscar perfil:', error);
+      console.error('Erro inesperado ao buscar perfil:', error);
       setProfile(null);
     }
   }, [supabase]);
