@@ -168,6 +168,11 @@ export const createMockParticipation = (
     ai_reason: null,
     ai_observed_value: null,
     ai_analyzed_at: null,
+    instagram_proof_url: null,
+    ai_instagram_is_valid: null,
+    ai_instagram_confidence: null,
+    ai_instagram_reason: null,
+    ai_is_suspicious: false,
     ...overrides,
   };
 };

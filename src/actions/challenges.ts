@@ -2,7 +2,15 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
-import { analyzeVídeoChallenge, analyzeAtosAmorChallenge, isValidYouTubeUrl, type AIVerdict } from '@/lib/gemini';
+import {
+  analyzeVídeoChallenge,
+  analyzeAtosAmorChallenge,
+  analyzeInstagramLink,
+  isValidYouTubeUrl,
+  isValidInstagramUrl,
+  type AIVerdict,
+  type InstagramVerdict
+} from '@/lib/gemini';
 import { ActionResponse } from '@/types/action';
 import type { Challenge, ChallengeParticipant, ChallengeWinner, ParticipationWithChallenge } from '@/lib/supabase/types';
 import { logger, maskId, sanitizeError } from '@/lib';
@@ -11,6 +19,7 @@ import { logger, maskId, sanitizeError } from '@/lib';
 export type ParticipationResult = {
   participation: ChallengeParticipant;
   aiVerdict: AIVerdict | null;
+  instagramVerdict: InstagramVerdict | null;
   challenge: {
     title: string;
     goal_type: 'repetitions' | 'time' | null;
@@ -30,6 +39,7 @@ export async function participateInChallenge(data: {
   resultValue: number;
   vídeoProofUrl?: string;
   socialMediaUrl?: string;
+  instagramProofUrl?: string;
 }): Promise<ActionResponse<ParticipationResult>> {
   try {
     const supabase = await createClient();
@@ -78,16 +88,37 @@ export async function participateInChallenge(data: {
       return { error: 'Apenas links do YouTube são aceitos. O vídeo deve ser público.' };
     }
 
+    // Para Atos de Amor, validar também o Instagram
+    const isAtosAmor = challenge.type === 'atos_amor';
+    if (isAtosAmor) {
+      if (!data.instagramProofUrl) {
+        return { error: 'Link do Instagram é obrigatório para Atos de Amor' };
+      }
+      if (!isValidInstagramUrl(data.instagramProofUrl)) {
+        return { error: 'Link do Instagram inválido. Use instagram.com/p/... ou instagram.com/reel/...' };
+      }
+    }
+
     // Analisar vídeo com IA (Gemini assiste o vídeo do YouTube)
     let aiVerdict: AIVerdict;
+    let instagramVerdict: InstagramVerdict | null = null;
 
-    if (challenge.type === 'atos_amor') {
-      // Para Atos de Amor, usar análise específica
+    if (isAtosAmor) {
+      // Para Atos de Amor, usar análise específica do YouTube E Instagram
       aiVerdict = await analyzeAtosAmorChallenge(
         data.vídeoProofUrl,
         challenge.title,
         challenge.action_instructions
       );
+
+      // Analisar Instagram também
+      if (data.instagramProofUrl) {
+        instagramVerdict = await analyzeInstagramLink(
+          data.instagramProofUrl,
+          challenge.title,
+          challenge.action_instructions
+        );
+      }
     } else {
       // Para desafios físicos, usar análise de repetições/tempo
       aiVerdict = await analyzeVídeoChallenge(
@@ -96,6 +127,63 @@ export async function participateInChallenge(data: {
         challenge.goal_value,
         challenge.title
       );
+    }
+
+    // ========== LÓGICA DE APROVAÇÃO AUTOMÁTICA ==========
+    let participationStatus: 'pending' | 'approved' | 'rejected' = 'pending';
+    let coinsToEarn = 0;
+
+    // Verificar se há conteúdo suspeito
+    const youtubeIsSuspicious = aiVerdict?.isSuspicious || false;
+    const instagramIsSuspicious = instagramVerdict?.isSuspicious || false;
+    const hasSuspiciousContent = youtubeIsSuspicious || instagramIsSuspicious;
+
+    if (isAtosAmor && instagramVerdict) {
+      // Para Atos de Amor: calcular confiança média entre YouTube e Instagram
+      const avgConfidence = (aiVerdict.confidence + instagramVerdict.confidence) / 2;
+      const bothValid = aiVerdict.isValid && instagramVerdict.isValid;
+      const bothInvalid = !aiVerdict.isValid && !instagramVerdict.isValid;
+
+      if (hasSuspiciousContent) {
+        // Conteúdo suspeito → sempre revisão humana
+        participationStatus = 'pending';
+        challengesLogger.info('Participação marcada para revisão por conteúdo suspeito', {
+          challengeId: maskId(data.challengeId),
+          youtubeIsSuspicious,
+          instagramIsSuspicious
+        });
+      } else if (avgConfidence >= 80 && bothValid) {
+        // Alta confiança e ambos válidos → aprovação automática
+        participationStatus = 'approved';
+        coinsToEarn = challenge.coins_reward || 0;
+        challengesLogger.info('Participação aprovada automaticamente pela IA', {
+          challengeId: maskId(data.challengeId),
+          avgConfidence,
+          coins: coinsToEarn
+        });
+      } else if (avgConfidence < 50 && bothInvalid) {
+        // Muito baixa confiança e ambos inválidos → rejeição automática
+        participationStatus = 'rejected';
+        challengesLogger.info('Participação rejeitada automaticamente pela IA', {
+          challengeId: maskId(data.challengeId),
+          avgConfidence
+        });
+      } else {
+        // Casos intermediários → revisão humana
+        participationStatus = 'pending';
+      }
+    } else {
+      // Para desafios físicos: usar apenas YouTube
+      if (aiVerdict.isSuspicious) {
+        participationStatus = 'pending';
+      } else if (aiVerdict.confidence >= 80 && aiVerdict.isValid) {
+        participationStatus = 'approved';
+        coinsToEarn = challenge.coins_reward || 0;
+      } else if (aiVerdict.confidence < 50 && !aiVerdict.isValid) {
+        participationStatus = 'rejected';
+      } else {
+        participationStatus = 'pending';
+      }
     }
 
     // Criar participacao com dados da análise de IA
@@ -107,14 +195,20 @@ export async function participateInChallenge(data: {
         result_value: data.resultValue,
         video_proof_url: data.vídeoProofUrl || null,
         social_media_url: data.socialMediaUrl || null,
-        status: 'pending',
-        coins_earned: 0,
-        // Campos de análise de IA
+        instagram_proof_url: data.instagramProofUrl || null,
+        status: participationStatus,
+        coins_earned: coinsToEarn,
+        // Campos de análise de IA (YouTube)
         ai_is_valid: aiVerdict?.isValid ?? null,
         ai_confidence: aiVerdict?.confidence ?? null,
         ai_reason: aiVerdict?.reason ?? null,
         ai_observed_value: aiVerdict?.observedValue ?? null,
         ai_analyzed_at: aiVerdict ? new Date().toISOString() : null,
+        ai_is_suspicious: hasSuspiciousContent,
+        // Campos de análise de IA (Instagram)
+        ai_instagram_is_valid: instagramVerdict?.isValid ?? null,
+        ai_instagram_confidence: instagramVerdict?.confidence ?? null,
+        ai_instagram_reason: instagramVerdict?.reason ?? null,
       })
       .select()
       .single();
@@ -127,6 +221,48 @@ export async function participateInChallenge(data: {
       return { error: 'Erro ao registrar participacao' };
     }
 
+    // Se foi aprovado automaticamente, creditar moedas ao usuário
+    if (participationStatus === 'approved' && coinsToEarn > 0) {
+      // Tentar usar RPC primeiro
+      const { error: coinsError } = await supabase.rpc('add_user_coins', {
+        p_user_id: user.id,
+        p_amount: coinsToEarn,
+      });
+
+      // Fallback se a função RPC não existir
+      if (coinsError) {
+        const { data: userCoins } = await supabase
+          .from('user_coins')
+          .select('balance')
+          .eq('user_id', user.id)
+          .single();
+
+        await supabase
+          .from('user_coins')
+          .update({
+            balance: (userCoins?.balance || 0) + coinsToEarn,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('user_id', user.id);
+      }
+
+      // Registrar transação
+      await supabase
+        .from('coin_transactions')
+        .insert({
+          user_id: user.id,
+          amount: coinsToEarn,
+          type: 'earned',
+          description: `Desafio aprovado automaticamente pela IA`,
+          reference_id: participation.id,
+        });
+
+      challengesLogger.info('Moedas creditadas automaticamente', {
+        userId: maskId(user.id),
+        amount: coinsToEarn
+      });
+    }
+
     revalidatePath('/desafios');
     revalidatePath('/dashboard');
 
@@ -136,6 +272,7 @@ export async function participateInChallenge(data: {
       data: {
         participation,
         aiVerdict: aiVerdict || null,
+        instagramVerdict: instagramVerdict || null,
         challenge: {
           title: challenge.title,
           goal_type: challenge.goal_type,

@@ -39,6 +39,7 @@ export function ChallengeParticipationModal({
   const [formData, setFormData] = useState({
     resultValue: '',
     proofUrl: '',
+    instagramUrl: '',
   });
 
   // Animação dos passos de análise
@@ -64,7 +65,7 @@ export function ChallengeParticipationModal({
     setStage('form');
     setError(null);
     setResult(null);
-    setFormData({ resultValue: '', proofUrl: '' });
+    setFormData({ resultValue: '', proofUrl: '', instagramUrl: '' });
     onClose();
     router.refresh();
   };
@@ -91,6 +92,14 @@ export function ChallengeParticipationModal({
       return;
     }
 
+    // Para Atos de Amor, validar também Instagram
+    if (isAtosAmor) {
+      if (!formData.instagramUrl || !isInstagramUrl(formData.instagramUrl)) {
+        setError('O link do Instagram é obrigatório para Atos de Amor. Use link de post ou reel.');
+        return;
+      }
+    }
+
     setIsLoading(true);
     setStage('analyzing');
 
@@ -98,6 +107,7 @@ export function ChallengeParticipationModal({
       challengeId: challenge.id,
       resultValue,
       vídeoProofUrl: formData.proofUrl || undefined,
+      instagramProofUrl: isAtosAmor ? formData.instagramUrl : undefined,
     });
 
     setIsLoading(false);
@@ -121,14 +131,20 @@ export function ChallengeParticipationModal({
     return /youtube\.com\/watch|youtu\.be\/|youtube\.com\/shorts\//.test(url);
   };
 
+  // Validar que é URL do Instagram
+  const isInstagramUrl = (url: string) => {
+    return /instagram\.com\/(p|reel|reels)\//.test(url);
+  };
+
   // Passos de análise (diferentes para atos de amor)
   const analysisSteps = isAtosAmor
     ? [
         { label: 'Conectando ao YouTube', icon: '🔗' },
-        { label: 'Carregando vídeo', icon: '📥' },
-        { label: 'Assistindo conteúdo', icon: '👀' },
-        { label: 'Verificando ato de amor', icon: '💝' },
-        { label: 'Finalizando análise', icon: '✨' },
+        { label: 'Assistindo vídeo', icon: '👀' },
+        { label: 'Verificando ato no YouTube', icon: '💝' },
+        { label: 'Analisando Instagram', icon: '📸' },
+        { label: 'Verificando post/reel', icon: '✨' },
+        { label: 'Finalizando análise', icon: '🤖' },
       ]
     : [
         { label: 'Conectando ao YouTube', icon: '🔗' },
@@ -195,85 +211,141 @@ export function ChallengeParticipationModal({
   const renderResultStage = () => {
     if (!result) return null;
 
-    const { aiVerdict, participation } = result;
-    const confidence = aiVerdict?.confidence ?? 0;
+    const { aiVerdict, instagramVerdict, participation } = result;
+    const youtubeConfidence = aiVerdict?.confidence ?? 0;
+    const instagramConfidence = instagramVerdict?.confidence ?? 0;
     const observedValue = aiVerdict?.observedValue;
-    const reason = aiVerdict?.reason;
-    const isValid = aiVerdict?.isValid;
+    const youtubeReason = aiVerdict?.reason;
+    const instagramReason = instagramVerdict?.reason;
+
+    // Calcular confiança média para atos de amor
+    const avgConfidence = isAtosAmor && instagramVerdict
+      ? Math.round((youtubeConfidence + instagramConfidence) / 2)
+      : youtubeConfidence;
+
+    const isApproved = participation.status === 'approved';
+    const isRejected = participation.status === 'rejected';
 
     return (
       <div className="py-4">
         {/* Header */}
         <div className="text-center mb-6">
           <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${
-            isValid ? 'bg-green-100' : 'bg-yellow-100'
+            isApproved ? 'bg-green-100' : isRejected ? 'bg-red-100' : 'bg-yellow-100'
           }`}>
-            <span className="text-3xl">{isValid ? '✅' : '⏳'}</span>
+            <span className="text-3xl">{isApproved ? '✅' : isRejected ? '❌' : '⏳'}</span>
           </div>
           <h3 className="text-xl font-bold text-gray-900">
-            {isValid ? 'Participação Enviada!' : 'Participação em Análise'}
+            {isApproved ? 'Participação Aprovada!' : isRejected ? 'Participação Rejeitada' : 'Participação em Análise'}
           </h3>
           <p className="text-gray-500 text-sm mt-1">
-            {isValid
-              ? 'A IA validou seu desafio com sucesso'
+            {isApproved
+              ? `Você ganhou ${participation.coins_earned} corações!`
+              : isRejected
+              ? 'Sua participação não atendeu aos critérios'
               : 'Aguardando revisão da equipe'}
           </p>
         </div>
 
-        {/* Card de análise da IA */}
+        {/* Card de análise da IA - YouTube */}
         {aiVerdict && (
-          <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl p-4 mb-4 border border-purple-100">
+          <div className="bg-gradient-to-br from-red-50 to-orange-50 rounded-xl p-4 mb-4 border border-red-100">
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-xl">🤖</span>
-              <h4 className="font-semibold text-gray-900">Análise da IA</h4>
+              <span className="text-xl">▶️</span>
+              <h4 className="font-semibold text-gray-900">Análise do YouTube</h4>
+              <span className={`ml-auto px-2 py-0.5 rounded text-xs font-medium ${
+                aiVerdict.isValid ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+              }`}>
+                {aiVerdict.isValid ? 'Válido' : 'Inválido'}
+              </span>
             </div>
 
-            <div className="space-y-3">
-              {/* Confiança */}
+            <div className="space-y-2">
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-gray-600">Confiança</span>
-                  <span className="font-medium text-gray-900">{confidence}%</span>
+                  <span className="font-medium text-gray-900">{youtubeConfidence}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
                     className={`h-2 rounded-full transition-all duration-500 ${
-                      confidence >= 80
-                        ? 'bg-green-500'
-                        : confidence >= 50
-                        ? 'bg-yellow-500'
-                        : 'bg-red-500'
+                      youtubeConfidence >= 80 ? 'bg-green-500' : youtubeConfidence >= 50 ? 'bg-yellow-500' : 'bg-red-500'
                     }`}
-                    style={{ width: `${confidence}%` }}
+                    style={{ width: `${youtubeConfidence}%` }}
                   />
                 </div>
               </div>
 
               {/* Valores (apenas para desafios físicos) */}
               {!isAtosAmor && (
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-white rounded-lg p-3 border">
-                    <p className="text-xs text-gray-500 mb-1">Seu resultado</p>
-                    <p className="font-bold text-gray-900">
-                      {participation.result_value} {goalLabel}
-                    </p>
+                <div className="grid grid-cols-2 gap-3 mt-2">
+                  <div className="bg-white rounded-lg p-2 border">
+                    <p className="text-xs text-gray-500">Seu resultado</p>
+                    <p className="font-bold text-gray-900 text-sm">{participation.result_value} {goalLabel}</p>
                   </div>
-                  <div className="bg-white rounded-lg p-3 border">
-                    <p className="text-xs text-gray-500 mb-1">IA contou</p>
-                    <p className="font-bold text-gray-900">
-                      {observedValue ?? '-'} {observedValue ? goalLabel : ''}
-                    </p>
+                  <div className="bg-white rounded-lg p-2 border">
+                    <p className="text-xs text-gray-500">IA contou</p>
+                    <p className="font-bold text-gray-900 text-sm">{observedValue ?? '-'} {observedValue ? goalLabel : ''}</p>
                   </div>
                 </div>
               )}
 
-              {/* Motivo */}
-              {reason && (
-                <div className="bg-white rounded-lg p-3 border">
-                  <p className="text-xs text-gray-500 mb-1">Observação da IA</p>
-                  <p className="text-sm text-gray-700">{reason}</p>
-                </div>
+              {youtubeReason && (
+                <p className="text-xs text-gray-600 mt-2">{youtubeReason}</p>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Card de análise da IA - Instagram (apenas para Atos de Amor) */}
+        {isAtosAmor && instagramVerdict && (
+          <div className="bg-gradient-to-br from-pink-50 to-purple-50 rounded-xl p-4 mb-4 border border-pink-100">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xl">📸</span>
+              <h4 className="font-semibold text-gray-900">Análise do Instagram</h4>
+              <span className={`ml-auto px-2 py-0.5 rounded text-xs font-medium ${
+                instagramVerdict.isValid ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+              }`}>
+                {instagramVerdict.isValid ? 'Válido' : 'Inválido'}
+              </span>
+            </div>
+
+            <div className="space-y-2">
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="text-gray-600">Confiança</span>
+                  <span className="font-medium text-gray-900">{instagramConfidence}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className={`h-2 rounded-full transition-all duration-500 ${
+                      instagramConfidence >= 80 ? 'bg-green-500' : instagramConfidence >= 50 ? 'bg-yellow-500' : 'bg-red-500'
+                    }`}
+                    style={{ width: `${instagramConfidence}%` }}
+                  />
+                </div>
+              </div>
+
+              {instagramReason && (
+                <p className="text-xs text-gray-600 mt-2">{instagramReason}</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Confiança Média (para Atos de Amor) */}
+        {isAtosAmor && aiVerdict && instagramVerdict && (
+          <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl p-4 mb-4 border border-purple-100">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">🤖</span>
+                <h4 className="font-semibold text-gray-900">Confiança Média</h4>
+              </div>
+              <span className={`text-xl font-bold ${
+                avgConfidence >= 80 ? 'text-green-600' : avgConfidence >= 50 ? 'text-yellow-600' : 'text-red-600'
+              }`}>
+                {avgConfidence}%
+              </span>
             </div>
           </div>
         )}
@@ -286,7 +358,7 @@ export function ChallengeParticipationModal({
               <div>
                 <h4 className="font-semibold text-yellow-800">Análise de IA indisponível</h4>
                 <p className="text-sm text-yellow-700 mt-1">
-                  Não foi possível analisar o vídeo automaticamente.
+                  Não foi possível analisar automaticamente.
                   Sua participação será revisada manualmente pela equipe.
                 </p>
               </div>
@@ -389,6 +461,28 @@ export function ChallengeParticipationModal({
           Nossa IA vai assistir seu vídeo e validar se você bateu a meta!
         </p>
       </div>
+
+      {/* Link do Instagram (apenas para Atos de Amor) */}
+      {isAtosAmor && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Link do post/reel no Instagram *
+          </label>
+          <Input
+            type="url"
+            value={formData.instagramUrl}
+            onChange={(e) => setFormData({ ...formData, instagramUrl: e.target.value })}
+            placeholder="https://instagram.com/p/... ou /reel/..."
+            required
+          />
+          <div className="mt-2 p-2 bg-pink-50 border border-pink-200 rounded-lg">
+            <p className="text-xs text-pink-800">
+              📸 <strong>Instagram:</strong> Compartilhe seu ato de amor no Instagram também!
+              Poste ou faça um reel público mostrando sua participação.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Erro */}
       {error && (

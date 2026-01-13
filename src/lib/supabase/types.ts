@@ -343,17 +343,24 @@ export interface ChallengeParticipant {
   result_value: number | null;
   video_proof_url: string | null;
   social_media_url: string | null;
+  instagram_proof_url: string | null;
   status: ParticipationStatus;
   approved_by: string | null;
   approved_at: string | null;
   coins_earned: number;
   created_at: string;
-  // Campos de análise de IA
+  // Campos de análise de IA (YouTube)
   ai_is_valid: boolean | null;
   ai_confidence: number | null;
   ai_reason: string | null;
   ai_observed_value: number | null;
   ai_analyzed_at: string | null;
+  // Campos de análise de IA (Instagram)
+  ai_instagram_is_valid: boolean | null;
+  ai_instagram_confidence: number | null;
+  ai_instagram_reason: string | null;
+  // Flag de conteúdo suspeito
+  ai_is_suspicious: boolean;
 }
 
 export interface ChallengeWinner {

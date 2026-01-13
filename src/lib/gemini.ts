@@ -20,6 +20,16 @@ export interface AIVerdict {
   reason: string;
   analyzedAt: string;
   observedValue?: number; // Repetições contadas ou segundos medidos
+  isSuspicious?: boolean; // Flag para conteúdo suspeito que precisa revisão humana
+}
+
+// Resultado de análise do Instagram
+export interface InstagramVerdict {
+  isValid: boolean;
+  confidence: number; // 0-100
+  reason: string;
+  analyzedAt: string;
+  isSuspicious: boolean;
 }
 
 interface GeminiAnalysisResult {
@@ -27,6 +37,7 @@ interface GeminiAnalysisResult {
   confidence: number;
   reason: string;
   observedValue?: number;
+  isSuspicious?: boolean;
 }
 
 /**
@@ -220,6 +231,7 @@ function parseGeminiResponse(text: string): GeminiAnalysisResult {
       confidence: Math.min(100, Math.max(0, parseInt(parsed.confidence, 10) || 0)),
       reason: String(parsed.reason || 'Sem detalhes'),
       observedValue: parsed.observedValue ? parseInt(parsed.observedValue, 10) : undefined,
+      isSuspicious: Boolean(parsed.isSuspicious),
     };
   } catch {
     return {
@@ -278,6 +290,7 @@ ASSISTA o vídeo completo e analise:
 2. O ato corresponde ao desafio "${challengeTitle}"?
 3. A ação parece ser real e autêntica (não encenada)?
 4. O ato demonstra bondade, solidariedade ou amor ao próximo?
+5. Há algo SUSPEITO no vídeo que precise de revisão humana?
 
 CRITÉRIOS DE VALIDAÇÃO:
 - O ato deve ser claramente visível no vídeo
@@ -294,11 +307,20 @@ EXEMPLOS DE ATOS VÁLIDOS:
 - Ajudar animais de rua
 - Qualquer gesto genuíno de bondade
 
+MARQUE COMO SUSPEITO SE:
+- Conteúdo parece ser spam ou propaganda
+- Vídeo não relacionado ao desafio
+- Possível conteúdo ofensivo ou inapropriado
+- Tentativa de fraude ou manipulação
+- Vídeo claramente reciclado/repostado
+- Qualquer coisa que precise avaliação humana
+
 Responda EXATAMENTE neste formato JSON (apenas o JSON, sem markdown):
 {
   "isValid": true ou false,
   "confidence": 0-100 (quão confiante você está),
-  "reason": "Explicação breve do que foi observado no vídeo"
+  "reason": "Explicação breve do que foi observado no vídeo",
+  "isSuspicious": true ou false (se precisa revisão humana)
 }`;
 
     // SEGURANCA: AbortController para timeout
@@ -369,6 +391,7 @@ Responda EXATAMENTE neste formato JSON (apenas o JSON, sem markdown):
 
     return {
       ...result,
+      isSuspicious: result.isSuspicious || false,
       analyzedAt: new Date().toISOString(),
     };
   } catch (error) {
@@ -378,6 +401,7 @@ Responda EXATAMENTE neste formato JSON (apenas o JSON, sem markdown):
       confidence: 0,
       reason: 'Erro ao analisar vídeo. Verifique se o vídeo é público.',
       analyzedAt: new Date().toISOString(),
+      isSuspicious: false,
     };
   }
 }
@@ -432,4 +456,222 @@ export function isValidVídeoUrl(url: string): boolean {
 export function getVídeoPlatform(url: string): string | null {
   if (/youtube\.com|youtu\.be/.test(url)) return 'YouTube';
   return null;
+}
+
+/**
+ * Verifica se uma URL é do Instagram
+ * SEGURANCA: Validacao rigorosa para prevenir URLs maliciosas
+ */
+export function isValidInstagramUrl(url: string): boolean {
+  if (!url || typeof url !== 'string') {
+    return false;
+  }
+
+  // Normalizar e limpar URL
+  const trimmedUrl = url.trim();
+
+  // SEGURANCA: Verificar protocolo (apenas https e http)
+  if (!trimmedUrl.startsWith('https://') && !trimmedUrl.startsWith('http://')) {
+    return false;
+  }
+
+  // SEGURANCA: Bloquear URLs com caracteres suspeitos
+  if (/[<>"'`\\]/.test(trimmedUrl)) {
+    return false;
+  }
+
+  // SEGURANCA: Verificar dominio exato (previne instagram.com.malicious.com)
+  try {
+    const urlObj = new URL(trimmedUrl);
+    const validHosts = ['www.instagram.com', 'instagram.com', 'm.instagram.com'];
+    if (!validHosts.includes(urlObj.hostname)) {
+      return false;
+    }
+  } catch {
+    return false;
+  }
+
+  // Verificar formato da URL (post ou reel)
+  return /instagram\.com\/(p|reel|reels)\/[A-Za-z0-9_-]+/.test(trimmedUrl);
+}
+
+/**
+ * Extrai o código do post/reel do Instagram da URL
+ */
+function extractInstagramCode(url: string): string | null {
+  const match = url.match(/instagram\.com\/(p|reel|reels)\/([A-Za-z0-9_-]+)/);
+  return match ? match[2] : null;
+}
+
+/**
+ * Analisa um link do Instagram usando Gemini
+ * ACESSA o post/reel e verifica se corresponde ao desafio
+ *
+ * @param instagramUrl URL do post/reel do Instagram (deve ser público)
+ * @param challengeTitle Título do desafio
+ * @param actionInstructions Instruções específicas do ato de amor
+ */
+export async function analyzeInstagramLink(
+  instagramUrl: string,
+  challengeTitle: string,
+  actionInstructions?: string | null
+): Promise<InstagramVerdict> {
+  const apiKey = process.env.GEMINI_API_KEY;
+
+  // Se não tem API key, retorna verificação manual
+  if (!apiKey || apiKey === 'your-gemini-api-key') {
+    return {
+      isValid: false,
+      confidence: 0,
+      reason: 'API Gemini não configurada - verificação manual necessária',
+      analyzedAt: new Date().toISOString(),
+      isSuspicious: false,
+    };
+  }
+
+  // Validar que é URL do Instagram
+  if (!isValidInstagramUrl(instagramUrl)) {
+    return {
+      isValid: false,
+      confidence: 0,
+      reason: 'URL do Instagram inválida. Use instagram.com/p/... ou instagram.com/reel/...',
+      analyzedAt: new Date().toISOString(),
+      isSuspicious: false,
+    };
+  }
+
+  const instagramCode = extractInstagramCode(instagramUrl);
+  if (!instagramCode) {
+    return {
+      isValid: false,
+      confidence: 0,
+      reason: 'Não foi possível extrair o código do post/reel do Instagram',
+      analyzedAt: new Date().toISOString(),
+      isSuspicious: false,
+    };
+  }
+
+  try {
+    const prompt = `Você é um verificador de conteúdo do Instagram para desafios de "Atos de Amor".
+
+DESAFIO: ${challengeTitle}
+${actionInstructions ? `INSTRUÇÕES ESPECÍFICAS: ${actionInstructions}` : ''}
+
+Analise este link do Instagram e verifique:
+
+1. O conteúdo (foto/vídeo) mostra um ATO DE AMOR genuíno?
+2. O conteúdo corresponde ao desafio "${challengeTitle}"?
+3. Parece ser conteúdo autêntico e não apenas uma postagem genérica?
+4. Há algo SUSPEITO que precise de revisão humana?
+
+CRITÉRIOS DE VALIDAÇÃO:
+- O conteúdo deve mostrar claramente o ato de amor
+- Deve ser uma postagem recente e relacionada ao desafio
+- Ser generoso na avaliação - o importante é o espírito de ajudar
+- Considerar que pessoas podem ter postado antes de gravar o vídeo
+
+MARQUE COMO SUSPEITO SE:
+- Perfil parece ser fake ou bot
+- Conteúdo claramente não relacionado ao desafio
+- Possível spam ou propaganda
+- Conta privada ou conteúdo inacessível
+- Conteúdo ofensivo ou inapropriado
+- Qualquer coisa que precise avaliação humana
+
+Responda EXATAMENTE neste formato JSON (apenas o JSON, sem markdown):
+{
+  "isValid": true ou false,
+  "confidence": 0-100 (quão confiante você está),
+  "reason": "Explicação breve do que foi observado no Instagram",
+  "isSuspicious": true ou false (se precisa revisão humana)
+}`;
+
+    // SEGURANCA: AbortController para timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), GEMINI_TIMEOUT_MS);
+
+    // Usar gemini-2.0-flash - passar a URL do Instagram diretamente
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        signal: controller.signal,
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                // Tentar acessar a URL do Instagram diretamente
+                {
+                  file_data: {
+                    file_uri: instagramUrl,
+                  },
+                },
+                {
+                  text: prompt,
+                },
+              ],
+            },
+          ],
+          generationConfig: {
+            temperature: 0.3,
+            maxOutputTokens: 1000,
+          },
+        }),
+      }
+    );
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Gemini API error (Instagram):', response.status, errorText);
+
+      // Se o Gemini não consegue acessar o Instagram diretamente,
+      // marcar como suspeito para revisão humana
+      if (errorText.includes('INVALID_ARGUMENT') || errorText.includes('file_uri')) {
+        return {
+          isValid: false,
+          confidence: 0,
+          reason: 'Não foi possível acessar o link do Instagram automaticamente. Será revisado manualmente.',
+          analyzedAt: new Date().toISOString(),
+          isSuspicious: true, // Marcar para revisão humana
+        };
+      }
+
+      return {
+        isValid: false,
+        confidence: 0,
+        reason: 'Erro ao conectar com API Gemini. Tente novamente.',
+        analyzedAt: new Date().toISOString(),
+        isSuspicious: false,
+      };
+    }
+
+    const data = await response.json();
+    const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    console.log('Gemini Instagram analysis response:', textResponse);
+
+    const result = parseGeminiResponse(textResponse);
+
+    return {
+      isValid: result.isValid,
+      confidence: result.confidence,
+      reason: result.reason,
+      isSuspicious: result.isSuspicious || false,
+      analyzedAt: new Date().toISOString(),
+    };
+  } catch (error) {
+    console.error('Error analyzing Instagram link:', error);
+    return {
+      isValid: false,
+      confidence: 0,
+      reason: 'Erro ao analisar link do Instagram. Será revisado manualmente.',
+      analyzedAt: new Date().toISOString(),
+      isSuspicious: true, // Marcar para revisão humana
+    };
+  }
 }

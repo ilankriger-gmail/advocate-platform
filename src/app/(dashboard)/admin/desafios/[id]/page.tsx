@@ -62,6 +62,8 @@ export default async function AdminDesafioDetalhesPage({ params }: PageProps) {
     switch (challenge.type) {
       case 'fisico':
         return <Badge className="bg-blue-100 text-blue-700">Físico</Badge>;
+      case 'atos_amor':
+        return <Badge className="bg-rose-100 text-rose-700">Atos de Amor</Badge>;
       case 'engajamento':
         return <Badge className="bg-purple-100 text-purple-700">Engajamento</Badge>;
       case 'participe':
@@ -210,6 +212,7 @@ export default async function AdminDesafioDetalhesPage({ params }: PageProps) {
                 participation={p}
                 goalType={challenge.goal_type}
                 coinsReward={challenge.coins_reward}
+                challengeType={challenge.type}
               />
             ))}
           </div>
@@ -260,30 +263,35 @@ export default async function AdminDesafioDetalhesPage({ params }: PageProps) {
   );
 }
 
-interface AIVerdict {
-  isValid: boolean;
-  confidence: number;
-  reason: string;
-  analyzedAt: string;
-}
-
 interface ParticipationCardProps {
   participation: {
     id: string;
     result_value: number | null;
-    vídeo_proof_url: string | null;
+    video_proof_url: string | null;
     social_media_url: string | null;
+    instagram_proof_url: string | null;
     created_at: string;
     profiles: unknown;
-    ai_verdict?: AIVerdict | null;
+    // Campos de análise de IA (YouTube)
+    ai_is_valid: boolean | null;
+    ai_confidence: number | null;
+    ai_reason: string | null;
+    ai_observed_value: number | null;
+    ai_is_suspicious: boolean | null;
+    // Campos de análise de IA (Instagram)
+    ai_instagram_is_valid: boolean | null;
+    ai_instagram_confidence: number | null;
+    ai_instagram_reason: string | null;
   };
   goalType: string | null;
   coinsReward: number;
+  challengeType?: string | null;
 }
 
-function ParticipationCard({ participation, goalType, coinsReward }: ParticipationCardProps) {
+function ParticipationCard({ participation, goalType, coinsReward, challengeType }: ParticipationCardProps) {
   const profile = participation.profiles as { id: string; full_name: string; instagram_username: string; avatar_url: string } | null;
   const unit = goalType === 'time' ? 'segundos' : 'repeticoes';
+  const isAtosAmor = challengeType === 'atos_amor';
 
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('pt-BR', {
@@ -294,8 +302,27 @@ function ParticipationCard({ participation, goalType, coinsReward }: Participati
     });
   };
 
+  // Calcular confiança média para atos de amor
+  const avgConfidence = isAtosAmor && participation.ai_instagram_confidence !== null
+    ? Math.round(((participation.ai_confidence || 0) + (participation.ai_instagram_confidence || 0)) / 2)
+    : participation.ai_confidence;
+
   return (
-    <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+    <div className={`p-4 rounded-lg border ${
+      participation.ai_is_suspicious
+        ? 'bg-red-50 border-red-300'
+        : 'bg-yellow-50 border-yellow-200'
+    }`}>
+      {/* Badge de Suspeito */}
+      {participation.ai_is_suspicious && (
+        <div className="flex items-center gap-2 mb-3 p-2 bg-red-100 rounded-lg border border-red-200">
+          <span className="text-lg">⚠️</span>
+          <span className="text-sm font-medium text-red-700">
+            Conteúdo marcado como suspeito - Revisão humana necessária
+          </span>
+        </div>
+      )}
+
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
           {profile?.avatar_url ? (
@@ -319,53 +346,126 @@ function ParticipationCard({ participation, goalType, coinsReward }: Participati
         <span className="text-xs text-gray-400">{formatDate(participation.created_at)}</span>
       </div>
 
-      <div className="mb-3 p-3 bg-white rounded-lg">
-        <p className="text-lg font-bold text-indigo-600">
-          Resultado: {participation.result_value} {unit}
-        </p>
-      </div>
+      {/* Resultado (apenas para físicos) */}
+      {!isAtosAmor && participation.result_value && (
+        <div className="mb-3 p-3 bg-white rounded-lg">
+          <p className="text-lg font-bold text-indigo-600">
+            Resultado: {participation.result_value} {unit}
+            {participation.ai_observed_value && (
+              <span className="text-sm font-normal text-gray-500 ml-2">
+                (IA contou: {participation.ai_observed_value})
+              </span>
+            )}
+          </p>
+        </div>
+      )}
 
-      {/* Veredito da IA */}
-      {participation.ai_verdict && (
+      {/* Análise de IA - YouTube */}
+      {participation.ai_confidence !== null && (
         <div className={`mb-3 p-3 rounded-lg border ${
-          participation.ai_verdict.isValid
+          participation.ai_is_valid
             ? 'bg-green-50 border-green-200'
             : 'bg-red-50 border-red-200'
         }`}>
           <div className="flex items-center justify-between mb-1">
             <span className="text-sm font-medium flex items-center gap-1">
-              {participation.ai_verdict.isValid ? (
-                <><span className="text-green-600">IA: Válido</span></>
+              <span className="text-red-500">▶</span>
+              {participation.ai_is_valid ? (
+                <span className="text-green-600">YouTube: Válido</span>
               ) : (
-                <><span className="text-red-600">IA: Inválido</span></>
+                <span className="text-red-600">YouTube: Inválido</span>
               )}
             </span>
             <span className={`text-sm font-bold ${
-              participation.ai_verdict.confidence >= 70
+              (participation.ai_confidence || 0) >= 70
                 ? 'text-green-600'
-                : participation.ai_verdict.confidence >= 40
+                : (participation.ai_confidence || 0) >= 40
                 ? 'text-yellow-600'
                 : 'text-red-600'
             }`}>
-              {participation.ai_verdict.confidence}% confianca
+              {participation.ai_confidence}%
             </span>
           </div>
-          <p className="text-xs text-gray-600">{participation.ai_verdict.reason}</p>
+          <p className="text-xs text-gray-600">{participation.ai_reason}</p>
         </div>
       )}
 
+      {/* Análise de IA - Instagram (apenas para Atos de Amor) */}
+      {isAtosAmor && participation.ai_instagram_confidence !== null && (
+        <div className={`mb-3 p-3 rounded-lg border ${
+          participation.ai_instagram_is_valid
+            ? 'bg-green-50 border-green-200'
+            : 'bg-red-50 border-red-200'
+        }`}>
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-sm font-medium flex items-center gap-1">
+              <span className="text-pink-500">📸</span>
+              {participation.ai_instagram_is_valid ? (
+                <span className="text-green-600">Instagram: Válido</span>
+              ) : (
+                <span className="text-red-600">Instagram: Inválido</span>
+              )}
+            </span>
+            <span className={`text-sm font-bold ${
+              (participation.ai_instagram_confidence || 0) >= 70
+                ? 'text-green-600'
+                : (participation.ai_instagram_confidence || 0) >= 40
+                ? 'text-yellow-600'
+                : 'text-red-600'
+            }`}>
+              {participation.ai_instagram_confidence}%
+            </span>
+          </div>
+          <p className="text-xs text-gray-600">{participation.ai_instagram_reason}</p>
+        </div>
+      )}
+
+      {/* Confiança Média (para Atos de Amor) */}
+      {isAtosAmor && avgConfidence !== null && (
+        <div className="mb-3 p-2 bg-purple-50 rounded-lg border border-purple-200">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-purple-700">🤖 Confiança Média</span>
+            <span className={`text-sm font-bold ${
+              avgConfidence >= 80
+                ? 'text-green-600'
+                : avgConfidence >= 50
+                ? 'text-yellow-600'
+                : 'text-red-600'
+            }`}>
+              {avgConfidence}%
+              {avgConfidence >= 80 && ' (Auto-aprovável)'}
+              {avgConfidence < 50 && ' (Baixa)'}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Links */}
       <div className="flex flex-wrap gap-2 mb-4">
-        {participation.vídeo_proof_url && (
+        {participation.video_proof_url && (
           <a
-            href={participation.vídeo_proof_url}
+            href={participation.video_proof_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm text-indigo-600 hover:text-indigo-700 flex items-center gap-1"
+            className="text-sm text-red-600 hover:text-red-700 flex items-center gap-1 px-2 py-1 bg-red-50 rounded"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
             </svg>
-            Ver Vídeo
+            YouTube
+          </a>
+        )}
+        {participation.instagram_proof_url && (
+          <a
+            href={participation.instagram_proof_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-pink-600 hover:text-pink-700 flex items-center gap-1 px-2 py-1 bg-pink-50 rounded"
+          >
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073z" />
+            </svg>
+            Instagram
           </a>
         )}
         {participation.social_media_url && (
@@ -373,12 +473,9 @@ function ParticipationCard({ participation, goalType, coinsReward }: Participati
             href={participation.social_media_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm text-pink-600 hover:text-pink-700 flex items-center gap-1"
+            className="text-sm text-gray-600 hover:text-gray-700 flex items-center gap-1 px-2 py-1 bg-gray-50 rounded"
           >
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073z" />
-            </svg>
-            Ver Post
+            🔗 Link Social
           </a>
         )}
       </div>
