@@ -135,16 +135,19 @@ export async function searchYouTubeVideos(query?: string): Promise<{
       });
 
       const statsRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?${statsParams}`);
-      const statsData: YouTubeVideoStatsResponse = await statsRes.json();
 
-      if (statsData.items) {
-        viewCounts = statsData.items.reduce(
-          (acc, item) => {
-            acc[item.id] = parseInt(item.statistics.viewCount, 10);
-            return acc;
-          },
-          {} as Record<string, number>
-        );
+      if (statsRes.ok) {
+        const statsData: YouTubeVideoStatsResponse = await statsRes.json();
+
+        if (statsData.items) {
+          viewCounts = statsData.items.reduce(
+            (acc, item) => {
+              acc[item.id] = parseInt(item.statistics.viewCount, 10);
+              return acc;
+            },
+            {} as Record<string, number>
+          );
+        }
       }
     }
 
