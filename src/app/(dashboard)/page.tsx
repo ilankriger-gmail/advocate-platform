@@ -5,7 +5,8 @@ import { getSiteSettings } from '@/lib/config/site';
 import { getInitialFeedPosts } from '@/actions/feed';
 import { getCommunityStats } from '@/actions/stats';
 import { HeroSection, FeedTabs, LeaderboardWidget } from '@/components/home';
-import { StoriesBar, StoriesBarSkeleton } from '@/components/stories';
+// TEMPORARIAMENTE DESABILITADO - Stories
+// import { StoriesBar, StoriesBarSkeleton } from '@/components/stories';
 import { SuggestedUsers } from '@/components/social';
 import { Card, Skeleton } from '@/components/ui';
 
@@ -80,10 +81,11 @@ export default async function HomePage() {
       {/* Hero Section - Banner (apenas para visitantes não logados) */}
       {!isLoggedIn && <HeroSection isLoggedIn={false} stats={stats} />}
 
-      {/* Stories - Barra horizontal estilo Instagram */}
+      {/* TEMPORARIAMENTE DESABILITADO - Stories
       <Suspense fallback={<StoriesBarSkeleton />}>
         <StoriesBar />
       </Suspense>
+      */}
 
       {/* Main Content - Feed + Sidebar */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

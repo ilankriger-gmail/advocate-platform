@@ -70,7 +70,7 @@ export function Header({ className, siteName = 'Arena Te Amo', logoUrl = '/logo.
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14">
-          {/* Left: Logo */}
+          {/* Left: Logo + Criar Post */}
           <div className="flex items-center gap-3">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2">
@@ -91,10 +91,6 @@ export function Header({ className, siteName = 'Arena Te Amo', logoUrl = '/logo.
                 />
               )}
             </Link>
-          </div>
-
-          {/* Right: User menu or Login */}
-          <div className="flex items-center gap-3">
             {/* Botão criar post - mobile only */}
             {user && (
               <Link
@@ -107,6 +103,10 @@ export function Header({ className, siteName = 'Arena Te Amo', logoUrl = '/logo.
                 </svg>
               </Link>
             )}
+          </div>
+
+          {/* Right: User menu or Login */}
+          <div className="flex items-center gap-3">
             {isLoading ? (
               /* Skeleton enquanto carrega */
               <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
