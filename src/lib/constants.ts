@@ -73,9 +73,9 @@ export const CREATOR_ROUTES = ['/admin', '/moderation'] as const;
 // Navegação principal (usuário logado)
 export const MAIN_NAV = [
   { href: '/', label: 'Início', icon: 'Home' },
+  { href: '/descobrir', label: 'Descobrir', icon: 'Search' },
   { href: '/desafios', label: 'Desafios', icon: 'Target' },
   { href: '/eventos', label: 'Eventos', icon: 'Calendar' },
-  { href: '/ranking', label: 'Ranking', icon: 'Trophy' },
   { href: '/premios', label: 'Prêmios', icon: 'Gift' },
   { href: '/perfil', label: 'Perfil', icon: 'User' },
 ] as const;
@@ -84,8 +84,8 @@ export const MAIN_NAV = [
 export const BOTTOM_NAV_ITEMS = [
   { href: '/', label: 'Início', icon: 'Home' },
   { href: '/desafios', label: 'Desafios', icon: 'Target' },
+  { href: '/descobrir', label: 'Descobrir', icon: 'Search' },
   { href: '/premios', label: 'Prêmios', icon: 'Gift' },
-  { href: '/ranking', label: 'Ranking', icon: 'Trophy' },
   { href: '/perfil', label: 'Perfil', icon: 'User' },
 ] as const;
 

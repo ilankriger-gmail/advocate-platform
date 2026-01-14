@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { NextResponse } from 'next/server';
 import { scheduleUserOnboarding, sendOnboardingEmail } from '@/lib/notifications';
+import { getLeadSource } from '@/actions/leads';
 
 // Lista de rotas permitidas para redirect (previne Open Redirect)
 const ALLOWED_REDIRECTS = [
@@ -18,15 +19,18 @@ const ALLOWED_REDIRECTS = [
 
 /**
  * Valida se o redirect e seguro (previne Open Redirect attacks)
+ * Agora suporta query strings (ex: /desafios?highlight=xxx)
  */
 function isValidRedirect(path: string): boolean {
   // Rejeita URLs absolutas ou protocolos
   if (path.startsWith('//') || path.includes('://') || path.startsWith('javascript:')) {
     return false;
   }
+  // Extrair apenas o pathname (sem query string)
+  const pathname = path.split('?')[0];
   // Verifica se comeca com uma rota permitida
   return ALLOWED_REDIRECTS.some(allowed =>
-    path === allowed || path.startsWith(`${allowed}/`)
+    pathname === allowed || pathname.startsWith(`${allowed}/`)
   );
 }
 
@@ -53,6 +57,14 @@ export async function GET(request: Request) {
       if (user) {
         // Iniciar onboarding para novos usuários (em background, não bloqueia)
         triggerOnboardingIfNew(user.id, user.email || '', user.user_metadata?.full_name || user.email?.split('@')[0] || 'Usuário');
+
+        // Verificar se usuário veio de uma landing page para redirecioná-lo ao conteúdo original
+        if (user.email && next === '/') {
+          const { redirectUrl } = await getLeadSource(user.email);
+          if (isValidRedirect(redirectUrl)) {
+            return NextResponse.redirect(`${origin}${redirectUrl}`);
+          }
+        }
 
         return NextResponse.redirect(`${origin}${next}`);
       }

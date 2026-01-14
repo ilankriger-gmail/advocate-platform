@@ -1258,3 +1258,52 @@ export async function getSequenceStats(): Promise<ActionResponse<{
     return { error: 'Erro interno do servidor' };
   }
 }
+
+// ============ REDIRECT POS-CADASTRO ============
+
+/**
+ * Busca a origem do lead pelo email para redirecionamento pós-cadastro
+ * Usado no auth callback para redirecionar usuários que vieram de landing pages
+ */
+export async function getLeadSource(email: string): Promise<{
+  sourceType: string | null;
+  sourceId: string | null;
+  redirectUrl: string;
+}> {
+  try {
+    const supabase = await createClient();
+
+    const { data: lead } = await supabase
+      .from('nps_leads')
+      .select('source_type, source_id')
+      .eq('email', email.toLowerCase().trim())
+      .eq('status', 'approved')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (!lead || !lead.source_type || !lead.source_id) {
+      return { sourceType: null, sourceId: null, redirectUrl: '/dashboard' };
+    }
+
+    // Determinar URL de redirecionamento baseado no tipo de origem
+    let redirectUrl = '/dashboard';
+
+    if (lead.source_type === 'landing_challenge') {
+      // Redirecionar para página de desafios com destaque no desafio específico
+      redirectUrl = `/desafios?highlight=${lead.source_id}`;
+    } else if (lead.source_type === 'landing_reward') {
+      // Redirecionar para página de prêmios com destaque
+      redirectUrl = `/premios?highlight=${lead.source_id}`;
+    }
+
+    return {
+      sourceType: lead.source_type,
+      sourceId: lead.source_id,
+      redirectUrl,
+    };
+  } catch {
+    // Em caso de erro, redireciona para dashboard por segurança
+    return { sourceType: null, sourceId: null, redirectUrl: '/dashboard' };
+  }
+}
