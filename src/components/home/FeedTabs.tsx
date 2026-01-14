@@ -3,7 +3,8 @@
 import { useState, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { InfiniteFeed } from './InfiniteFeed';
-import { SortSelector } from './SortSelector';
+// TEMPORARIAMENTE DESABILITADO - Sort
+// import { SortSelector } from './SortSelector';
 import { NewPostsIndicator } from './NewPostsIndicator';
 import { useRealtimeFeed } from '@/hooks/useRealtimeFeed';
 import type { FeedSortType } from '@/actions/feed';
@@ -17,7 +18,9 @@ interface FeedTabsProps {
 
 export function FeedTabs({ initialCommunityPosts, initialHelpRequestPosts, isLoggedIn = false }: FeedTabsProps) {
   const [activeTab, setActiveTab] = useState<'comunidade' | 'seguindo' | 'ajuda'>('comunidade');
-  const [sort, setSort] = useState<FeedSortType>('new');
+  // TEMPORARIAMENTE DESABILITADO - Sort selector
+  // const [sort, setSort] = useState<FeedSortType>('new');
+  const sort: FeedSortType = 'new'; // Fixo em 'new' por enquanto
   const queryClient = useQueryClient();
 
   // Realtime para novos posts
@@ -50,46 +53,49 @@ export function FeedTabs({ initialCommunityPosts, initialHelpRequestPosts, isLog
 
       {/* Tabs + Sort Selector */}
       <div className="sticky top-0 bg-white z-10 pb-2">
-        {/* Tabs */}
-        <div className="flex border-b border-gray-200">
+        {/* Tabs - Estilo Instagram Shorts */}
+        <div className="flex justify-center gap-8 py-3">
           <button
             onClick={() => handleTabChange('comunidade')}
-            className={`flex-1 py-3 text-center font-semibold text-sm transition-colors ${
+            className={`text-sm transition-colors ${
               activeTab === 'comunidade'
-                ? 'text-purple-600 border-b-2 border-purple-600'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'text-gray-900 font-bold'
+                : 'text-gray-400 font-medium hover:text-gray-600'
             }`}
           >
             Comunidade
           </button>
+          {/* TEMPORARIAMENTE DESABILITADO - Seguindo
           {isLoggedIn && (
             <button
               onClick={() => handleTabChange('seguindo')}
-              className={`flex-1 py-3 text-center font-semibold text-sm transition-colors ${
+              className={`text-sm transition-colors ${
                 activeTab === 'seguindo'
-                  ? 'text-purple-600 border-b-2 border-purple-600'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'text-gray-900 font-bold'
+                  : 'text-gray-400 font-medium hover:text-gray-600'
               }`}
             >
               Seguindo
             </button>
           )}
+          */}
           <button
             onClick={() => handleTabChange('ajuda')}
-            className={`flex-1 py-3 text-center font-semibold text-sm transition-colors ${
+            className={`text-sm transition-colors ${
               activeTab === 'ajuda'
-                ? 'text-purple-600 border-b-2 border-purple-600'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'text-gray-900 font-bold'
+                : 'text-gray-400 font-medium hover:text-gray-600'
             }`}
           >
             Pedidos de Ajuda
           </button>
         </div>
 
-        {/* Sort Selector */}
+        {/* TEMPORARIAMENTE DESABILITADO - Sort Selector
         <div className="flex justify-center mt-3">
           <SortSelector value={sort} onChange={setSort} />
         </div>
+        */}
       </div>
 
       {/* Banner de Pedidos de Ajuda */}
