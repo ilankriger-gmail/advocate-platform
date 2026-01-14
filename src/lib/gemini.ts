@@ -279,37 +279,26 @@ export async function analyzeAtosAmorChallenge(
   }
 
   try {
-    const prompt = `Você é um verificador de "Atos de Amor" - desafios onde pessoas realizam boas ações e postam nas redes sociais.
+    const prompt = `Você é um verificador de desafios de "Atos de Amor". ASSISTA este vídeo completo e analise:
 
 DESAFIO: ${challengeTitle}
-${actionInstructions ? `INSTRUÇÕES ESPECÍFICAS: ${actionInstructions}` : ''}
+${actionInstructions ? `O QUE A PESSOA DEVE FAZER: ${actionInstructions}` : ''}
 
-ASSISTA o vídeo completo e analise:
-
-1. O vídeo mostra uma pessoa realizando um ATO DE AMOR genuíno?
-2. O ato corresponde ao desafio "${challengeTitle}"?
-3. A ação parece ser real e autêntica (não encenada)?
-4. O ato demonstra bondade, solidariedade ou amor ao próximo?
-5. Há algo SUSPEITO no vídeo que precise de revisão humana?
+INSTRUÇÕES DE ANÁLISE:
+1. A pessoa está realizando EXATAMENTE o que o desafio "${challengeTitle}" pede?
+2. ${actionInstructions ? `A pessoa seguiu as instruções: "${actionInstructions}"?` : 'A pessoa realizou o ato de amor proposto?'}
+3. A ação é claramente visível no vídeo?
+4. A reação das pessoas (se houver) é genuína?
 
 CRITÉRIOS DE VALIDAÇÃO:
-- O ato deve ser claramente visível no vídeo
-- Deve haver interação real com outra pessoa ou ação concreta de bondade
-- O ato deve corresponder ao tema do desafio
-- Não validar vídeos claramente falsos ou encenados
-- Ser generoso na avaliação - o importante é o espírito de ajudar
-
-EXEMPLOS DE ATOS VÁLIDOS:
-- Ajudar alguém a carregar sacolas
-- Dar comida/água para alguém necessitado
-- Visitar ou ajudar idosos
-- Fazer doações
-- Ajudar animais de rua
-- Qualquer gesto genuíno de bondade
+- O ato deve corresponder ESPECIFICAMENTE ao desafio proposto
+- A ação deve ser claramente visível e identificável no vídeo
+- Deve haver evidência clara de que o desafio foi cumprido
+- Ser justo mas criterioso na avaliação
 
 MARQUE COMO SUSPEITO SE:
 - Conteúdo parece ser spam ou propaganda
-- Vídeo não relacionado ao desafio
+- Vídeo não relacionado ao desafio específico
 - Possível conteúdo ofensivo ou inapropriado
 - Tentativa de fraude ou manipulação
 - Vídeo claramente reciclado/repostado
@@ -317,7 +306,7 @@ MARQUE COMO SUSPEITO SE:
 
 Responda EXATAMENTE neste formato JSON (apenas o JSON, sem markdown):
 {
-  "isValid": true ou false,
+  "isValid": true ou false (se cumpriu o desafio específico),
   "confidence": 0-100 (quão confiante você está),
   "reason": "Explicação breve do que foi observado no vídeo",
   "isSuspicious": true ou false (se precisa revisão humana)
@@ -552,27 +541,26 @@ export async function analyzeInstagramLink(
   }
 
   try {
-    const prompt = `Você é um verificador de conteúdo do Instagram para desafios de "Atos de Amor".
+    const prompt = `Você é um verificador de desafios de "Atos de Amor". Analise este conteúdo do Instagram:
 
 DESAFIO: ${challengeTitle}
-${actionInstructions ? `INSTRUÇÕES ESPECÍFICAS: ${actionInstructions}` : ''}
+${actionInstructions ? `O QUE A PESSOA DEVE FAZER: ${actionInstructions}` : ''}
 
-Analise este link do Instagram e verifique:
-
-1. O conteúdo (foto/vídeo) mostra um ATO DE AMOR genuíno?
-2. O conteúdo corresponde ao desafio "${challengeTitle}"?
-3. Parece ser conteúdo autêntico e não apenas uma postagem genérica?
-4. Há algo SUSPEITO que precise de revisão humana?
+INSTRUÇÕES DE ANÁLISE:
+1. A pessoa está realizando EXATAMENTE o que o desafio "${challengeTitle}" pede?
+2. ${actionInstructions ? `A pessoa seguiu as instruções: "${actionInstructions}"?` : 'A pessoa realizou o ato de amor proposto?'}
+3. A ação é claramente visível no conteúdo?
+4. A reação das pessoas (se houver) é genuína?
 
 CRITÉRIOS DE VALIDAÇÃO:
-- O conteúdo deve mostrar claramente o ato de amor
-- Deve ser uma postagem recente e relacionada ao desafio
-- Ser generoso na avaliação - o importante é o espírito de ajudar
-- Considerar que pessoas podem ter postado antes de gravar o vídeo
+- O ato deve corresponder ESPECIFICAMENTE ao desafio proposto
+- A ação deve ser claramente visível e identificável
+- Deve haver evidência clara de que o desafio foi cumprido
+- Ser justo mas criterioso na avaliação
 
 MARQUE COMO SUSPEITO SE:
 - Perfil parece ser fake ou bot
-- Conteúdo claramente não relacionado ao desafio
+- Conteúdo não relacionado ao desafio específico
 - Possível spam ou propaganda
 - Conta privada ou conteúdo inacessível
 - Conteúdo ofensivo ou inapropriado
@@ -580,7 +568,7 @@ MARQUE COMO SUSPEITO SE:
 
 Responda EXATAMENTE neste formato JSON (apenas o JSON, sem markdown):
 {
-  "isValid": true ou false,
+  "isValid": true ou false (se cumpriu o desafio específico),
   "confidence": 0-100 (quão confiante você está),
   "reason": "Explicação breve do que foi observado no Instagram",
   "isSuspicious": true ou false (se precisa revisão humana)
