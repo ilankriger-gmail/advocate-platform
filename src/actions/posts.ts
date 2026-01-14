@@ -762,6 +762,48 @@ export async function getPostById(postId: string): Promise<ActionResponse<Post>>
 }
 
 /**
+ * Buscar post com detalhes do autor (para página de detalhes)
+ */
+export async function getPostWithDetails(postId: string) {
+  try {
+    const supabase = await createClient();
+
+    const { data: post, error } = await supabase
+      .from('posts')
+      .select(`
+        *,
+        author:users!posts_user_id_fkey(id, full_name, avatar_url, is_creator)
+      `)
+      .eq('id', postId)
+      .eq('status', 'approved')
+      .single();
+
+    if (error || !post) {
+      return { error: 'Post não encontrado' };
+    }
+
+    // Buscar voto do usuário atual (se logado)
+    const { data: { user } } = await supabase.auth.getUser();
+    let userVote = null;
+
+    if (user) {
+      const { data: vote } = await supabase
+        .from('post_votes')
+        .select('vote_type')
+        .eq('post_id', postId)
+        .eq('user_id', user.id)
+        .single();
+
+      userVote = vote?.vote_type || null;
+    }
+
+    return { success: true, data: { post, userVote } };
+  } catch {
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+/**
  * Buscar comentários de um post
  */
 export async function getPostComments(postId: string) {

@@ -20,29 +20,31 @@ interface CommentsSectionProps {
   postId: string;
   initialComments?: Comment[];
   commentsCount: number;
+  defaultExpanded?: boolean;
 }
 
 export function CommentsSection({
   postId,
   initialComments = [],
   commentsCount,
+  defaultExpanded = false,
 }: CommentsSectionProps) {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
   const [comments, setComments] = useState<Comment[]>(initialComments);
   const [newComment, setNewComment] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  // Carregar comentários automaticamente ao montar (já que começa expandido)
+  // Carregar comentários quando expandido
   useEffect(() => {
-    if (comments.length === 0 && commentsCount > 0) {
+    if (isExpanded && comments.length === 0 && commentsCount > 0) {
       setIsLoading(true);
       getPostComments(postId).then((data) => {
         setComments(data as Comment[]);
         setIsLoading(false);
       });
     }
-  }, [postId, commentsCount, comments.length]);
+  }, [postId, commentsCount, comments.length, isExpanded]);
 
   const toggleComments = () => {
     setIsExpanded(!isExpanded);

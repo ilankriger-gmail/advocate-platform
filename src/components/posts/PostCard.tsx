@@ -308,9 +308,11 @@ export const PostCard = memo(function PostCard({
 
       {/* Content */}
       <div className="px-4 pb-3">
-        <h3 className="text-lg font-semibold text-surface-900 mb-2">
-          {post.title}
-        </h3>
+        <Link href={`/post/${post.id}`}>
+          <h3 className="text-lg font-semibold text-surface-900 mb-2 hover:text-primary-600 transition-colors cursor-pointer">
+            {post.title}
+          </h3>
+        </Link>
         {post.content && (() => {
           const { truncated, wasTruncated } = truncateHtml(post.content, CONTENT_TRUNCATE_LIMIT);
           const displayContent = isContentExpanded ? post.content : truncated;
@@ -321,13 +323,13 @@ export const PostCard = memo(function PostCard({
                 className="prose prose-sm max-w-none text-surface-700 [&_a]:text-primary-600 [&_a]:underline [&_a:hover]:text-primary-800"
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(displayContent) }}
               />
-              {wasTruncated && (
-                <button
-                  onClick={() => setIsContentExpanded(!isContentExpanded)}
-                  className="mt-2 text-sm font-medium text-primary-600 hover:text-primary-800 transition-colors"
+              {wasTruncated && !isContentExpanded && (
+                <Link
+                  href={`/post/${post.id}`}
+                  className="mt-2 inline-block text-sm font-medium text-primary-600 hover:text-primary-800 transition-colors"
                 >
-                  {isContentExpanded ? 'Ler menos' : 'Leia mais'}
-                </button>
+                  Leia mais
+                </Link>
               )}
             </>
           );
