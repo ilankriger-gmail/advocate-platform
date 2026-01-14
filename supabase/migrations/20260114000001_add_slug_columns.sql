@@ -59,37 +59,8 @@ BEGIN
 END $$;
 
 -- =============================================
--- EVENTS
+-- EVENTS (removido - tabela não existe ainda)
 -- =============================================
-
--- Adicionar coluna slug
-ALTER TABLE events ADD COLUMN IF NOT EXISTS slug VARCHAR(255);
-
--- Criar índice único parcial
-CREATE UNIQUE INDEX IF NOT EXISTS idx_events_slug
-ON events(slug) WHERE slug IS NOT NULL;
-
--- Gerar slugs para registros existentes
-DO $$
-DECLARE
-  r RECORD;
-  base_slug TEXT;
-  new_slug TEXT;
-  counter INT;
-BEGIN
-  FOR r IN SELECT id, title FROM events WHERE slug IS NULL LOOP
-    base_slug := generate_slug(r.title);
-    new_slug := base_slug;
-    counter := 1;
-
-    WHILE EXISTS (SELECT 1 FROM events WHERE slug = new_slug AND id != r.id) LOOP
-      new_slug := base_slug || '-' || counter;
-      counter := counter + 1;
-    END LOOP;
-
-    UPDATE events SET slug = new_slug WHERE id = r.id;
-  END LOOP;
-END $$;
 
 -- =============================================
 -- REWARDS
@@ -129,6 +100,5 @@ END $$;
 -- =============================================
 
 COMMENT ON COLUMN challenges.slug IS 'URL slug SEO-friendly gerado a partir do título';
-COMMENT ON COLUMN events.slug IS 'URL slug SEO-friendly gerado a partir do título';
 COMMENT ON COLUMN rewards.slug IS 'URL slug SEO-friendly gerado a partir do nome';
 COMMENT ON FUNCTION generate_slug(TEXT) IS 'Gera slug URL-friendly a partir de texto, removendo acentos e caracteres especiais';
