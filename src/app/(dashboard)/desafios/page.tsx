@@ -189,26 +189,49 @@ export default async function DesafiosPage() {
         </div>
       </Card>
 
-      {/* Desafios de Engajamento */}
-      <section className="space-y-4 sm:space-y-6">
-        {/* Header da Seção */}
-        <div className="flex items-center gap-3 sm:gap-4">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/25">
-            <span className="text-xl sm:text-2xl">🎁</span>
+      {/* Minhas Participações - No topo, após saldo */}
+      {userParticipationsWithChallenge.length > 0 && (
+        <section className="space-y-4 sm:space-y-6">
+          {/* Header da Seção - Centralizado */}
+          <div className="flex flex-col items-center text-center gap-2">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-amber-500 to-yellow-500 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/25">
+              <Trophy className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
+            </div>
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Minhas Participações</h2>
+              <p className="text-gray-500 text-xs sm:text-sm">Acompanhe o status dos seus desafios enviados</p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
-              Participe e Concorra
-              {engagementChallenges.length === 0 && (
-                <span className="ml-2 text-sm font-medium text-purple-500">(em breve)</span>
-              )}
-            </h2>
-            <p className="text-gray-500 text-xs sm:text-sm">Interaja no Instagram e ganhe prêmios em dinheiro</p>
-          </div>
-        </div>
 
-        {engagementChallenges.length > 0 ? (
-          <Accordion type="single" className="space-y-2">
+          <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
+            {userParticipationsWithChallenge.map((participation) => (
+              <div key={participation.id} className="w-full sm:w-[calc(50%-0.5rem)] lg:w-[calc(33.333%-0.75rem)] max-w-md">
+                <MyParticipationCard participation={participation} />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* =============================================== */}
+      {/* CATEGORIAS COM DESAFIOS - Aparecem primeiro */}
+      {/* =============================================== */}
+
+      {/* Desafios de Engajamento - Só se tiver desafios */}
+      {engagementChallenges.length > 0 && (
+        <section className="space-y-4 sm:space-y-6">
+          {/* Header da Seção - Centralizado */}
+          <div className="flex flex-col items-center text-center gap-2">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/25">
+              <span className="text-2xl sm:text-3xl">🎁</span>
+            </div>
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Participe e Concorra</h2>
+              <p className="text-gray-500 text-xs sm:text-sm">Interaja no Instagram e ganhe prêmios em dinheiro</p>
+            </div>
+          </div>
+
+          <Accordion type="single" className="max-w-2xl mx-auto space-y-2">
             {engagementChallenges.map((challenge) => {
               const challengeWinners = (winners || []).filter(
                 w => w.challenge_id === challenge.id
@@ -388,32 +411,23 @@ export default async function DesafiosPage() {
               );
             })}
           </Accordion>
-        ) : (
-          <Card className="p-6 text-center bg-purple-50/50 border-purple-100">
-            <p className="text-gray-500 text-sm">Novos desafios de engajamento serão lançados em breve!</p>
-          </Card>
-        )}
-      </section>
+        </section>
+      )}
 
-      {/* Atos de Amor */}
-      <section className="space-y-4 sm:space-y-6">
-        {/* Header da Seção - Centralizado */}
-        <div className="flex flex-col items-center text-center gap-2">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-rose-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg shadow-rose-500/25">
-            <Heart className="w-7 h-7 sm:w-8 sm:h-8 text-white fill-white" />
+      {/* Atos de Amor - Só se tiver desafios */}
+      {atosAmorChallenges.length > 0 && (
+        <section className="space-y-4 sm:space-y-6">
+          {/* Header da Seção - Centralizado */}
+          <div className="flex flex-col items-center text-center gap-2">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-rose-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg shadow-rose-500/25">
+              <Heart className="w-7 h-7 sm:w-8 sm:h-8 text-white fill-white" />
+            </div>
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Atos de Amor</h2>
+              <p className="text-gray-500 text-xs sm:text-sm">Espalhe amor e ganhe recompensas</p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
-              Atos de Amor
-              {atosAmorChallenges.length === 0 && (
-                <span className="ml-2 text-sm font-medium text-rose-500">(em breve)</span>
-              )}
-            </h2>
-            <p className="text-gray-500 text-xs sm:text-sm">Espalhe amor e ganhe recompensas</p>
-          </div>
-        </div>
 
-        {atosAmorChallenges.length > 0 ? (
           <div className="max-w-2xl mx-auto space-y-3 sm:space-y-4">
             {atosAmorChallenges.map((challenge) => (
               <PhysicalChallengeCard
@@ -423,32 +437,23 @@ export default async function DesafiosPage() {
               />
             ))}
           </div>
-        ) : (
-          <Card className="max-w-2xl mx-auto p-6 text-center bg-rose-50/50 border-rose-100">
-            <p className="text-gray-500 text-sm">Novos desafios de atos de amor serão lançados em breve!</p>
-          </Card>
-        )}
-      </section>
+        </section>
+      )}
 
-      {/* Desafios Físicos */}
-      <section className="space-y-4 sm:space-y-6">
-        {/* Header da Seção - Centralizado */}
-        <div className="flex flex-col items-center text-center gap-2">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/25">
-            <Dumbbell className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
+      {/* Desafios Físicos - Só se tiver desafios */}
+      {physicalChallenges.length > 0 && (
+        <section className="space-y-4 sm:space-y-6">
+          {/* Header da Seção - Centralizado */}
+          <div className="flex flex-col items-center text-center gap-2">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/25">
+              <Dumbbell className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
+            </div>
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Desafios Físicos</h2>
+              <p className="text-gray-500 text-xs sm:text-sm">Supere metas e mostre sua força</p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
-              Desafios Físicos
-              {physicalChallenges.length === 0 && (
-                <span className="ml-2 text-sm font-medium text-blue-500">(em breve)</span>
-              )}
-            </h2>
-            <p className="text-gray-500 text-xs sm:text-sm">Supere metas e mostre sua força</p>
-          </div>
-        </div>
 
-        {physicalChallenges.length > 0 ? (
           <div className="max-w-2xl mx-auto space-y-3 sm:space-y-4">
             {physicalChallenges.map((challenge) => (
               <PhysicalChallengeCard
@@ -458,34 +463,73 @@ export default async function DesafiosPage() {
               />
             ))}
           </div>
-        ) : (
+        </section>
+      )}
+
+      {/* =============================================== */}
+      {/* CATEGORIAS VAZIAS - Aparecem no final */}
+      {/* =============================================== */}
+
+      {/* Participe e Concorra - Em Breve */}
+      {engagementChallenges.length === 0 && (
+        <section className="space-y-4 sm:space-y-6">
+          <div className="flex flex-col items-center text-center gap-2">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/25 opacity-60">
+              <span className="text-2xl sm:text-3xl">🎁</span>
+            </div>
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+                Participe e Concorra
+                <span className="ml-2 text-sm font-medium text-purple-500">(em breve)</span>
+              </h2>
+              <p className="text-gray-500 text-xs sm:text-sm">Interaja no Instagram e ganhe prêmios em dinheiro</p>
+            </div>
+          </div>
+          <Card className="max-w-2xl mx-auto p-6 text-center bg-purple-50/50 border-purple-100">
+            <p className="text-gray-500 text-sm">Novos desafios de engajamento serão lançados em breve!</p>
+          </Card>
+        </section>
+      )}
+
+      {/* Atos de Amor - Em Breve */}
+      {atosAmorChallenges.length === 0 && (
+        <section className="space-y-4 sm:space-y-6">
+          <div className="flex flex-col items-center text-center gap-2">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-rose-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg shadow-rose-500/25 opacity-60">
+              <Heart className="w-7 h-7 sm:w-8 sm:h-8 text-white fill-white" />
+            </div>
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+                Atos de Amor
+                <span className="ml-2 text-sm font-medium text-rose-500">(em breve)</span>
+              </h2>
+              <p className="text-gray-500 text-xs sm:text-sm">Espalhe amor e ganhe recompensas</p>
+            </div>
+          </div>
+          <Card className="max-w-2xl mx-auto p-6 text-center bg-rose-50/50 border-rose-100">
+            <p className="text-gray-500 text-sm">Novos desafios de atos de amor serão lançados em breve!</p>
+          </Card>
+        </section>
+      )}
+
+      {/* Desafios Físicos - Em Breve */}
+      {physicalChallenges.length === 0 && (
+        <section className="space-y-4 sm:space-y-6">
+          <div className="flex flex-col items-center text-center gap-2">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/25 opacity-60">
+              <Dumbbell className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
+            </div>
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+                Desafios Físicos
+                <span className="ml-2 text-sm font-medium text-blue-500">(em breve)</span>
+              </h2>
+              <p className="text-gray-500 text-xs sm:text-sm">Supere metas e mostre sua força</p>
+            </div>
+          </div>
           <Card className="max-w-2xl mx-auto p-6 text-center bg-blue-50/50 border-blue-100">
             <p className="text-gray-500 text-sm">Novos desafios físicos serão lançados em breve!</p>
           </Card>
-        )}
-      </section>
-
-      {/* Minhas Participações */}
-      {userParticipationsWithChallenge.length > 0 && (
-        <section className="space-y-4 sm:space-y-6">
-          {/* Header da Seção - Centralizado */}
-          <div className="flex flex-col items-center text-center gap-2">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-amber-500 to-yellow-500 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/25">
-              <Trophy className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
-            </div>
-            <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Minhas Participações</h2>
-              <p className="text-gray-500 text-xs sm:text-sm">Acompanhe o status dos seus desafios enviados</p>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
-            {userParticipationsWithChallenge.map((participation) => (
-              <div key={participation.id} className="w-full sm:w-[calc(50%-0.5rem)] lg:w-[calc(33.333%-0.75rem)] max-w-md">
-                <MyParticipationCard participation={participation} />
-              </div>
-            ))}
-          </div>
         </section>
       )}
 
