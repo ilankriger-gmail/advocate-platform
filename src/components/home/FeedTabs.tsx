@@ -51,8 +51,8 @@ export function FeedTabs({ initialCommunityPosts, initialHelpRequestPosts, isLog
       {/* Indicador de novos posts */}
       <NewPostsIndicator count={newPostsCount} onClick={handleNewPostsClick} />
 
-      {/* Tabs + Sort Selector */}
-      <div className="sticky top-0 bg-white z-10 pb-2">
+      {/* Tabs - Sticky abaixo do header */}
+      <div className="sticky top-14 bg-white z-10 pb-2 -mx-4 px-4 shadow-sm">
         {/* Tabs - Estilo Instagram Shorts */}
         <div className="flex justify-center gap-8 py-3">
           <button

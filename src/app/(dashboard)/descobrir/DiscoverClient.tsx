@@ -194,7 +194,7 @@ export function DiscoverClient({ initialContent }: DiscoverClientProps) {
           query={query}
         />
       ) : (
-        <DiscoverContentView content={initialContent} />
+        <DiscoverContentView content={initialContent} activeTab={activeTab} />
       )}
     </div>
   );
@@ -303,11 +303,11 @@ function SearchResultsView({
 }
 
 // Componente para exibir conteúdo de descoberta
-function DiscoverContentView({ content }: { content: DiscoverContent }) {
+function DiscoverContentView({ content, activeTab }: { content: DiscoverContent; activeTab: SearchType }) {
   return (
     <div className="space-y-8">
       {/* Posts em alta */}
-      {content.trendingPosts.length > 0 && (
+      {(activeTab === 'all' || activeTab === 'posts') && content.trendingPosts.length > 0 && (
         <section>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
@@ -326,7 +326,7 @@ function DiscoverContentView({ content }: { content: DiscoverContent }) {
       )}
 
       {/* Desafios ativos */}
-      {content.activeChallenges.length > 0 && (
+      {(activeTab === 'all' || activeTab === 'challenges') && content.activeChallenges.length > 0 && (
         <section>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
@@ -345,7 +345,7 @@ function DiscoverContentView({ content }: { content: DiscoverContent }) {
       )}
 
       {/* Prêmios disponíveis */}
-      {content.availableRewards.length > 0 && (
+      {(activeTab === 'all' || activeTab === 'rewards') && content.availableRewards.length > 0 && (
         <section>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
@@ -364,7 +364,7 @@ function DiscoverContentView({ content }: { content: DiscoverContent }) {
       )}
 
       {/* Próximos eventos */}
-      {content.upcomingEvents.length > 0 && (
+      {(activeTab === 'all' || activeTab === 'events') && content.upcomingEvents.length > 0 && (
         <section>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
@@ -383,7 +383,7 @@ function DiscoverContentView({ content }: { content: DiscoverContent }) {
       )}
 
       {/* Ranking preview */}
-      {content.topUsers.length > 0 && (
+      {(activeTab === 'all' || activeTab === 'users') && content.topUsers.length > 0 && (
         <section>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
@@ -477,9 +477,20 @@ function ChallengeCard({ challenge }: { challenge: any }) {
       href={`/desafios/${challenge.id}`}
       className="bg-white rounded-xl border border-gray-200 p-4 hover:border-pink-300 transition-colors flex items-start gap-3"
     >
-      <div className="w-12 h-12 rounded-lg bg-pink-100 flex items-center justify-center text-2xl shrink-0">
-        {challenge.icon || '🎯'}
-      </div>
+      {challenge.thumbnail_url ? (
+        <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 relative">
+          <Image
+            src={challenge.thumbnail_url}
+            alt={challenge.title}
+            fill
+            className="object-cover"
+          />
+        </div>
+      ) : (
+        <div className="w-12 h-12 rounded-lg bg-pink-100 flex items-center justify-center text-2xl shrink-0">
+          {challenge.icon || '🎯'}
+        </div>
+      )}
       <div className="flex-1 min-w-0">
         <h3 className="font-semibold text-gray-900 truncate">{challenge.title}</h3>
         {challenge.description && (
