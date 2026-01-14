@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+
 interface YouTubeEmbedProps {
   url: string;
   title?: string;
@@ -23,6 +25,7 @@ function extractYouTubeId(url: string): string | null {
 }
 
 export default function YouTubeEmbed({ url, title = 'Vídeo do YouTube' }: YouTubeEmbedProps) {
+  const [isPlaying, setIsPlaying] = useState(false);
   const videoId = extractYouTubeId(url);
 
   if (!videoId) {
@@ -33,15 +36,28 @@ export default function YouTubeEmbed({ url, title = 'Vídeo do YouTube' }: YouTu
     );
   }
 
-  const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
   const thumbnailUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+  const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
 
-  // Mostra thumbnail com botão play que abre no YouTube
+  // Se está tocando, mostra o iframe
+  if (isPlaying) {
+    return (
+      <div className="w-full aspect-video rounded-lg overflow-hidden bg-black">
+        <iframe
+          src={embedUrl}
+          title={title}
+          className="w-full h-full"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      </div>
+    );
+  }
+
+  // Mostra thumbnail com botão play
   return (
-    <a
-      href={youtubeUrl}
-      target="_blank"
-      rel="noopener noreferrer"
+    <button
+      onClick={() => setIsPlaying(true)}
       className="block w-full aspect-video rounded-lg overflow-hidden relative group bg-gray-900"
     >
       <img
@@ -64,7 +80,7 @@ export default function YouTubeEmbed({ url, title = 'Vídeo do YouTube' }: YouTu
         </svg>
         Assistir
       </div>
-    </a>
+    </button>
   );
 }
 
