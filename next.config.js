@@ -158,6 +158,9 @@ const nextConfig = {
               // 'self': Fontes da mesma origem
               // data:: Permite fontes em data URIs
               "font-src 'self' data:",
+              // frame-src: Controla de onde iframes podem carregar conteúdo
+              // Permite embeds do YouTube
+              "frame-src https://www.youtube.com https://youtube.com",
               // object-src: Controla de onde plugins (Flash, Java, etc.) podem ser carregados
               // 'none': Bloqueia completamente o carregamento de plugins (melhor prática de segurança)
               "object-src 'none'",

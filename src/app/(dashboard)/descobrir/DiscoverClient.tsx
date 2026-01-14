@@ -445,9 +445,10 @@ function PostCard({ post }: { post: PostWithAuthor }) {
           className="object-cover"
         />
       ) : (
-        <div className="w-full h-full flex items-center justify-center p-3 bg-gradient-to-br from-pink-50 to-purple-50">
-          <p className="text-sm text-gray-600 line-clamp-4 text-center">
-            {post.content?.substring(0, 100)}
+        <div className="w-full h-full bg-gradient-to-br from-pink-500 to-purple-600 flex flex-col items-center justify-center p-4">
+          <span className="text-4xl mb-2">📝</span>
+          <p className="text-white text-sm font-medium text-center line-clamp-2">
+            {post.title || 'Post da comunidade'}
           </p>
         </div>
       )}
@@ -487,7 +488,7 @@ function ChallengeCard({ challenge }: { challenge: any }) {
           />
         </div>
       ) : (
-        <div className="w-12 h-12 rounded-lg bg-pink-100 flex items-center justify-center text-2xl shrink-0">
+        <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-pink-500 to-orange-400 flex items-center justify-center text-2xl shrink-0">
           {challenge.icon || '🎯'}
         </div>
       )}
@@ -518,7 +519,7 @@ function RewardCard({ reward }: { reward: any }) {
       href={`/premios/${reward.id}`}
       className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-pink-300 transition-colors"
     >
-      <div className="aspect-square relative bg-gray-100">
+      <div className="aspect-square relative">
         {reward.image_url ? (
           <Image
             src={reward.image_url}
@@ -527,8 +528,8 @@ function RewardCard({ reward }: { reward: any }) {
             className="object-cover"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-4xl">
-            🎁
+          <div className="w-full h-full bg-gradient-to-br from-purple-500 to-blue-500 flex flex-col items-center justify-center">
+            <span className="text-5xl">🎁</span>
           </div>
         )}
       </div>
