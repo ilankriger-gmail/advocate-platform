@@ -95,6 +95,18 @@ export function Header({ className, siteName = 'Arena Te Amo', logoUrl = '/logo.
 
           {/* Right: User menu or Login */}
           <div className="flex items-center gap-3">
+            {/* Botão criar post - mobile only */}
+            {user && (
+              <Link
+                href="/perfil/novo-post"
+                className="md:hidden flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-sm hover:shadow-md transition-shadow"
+                title="Criar post"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+                </svg>
+              </Link>
+            )}
             {isLoading ? (
               /* Skeleton enquanto carrega */
               <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
