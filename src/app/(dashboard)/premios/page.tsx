@@ -30,6 +30,13 @@ export default async function PremiosPage() {
     redirect('/login');
   }
 
+  // Buscar dados do usuário (nome para pré-preencher endereço)
+  const { data: userData } = await supabase
+    .from('users')
+    .select('full_name')
+    .eq('id', user.id)
+    .single();
+
   // Buscar saldo de moedas
   const { data: userCoins } = await supabase
     .from('user_coins')
@@ -222,6 +229,7 @@ export default async function PremiosPage() {
                           } | null,
                         }}
                         canClaim={canClaim && hasStock}
+                        userName={userData?.full_name || ''}
                       />
                     </div>
 

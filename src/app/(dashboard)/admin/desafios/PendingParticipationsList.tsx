@@ -23,12 +23,12 @@ interface Participation {
     type: string;
     icon: string;
     coins_reward: number;
-  };
+  } | null;
   profiles: {
     display_name: string | null;
     avatar_url: string | null;
     instagram_username: string | null;
-  };
+  } | null;
 }
 
 interface PendingParticipationsListProps {
@@ -41,10 +41,10 @@ export function PendingParticipationsList({ participations, onClose }: PendingPa
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [localParticipations, setLocalParticipations] = useState(participations);
 
-  const handleApprove = async (participationId: string, coinsReward: number) => {
+  const handleApprove = async (participationId: string, coinsReward: number | undefined) => {
     setLoadingId(participationId);
     try {
-      const result = await approveParticipation(participationId, coinsReward);
+      const result = await approveParticipation(participationId, coinsReward || 0);
       if (result.success) {
         // Remove da lista local
         setLocalParticipations(prev => prev.filter(p => p.id !== participationId));
@@ -140,7 +140,7 @@ export function PendingParticipationsList({ participations, onClose }: PendingPa
               <div className="flex items-start gap-4">
                 {/* Avatar */}
                 <div className="flex-shrink-0">
-                  {participation.profiles.avatar_url ? (
+                  {participation.profiles?.avatar_url ? (
                     <img
                       src={participation.profiles.avatar_url}
                       alt=""
@@ -157,9 +157,9 @@ export function PendingParticipationsList({ participations, onClose }: PendingPa
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-semibold text-gray-900">
-                      {participation.profiles.display_name || 'Usuario'}
+                      {participation.profiles?.display_name || 'Usuario'}
                     </span>
-                    {participation.profiles.instagram_username && (
+                    {participation.profiles?.instagram_username && (
                       <span className="text-sm text-pink-600">
                         @{participation.profiles.instagram_username}
                       </span>
@@ -167,9 +167,9 @@ export function PendingParticipationsList({ participations, onClose }: PendingPa
                   </div>
 
                   <div className="flex items-center gap-2 mt-1">
-                    <span className="text-xl">{participation.challenges.icon}</span>
+                    <span className="text-xl">{participation.challenges?.icon || '🎯'}</span>
                     <span className="text-sm text-gray-600 truncate">
-                      {participation.challenges.title}
+                      {participation.challenges?.title || 'Desafio'}
                     </span>
                   </div>
 
@@ -215,7 +215,7 @@ export function PendingParticipationsList({ participations, onClose }: PendingPa
                   </Button>
                   <Button
                     size="sm"
-                    onClick={() => handleApprove(participation.id, participation.challenges.coins_reward)}
+                    onClick={() => handleApprove(participation.id, participation.challenges?.coins_reward)}
                     disabled={isLoading}
                     className="bg-green-500 hover:bg-green-600 text-white"
                   >
@@ -224,7 +224,7 @@ export function PendingParticipationsList({ participations, onClose }: PendingPa
                     ) : (
                       <>
                         <Check className="w-4 h-4 mr-1" />
-                        +{participation.challenges.coins_reward}
+                        +{participation.challenges?.coins_reward || 0}
                       </>
                     )}
                   </Button>

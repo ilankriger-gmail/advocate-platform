@@ -14,6 +14,7 @@ const rewardsLogger = logger.withContext('[Rewards]');
  * Interface para endereço de entrega
  */
 export interface DeliveryAddress {
+  recipient_name: string;  // Nome de quem vai receber o produto
   cep: string;
   street: string;
   number: string;

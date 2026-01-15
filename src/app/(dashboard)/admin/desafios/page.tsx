@@ -56,8 +56,8 @@ export default async function AdminDesafiosPage() {
       ai_confidence,
       challenge_id,
       user_id,
-      challenges!inner(id, title, type, icon, coins_reward),
-      profiles!inner(display_name, avatar_url, instagram_username)
+      challenges(id, title, type, icon, coins_reward),
+      profiles(display_name, avatar_url, instagram_username)
     `)
     .eq('status', 'pending')
     .order('created_at', { ascending: false });

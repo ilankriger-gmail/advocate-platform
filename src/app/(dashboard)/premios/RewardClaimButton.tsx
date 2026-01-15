@@ -18,17 +18,19 @@ interface RewardClaimButtonProps {
     } | null;
   };
   canClaim: boolean;
+  userName?: string;  // Nome do usuário para pré-preencher destinatário
 }
 
-export function RewardClaimButton({ reward, canClaim }: RewardClaimButtonProps) {
+export function RewardClaimButton({ reward, canClaim, userName = '' }: RewardClaimButtonProps) {
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // Estado do endereço e seleções
+  // Estado do endereço e seleções (pré-preenche nome do destinatário)
   const [address, setAddress] = useState<DeliveryAddress>({
+    recipient_name: userName,
     cep: '',
     street: '',
     number: '',
@@ -113,6 +115,7 @@ export function RewardClaimButton({ reward, canClaim }: RewardClaimButtonProps) 
 
   // Validar formulário de endereço
   const isAddressValid =
+    address.recipient_name.trim() !== '' &&
     address.cep.replace(/\D/g, '').length === 8 &&
     address.street.trim() !== '' &&
     address.number.trim() !== '' &&
@@ -237,6 +240,24 @@ export function RewardClaimButton({ reward, canClaim }: RewardClaimButtonProps) 
 
                 {/* Formulário de endereço */}
                 <div className="space-y-3">
+                  {/* Nome do destinatário */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Nome de quem vai receber *
+                    </label>
+                    <Input
+                      value={address.recipient_name}
+                      onChange={(e) =>
+                        setAddress({ ...address, recipient_name: e.target.value })
+                      }
+                      placeholder="Nome completo do destinatário"
+                      disabled={isLoading}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Pode ser você ou outra pessoa (ex: enviar para casa de um familiar)
+                    </p>
+                  </div>
+
                   {/* CEP */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">

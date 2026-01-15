@@ -21,12 +21,12 @@ interface Participation {
     type: string;
     icon: string;
     coins_reward: number;
-  };
+  } | null;
   profiles: {
     display_name: string | null;
     avatar_url: string | null;
     instagram_username: string | null;
-  };
+  } | null;
 }
 
 interface StatsCardsClientProps {
