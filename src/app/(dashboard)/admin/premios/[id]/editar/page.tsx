@@ -37,7 +37,7 @@ export default function EditRewardPage({ params }: PageProps) {
     description: '',
     coins_required: '',
     stock: '',
-    type: 'digital' as 'digital' | 'physical',
+    type: 'digital' as 'digital' | 'physical' | 'money',
     image_url: '',
     is_active: true,
   });
@@ -235,8 +235,8 @@ export default function EditRewardPage({ params }: PageProps) {
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Editar Recompensa</h1>
-          <p className="text-gray-500 text-sm mt-1">Atualize os dados da recompensa</p>
+          <h1 className="text-2xl font-bold text-gray-900">Editar Prêmio</h1>
+          <p className="text-gray-500 text-sm mt-1">Atualize os dados do prêmio</p>
         </div>
         <Link href="/admin/premios">
           <Button variant="outline">Cancelar</Button>
@@ -261,11 +261,12 @@ export default function EditRewardPage({ params }: PageProps) {
               <label className="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
               <select
                 value={formData.type}
-                onChange={(e) => setFormData({ ...formData, type: e.target.value as 'digital' | 'physical' })}
+                onChange={(e) => setFormData({ ...formData, type: e.target.value as 'digital' | 'physical' | 'money' })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               >
                 <option value="digital">Digital</option>
                 <option value="physical">Físico</option>
+                <option value="money">PIX / Dinheiro</option>
               </select>
             </div>
           </div>
@@ -317,7 +318,7 @@ export default function EditRewardPage({ params }: PageProps) {
             <Textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Descreva a recompensa..."
+              placeholder="Descreva o prêmio..."
               rows={3}
             />
             {formData.type === 'physical' && (

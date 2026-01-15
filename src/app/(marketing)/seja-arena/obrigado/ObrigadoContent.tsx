@@ -14,7 +14,7 @@ interface ObrigadoContentProps {
 type PageState = 'processing' | 'approved' | 'pending' | 'timeout' | 'error' | 'no-lead';
 
 const POLL_INTERVAL = 2000; // 2 segundos
-const MAX_POLL_TIME = 45000; // 45 segundos (metade do tempo anterior)
+const MAX_POLL_TIME = 8000; // 8 segundos
 const MAX_RETRIES = 3; // Máximo de retries em caso de erro
 
 export function ObrigadoContent({ siteName, footerText }: ObrigadoContentProps) {
