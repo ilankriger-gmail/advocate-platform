@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { register } from '@/actions/auth';
 import { useAuth } from '@/contexts/AuthContext';
@@ -39,17 +39,36 @@ interface RegisterFormProps {
 /**
  * Formulário de registro com Client Component para interatividade
  * Aceita email pre-preenchido via query string ou prop
+ * Suporta cadastro direto via landing page (source, id, name params)
  */
 export default function RegisterForm({ prefilledEmail }: RegisterFormProps) {
   const searchParams = useSearchParams();
   const emailFromUrl = searchParams.get('email') || prefilledEmail || '';
   const { signInWithGoogle } = useAuth();
 
+  // Parâmetros de origem (cadastro direto via landing page)
+  const source = searchParams.get('source');
+  const sourceId = searchParams.get('id');
+  const sourceName = searchParams.get('name');
+
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [email, setEmail] = useState(emailFromUrl);
+
+  // Salvar origem em cookie para uso no callback de autenticação
+  useEffect(() => {
+    if (source && sourceId) {
+      const sourceData = JSON.stringify({
+        type: source,
+        id: sourceId,
+        name: sourceName || '',
+      });
+      // Cookie expira em 1 hora (tempo suficiente para completar o cadastro)
+      document.cookie = `direct_registration_source=${encodeURIComponent(sourceData)}; path=/; max-age=3600; SameSite=Lax`;
+    }
+  }, [source, sourceId, sourceName]);
 
   // Função para criar conta com Google
   async function handleGoogleSignUp() {

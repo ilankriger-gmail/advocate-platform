@@ -39,6 +39,9 @@ interface PageProps {
     type: string;
     id: string;
   }>;
+  searchParams?: Promise<{
+    modo?: string;
+  }>;
 }
 
 // Validar tipo da URL
@@ -336,8 +339,9 @@ function getCTAText(data: LandingPageData): { primary: string; secondary: string
   };
 }
 
-export default async function LandingPage({ params }: PageProps) {
+export default async function LandingPage({ params, searchParams }: PageProps) {
   const { type, id } = await params;
+  const resolvedSearchParams = await searchParams;
 
   if (!isValidType(type)) {
     notFound();
@@ -352,9 +356,20 @@ export default async function LandingPage({ params }: PageProps) {
   const data = result.data;
   const settings = await getSiteSettings(['site_name', 'logo_url', 'creator_name', 'creator_avatar_url']);
 
-  // Construir URL de redirecionamento para o formulário NPS
+  // Verificar se é modo direto (cadastro sem NPS)
+  const modoDireto = resolvedSearchParams?.modo === 'direto';
+
+  // Construir URL de redirecionamento
   const sourceType = data.type === 'challenge' ? 'landing_challenge' : 'landing_reward';
-  const npsUrl = `/seja-arena?source=${sourceType}&id=${data.id}&name=${encodeURIComponent(data.title)}`;
+
+  // Modo direto: vai direto para registro com parâmetros de origem
+  // Modo padrão: passa pelo NPS primeiro
+  const ctaUrl = modoDireto
+    ? `/registro?source=${sourceType}&id=${data.id}&name=${encodeURIComponent(data.title)}`
+    : `/seja-arena?source=${sourceType}&id=${data.id}&name=${encodeURIComponent(data.title)}`;
+
+  // Manter compatibilidade com variável antiga (usada nos Links)
+  const npsUrl = ctaUrl;
 
   // Obter textos dinâmicos
   const { headline, subheadline } = getHeadline(data);

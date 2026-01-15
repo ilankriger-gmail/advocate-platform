@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { scheduleUserOnboarding, sendOnboardingEmail } from '@/lib/notifications';
 import { getLeadSource } from '@/actions/leads';
 
@@ -35,6 +36,50 @@ function isValidRedirect(path: string): boolean {
 }
 
 /**
+ * Obter URL de redirecionamento do cookie de cadastro direto
+ * Usado quando o usuário vem de landing page no modo direto (sem NPS)
+ */
+async function getDirectRegistrationRedirect(): Promise<string | null> {
+  try {
+    const cookieStore = await cookies();
+    const sourceCookie = cookieStore.get('direct_registration_source');
+
+    if (!sourceCookie?.value) {
+      return null;
+    }
+
+    const sourceData = JSON.parse(decodeURIComponent(sourceCookie.value));
+
+    if (!sourceData.type || !sourceData.id) {
+      return null;
+    }
+
+    // Determinar URL de redirecionamento baseado no tipo de origem
+    if (sourceData.type === 'landing_challenge') {
+      return `/desafios?highlight=${sourceData.id}`;
+    } else if (sourceData.type === 'landing_reward') {
+      return `/premios?highlight=${sourceData.id}`;
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Limpar cookie de cadastro direto após uso
+ */
+async function clearDirectRegistrationCookie() {
+  try {
+    const cookieStore = await cookies();
+    cookieStore.delete('direct_registration_source');
+  } catch {
+    // Ignorar erros ao limpar cookie
+  }
+}
+
+/**
  * Rota de callback para autenticacao do Supabase
  * Usada para confirmacao de email e OAuth
  */
@@ -59,10 +104,20 @@ export async function GET(request: Request) {
         triggerOnboardingIfNew(user.id, user.email || '', user.user_metadata?.full_name || user.email?.split('@')[0] || 'Usuário');
 
         // Verificar se usuário veio de uma landing page para redirecioná-lo ao conteúdo original
-        if (user.email && next === '/') {
-          const { redirectUrl } = await getLeadSource(user.email);
-          if (isValidRedirect(redirectUrl)) {
-            return NextResponse.redirect(`${origin}${redirectUrl}`);
+        if (next === '/') {
+          // Primeiro verificar cookie de cadastro direto (sem NPS)
+          const directRedirect = await getDirectRegistrationRedirect();
+          if (directRedirect && isValidRedirect(directRedirect)) {
+            await clearDirectRegistrationCookie();
+            return NextResponse.redirect(`${origin}${directRedirect}`);
+          }
+
+          // Depois verificar se veio do fluxo NPS (via nps_leads)
+          if (user.email) {
+            const { redirectUrl } = await getLeadSource(user.email);
+            if (isValidRedirect(redirectUrl) && redirectUrl !== '/dashboard') {
+              return NextResponse.redirect(`${origin}${redirectUrl}`);
+            }
           }
         }
 

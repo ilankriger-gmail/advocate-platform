@@ -115,10 +115,21 @@ export function LeadCard({ lead }: LeadCardProps) {
         {/* Header */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-3">
-            {/* Score Badge */}
+            {/* Score NPS Badge */}
             <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl font-bold ${getScoreBadgeColor(lead.score)}`}>
               {lead.score}
             </div>
+            {/* Score AI Badge (se analisado) */}
+            {lead.ai_score !== null && lead.ai_score !== undefined && (
+              <div className={`w-12 h-12 rounded-xl flex flex-col items-center justify-center ${
+                lead.ai_score >= 70 ? 'bg-green-100 text-green-700' :
+                lead.ai_score >= 40 ? 'bg-yellow-100 text-yellow-700' :
+                'bg-red-100 text-red-700'
+              }`}>
+                <span className="text-[10px] font-medium">AI</span>
+                <span className="text-lg font-bold leading-none">{lead.ai_score}</span>
+              </div>
+            )}
             <div>
               <h3 className="font-semibold text-gray-900">{lead.name}</h3>
               <p className="text-sm text-gray-500">{getNpsCategory(lead.score)}</p>
