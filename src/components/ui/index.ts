@@ -15,6 +15,7 @@ export { Skeleton, SkeletonText, SkeletonAvatar, SkeletonCard, SkeletonPost, Ske
 export { Spinner } from './Spinner';
 export { EmptyState, EmptyStateIcon } from './EmptyState';
 export { ToastProvider, useToast, useToastHelpers } from './Toast';
+export { DateRangePicker } from './DateRangePicker';
 
 // Types
 export type { SelectOption } from './Select';
@@ -24,3 +25,4 @@ export type { ConfirmModalProps } from './ConfirmModal';
 export type { PromptModalProps } from './PromptModal';
 export type { TabsProps } from './Tabs';
 export type { Toast } from './Toast';
+export type { DateRangePickerProps } from './DateRangePicker';

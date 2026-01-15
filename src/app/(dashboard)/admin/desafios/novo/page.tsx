@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, Button, Input, Textarea } from '@/components/ui';
+import { Card, Button, Input, Textarea, DateRangePicker } from '@/components/ui';
 import { createChallenge } from '@/actions/challenges-admin';
 import { AIDescriptionGenerator } from '@/components/admin/AIDescriptionGenerator';
 import { YouTubeVideoPicker, SelectedYouTubeVideo } from '@/components/youtube/YouTubeVideoPicker';
@@ -471,23 +471,19 @@ export default function NovoChallengeDesafioPage() {
           </label>
 
           {!formData.noEndDate && (
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Data de Início</label>
-                <Input
-                  type="datetime-local"
-                  value={formData.starts_at}
-                  onChange={(e) => setFormData({ ...formData, starts_at: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Data de Término</label>
-                <Input
-                  type="datetime-local"
-                  value={formData.ends_at}
-                  onChange={(e) => setFormData({ ...formData, ends_at: e.target.value })}
-                />
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Período do Desafio</label>
+              <DateRangePicker
+                startDate={formData.starts_at ? new Date(formData.starts_at) : null}
+                endDate={formData.ends_at ? new Date(formData.ends_at) : null}
+                onRangeChange={(start, end) => setFormData({
+                  ...formData,
+                  starts_at: start ? start.toISOString() : '',
+                  ends_at: end ? end.toISOString() : '',
+                })}
+                minDate={new Date()}
+                placeholder="Selecione início e fim"
+              />
             </div>
           )}
 
