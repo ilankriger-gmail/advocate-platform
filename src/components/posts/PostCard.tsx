@@ -326,9 +326,9 @@ export const PostCard = memo(function PostCard({
               {wasTruncated && !isContentExpanded && (
                 <Link
                   href={`/post/${post.id}`}
-                  className="mt-2 inline-block text-sm font-medium text-primary-600 hover:text-primary-800 transition-colors"
+                  className="block mt-3 text-sm font-semibold text-primary-600 hover:text-primary-800 transition-colors"
                 >
-                  Leia mais
+                  Ver mais →
                 </Link>
               )}
             </>
