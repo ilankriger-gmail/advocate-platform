@@ -124,7 +124,14 @@ function ShopImportModal({ storeUrl, onClose }: ShopImportModalInnerProps) {
       if (!product) continue;
 
       try {
-        console.log('Importando produto:', product.name, 'Imagem:', product.imageUrl, 'Limitado:', config.isLimited);
+        console.log('Importando produto:', product.name, 'Imagem:', product.imageUrl, 'Limitado:', config.isLimited, 'Cores:', product.colors);
+
+        // Preparar opções disponíveis (cores da loja + tamanhos padrão)
+        const availableOptions = {
+          colors: product.colors && product.colors.length > 0 ? product.colors : undefined,
+          sizes: ['PP', 'P', 'M', 'G', 'GG', 'XG'], // Tamanhos padrão
+        };
+
         const result = await createReward({
           name: product.name.trim(),
           description: `Produto da loja: ${product.productUrl}`,
@@ -132,6 +139,7 @@ function ShopImportModal({ storeUrl, onClose }: ShopImportModalInnerProps) {
           quantity_available: config.isLimited ? config.stock : null,
           type: 'physical',
           image_url: product.imageUrl || null,
+          available_options: availableOptions,
         });
 
         console.log('Resultado:', result);

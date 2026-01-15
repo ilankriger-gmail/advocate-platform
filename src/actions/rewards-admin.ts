@@ -236,6 +236,10 @@ export async function createReward(data: {
   coins_required: number;
   quantity_available?: number | null;
   type: 'digital' | 'physical';
+  available_options?: {
+    colors?: string[];
+    sizes?: string[];
+  } | null;
 }): Promise<ActionResponse> {
   rewardsAdminLogger.info('Iniciando criação de recompensa', {
     name: data.name,
@@ -271,6 +275,7 @@ export async function createReward(data: {
       quantity_available: data.quantity_available || null,
       type: data.type,
       is_active: true,
+      available_options: data.available_options || null,
     };
 
     rewardsAdminLogger.debug('Dados para inserção', { insertData });
@@ -622,7 +627,77 @@ export async function generateRewardThumbnailAction(
 }
 
 /**
- * Upload de imagem para recompensa
+ * Upload de imagem para storage (sem atualizar reward)
+ * Usado na criação de novos prêmios
+ */
+export async function uploadRewardImageToStorage(
+  imageData: string // Base64 encoded image
+): Promise<ActionResponse<{ url: string }>> {
+  rewardsAdminLogger.info('Iniciando upload de imagem para storage');
+
+  try {
+    // Verificar autenticação
+    const userCheck = await getAuthenticatedUser();
+    if (userCheck.error) {
+      return { error: userCheck.error };
+    }
+    const user = userCheck.data!;
+
+    // Verificar se é admin/creator
+    const authCheck = await verifyAdminOrCreator(user.id);
+    if (authCheck.error) {
+      return { error: authCheck.error };
+    }
+
+    const supabase = await createClient();
+
+    // Converter base64 para buffer
+    const base64Data = imageData.replace(/^data:image\/\w+;base64,/, '');
+    const buffer = Buffer.from(base64Data, 'base64');
+
+    // Determinar tipo de arquivo
+    const mimeMatch = imageData.match(/^data:(image\/\w+);base64,/);
+    const contentType = mimeMatch ? mimeMatch[1] : 'image/webp';
+    const extension = contentType.split('/')[1];
+
+    // Gerar nome único
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${extension}`;
+
+    // Upload para Supabase Storage
+    const { error: uploadError } = await supabase.storage
+      .from('reward-images')
+      .upload(fileName, buffer, {
+        contentType,
+        upsert: false,
+      });
+
+    if (uploadError) {
+      rewardsAdminLogger.error('Erro ao fazer upload de imagem', {
+        error: sanitizeError(uploadError)
+      });
+      return { error: `Erro ao fazer upload: ${uploadError.message}` };
+    }
+
+    // Obter URL pública
+    const { data: publicUrlData } = supabase.storage
+      .from('reward-images')
+      .getPublicUrl(fileName);
+
+    rewardsAdminLogger.info('Imagem enviada para storage com sucesso', {
+      fileName
+    });
+
+    return { success: true, data: { url: publicUrlData.publicUrl } };
+  } catch (err) {
+    rewardsAdminLogger.error('Erro inesperado ao fazer upload de imagem', {
+      error: sanitizeError(err)
+    });
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+/**
+ * Upload de imagem para recompensa existente
  */
 export async function uploadRewardImage(
   rewardId: string,
@@ -778,19 +853,24 @@ export async function generateRewardDescriptionAction(data: {
       }
     }
 
-    const prompt = `Crie uma descrição atraente e concisa (máximo 150 caracteres) para esta recompensa de uma plataforma de comunidade/fãs:
+    const prompt = `Crie uma descrição emotiva e acolhedora (máximo 200 caracteres) para este prêmio de uma plataforma de fãs/comunidade:
 
 Nome: ${data.name}
 Tipo: ${data.type === 'physical' ? 'Produto físico (camiseta, acessório)' : 'Prêmio digital'}${shopContext}
 
+CONTEXTO IMPORTANTE:
+- O fã chegou até aqui através de dedicação e participação na comunidade
+- Este é o momento de ver seu esforço ser recompensado
+- Para produtos físicos: precisará informar endereço e escolher tamanho/cor
+
 REGRAS:
-- Máximo 150 caracteres
-- Destaque o valor para fãs/comunidade
-- Tom amigável e exclusivo
+- Máximo 200 caracteres
+- Tom caloroso, celebrando a conquista do fã
+- Valorize a jornada e dedicação
 - Em português brasileiro
 - NÃO use emojis
 - NÃO mencione preços ou moedas
-- Foque na experiência/benefício
+- Pode mencionar brevemente que é só escolher tamanho/cor e informar onde receber
 
 Responda APENAS com a descrição, nada mais.`;
 
@@ -799,12 +879,12 @@ Responda APENAS com a descrição, nada mais.`;
       messages: [
         {
           role: 'system',
-          content: 'Você é um copywriter especializado em criar descrições curtas e atraentes para recompensas de programas de fidelidade e comunidades de fãs. Responda apenas com a descrição solicitada.',
+          content: 'Você é um copywriter caloroso e empático, especializado em criar descrições que celebram a jornada e dedicação de fãs em comunidades. Seu tom é acolhedor, como se estivesse parabenizando um amigo por uma conquista. Responda apenas com a descrição solicitada.',
         },
         { role: 'user', content: prompt },
       ],
       temperature: 0.7,
-      max_tokens: 100,
+      max_tokens: 150,
     });
 
     const description = response.choices[0]?.message?.content?.trim();

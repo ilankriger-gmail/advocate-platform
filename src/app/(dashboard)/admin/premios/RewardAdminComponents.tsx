@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card, Button, Input, Textarea } from '@/components/ui';
-import { toggleRewardActive, createReward, approveClaim, markClaimShipped, markClaimDelivered } from '@/actions/rewards-admin';
+import { toggleRewardActive, createReward, approveClaim, markClaimShipped, markClaimDelivered, uploadRewardImageToStorage } from '@/actions/rewards-admin';
+import { RewardImageUploader } from '@/components/RewardImageUploader';
 import { Pencil } from 'lucide-react';
 
 interface RewardActionsProps {
@@ -149,6 +150,7 @@ export function NewRewardForm() {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [imageBase64, setImageBase64] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -156,7 +158,6 @@ export function NewRewardForm() {
     coins_required: '',
     stock: '',
     type: 'digital' as 'digital' | 'physical',
-    image_url: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -164,11 +165,24 @@ export function NewRewardForm() {
     setError(null);
 
     if (!formData.name || !formData.coins_required) {
-      setError('Nome e custo em corações sao obrigatorios');
+      setError('Nome e custo em corações são obrigatórios');
       return;
     }
 
     setIsLoading(true);
+
+    let imageUrl: string | null = null;
+
+    // Se tem imagem, faz upload primeiro
+    if (imageBase64) {
+      const uploadResult = await uploadRewardImageToStorage(imageBase64);
+      if (uploadResult.error) {
+        setError(`Erro no upload da imagem: ${uploadResult.error}`);
+        setIsLoading(false);
+        return;
+      }
+      imageUrl = uploadResult.data?.url || null;
+    }
 
     const result = await createReward({
       name: formData.name,
@@ -176,7 +190,7 @@ export function NewRewardForm() {
       coins_required: parseInt(formData.coins_required),
       quantity_available: formData.stock ? parseInt(formData.stock) : null,
       type: formData.type,
-      image_url: formData.image_url || null,
+      image_url: imageUrl,
     });
 
     if (result.error) {
@@ -191,8 +205,8 @@ export function NewRewardForm() {
       coins_required: '',
       stock: '',
       type: 'digital',
-      image_url: '',
     });
+    setImageBase64(null);
     setIsOpen(false);
     router.refresh();
     setIsLoading(false);
@@ -251,7 +265,7 @@ export function NewRewardForm() {
           />
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Custo (corações) *</label>
             <Input
@@ -276,17 +290,12 @@ export function NewRewardForm() {
               min="0"
             />
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">URL da Imagem</label>
-            <Input
-              type="url"
-              value={formData.image_url}
-              onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-              placeholder="https://..."
-            />
-          </div>
         </div>
+
+        <RewardImageUploader
+          onImageChange={setImageBase64}
+          disabled={isLoading}
+        />
 
         {error && (
           <div className="p-3 bg-red-50 text-red-700 rounded-lg text-sm">

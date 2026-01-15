@@ -89,7 +89,7 @@ export async function fetchUmaPencaProducts(
             priceOld: p.price_old && p.price_old > 0 ? parseFloat(p.price_old) : undefined,
             imageUrl: p.img_cover || p.image || p.img_male || '',
             productUrl: p.full_link || (p.link ? `https://umapenca.com${p.link}` : storeUrl),
-            colors: p.fabrics?.map((f: any) => f.name) || [],
+            colors: p.fabrics?.map((f: any) => f.product_color_name || f.name) || [],
           }));
         }
       } catch (parseError) {

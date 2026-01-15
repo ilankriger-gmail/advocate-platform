@@ -21,6 +21,9 @@ export interface DeliveryAddress {
   neighborhood: string;
   city: string;
   state: string;
+  // Seleções do produto
+  size?: string;   // Tamanho selecionado (PP, P, M, G, GG, XG)
+  color?: string;  // Cor selecionada
 }
 
 /**

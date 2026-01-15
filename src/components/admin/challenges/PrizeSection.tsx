@@ -129,117 +129,174 @@ export function PrizeSection({ prizes, onChange, disabled }: PrizeSectionProps) 
               {/* Conteúdo expandido quando habilitado */}
               {isEnabled && (
                 <div className="p-4 border-t bg-white space-y-3">
-                  {/* Lista de prêmios existentes */}
-                  {typePrizes.map((prize, idx) => {
-                    const globalIdx = prizes.findIndex(p => p === prize);
-                    return (
-                      <div
-                        key={idx}
-                        className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
-                      >
-                        <div className="flex-1">
-                          <p className="font-medium text-gray-900">{prize.name}</p>
-                          <p className="text-sm text-gray-500">
-                            Qtd: {prize.quantity}
-                            {prize.value && ` | R$ ${prize.value.toFixed(2)}`}
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => removePrize(globalIdx)}
-                          disabled={disabled}
-                          className="p-1 text-gray-400 hover:text-red-500 transition-colors"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    );
-                  })}
-
-                  {/* Formulário de novo prêmio */}
-                  {newPrize?.type === type ? (
-                    <div className="p-3 border-2 border-dashed border-gray-300 rounded-lg space-y-3">
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="col-span-2">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            {type === 'money' ? 'Descrição' : 'Nome do Prêmio'} *
-                          </label>
-                          <Input
-                            value={newPrize.name || ''}
-                            onChange={(e) => setNewPrize({ ...newPrize, name: e.target.value })}
-                            placeholder={type === 'money' ? 'Ex: PIX para o ganhador' : 'Ex: Camiseta Exclusiva'}
+                  {/* Para CORAÇÕES - formulário simplificado */}
+                  {type === 'coins' ? (
+                    <div className="space-y-3">
+                      {/* Se já tem corações configurados, mostrar */}
+                      {typePrizes.length > 0 ? (
+                        <div className="flex items-center gap-3 p-3 bg-pink-50 rounded-lg">
+                          <Heart className="w-5 h-5 text-pink-500" />
+                          <div className="flex-1">
+                            <p className="font-medium text-gray-900">
+                              {typePrizes[0].value?.toLocaleString()} corações
+                            </p>
+                            <p className="text-sm text-gray-500">Creditados ao completar o desafio</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removePrize(prizes.findIndex(p => p.type === 'coins'))}
                             disabled={disabled}
-                          />
+                            className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
                         </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Valor (R$)
-                          </label>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            value={newPrize.value || ''}
-                            onChange={(e) => setNewPrize({ ...newPrize, value: parseFloat(e.target.value) || undefined })}
-                            placeholder="100.00"
-                            disabled={disabled}
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Quantidade
+                      ) : (
+                        <div className="flex items-center gap-3">
+                          <label className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                            Quantos corações?
                           </label>
                           <Input
                             type="number"
                             min="1"
-                            value={newPrize.quantity || 1}
-                            onChange={(e) => setNewPrize({ ...newPrize, quantity: parseInt(e.target.value) || 1 })}
+                            placeholder="Ex: 100"
+                            className="w-32"
                             disabled={disabled}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                const value = parseInt((e.target as HTMLInputElement).value);
+                                if (value > 0) {
+                                  onChange([...prizes, {
+                                    type: 'coins',
+                                    name: `${value} corações`,
+                                    value: value,
+                                    quantity: 1,
+                                  }]);
+                                  (e.target as HTMLInputElement).value = '';
+                                }
+                              }
+                            }}
+                            onBlur={(e) => {
+                              const value = parseInt(e.target.value);
+                              if (value > 0) {
+                                onChange([...prizes, {
+                                  type: 'coins',
+                                  name: `${value} corações`,
+                                  value: value,
+                                  quantity: 1,
+                                }]);
+                                e.target.value = '';
+                              }
+                            }}
                           />
+                          <span className="text-sm text-gray-500">❤️</span>
                         </div>
-                        {type !== 'money' && (
-                          <div className="col-span-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Descrição (opcional)
-                            </label>
-                            <Input
-                              value={newPrize.description || ''}
-                              onChange={(e) => setNewPrize({ ...newPrize, description: e.target.value })}
-                              placeholder="Detalhes do prêmio..."
-                              disabled={disabled}
-                            />
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          type="button"
-                          size="sm"
-                          onClick={savePrize}
-                          disabled={disabled || !newPrize.name?.trim()}
-                        >
-                          Adicionar
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setNewPrize(null)}
-                          disabled={disabled}
-                        >
-                          Cancelar
-                        </Button>
-                      </div>
+                      )}
                     </div>
                   ) : (
-                    <button
-                      type="button"
-                      onClick={() => addPrize(type)}
-                      disabled={disabled}
-                      className="w-full p-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-gray-400 hover:text-gray-700 transition-colors flex items-center justify-center gap-2"
-                    >
-                      <Plus className="w-4 h-4" />
-                      Adicionar {config.label}
-                    </button>
+                    <>
+                      {/* Para DINHEIRO - formulário completo */}
+                      {/* Lista de prêmios existentes */}
+                      {typePrizes.map((prize, idx) => {
+                        const globalIdx = prizes.findIndex(p => p === prize);
+                        return (
+                          <div
+                            key={idx}
+                            className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
+                          >
+                            <div className="flex-1">
+                              <p className="font-medium text-gray-900">{prize.name}</p>
+                              <p className="text-sm text-gray-500">
+                                Qtd: {prize.quantity}
+                                {prize.value && ` | R$ ${prize.value.toFixed(2)}`}
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removePrize(globalIdx)}
+                              disabled={disabled}
+                              className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        );
+                      })}
+
+                      {/* Formulário de novo prêmio */}
+                      {newPrize?.type === type ? (
+                        <div className="p-3 border-2 border-dashed border-gray-300 rounded-lg space-y-3">
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="col-span-2">
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Descrição *
+                              </label>
+                              <Input
+                                value={newPrize.name || ''}
+                                onChange={(e) => setNewPrize({ ...newPrize, name: e.target.value })}
+                                placeholder="Ex: PIX para o ganhador"
+                                disabled={disabled}
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Valor (R$)
+                              </label>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                value={newPrize.value || ''}
+                                onChange={(e) => setNewPrize({ ...newPrize, value: parseFloat(e.target.value) || undefined })}
+                                placeholder="100.00"
+                                disabled={disabled}
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Qtd. Ganhadores
+                              </label>
+                              <Input
+                                type="number"
+                                min="1"
+                                value={newPrize.quantity || 1}
+                                onChange={(e) => setNewPrize({ ...newPrize, quantity: parseInt(e.target.value) || 1 })}
+                                disabled={disabled}
+                              />
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              type="button"
+                              size="sm"
+                              onClick={savePrize}
+                              disabled={disabled || !newPrize.name?.trim()}
+                            >
+                              Adicionar
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setNewPrize(null)}
+                              disabled={disabled}
+                            >
+                              Cancelar
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => addPrize(type)}
+                          disabled={disabled}
+                          className="w-full p-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-gray-400 hover:text-gray-700 transition-colors flex items-center justify-center gap-2"
+                        >
+                          <Plus className="w-4 h-4" />
+                          Adicionar {config.label}
+                        </button>
+                      )}
+                    </>
                   )}
                 </div>
               )}

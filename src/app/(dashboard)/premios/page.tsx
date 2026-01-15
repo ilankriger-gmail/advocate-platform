@@ -185,6 +185,10 @@ export default async function PremiosPage() {
                           name: reward.name,
                           type: reward.type || 'digital',
                           coins_required: reward.coins_required,
+                          available_options: reward.available_options as {
+                            colors?: string[];
+                            sizes?: string[];
+                          } | null,
                         }}
                         canClaim={canClaim && hasStock}
                       />

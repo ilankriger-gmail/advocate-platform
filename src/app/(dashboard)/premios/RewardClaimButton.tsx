@@ -12,6 +12,10 @@ interface RewardClaimButtonProps {
     name: string;
     type: 'digital' | 'physical';
     coins_required: number;
+    available_options?: {
+      colors?: string[];
+      sizes?: string[];
+    } | null;
   };
   canClaim: boolean;
 }
@@ -23,7 +27,7 @@ export function RewardClaimButton({ reward, canClaim }: RewardClaimButtonProps) 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // Estado do endereço
+  // Estado do endereço e seleções
   const [address, setAddress] = useState<DeliveryAddress>({
     cep: '',
     street: '',
@@ -32,9 +36,13 @@ export function RewardClaimButton({ reward, canClaim }: RewardClaimButtonProps) 
     neighborhood: '',
     city: '',
     state: '',
+    size: '',
+    color: '',
   });
 
   const isPhysical = reward.type === 'physical';
+  const hasColors = reward.available_options?.colors && reward.available_options.colors.length > 0;
+  const hasSizes = reward.available_options?.sizes && reward.available_options.sizes.length > 0;
 
   // Buscar endereço pelo CEP
   const handleCepBlur = async () => {
@@ -110,7 +118,11 @@ export function RewardClaimButton({ reward, canClaim }: RewardClaimButtonProps) 
     address.number.trim() !== '' &&
     address.neighborhood.trim() !== '' &&
     address.city.trim() !== '' &&
-    address.state.trim() !== '';
+    address.state.trim() !== '' &&
+    // Tamanho obrigatório se houver opções
+    (!hasSizes || address.size?.trim() !== '') &&
+    // Cor obrigatória se houver opções
+    (!hasColors || address.color?.trim() !== '');
 
   return (
     <>
@@ -171,9 +183,57 @@ export function RewardClaimButton({ reward, canClaim }: RewardClaimButtonProps) 
                     Prêmio: {reward.name}
                   </p>
                   <p className="text-xs text-amber-700 mt-1">
-                    Este é um prêmio físico de série limitada. Informe seu endereço completo para receber em casa.
+                    Parabéns por chegar até aqui! Sua dedicação está sendo recompensada. Escolha as opções e informe onde deseja receber.
                   </p>
                 </div>
+
+                {/* Seleção de Cor e Tamanho */}
+                {(hasColors || hasSizes) && (
+                  <div className="space-y-3">
+                    <p className="text-sm font-medium text-gray-700">Escolha suas opções:</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      {/* Cor */}
+                      {hasColors && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Cor *
+                          </label>
+                          <select
+                            value={address.color || ''}
+                            onChange={(e) => setAddress({ ...address, color: e.target.value })}
+                            disabled={isLoading}
+                            className="w-full h-10 px-3 rounded-lg border border-gray-300 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-sm"
+                          >
+                            <option value="">Selecione</option>
+                            {reward.available_options?.colors?.map((color) => (
+                              <option key={color} value={color}>{color}</option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+
+                      {/* Tamanho */}
+                      {hasSizes && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Tamanho *
+                          </label>
+                          <select
+                            value={address.size || ''}
+                            onChange={(e) => setAddress({ ...address, size: e.target.value })}
+                            disabled={isLoading}
+                            className="w-full h-10 px-3 rounded-lg border border-gray-300 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-sm"
+                          >
+                            <option value="">Selecione</option>
+                            {reward.available_options?.sizes?.map((size) => (
+                              <option key={size} value={size}>{size}</option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 {/* Formulário de endereço */}
                 <div className="space-y-3">
