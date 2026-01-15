@@ -43,7 +43,7 @@ function ShopImportModal({ storeUrl, onClose }: ShopImportModalInnerProps) {
   const [products, setProducts] = useState<ImportedProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedProducts, setSelectedProducts] = useState<Map<string, { coinsCost: number; stock: number }>>(new Map());
+  const [selectedProducts, setSelectedProducts] = useState<Map<string, { coinsCost: number; stock: number; isLimited: boolean }>>(new Map());
   const [isImporting, setIsImporting] = useState(false);
   const [importResults, setImportResults] = useState<{ success: number; errors: string[] } | null>(null);
 
@@ -76,7 +76,7 @@ function ShopImportModal({ storeUrl, onClose }: ShopImportModalInnerProps) {
     } else {
       // Sugerir custo em corações baseado no preço (1 real = 10 corações)
       const suggestedCost = Math.round(product.price * 10);
-      newSelected.set(product.id, { coinsCost: suggestedCost, stock: 1 });
+      newSelected.set(product.id, { coinsCost: suggestedCost, stock: 1, isLimited: true });
     }
 
     setSelectedProducts(newSelected);
@@ -102,6 +102,16 @@ function ShopImportModal({ storeUrl, onClose }: ShopImportModalInnerProps) {
     }
   };
 
+  // Toggle edição limitada
+  const toggleLimited = (productId: string) => {
+    const newSelected = new Map(selectedProducts);
+    const current = newSelected.get(productId);
+    if (current) {
+      newSelected.set(productId, { ...current, isLimited: !current.isLimited });
+      setSelectedProducts(newSelected);
+    }
+  };
+
   // Importar produtos selecionados
   const handleImport = async () => {
     if (selectedProducts.size === 0) return;
@@ -114,12 +124,12 @@ function ShopImportModal({ storeUrl, onClose }: ShopImportModalInnerProps) {
       if (!product) continue;
 
       try {
-        console.log('Importando produto:', product.name, 'Imagem:', product.imageUrl);
+        console.log('Importando produto:', product.name, 'Imagem:', product.imageUrl, 'Limitado:', config.isLimited);
         const result = await createReward({
           name: product.name.trim(),
           description: `Produto da loja: ${product.productUrl}`,
           coins_required: config.coinsCost,
-          quantity_available: config.stock,
+          quantity_available: config.isLimited ? config.stock : null,
           type: 'physical',
           image_url: product.imageUrl || null,
         });
@@ -270,20 +280,44 @@ function ShopImportModal({ storeUrl, onClose }: ShopImportModalInnerProps) {
                               onClick={(e) => e.stopPropagation()}
                             />
                           </div>
-                          <div className="w-24">
-                            <label className="block text-xs font-medium text-gray-600 mb-1">
-                              Estoque
-                            </label>
-                            <Input
-                              type="number"
-                              value={config.stock}
-                              onChange={(e) => updateProductStock(product.id, parseInt(e.target.value) || 1)}
-                              onFocus={(e) => e.target.select()}
-                              min="1"
-                              className="h-9 text-sm"
-                              onClick={(e) => e.stopPropagation()}
-                            />
+
+                          {/* Toggle Edição Limitada */}
+                          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              type="button"
+                              onClick={() => toggleLimited(product.id)}
+                              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                                config.isLimited ? 'bg-purple-500' : 'bg-gray-300'
+                              }`}
+                            >
+                              <span
+                                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                  config.isLimited ? 'translate-x-4' : 'translate-x-0.5'
+                                }`}
+                              />
+                            </button>
+                            <span className="text-xs text-gray-600 whitespace-nowrap">
+                              {config.isLimited ? 'Limitado' : 'Ilimitado'}
+                            </span>
                           </div>
+
+                          {/* Estoque - só aparece se for limitado */}
+                          {config.isLimited && (
+                            <div className="w-20">
+                              <label className="block text-xs font-medium text-gray-600 mb-1">
+                                Qtd
+                              </label>
+                              <Input
+                                type="number"
+                                value={config.stock}
+                                onChange={(e) => updateProductStock(product.id, parseInt(e.target.value) || 1)}
+                                onFocus={(e) => e.target.select()}
+                                min="1"
+                                className="h-9 text-sm"
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </div>
+                          )}
                         </div>
                       </div>
                     )}
