@@ -84,6 +84,37 @@ export default async function PremiosPage() {
         </div>
       </Card>
 
+      {/* Meus Resgates */}
+      <div>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Meus Resgates</h2>
+        <Card className="divide-y divide-gray-100">
+          {claims && claims.length > 0 ? (
+            claims.map((claim) => (
+              <div key={claim.id} className="p-4 flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-gray-900">
+                    {(claim.rewards as { name: string })?.name || 'Prêmio'}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {new Date(claim.created_at).toLocaleDateString('pt-BR')}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${statusColors[claim.status]}`}>
+                    {statusLabels[claim.status]}
+                  </span>
+                  <p className="text-sm text-gray-500 mt-1">-{claim.coins_spent} ❤️</p>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="p-8 text-center text-gray-500">
+              Você ainda não resgatou nenhum prêmio.
+            </div>
+          )}
+        </Card>
+      </div>
+
       {/* Prêmios Disponíveis */}
       <div>
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Prêmios Disponíveis</h2>
@@ -261,37 +292,6 @@ export default async function PremiosPage() {
             </div>
           )}
         </div>
-      </div>
-
-      {/* Histórico de Resgates */}
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Meus Resgates</h2>
-        <Card className="divide-y divide-gray-100">
-          {claims && claims.length > 0 ? (
-            claims.map((claim) => (
-              <div key={claim.id} className="p-4 flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-gray-900">
-                    {(claim.rewards as { name: string })?.name || 'Prêmio'}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {new Date(claim.created_at).toLocaleDateString('pt-BR')}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${statusColors[claim.status]}`}>
-                    {statusLabels[claim.status]}
-                  </span>
-                  <p className="text-sm text-gray-500 mt-1">-{claim.coins_spent} ❤️</p>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="p-8 text-center text-gray-500">
-              Você ainda não resgatou nenhum prêmio.
-            </div>
-          )}
-        </Card>
       </div>
     </div>
   );
