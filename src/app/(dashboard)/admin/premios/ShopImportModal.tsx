@@ -264,6 +264,7 @@ function ShopImportModal({ storeUrl, onClose }: ShopImportModalInnerProps) {
                               type="number"
                               value={config.coinsCost}
                               onChange={(e) => updateProductCost(product.id, parseInt(e.target.value) || 0)}
+                              onFocus={(e) => e.target.select()}
                               min="1"
                               className="h-9 text-sm"
                               onClick={(e) => e.stopPropagation()}
@@ -277,6 +278,7 @@ function ShopImportModal({ storeUrl, onClose }: ShopImportModalInnerProps) {
                               type="number"
                               value={config.stock}
                               onChange={(e) => updateProductStock(product.id, parseInt(e.target.value) || 1)}
+                              onFocus={(e) => e.target.select()}
                               min="1"
                               className="h-9 text-sm"
                               onClick={(e) => e.stopPropagation()}

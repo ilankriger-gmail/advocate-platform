@@ -320,10 +320,16 @@ export async function updateReward(
     is_active: boolean;
   }>
 ): Promise<ActionResponse> {
+  rewardsAdminLogger.info('Atualizando recompensa', {
+    rewardId: maskId(rewardId),
+    fields: Object.keys(data)
+  });
+
   try {
     // Verificar autenticação
     const userCheck = await getAuthenticatedUser();
     if (userCheck.error) {
+      rewardsAdminLogger.warn('Usuário não autenticado ao atualizar recompensa');
       return userCheck;
     }
     const user = userCheck.data!;
@@ -331,24 +337,42 @@ export async function updateReward(
     // Verificar se é admin/creator
     const authCheck = await verifyAdminOrCreator(user.id);
     if (authCheck.error) {
+      rewardsAdminLogger.warn('Usuário não autorizado ao atualizar recompensa', {
+        userId: maskId(user.id)
+      });
       return authCheck;
     }
 
     const supabase = await createClient();
 
+    // Remover updated_at pois a tabela pode não ter esse campo
     const { error } = await supabase
       .from('rewards')
-      .update({ ...data, updated_at: new Date().toISOString() })
+      .update(data)
       .eq('id', rewardId);
 
     if (error) {
-      return { error: 'Erro ao atualizar recompensa' };
+      rewardsAdminLogger.error('Erro ao atualizar recompensa no banco', {
+        rewardId: maskId(rewardId),
+        error: sanitizeError(error),
+        errorMessage: error.message,
+        errorCode: error.code
+      });
+      return { error: `Erro ao atualizar recompensa: ${error.message}` };
     }
+
+    rewardsAdminLogger.info('Recompensa atualizada com sucesso', {
+      rewardId: maskId(rewardId)
+    });
 
     revalidatePath('/premios');
     revalidatePath('/admin/premios');
     return { success: true };
-  } catch {
+  } catch (err) {
+    rewardsAdminLogger.error('Erro inesperado ao atualizar recompensa', {
+      rewardId: maskId(rewardId),
+      error: sanitizeError(err)
+    });
     return { error: 'Erro interno do servidor' };
   }
 }

@@ -258,6 +258,7 @@ export function NewRewardForm() {
               type="number"
               value={formData.coins_required}
               onChange={(e) => setFormData({ ...formData, coins_required: e.target.value })}
+              onFocus={(e) => e.target.select()}
               placeholder="100"
               min="1"
               required
@@ -270,6 +271,7 @@ export function NewRewardForm() {
               type="number"
               value={formData.stock}
               onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+              onFocus={(e) => e.target.select()}
               placeholder="Ilimitado"
               min="0"
             />

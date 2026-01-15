@@ -203,11 +203,9 @@ export default async function DesafiosPage() {
             </div>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
+          <div className="max-w-2xl mx-auto space-y-3 sm:space-y-4">
             {userParticipationsWithChallenge.map((participation) => (
-              <div key={participation.id} className="w-full sm:w-[calc(50%-0.5rem)] lg:w-[calc(33.333%-0.75rem)] max-w-md">
-                <MyParticipationCard participation={participation} />
-              </div>
+              <MyParticipationCard key={participation.id} participation={participation} />
             ))}
           </div>
         </section>
