@@ -80,11 +80,12 @@ export const MAIN_NAV = [
   { href: '/perfil', label: 'Perfil', icon: 'User' },
 ] as const;
 
-// Navegação bottom bar mobile (5 itens principais)
+// Navegação bottom bar mobile (mesmos itens do sidebar)
 export const BOTTOM_NAV_ITEMS = [
   { href: '/', label: 'Início', icon: 'Home' },
-  { href: '/desafios', label: 'Desafios', icon: 'Target' },
   { href: '/descobrir', label: 'Descobrir', icon: 'Search' },
+  { href: '/desafios', label: 'Desafios', icon: 'Target' },
+  { href: '/eventos', label: 'Eventos', icon: 'Calendar' },
   { href: '/premios', label: 'Prêmios', icon: 'Gift' },
   { href: '/perfil', label: 'Perfil', icon: 'User' },
 ] as const;
