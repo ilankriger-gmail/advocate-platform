@@ -27,12 +27,14 @@ CREATE INDEX IF NOT EXISTS idx_user_notifications_user_unread
 ALTER TABLE user_notifications ENABLE ROW LEVEL SECURITY;
 
 -- Usuários podem ver apenas suas próprias notificações
+DROP POLICY IF EXISTS "Users can view own notifications" ON user_notifications;
 CREATE POLICY "Users can view own notifications"
   ON user_notifications FOR SELECT
   TO authenticated
   USING (user_id = auth.uid());
 
 -- Usuários podem atualizar apenas suas próprias notificações (marcar como lido)
+DROP POLICY IF EXISTS "Users can update own notifications" ON user_notifications;
 CREATE POLICY "Users can update own notifications"
   ON user_notifications FOR UPDATE
   TO authenticated
@@ -40,18 +42,21 @@ CREATE POLICY "Users can update own notifications"
   WITH CHECK (user_id = auth.uid());
 
 -- Usuários podem deletar suas próprias notificações
+DROP POLICY IF EXISTS "Users can delete own notifications" ON user_notifications;
 CREATE POLICY "Users can delete own notifications"
   ON user_notifications FOR DELETE
   TO authenticated
   USING (user_id = auth.uid());
 
 -- Sistema pode inserir notificações (via service role)
+DROP POLICY IF EXISTS "Service can insert notifications" ON user_notifications;
 CREATE POLICY "Service can insert notifications"
   ON user_notifications FOR INSERT
   TO service_role
   WITH CHECK (true);
 
 -- Admins/Creators podem inserir notificações para qualquer usuário
+DROP POLICY IF EXISTS "Admins can insert notifications" ON user_notifications;
 CREATE POLICY "Admins can insert notifications"
   ON user_notifications FOR INSERT
   TO authenticated
