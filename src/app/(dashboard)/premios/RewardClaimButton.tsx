@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Input } from '@/components/ui';
 import { claimReward, type DeliveryAddress } from '@/actions/rewards';
-import { X, MapPin, Loader2, CheckCircle } from 'lucide-react';
+import { X, MapPin, Loader2, CheckCircle, Search, AlertCircle } from 'lucide-react';
 
 interface RewardClaimButtonProps {
   reward: {
@@ -42,32 +42,63 @@ export function RewardClaimButton({ reward, canClaim, userName = '' }: RewardCla
     color: '',
   });
 
+  // Estados para controle de busca de CEP
+  const [isFetchingCep, setIsFetchingCep] = useState(false);
+  const [cepFound, setCepFound] = useState(false);
+  const [cepError, setCepError] = useState(false);
+
   const isPhysical = reward.type === 'physical';
   const hasColors = reward.available_options?.colors && reward.available_options.colors.length > 0;
   const hasSizes = reward.available_options?.sizes && reward.available_options.sizes.length > 0;
 
   // Buscar endereço pelo CEP
-  const handleCepBlur = async () => {
-    const cep = address.cep.replace(/\D/g, '');
-    if (cep.length !== 8) return;
+  const fetchAddress = useCallback(async (cep: string) => {
+    setIsFetchingCep(true);
+    setCepError(false);
+    setCepFound(false);
 
     try {
       const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
       const data = await response.json();
 
-      if (!data.erro) {
+      if (data.erro) {
+        setCepError(true);
+        // Limpar campos se CEP inválido
         setAddress((prev) => ({
           ...prev,
-          street: data.logradouro || prev.street,
-          neighborhood: data.bairro || prev.neighborhood,
-          city: data.localidade || prev.city,
-          state: data.uf || prev.state,
+          street: '',
+          neighborhood: '',
+          city: '',
+          state: '',
+        }));
+      } else {
+        setCepFound(true);
+        setAddress((prev) => ({
+          ...prev,
+          street: data.logradouro || '',
+          neighborhood: data.bairro || '',
+          city: data.localidade || '',
+          state: data.uf || '',
         }));
       }
     } catch {
-      // Ignorar erro de busca de CEP
+      setCepError(true);
+    } finally {
+      setIsFetchingCep(false);
     }
-  };
+  }, []);
+
+  // Buscar automaticamente quando CEP tiver 8 dígitos
+  useEffect(() => {
+    const cepNumbers = address.cep.replace(/\D/g, '');
+    if (cepNumbers.length === 8) {
+      fetchAddress(cepNumbers);
+    } else {
+      // Reset estados se CEP incompleto
+      setCepFound(false);
+      setCepError(false);
+    }
+  }, [address.cep, fetchAddress]);
 
   // Formatar CEP
   const formatCep = (value: string) => {
@@ -239,7 +270,7 @@ export function RewardClaimButton({ reward, canClaim, userName = '' }: RewardCla
                 )}
 
                 {/* Formulário de endereço */}
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {/* Nome do destinatário */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -254,43 +285,44 @@ export function RewardClaimButton({ reward, canClaim, userName = '' }: RewardCla
                       disabled={isLoading}
                     />
                     <p className="text-xs text-gray-500 mt-1">
-                      Pode ser você ou outra pessoa (ex: enviar para casa de um familiar)
+                      Pode ser você ou outra pessoa
                     </p>
                   </div>
 
-                  {/* CEP */}
+                  {/* CEP com feedback visual */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       CEP *
                     </label>
-                    <Input
-                      value={address.cep}
-                      onChange={(e) =>
-                        setAddress({ ...address, cep: formatCep(e.target.value) })
-                      }
-                      onBlur={handleCepBlur}
-                      placeholder="00000-000"
-                      maxLength={9}
-                      disabled={isLoading}
-                    />
+                    <div className="relative">
+                      <Input
+                        value={address.cep}
+                        onChange={(e) =>
+                          setAddress({ ...address, cep: formatCep(e.target.value) })
+                        }
+                        placeholder="00000-000"
+                        maxLength={9}
+                        disabled={isLoading}
+                        className={`pr-10 ${cepError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''} ${cepFound ? 'border-green-500 focus:border-green-500 focus:ring-green-500' : ''}`}
+                      />
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        {isFetchingCep && <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />}
+                        {cepFound && !isFetchingCep && <CheckCircle className="w-5 h-5 text-green-500" />}
+                        {cepError && !isFetchingCep && <AlertCircle className="w-5 h-5 text-red-500" />}
+                        {!isFetchingCep && !cepFound && !cepError && address.cep.length < 9 && (
+                          <Search className="w-5 h-5 text-gray-300" />
+                        )}
+                      </div>
+                    </div>
+                    {cepError && (
+                      <p className="text-xs text-red-500 mt-1">CEP não encontrado. Verifique e tente novamente.</p>
+                    )}
+                    {!cepFound && !cepError && !isFetchingCep && (
+                      <p className="text-xs text-gray-500 mt-1">Digite o CEP para buscar o endereço automaticamente</p>
+                    )}
                   </div>
 
-                  {/* Rua */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Rua *
-                    </label>
-                    <Input
-                      value={address.street}
-                      onChange={(e) =>
-                        setAddress({ ...address, street: e.target.value })
-                      }
-                      placeholder="Nome da rua"
-                      disabled={isLoading}
-                    />
-                  </div>
-
-                  {/* Número e Complemento */}
+                  {/* Número e Complemento - campos que o usuário preenche */}
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -303,6 +335,7 @@ export function RewardClaimButton({ reward, canClaim, userName = '' }: RewardCla
                         }
                         placeholder="123"
                         disabled={isLoading}
+                        autoFocus={cepFound}
                       />
                     </div>
                     <div>
@@ -320,54 +353,73 @@ export function RewardClaimButton({ reward, canClaim, userName = '' }: RewardCla
                     </div>
                   </div>
 
-                  {/* Bairro */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Bairro *
-                    </label>
-                    <Input
-                      value={address.neighborhood}
-                      onChange={(e) =>
-                        setAddress({ ...address, neighborhood: e.target.value })
-                      }
-                      placeholder="Nome do bairro"
-                      disabled={isLoading}
-                    />
-                  </div>
+                  {/* Campos auto-preenchidos - aparecem após busca do CEP */}
+                  {cepFound && (
+                    <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2">
+                      <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        Endereço encontrado
+                      </p>
+                      <div className="grid grid-cols-1 gap-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Rua:</span>
+                          <span className="text-gray-900 font-medium text-right">{address.street || '-'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Bairro:</span>
+                          <span className="text-gray-900 font-medium">{address.neighborhood || '-'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Cidade:</span>
+                          <span className="text-gray-900 font-medium">{address.city} - {address.state}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
-                  {/* Cidade e Estado */}
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Cidade *
-                      </label>
-                      <Input
-                        value={address.city}
-                        onChange={(e) =>
-                          setAddress({ ...address, city: e.target.value })
-                        }
-                        placeholder="Cidade"
-                        disabled={isLoading}
-                      />
+                  {/* Campos manuais caso CEP não encontre tudo */}
+                  {!cepFound && address.cep.replace(/\D/g, '').length === 8 && !isFetchingCep && !cepError && (
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Rua *</label>
+                        <Input
+                          value={address.street}
+                          onChange={(e) => setAddress({ ...address, street: e.target.value })}
+                          placeholder="Nome da rua"
+                          disabled={isLoading}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Bairro *</label>
+                        <Input
+                          value={address.neighborhood}
+                          onChange={(e) => setAddress({ ...address, neighborhood: e.target.value })}
+                          placeholder="Nome do bairro"
+                          disabled={isLoading}
+                        />
+                      </div>
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="col-span-2">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Cidade *</label>
+                          <Input
+                            value={address.city}
+                            onChange={(e) => setAddress({ ...address, city: e.target.value })}
+                            placeholder="Cidade"
+                            disabled={isLoading}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Estado *</label>
+                          <Input
+                            value={address.state}
+                            onChange={(e) => setAddress({ ...address, state: e.target.value.toUpperCase().slice(0, 2) })}
+                            placeholder="UF"
+                            maxLength={2}
+                            disabled={isLoading}
+                          />
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Estado *
-                      </label>
-                      <Input
-                        value={address.state}
-                        onChange={(e) =>
-                          setAddress({
-                            ...address,
-                            state: e.target.value.toUpperCase().slice(0, 2),
-                          })
-                        }
-                        placeholder="UF"
-                        maxLength={2}
-                        disabled={isLoading}
-                      />
-                    </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Erro */}
