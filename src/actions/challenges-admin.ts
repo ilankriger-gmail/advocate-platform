@@ -382,55 +382,8 @@ export async function createChallenge(data: {
       title: challenge.title
     });
 
-    // Gerar thumbnail e emoji com IA (não bloqueia resposta em caso de erro)
-    try {
-      challengesAdminLogger.info('Gerando thumbnail e emoji com IA...', {
-        challengeId: maskId(challenge.id)
-      });
-
-      const thumbnailResult = await generateChallengeThumbnail({
-        challengeId: challenge.id,
-        title: data.title,
-        description: data.description,
-        type: data.type,
-        icon: data.icon || '🎯',
-        goal_type: data.goal_type,
-        goal_value: data.goal_value,
-        coins_reward: data.coins_reward,
-        prize_amount: data.prize_amount,
-      });
-
-      if (thumbnailResult.success && thumbnailResult.url) {
-        // Atualizar o desafio com a URL da thumbnail e emoji gerado
-        const updateData: { thumbnail_url: string; icon?: string } = {
-          thumbnail_url: thumbnailResult.url,
-        };
-        if (thumbnailResult.emoji) {
-          updateData.icon = thumbnailResult.emoji;
-        }
-
-        await supabase
-          .from('challenges')
-          .update(updateData)
-          .eq('id', challenge.id);
-
-        challengesAdminLogger.info('Thumbnail e emoji gerados com sucesso', {
-          challengeId: maskId(challenge.id),
-          emoji: thumbnailResult.emoji
-        });
-      } else {
-        challengesAdminLogger.warn('Falha ao gerar thumbnail (desafio criado sem thumbnail)', {
-          challengeId: maskId(challenge.id),
-          error: thumbnailResult.error
-        });
-      }
-    } catch (thumbnailError) {
-      // Não falhar a criação do desafio se a thumbnail falhar
-      challengesAdminLogger.warn('Erro ao gerar thumbnail (desafio criado sem thumbnail)', {
-        challengeId: maskId(challenge.id),
-        error: sanitizeError(thumbnailError)
-      });
-    }
+    // Nota: Thumbnail NÃO é gerada automaticamente.
+    // O admin pode gerar manualmente na página de edição se desejar.
 
     revalidatePath('/desafios');
     revalidatePath('/admin/desafios');
