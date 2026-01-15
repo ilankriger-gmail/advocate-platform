@@ -230,6 +230,7 @@ export default async function PremiosPage() {
                         }}
                         canClaim={canClaim && hasStock}
                         userName={userData?.full_name || ''}
+                        userBalance={balance}
                       />
                     </div>
 

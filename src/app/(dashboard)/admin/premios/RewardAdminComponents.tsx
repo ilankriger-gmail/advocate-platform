@@ -190,7 +190,7 @@ export function NewRewardForm() {
       description: formData.description || null,
       coins_required: parseInt(formData.coins_required),
       quantity_available: formData.type === 'money' ? null : (formData.stock ? parseInt(formData.stock) : null),
-      type: formData.type === 'money' ? 'digital' : formData.type, // Salva como digital (sem migration)
+      type: formData.type,
       image_url: imageUrl,
     });
 
@@ -213,16 +213,37 @@ export function NewRewardForm() {
     setIsLoading(false);
   };
 
+  const openWithPixTemplate = () => {
+    setFormData({
+      name: 'PIX R$ 50',
+      description: 'Resgate seu premio em PIX! O valor sera transferido para sua chave PIX apos aprovacao. Informe sua chave PIX (CPF, email, telefone ou chave aleatoria) no momento do resgate.',
+      coins_required: '500',
+      stock: '',
+      type: 'money',
+    });
+    setMoneyValue('50');
+    setIsOpen(true);
+  };
+
   if (!isOpen) {
     return (
       <Card className="p-5">
-        <button
-          onClick={() => setIsOpen(true)}
-          className="w-full py-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-indigo-500 hover:text-indigo-500 transition-colors flex items-center justify-center gap-2"
-        >
-          <span className="text-2xl">+</span>
-          <span>Criar Nova Recompensa</span>
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setIsOpen(true)}
+            className="flex-1 py-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-indigo-500 hover:text-indigo-500 transition-colors flex items-center justify-center gap-2"
+          >
+            <span className="text-2xl">+</span>
+            <span>Criar Nova Recompensa</span>
+          </button>
+          <button
+            onClick={openWithPixTemplate}
+            className="px-6 py-4 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-lg font-medium shadow-lg shadow-green-500/25 transition-all flex items-center gap-2"
+          >
+            <span className="text-xl">💸</span>
+            <span>+ Novo PIX</span>
+          </button>
+        </div>
       </Card>
     );
   }
@@ -247,11 +268,12 @@ export function NewRewardForm() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
             <select
               value={formData.type}
-              onChange={(e) => setFormData({ ...formData, type: e.target.value as 'digital' | 'physical' })}
+              onChange={(e) => setFormData({ ...formData, type: e.target.value as 'digital' | 'physical' | 'money' })}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             >
               <option value="digital">Digital</option>
               <option value="physical">Fisico</option>
+              <option value="money">PIX / Dinheiro</option>
             </select>
           </div>
         </div>

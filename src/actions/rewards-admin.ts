@@ -235,7 +235,7 @@ export async function createReward(data: {
   image_url?: string | null;
   coins_required: number;
   quantity_available?: number | null;
-  type: 'digital' | 'physical';
+  type: 'digital' | 'physical' | 'money';
   available_options?: {
     colors?: string[];
     sizes?: string[];
@@ -320,7 +320,7 @@ export async function updateReward(
     description: string | null;
     coins_required: number;
     quantity_available: number | null;
-    type: 'digital' | 'physical';
+    type: 'digital' | 'physical' | 'money';
     image_url: string | null;
     is_active: boolean;
   }>
@@ -554,7 +554,7 @@ export async function generateRewardThumbnailAction(
   data: {
     name: string;
     description?: string | null;
-    type: 'digital' | 'physical';
+    type: 'digital' | 'physical' | 'money';
     coins_required: number;
   }
 ): Promise<ActionResponse<{ url: string }>> {
@@ -808,7 +808,7 @@ function getOpenAIClient(): OpenAI | null {
  */
 export async function generateRewardDescriptionAction(data: {
   name: string;
-  type: 'digital' | 'physical';
+  type: 'digital' | 'physical' | 'money';
   shopDetails?: {
     colors?: string[];
     sizes?: string[];

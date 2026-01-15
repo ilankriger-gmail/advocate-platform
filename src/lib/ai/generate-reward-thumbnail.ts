@@ -24,7 +24,7 @@ export interface RewardThumbnailInput {
   rewardId: string;
   name: string;
   description?: string | null;
-  type: 'digital' | 'physical';
+  type: 'digital' | 'physical' | 'money';
   coins_required: number;
 }
 
@@ -126,15 +126,22 @@ export async function generateRewardThumbnail(
  */
 function buildRewardThumbnailPrompt(input: RewardThumbnailInput): string {
   // Determinar tema baseado no tipo
-  const isPhysical = input.type === 'physical';
-
-  const typeTheme = isPhysical
-    ? 'A premium, exclusive physical product. Show elegant packaging, gift box with ribbon, or luxurious unboxing experience. Emphasize exclusivity and limited edition feel.'
-    : 'A digital reward or virtual gift. Show glowing digital elements, virtual badges, digital certificates, or app icons with sparkles.';
+  const getTypeTheme = () => {
+    if (input.type === 'physical') {
+      return 'A premium, exclusive physical product. Show elegant packaging, gift box with ribbon, or luxurious unboxing experience. Emphasize exclusivity and limited edition feel.';
+    }
+    if (input.type === 'money') {
+      return 'A cash reward or PIX payment. Show golden coins, money stack, golden trophy with cash, or a glowing treasure chest with coins spilling out. Emphasize real monetary value and instant gratification.';
+    }
+    return 'A digital reward or virtual gift. Show glowing digital elements, virtual badges, digital certificates, or app icons with sparkles.';
+  };
+  const typeTheme = getTypeTheme();
 
   // Extrair palavras-chave da descrição
   let contextHint = '';
-  if (input.description) {
+  if (input.type === 'money') {
+    contextHint = 'Feature a golden treasure chest with Brazilian Real bills and PIX symbol, or a stack of cash with a glowing green checkmark.';
+  } else if (input.description) {
     const desc = input.description.toLowerCase();
     if (desc.includes('camiseta') || desc.includes('camisa') || desc.includes('shirt')) {
       contextHint = 'Feature a stylish, premium t-shirt or clothing item.';

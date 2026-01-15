@@ -202,10 +202,20 @@ interface RewardCardProps {
 }
 
 function RewardCard({ reward }: RewardCardProps) {
-  // Header gradient muda baseado no estado
-  const headerGradient = reward.is_active
-    ? 'bg-gradient-to-r from-indigo-500 to-purple-600'
-    : 'bg-gradient-to-r from-gray-400 to-gray-500';
+  // Header gradient muda baseado no tipo e estado
+  const getHeaderGradient = () => {
+    if (!reward.is_active) return 'bg-gradient-to-r from-gray-400 to-gray-500';
+    if (reward.type === 'money') return 'bg-gradient-to-r from-green-500 to-emerald-600';
+    return 'bg-gradient-to-r from-indigo-500 to-purple-600';
+  };
+  const headerGradient = getHeaderGradient();
+
+  const getTypeBadge = () => {
+    if (reward.type === 'money') return { label: 'PIX', className: 'bg-green-400/30 text-white border-0' };
+    if (reward.type === 'physical') return { label: 'Fisico', className: 'bg-white/20 text-white border-0' };
+    return { label: 'Digital', className: 'bg-white/20 text-white border-0' };
+  };
+  const typeBadge = getTypeBadge();
 
   return (
     <Card className={`overflow-hidden hover:shadow-lg transition-shadow ${!reward.is_active ? 'opacity-75' : ''}`}>
@@ -227,8 +237,8 @@ function RewardCard({ reward }: RewardCardProps) {
               {reward.coins_required} corações
             </p>
           </div>
-          <Badge className="bg-white/20 text-white border-0">
-            {reward.type === 'physical' ? 'Fisico' : 'Digital'}
+          <Badge className={typeBadge.className}>
+            {typeBadge.label}
           </Badge>
         </div>
       </div>

@@ -19,9 +19,10 @@ interface RewardClaimButtonProps {
   };
   canClaim: boolean;
   userName?: string;  // Nome do usuário para pré-preencher destinatário
+  userBalance?: number;  // Saldo atual de corações do usuário
 }
 
-export function RewardClaimButton({ reward, canClaim, userName = '' }: RewardClaimButtonProps) {
+export function RewardClaimButton({ reward, canClaim, userName = '', userBalance = 0 }: RewardClaimButtonProps) {
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -217,8 +218,33 @@ export function RewardClaimButton({ reward, canClaim, userName = '' }: RewardCla
                     Prêmio: {reward.name}
                   </p>
                   <p className="text-xs text-amber-700 mt-1">
-                    Parabéns por chegar até aqui! Sua dedicação está sendo recompensada. Escolha as opções e informe onde deseja receber.
+                    Parabéns por chegar até aqui! Sua dedicação está sendo recompensada.
                   </p>
+                </div>
+
+                {/* Resumo de corações */}
+                <div className="p-4 bg-gradient-to-r from-pink-50 to-red-50 border border-pink-200 rounded-lg">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm text-gray-600">Seu saldo atual</span>
+                    <span className="font-bold text-gray-900">{userBalance} ❤️</span>
+                  </div>
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="text-sm text-gray-600">Custo deste prêmio</span>
+                    <span className="font-bold text-red-600">-{reward.coins_required} ❤️</span>
+                  </div>
+
+                  {/* Barra de progresso */}
+                  <div className="h-3 bg-gray-200 rounded-full overflow-hidden mb-3">
+                    <div
+                      className="h-full bg-gradient-to-r from-pink-500 to-red-500 transition-all"
+                      style={{ width: `${userBalance > 0 ? Math.min((reward.coins_required / userBalance) * 100, 100) : 0}%` }}
+                    />
+                  </div>
+
+                  <div className="flex justify-between items-center pt-2 border-t border-pink-200">
+                    <span className="text-sm font-medium text-gray-700">Saldo após resgate</span>
+                    <span className="font-bold text-green-600">{userBalance - reward.coins_required} ❤️</span>
+                  </div>
                 </div>
 
                 {/* Seleção de Cor e Tamanho */}
