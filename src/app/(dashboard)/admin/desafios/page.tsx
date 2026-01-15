@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { Card, Button, Badge } from '@/components/ui';
 import { ChallengeToggleButton } from './ChallengeToggleButton';
+import { StatsCardsClient } from './StatsCardsClient';
 
 export default async function AdminDesafiosPage() {
   const supabase = await createClient();
@@ -41,6 +42,26 @@ export default async function AdminDesafiosPage() {
   const totalPending = processedChallenges.reduce((acc, c) => acc + c.pendingCount, 0);
   const totalApproved = processedChallenges.reduce((acc, c) => acc + c.approvedCount, 0);
 
+  // Buscar participacoes pendentes com dados do usuario e desafio
+  const { data: pendingParticipations } = await supabase
+    .from('challenge_participants')
+    .select(`
+      id,
+      status,
+      created_at,
+      video_proof_url,
+      social_media_url,
+      instagram_proof_url,
+      result_value,
+      ai_confidence,
+      challenge_id,
+      user_id,
+      challenges!inner(id, title, type, icon, coins_reward),
+      profiles!inner(display_name, avatar_url, instagram_username)
+    `)
+    .eq('status', 'pending')
+    .order('created_at', { ascending: false });
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -61,53 +82,14 @@ export default async function AdminDesafiosPage() {
         </Link>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-100">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
-              <span className="text-white text-lg">📊</span>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-blue-700">{processedChallenges.length}</p>
-              <p className="text-xs text-blue-600">Total Desafios</p>
-            </div>
-          </div>
-        </Card>
-        <Card className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 border-green-100">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center">
-              <span className="text-white text-lg">✅</span>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-green-700">{activeChallenges.length}</p>
-              <p className="text-xs text-green-600">Ativos</p>
-            </div>
-          </div>
-        </Card>
-        <Card className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 border-purple-100">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-purple-500 rounded-xl flex items-center justify-center">
-              <span className="text-white text-lg">👥</span>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-purple-700">{totalParticipants}</p>
-              <p className="text-xs text-purple-600">Participacoes</p>
-            </div>
-          </div>
-        </Card>
-        <Card className="p-4 bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-100">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-yellow-500 rounded-xl flex items-center justify-center">
-              <span className="text-white text-lg">⏳</span>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-yellow-700">{totalPending}</p>
-              <p className="text-xs text-yellow-600">Pendentes</p>
-            </div>
-          </div>
-        </Card>
-      </div>
+      {/* Stats Cards - Client Component para interatividade */}
+      <StatsCardsClient
+        totalChallenges={processedChallenges.length}
+        activeChallenges={activeChallenges.length}
+        totalParticipants={totalParticipants}
+        totalPending={totalPending}
+        pendingParticipations={(pendingParticipations || []) as any}
+      />
 
       {/* Desafios Ativos */}
       <section className="space-y-4">
