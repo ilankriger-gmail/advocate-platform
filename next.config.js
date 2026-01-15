@@ -35,6 +35,14 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'i.ytimg.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'umapenca.imgix.net',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.imgix.net',
+      },
     ],
   },
   // Rewrite para subdomínio comece.omocodoteamo.com.br mostrar a landing page
@@ -148,7 +156,7 @@ const nextConfig = {
               // blob:: Permite blob URLs (usado para preview de uploads)
               // https://*.supabase.co: Permite imagens do Supabase Storage
               // https://*.googleusercontent.com: Permite avatares do Google
-              "img-src 'self' data: blob: https://*.supabase.co https://*.googleusercontent.com https://img.youtube.com https://i.ytimg.com",
+              "img-src 'self' data: blob: https://*.supabase.co https://*.googleusercontent.com https://img.youtube.com https://i.ytimg.com https://*.imgix.net",
               // connect-src: Controla para onde a aplicação pode fazer requisições (fetch, XHR, WebSocket)
               // 'self': Requisições para a mesma origem
               // https://*.supabase.co: Permite conexões com API do Supabase

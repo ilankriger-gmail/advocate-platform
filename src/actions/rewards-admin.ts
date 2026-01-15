@@ -236,10 +236,17 @@ export async function createReward(data: {
   stock?: number | null;
   type: 'digital' | 'physical';
 }): Promise<ActionResponse> {
+  rewardsAdminLogger.info('Iniciando criação de recompensa', {
+    name: data.name,
+    type: data.type,
+    coinsCost: data.coins_cost
+  });
+
   try {
     // Verificar autenticação
     const userCheck = await getAuthenticatedUser();
     if (userCheck.error) {
+      rewardsAdminLogger.warn('Usuário não autenticado ao criar recompensa');
       return userCheck;
     }
     const user = userCheck.data!;
@@ -247,33 +254,52 @@ export async function createReward(data: {
     // Verificar se é admin/creator
     const authCheck = await verifyAdminOrCreator(user.id);
     if (authCheck.error) {
+      rewardsAdminLogger.warn('Usuário não autorizado ao criar recompensa', {
+        userId: maskId(user.id)
+      });
       return authCheck;
     }
 
     const supabase = await createClient();
 
+    const insertData = {
+      name: data.name,
+      description: data.description || null,
+      image_url: data.image_url || null,
+      coins_cost: data.coins_cost,
+      stock: data.stock || null,
+      type: data.type,
+      is_active: true,
+    };
+
+    rewardsAdminLogger.debug('Dados para inserção', { insertData });
+
     const { data: reward, error } = await supabase
       .from('rewards')
-      .insert({
-        name: data.name,
-        description: data.description || null,
-        image_url: data.image_url || null,
-        coins_cost: data.coins_cost,
-        stock: data.stock || null,
-        type: data.type,
-        is_active: true,
-      })
+      .insert(insertData)
       .select()
       .single();
 
     if (error) {
-      return { error: 'Erro ao criar recompensa' };
+      rewardsAdminLogger.error('Erro ao criar recompensa no banco', {
+        error: sanitizeError(error),
+        errorMessage: error.message,
+        errorCode: error.code
+      });
+      return { error: `Erro ao criar recompensa: ${error.message}` };
     }
+
+    rewardsAdminLogger.info('Recompensa criada com sucesso', {
+      rewardId: maskId(reward.id)
+    });
 
     revalidatePath('/premios');
     revalidatePath('/admin/premios');
     return { success: true, data: reward };
-  } catch {
+  } catch (err) {
+    rewardsAdminLogger.error('Erro inesperado ao criar recompensa', {
+      error: sanitizeError(err)
+    });
     return { error: 'Erro interno do servidor' };
   }
 }

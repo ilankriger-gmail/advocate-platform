@@ -114,14 +114,17 @@ function ShopImportModal({ storeUrl, onClose }: ShopImportModalInnerProps) {
       if (!product) continue;
 
       try {
+        console.log('Importando produto:', product.name, 'Imagem:', product.imageUrl);
         const result = await createReward({
-          name: product.name,
+          name: product.name.trim(),
           description: `Produto da loja: ${product.productUrl}`,
           coins_cost: config.coinsCost,
           stock: config.stock,
           type: 'physical',
-          image_url: product.imageUrl,
+          image_url: product.imageUrl || null,
         });
+
+        console.log('Resultado:', result);
 
         if (result.error) {
           results.errors.push(`${product.name}: ${result.error}`);
@@ -129,7 +132,8 @@ function ShopImportModal({ storeUrl, onClose }: ShopImportModalInnerProps) {
           results.success++;
         }
       } catch (err) {
-        results.errors.push(`${product.name}: Erro ao importar`);
+        console.error('Erro ao importar:', err);
+        results.errors.push(`${product.name}: Erro ao importar - ${err instanceof Error ? err.message : 'Erro desconhecido'}`);
       }
     }
 
