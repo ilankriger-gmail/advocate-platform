@@ -18,6 +18,16 @@ export interface ImportedProduct {
 }
 
 /**
+ * Detalhes do produto extraídos da página individual
+ */
+export interface ProductDetails {
+  sizes: string[];
+  colors: Array<{ name: string; hex: string }>;
+  description: string;
+  materials: string[];
+}
+
+/**
  * Resposta da busca de produtos
  */
 interface FetchProductsResponse {
@@ -190,4 +200,162 @@ export async function importProductsAsRewards(
   }
 
   return { success: errors.length === 0, imported, errors };
+}
+
+/**
+ * Busca detalhes de um produto específico da Uma Penca
+ * Extrai tamanhos, cores, descrição e materiais da página do produto
+ */
+export async function fetchProductDetails(productUrl: string): Promise<{
+  success: boolean;
+  data?: ProductDetails;
+  error?: string;
+}> {
+  try {
+    shopLogger.info('Buscando detalhes do produto', { productUrl });
+
+    // Validar URL
+    if (!productUrl.includes('umapenca.com')) {
+      return { success: false, error: 'URL inválida - deve ser da loja Uma Penca' };
+    }
+
+    // Fetch da página do produto
+    const response = await fetch(productUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; ArenaTeAmo/1.0)',
+        'Accept': 'text/html,application/xhtml+xml',
+      },
+      next: { revalidate: 300 },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Erro ao acessar produto: ${response.status}`);
+    }
+
+    const html = await response.text();
+
+    // Extrair window.initialScope que contém todos os dados do produto
+    const initialScopeMatch = html.match(/window\.initialScope\s*=\s*({[\s\S]*?});[\s\n]*<\/script>/);
+
+    const details: ProductDetails = {
+      sizes: [],
+      colors: [],
+      description: '',
+      materials: [],
+    };
+
+    if (initialScopeMatch) {
+      try {
+        // Limpar e parsear o JSON
+        let jsonStr = initialScopeMatch[1];
+        // Remover possíveis comentários e limpar
+        jsonStr = jsonStr.replace(/\/\*[\s\S]*?\*\//g, '');
+
+        const scopeData = JSON.parse(jsonStr);
+
+        // Extrair tamanhos únicos das variações
+        if (scopeData.ELASTIC_PRODUCT?.variations) {
+          const sizeSet = new Set<string>();
+          const sizeOrder = ['PP', 'P', 'M', 'G', 'GG', '2GG', '3GG', '4GG', 'XPP', 'XP', 'XM', 'XG', 'XGG'];
+
+          for (const variation of scopeData.ELASTIC_PRODUCT.variations) {
+            if (variation.size_id) {
+              // Extrair o tamanho do variation_id (ex: "322535-139-3-1" -> tamanho 3 = M)
+              // Ou tentar mapear do size_id direto
+              const sizeMap: Record<number, string> = {
+                1: 'PP', 2: 'P', 3: 'M', 4: 'G', 5: 'GG', 6: '2GG', 7: '3GG', 8: '4GG'
+              };
+              if (sizeMap[variation.size_id]) {
+                sizeSet.add(sizeMap[variation.size_id]);
+              }
+            }
+          }
+
+          // Ordenar tamanhos
+          details.sizes = Array.from(sizeSet).sort((a, b) => {
+            return sizeOrder.indexOf(a) - sizeOrder.indexOf(b);
+          });
+        }
+
+        // Extrair cores dos fabrics
+        if (scopeData.fabrics && Array.isArray(scopeData.fabrics)) {
+          details.colors = scopeData.fabrics.map((fabric: any) => ({
+            name: fabric.name || fabric.title || 'Cor',
+            hex: fabric.hex || fabric.color || '#CCCCCC',
+          }));
+        }
+
+        // Extrair descrição
+        if (scopeData.ELASTIC_PRODUCT?.description) {
+          details.description = scopeData.ELASTIC_PRODUCT.description;
+        }
+
+      } catch (parseError) {
+        shopLogger.warn('Erro ao parsear initialScope', { error: sanitizeError(parseError) });
+      }
+    }
+
+    // Fallback: tentar extrair de meta tags
+    if (!details.description) {
+      const metaDescMatch = html.match(/<meta\s+name="description"\s+content="([^"]+)"/i);
+      if (metaDescMatch) {
+        details.description = metaDescMatch[1];
+      }
+    }
+
+    // Tentar extrair materiais do HTML
+    const materialPatterns = [
+      /100%\s*algodão\s*sustentável/gi,
+      /100%\s*algodão/gi,
+      /algodão\s*orgânico/gi,
+      /poliéster/gi,
+    ];
+
+    for (const pattern of materialPatterns) {
+      const match = html.match(pattern);
+      if (match && !details.materials.includes(match[0])) {
+        details.materials.push(match[0]);
+      }
+    }
+
+    // Se não encontrou tamanhos, usar lista padrão para camisetas
+    if (details.sizes.length === 0 && productUrl.includes('/camiseta/')) {
+      details.sizes = ['PP', 'P', 'M', 'G', 'GG', '2GG', '3GG', '4GG'];
+    }
+
+    // Se não encontrou cores, tentar extrair do HTML
+    if (details.colors.length === 0) {
+      const colorDivs = html.match(/data-fabric-hex="([^"]+)"[^>]*data-fabric-name="([^"]+)"/gi);
+      if (colorDivs) {
+        for (const div of colorDivs) {
+          const hexMatch = div.match(/data-fabric-hex="([^"]+)"/);
+          const nameMatch = div.match(/data-fabric-name="([^"]+)"/);
+          if (hexMatch && nameMatch) {
+            const existing = details.colors.find(c => c.hex === hexMatch[1]);
+            if (!existing) {
+              details.colors.push({
+                name: nameMatch[1],
+                hex: hexMatch[1],
+              });
+            }
+          }
+        }
+      }
+    }
+
+    shopLogger.info('Detalhes extraídos', {
+      sizes: details.sizes.length,
+      colors: details.colors.length,
+      hasDescription: !!details.description,
+    });
+
+    return { success: true, data: details };
+
+  } catch (error) {
+    shopLogger.error('Erro ao buscar detalhes do produto', { error: sanitizeError(error) });
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Erro ao buscar detalhes',
+    };
+  }
 }

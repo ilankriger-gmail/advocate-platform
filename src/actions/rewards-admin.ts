@@ -6,6 +6,7 @@ import type { ActionResponse } from './types';
 import { verifyAdminOrCreator, getAuthenticatedUser } from './utils';
 import { logger, maskId, sanitizeError } from '@/lib';
 import { generateRewardThumbnail } from '@/lib/ai/generate-reward-thumbnail';
+import OpenAI from 'openai';
 
 // Logger contextualizado para o módulo de recompensas admin
 const rewardsAdminLogger = logger.withContext('[RewardsAdmin]');
@@ -686,5 +687,118 @@ export async function uploadRewardImage(
       error: sanitizeError(err)
     });
     return { error: 'Erro interno do servidor' };
+  }
+}
+
+// Cliente OpenAI para geração de descrições
+let openaiClient: OpenAI | null = null;
+
+function getOpenAIClient(): OpenAI | null {
+  if (openaiClient) return openaiClient;
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    console.error('[AI] OPENAI_API_KEY não configurada');
+    return null;
+  }
+  openaiClient = new OpenAI({ apiKey });
+  return openaiClient;
+}
+
+/**
+ * Gerar descrição de recompensa com IA
+ */
+export async function generateRewardDescriptionAction(data: {
+  name: string;
+  type: 'digital' | 'physical';
+  shopDetails?: {
+    colors?: string[];
+    sizes?: string[];
+    materials?: string[];
+  };
+}): Promise<{ success?: boolean; description?: string; error?: string }> {
+  rewardsAdminLogger.info('Gerando descrição para recompensa', {
+    name: data.name,
+    type: data.type
+  });
+
+  try {
+    // Verificar autenticação
+    const userCheck = await getAuthenticatedUser();
+    if (userCheck.error) {
+      return { error: userCheck.error };
+    }
+    const user = userCheck.data!;
+
+    // Verificar se é admin/creator
+    const authCheck = await verifyAdminOrCreator(user.id);
+    if (authCheck.error) {
+      return { error: authCheck.error };
+    }
+
+    const client = getOpenAIClient();
+    if (!client) {
+      return { error: 'API OpenAI não configurada' };
+    }
+
+    // Construir contexto adicional se tiver detalhes da loja
+    let shopContext = '';
+    if (data.shopDetails) {
+      if (data.shopDetails.materials?.length) {
+        shopContext += `\nMaterial: ${data.shopDetails.materials.join(', ')}`;
+      }
+      if (data.shopDetails.colors?.length) {
+        shopContext += `\nCores disponíveis: ${data.shopDetails.colors.join(', ')}`;
+      }
+      if (data.shopDetails.sizes?.length) {
+        shopContext += `\nTamanhos: ${data.shopDetails.sizes.join(', ')}`;
+      }
+    }
+
+    const prompt = `Crie uma descrição atraente e concisa (máximo 150 caracteres) para esta recompensa de uma plataforma de comunidade/fãs:
+
+Nome: ${data.name}
+Tipo: ${data.type === 'physical' ? 'Produto físico (camiseta, acessório)' : 'Prêmio digital'}${shopContext}
+
+REGRAS:
+- Máximo 150 caracteres
+- Destaque o valor para fãs/comunidade
+- Tom amigável e exclusivo
+- Em português brasileiro
+- NÃO use emojis
+- NÃO mencione preços ou moedas
+- Foque na experiência/benefício
+
+Responda APENAS com a descrição, nada mais.`;
+
+    const response = await client.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content: 'Você é um copywriter especializado em criar descrições curtas e atraentes para recompensas de programas de fidelidade e comunidades de fãs. Responda apenas com a descrição solicitada.',
+        },
+        { role: 'user', content: prompt },
+      ],
+      temperature: 0.7,
+      max_tokens: 100,
+    });
+
+    const description = response.choices[0]?.message?.content?.trim();
+
+    if (!description) {
+      return { error: 'Resposta vazia da IA' };
+    }
+
+    rewardsAdminLogger.info('Descrição gerada com sucesso', {
+      name: data.name,
+      descriptionLength: description.length
+    });
+
+    return { success: true, description };
+  } catch (err) {
+    rewardsAdminLogger.error('Erro ao gerar descrição', {
+      error: sanitizeError(err)
+    });
+    return { error: 'Erro ao gerar descrição' };
   }
 }

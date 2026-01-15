@@ -3,9 +3,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, Button, Input, Textarea } from '@/components/ui';
-import { getRewardById, updateReward, generateRewardThumbnailAction, uploadRewardImage } from '@/actions/rewards-admin';
+import { getRewardById, updateReward, generateRewardThumbnailAction, uploadRewardImage, generateRewardDescriptionAction } from '@/actions/rewards-admin';
+import { fetchProductDetails } from '@/actions/shop-import';
 import Link from 'next/link';
-import { Upload, Sparkles, Loader2, Image as ImageIcon, X } from 'lucide-react';
+import { Upload, Sparkles, Loader2, Image as ImageIcon, X, Store } from 'lucide-react';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -19,8 +20,17 @@ export default function EditRewardPage({ params }: PageProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isGeneratingDesc, setIsGeneratingDesc] = useState(false);
+  const [isLoadingShopDetails, setIsLoadingShopDetails] = useState(false);
+  const [isUnlimited, setIsUnlimited] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [shopDetails, setShopDetails] = useState<{
+    sizes: string[];
+    colors: Array<{ name: string; hex: string }>;
+    description: string;
+    materials: string[];
+  } | null>(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -56,6 +66,8 @@ export default function EditRewardPage({ params }: PageProps) {
           image_url: result.data.image_url || '',
           is_active: result.data.is_active,
         });
+        // Definir se é ilimitado baseado no estoque
+        setIsUnlimited(!result.data.quantity_available);
       }
 
       setIsLoading(false);
@@ -173,6 +185,58 @@ export default function EditRewardPage({ params }: PageProps) {
     setFormData({ ...formData, image_url: '' });
   };
 
+  // Extrair URL da Uma Penca da descrição
+  const umaPencaUrl = formData.description?.match(/https:\/\/umapenca\.com[^\s]*/)?.[0];
+
+  // Buscar detalhes do produto da loja
+  const handleFetchShopDetails = async () => {
+    if (!umaPencaUrl) return;
+
+    setIsLoadingShopDetails(true);
+    setError(null);
+
+    const result = await fetchProductDetails(umaPencaUrl);
+
+    if (result.error) {
+      setError(result.error);
+    } else if (result.data) {
+      setShopDetails(result.data);
+      setSuccessMessage('Detalhes carregados da loja!');
+    }
+
+    setIsLoadingShopDetails(false);
+  };
+
+  // Gerar descrição com IA
+  const handleGenerateDescription = async () => {
+    if (!formData.name) {
+      setError('Preencha o nome do prêmio primeiro');
+      return;
+    }
+
+    setIsGeneratingDesc(true);
+    setError(null);
+
+    const result = await generateRewardDescriptionAction({
+      name: formData.name,
+      type: formData.type,
+      shopDetails: shopDetails ? {
+        colors: shopDetails.colors.map(c => c.name),
+        sizes: shopDetails.sizes,
+        materials: shopDetails.materials,
+      } : undefined,
+    });
+
+    if (result.error) {
+      setError(result.error);
+    } else if (result.description) {
+      setFormData({ ...formData, description: result.description });
+      setSuccessMessage('Descrição gerada com sucesso!');
+    }
+
+    setIsGeneratingDesc(false);
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -233,7 +297,48 @@ export default function EditRewardPage({ params }: PageProps) {
 
           {/* Descrição */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-gray-700">Descrição</label>
+              <div className="flex gap-2">
+                {umaPencaUrl && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleFetchShopDetails}
+                    disabled={isLoadingShopDetails}
+                    className="text-xs h-7"
+                  >
+                    {isLoadingShopDetails ? (
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                    ) : (
+                      <>
+                        <Store className="w-3 h-3 mr-1" />
+                        Buscar da Loja
+                      </>
+                    )}
+                  </Button>
+                )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleGenerateDescription}
+                  disabled={isGeneratingDesc || !formData.name}
+                  className="text-xs h-7 border-purple-300 text-purple-600 hover:bg-purple-50"
+                  title="Gerar descrição com IA"
+                >
+                  {isGeneratingDesc ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <>
+                      <Sparkles className="w-3 h-3 mr-1" />
+                      IA
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
             <Textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -244,6 +349,56 @@ export default function EditRewardPage({ params }: PageProps) {
               <p className="text-xs text-amber-600 mt-1">
                 * Prêmios físicos exigirão endereço de entrega no momento do resgate
               </p>
+            )}
+
+            {/* Detalhes da Loja */}
+            {shopDetails && (
+              <div className="mt-3 p-4 bg-purple-50 rounded-lg border border-purple-200">
+                <h4 className="text-sm font-medium text-purple-800 mb-3 flex items-center gap-2">
+                  <Store className="w-4 h-4" />
+                  Detalhes do Produto
+                </h4>
+
+                {/* Cores */}
+                {shopDetails.colors.length > 0 && (
+                  <div className="mb-3">
+                    <label className="text-xs text-purple-600 font-medium">Cores disponíveis</label>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {shopDetails.colors.map((color) => (
+                        <div key={color.hex} className="flex items-center gap-1 bg-white px-2 py-1 rounded border">
+                          <span
+                            className="w-4 h-4 rounded-full border border-gray-300"
+                            style={{ backgroundColor: color.hex }}
+                          />
+                          <span className="text-xs text-gray-700">{color.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Tamanhos */}
+                {shopDetails.sizes.length > 0 && (
+                  <div className="mb-3">
+                    <label className="text-xs text-purple-600 font-medium">Tamanhos</label>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {shopDetails.sizes.map((size) => (
+                        <span key={size} className="px-2 py-0.5 bg-white border rounded text-xs font-medium text-gray-700">
+                          {size}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Materiais */}
+                {shopDetails.materials.length > 0 && (
+                  <div>
+                    <label className="text-xs text-purple-600 font-medium">Material</label>
+                    <p className="text-xs text-gray-600 mt-1">{shopDetails.materials.join(', ')}</p>
+                  </div>
+                )}
+              </div>
             )}
           </div>
 
@@ -262,14 +417,39 @@ export default function EditRewardPage({ params }: PageProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Estoque</label>
-              <Input
-                type="number"
-                value={formData.stock}
-                onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
-                placeholder="Ilimitado"
-                min="0"
-              />
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-sm font-medium text-gray-700">Estoque</label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newUnlimited = !isUnlimited;
+                    setIsUnlimited(newUnlimited);
+                    if (newUnlimited) {
+                      setFormData({ ...formData, stock: '' });
+                    }
+                  }}
+                  className={`px-2 py-0.5 rounded-full text-xs font-medium transition-colors ${
+                    isUnlimited
+                      ? 'bg-purple-100 text-purple-700'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {isUnlimited ? '∞ Ilimitado' : 'Limitado'}
+                </button>
+              </div>
+              {isUnlimited ? (
+                <div className="w-full px-3 py-2 bg-purple-50 border border-purple-200 rounded-lg text-center text-purple-700 text-sm font-medium">
+                  Estoque Ilimitado
+                </div>
+              ) : (
+                <Input
+                  type="number"
+                  value={formData.stock}
+                  onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                  placeholder="Quantidade"
+                  min="1"
+                />
+              )}
             </div>
 
             <div>
@@ -295,7 +475,7 @@ export default function EditRewardPage({ params }: PageProps) {
                 <img
                   src={formData.image_url}
                   alt="Preview"
-                  className="w-full h-48 object-cover rounded-lg border"
+                  className="w-full h-64 object-contain bg-gray-50 rounded-lg border"
                   onError={(e) => (e.currentTarget.src = '/placeholder-reward.png')}
                 />
                 <button
@@ -307,7 +487,7 @@ export default function EditRewardPage({ params }: PageProps) {
                 </button>
               </div>
             ) : (
-              <div className="mb-3 w-full h-48 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
+              <div className="mb-3 w-full h-64 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
                 <div className="text-center text-gray-400">
                   <ImageIcon className="w-12 h-12 mx-auto mb-2" />
                   <p className="text-sm">Nenhuma imagem</p>
