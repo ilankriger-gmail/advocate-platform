@@ -12,14 +12,14 @@ export function NPSScoreSelector({ value, onChange, error }: NPSScoreSelectorPro
   return (
     <div className="w-full">
       {/* Scores em grid responsivo */}
-      <div className="flex justify-center gap-1 xs:gap-1.5 sm:gap-2">
+      <div className="flex flex-wrap justify-center gap-1 xs:gap-1.5 sm:gap-2">
         {scores.map((score) => (
           <button
             key={score}
             type="button"
             onClick={() => onChange(score)}
             className={`
-              w-7 h-7 xs:w-8 xs:h-8 sm:w-10 sm:h-10 md:w-11 md:h-11
+              w-[26px] h-[26px] xs:w-8 xs:h-8 sm:w-10 sm:h-10 md:w-11 md:h-11
               flex items-center justify-center flex-shrink-0
               text-xs xs:text-sm sm:text-base font-medium
               border rounded-md sm:rounded-lg

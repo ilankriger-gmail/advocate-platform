@@ -145,9 +145,14 @@ export default async function DesafiosPage() {
   })) as Challenge[];
 
   // Agrupar por tipo (engajamento ordenado por prêmio, maior primeiro)
-  const engagementChallenges = challengesWithPrizes
+  const allEngagementChallenges = challengesWithPrizes
     .filter(c => c.type === 'participe' || c.type === 'engajamento')
     .sort((a, b) => (b.prize_amount || 0) - (a.prize_amount || 0));
+
+  // Separar desafios com prêmio PIX dos outros
+  const pixChallenges = allEngagementChallenges.filter(c => c.prize_amount && c.prize_amount > 0);
+  const engagementChallenges = allEngagementChallenges.filter(c => !c.prize_amount || c.prize_amount === 0);
+
   const physicalChallenges = challengesWithPrizes.filter(c => c.type === 'fisico');
   const atosAmorChallenges = challengesWithPrizes.filter(c => c.type === 'atos_amor');
 
@@ -189,6 +194,120 @@ export default async function DesafiosPage() {
         </div>
       </Card>
 
+      {/* ============================================= */}
+      {/* DESAFIOS COM PRÊMIO PIX - DESTAQUE MÁXIMO */}
+      {/* ============================================= */}
+      {pixChallenges.length > 0 && (
+        <section className="space-y-4">
+          {/* Banner chamativo */}
+          <div className="relative overflow-hidden bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 p-5 sm:p-6 rounded-2xl text-white shadow-2xl shadow-green-500/30 max-w-2xl mx-auto">
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMzLjMxNCAwIDYgMi42ODYgNiA2cy0yLjY4NiA2LTYgNi02LTIuNjg2LTYtNiAyLjY4Ni02IDYtNiIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMSkiIHN0cm9rZS13aWR0aD0iMiIvPjwvZz48L3N2Zz4=')] opacity-30" />
+            <div className="relative flex items-center gap-4">
+              <div className="w-16 h-16 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center animate-bounce">
+                <span className="text-4xl">💵</span>
+              </div>
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-black">GANHE PIX!</h2>
+                <p className="text-green-100 text-sm sm:text-base">Participe agora e concorra a dinheiro de verdade</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Cards dos desafios PIX */}
+          <div className="max-w-2xl mx-auto space-y-4">
+            {pixChallenges.map((challenge) => {
+              const challengeWinners = (winners || []).filter(w => w.challenge_id === challenge.id);
+
+              return (
+                <Card
+                  key={challenge.id}
+                  className="relative overflow-hidden border-2 border-green-400 shadow-xl shadow-green-200/50 hover:shadow-2xl hover:shadow-green-300/50 transition-all duration-300"
+                >
+                  {/* Badge de prêmio */}
+                  <div className="absolute top-0 right-0 bg-green-500 text-white px-4 py-2 text-lg font-black rounded-bl-2xl z-20 animate-pulse">
+                    💵 R$ {(challenge.prize_amount || 0).toFixed(0)}
+                  </div>
+
+                  {/* Header com thumbnail */}
+                  <div className="relative h-32 sm:h-40 overflow-hidden">
+                    {challenge.thumbnail_url ? (
+                      <>
+                        <img src={challenge.thumbnail_url} alt="" className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                      </>
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-green-500 to-emerald-600" />
+                    )}
+                    <div className="absolute bottom-0 left-0 right-0 p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center">
+                          <span className="text-2xl">{challenge.icon}</span>
+                        </div>
+                        <div>
+                          <h3 className="text-white font-bold text-lg">{challenge.title}</h3>
+                          {challenge.ends_at && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-yellow-400 text-yellow-900 text-xs font-bold rounded-full">
+                              ⏰ Até {new Date(challenge.ends_at).toLocaleDateString('pt-BR')}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Conteúdo */}
+                  <div className="p-4 space-y-4">
+                    <p className="text-gray-700 text-sm">{challenge.description}</p>
+
+                    {/* Info de ganhadores */}
+                    {challenge.num_winners && (
+                      <div className="flex items-center gap-2 p-3 bg-green-50 rounded-xl border border-green-200">
+                        <span className="text-2xl">🎰</span>
+                        <div>
+                          <p className="font-bold text-green-800">{challenge.num_winners} ganhador(es)</p>
+                          <p className="text-xs text-green-600">serão sorteados!</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Botão Instagram */}
+                    {challenge.instagram_embed_url && (
+                      <a
+                        href={challenge.instagram_embed_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center w-full py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-center font-bold text-lg rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg shadow-green-500/30"
+                      >
+                        Participar Agora! 🚀
+                      </a>
+                    )}
+
+                    {/* Ganhadores anteriores */}
+                    {challengeWinners.length > 0 && (
+                      <div className="border-t pt-4">
+                        <p className="font-semibold text-gray-900 text-sm mb-2">🏆 Ganhadores</p>
+                        <div className="space-y-2">
+                          {challengeWinners.slice(0, 3).map((winner) => (
+                            <div key={winner.id} className="flex items-center justify-between p-2 bg-green-50 rounded-lg text-sm">
+                              <span className="flex items-center gap-2">
+                                🎉 @{winner.instagram_username || 'Ganhador'}
+                              </span>
+                              {winner.pix_sent && (
+                                <span className="text-green-600 font-medium">✓ PIX enviado</span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
       {/* Minhas Participações - No topo, após saldo */}
       {userParticipationsWithChallenge.length > 0 && (
         <section className="space-y-4 sm:space-y-6">
@@ -215,17 +334,17 @@ export default async function DesafiosPage() {
       {/* CATEGORIAS COM DESAFIOS - Aparecem primeiro */}
       {/* =============================================== */}
 
-      {/* Desafios de Engajamento - Só se tiver desafios */}
+      {/* Desafios de Engajamento (sem PIX) - Só se tiver desafios */}
       {engagementChallenges.length > 0 && (
         <section className="space-y-4 sm:space-y-6">
-          {/* Header da Seção - Destaque para prêmios em dinheiro */}
-          <div className="bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 p-4 sm:p-5 rounded-xl text-white shadow-lg max-w-2xl mx-auto">
-            <div className="flex items-center gap-3">
-              <span className="text-3xl sm:text-4xl animate-bounce">💰</span>
-              <div>
-                <h2 className="text-xl sm:text-2xl font-bold">Ganhe Dinheiro de Verdade!</h2>
-                <p className="text-sm opacity-90">Participe e concorra a prêmios em PIX</p>
-              </div>
+          {/* Header da Seção */}
+          <div className="flex flex-col items-center text-center gap-2 max-w-2xl mx-auto">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/25">
+              <span className="text-2xl sm:text-3xl">💬</span>
+            </div>
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Desafios de Engajamento</h2>
+              <p className="text-gray-500 text-xs sm:text-sm">Participe e ganhe corações</p>
             </div>
           </div>
 
@@ -239,7 +358,7 @@ export default async function DesafiosPage() {
                 <AccordionItem
                   key={challenge.id}
                   value={challenge.id}
-                  className="border-2 border-yellow-400 rounded-xl overflow-hidden shadow-lg shadow-yellow-200/50"
+                  className="border border-purple-200 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow"
                 >
                   <AccordionTrigger className="p-0 hover:no-underline">
                     <div className="relative w-full overflow-hidden rounded-t-xl">
@@ -255,13 +374,6 @@ export default async function DesafiosPage() {
                         </>
                       ) : (
                         <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-500" />
-                      )}
-
-                      {/* Badge de prêmio em dinheiro */}
-                      {challenge.prize_amount && challenge.prize_amount > 0 && (
-                        <div className="absolute top-0 right-0 bg-green-500 text-white px-3 py-1 text-sm font-bold rounded-bl-lg z-20">
-                          💵 R$ {challenge.prize_amount.toFixed(0)}
-                        </div>
                       )}
 
                       {/* Conteúdo */}
