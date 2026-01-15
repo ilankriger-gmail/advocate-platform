@@ -36,7 +36,7 @@ export function VoteButtons({
     startTransition(async () => {
       const result = await votePost(postId, newVote === null ? 0 : voteType);
       if (result.success && result.data) {
-        setScore(result.data.voteScore);
+        setScore(result.data.averageScore);
         setUserVote(result.data.userVote);
       }
     });

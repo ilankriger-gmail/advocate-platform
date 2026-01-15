@@ -622,16 +622,24 @@ export async function likePost(postId: string): Promise<ActionResponse> {
 }
 
 /**
- * Votar em post (upvote/downvote)
- * @param voteType 1 = upvote, -1 = downvote, 0 = remover voto
+ * Votar em post (termômetro de sentimento)
+ * @param voteType -5 a +5 para votar, 0 para remover voto
  */
-export async function votePost(postId: string, voteType: 1 | -1 | 0): Promise<ActionResponse<{ voteScore: number; userVote: number | null }>> {
+export async function votePost(
+  postId: string,
+  voteType: number
+): Promise<ActionResponse<{ averageScore: number; totalVotes: number; userVote: number | null }>> {
   try {
     const supabase = await createClient();
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return { error: 'Usuário não autenticado' };
+    }
+
+    // Validar range do voto (-5 a +5, exceto 0 que remove)
+    if (voteType !== 0 && (voteType < -5 || voteType > 5)) {
+      return { error: 'Voto deve estar entre -5 e +5' };
     }
 
     // Verificar voto existente
@@ -675,9 +683,9 @@ export async function votePost(postId: string, voteType: 1 | -1 | 0): Promise<Ac
         });
     }
 
-    // Buscar score atualizado e voto do usuário
+    // Buscar dados atualizados
     const [postResult, voteResult] = await Promise.all([
-      supabase.from('posts').select('vote_score').eq('id', postId).single(),
+      supabase.from('posts').select('vote_score, vote_count, vote_average').eq('id', postId).single(),
       supabase.from('post_votes').select('vote_type').eq('post_id', postId).eq('user_id', user.id).single(),
     ]);
 
@@ -686,7 +694,8 @@ export async function votePost(postId: string, voteType: 1 | -1 | 0): Promise<Ac
     return {
       success: true,
       data: {
-        voteScore: postResult.data?.vote_score || 0,
+        averageScore: postResult.data?.vote_average || 0,
+        totalVotes: postResult.data?.vote_count || 0,
         userVote: voteResult.data?.vote_type || null,
       },
     };
