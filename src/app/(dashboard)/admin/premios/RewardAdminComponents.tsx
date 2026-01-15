@@ -216,7 +216,12 @@ export function NewRewardForm() {
   const openWithPixTemplate = () => {
     setFormData({
       name: 'PIX R$ 50',
-      description: 'Resgate seu premio em PIX! O valor sera transferido para sua chave PIX apos aprovacao. Informe sua chave PIX (CPF, email, telefone ou chave aleatoria) no momento do resgate.',
+      description: `Seu prêmio está te esperando 🎉
+O resgate é simples e seguro. O valor será enviado via PIX diretamente para a sua chave após a aprovação.
+No momento do resgate, você informa sua chave PIX, pode ser CPF, e-mail, telefone ou chave aleatória.
+
+Importante, eu nunca entro em contato pedindo PIX, pagamento ou qualquer tipo de transferência.
+O resgate acontece só por aqui, de forma clara e transparente.`,
       coins_required: '500',
       stock: '',
       type: 'money',
