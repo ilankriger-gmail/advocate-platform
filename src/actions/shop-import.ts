@@ -65,18 +65,20 @@ export async function fetchUmaPencaProducts(
     let products: ImportedProduct[] = [];
 
     // Tentar extrair produtos do HTML de diferentes formas
-    // Padrão 1: vueInitialData
+    // Padrão 1: vueInitialData (Uma Penca usa products.hits)
     if (vueDataMatch) {
       try {
         const vueData = JSON.parse(vueDataMatch[1]);
-        if (vueData.products && Array.isArray(vueData.products)) {
-          products = vueData.products.map((p: any) => ({
+        // Uma Penca: produtos estão em products.hits
+        const productsList = vueData.products?.hits || vueData.products;
+        if (productsList && Array.isArray(productsList)) {
+          products = productsList.map((p: any) => ({
             id: p.id?.toString() || p.slug || `product-${Math.random()}`,
             name: p.name || p.title || 'Produto sem nome',
             price: parseFloat(p.price) || 0,
-            priceOld: p.price_old ? parseFloat(p.price_old) : undefined,
+            priceOld: p.price_old && p.price_old > 0 ? parseFloat(p.price_old) : undefined,
             imageUrl: p.img_cover || p.image || p.img_male || '',
-            productUrl: p.link || `${storeUrl}produto/${p.slug}`,
+            productUrl: p.full_link || (p.link ? `https://umapenca.com${p.link}` : storeUrl),
             colors: p.fabrics?.map((f: any) => f.name) || [],
           }));
         }

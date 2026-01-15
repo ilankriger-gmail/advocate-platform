@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { notifyNewFollower } from '@/actions/notifications';
 import type {
   UserWithFollowStatus,
   PaginatedUsersResponse,
@@ -43,6 +44,26 @@ export async function followUser(userId: string): Promise<{
     }
     console.error('Erro ao seguir usuário:', error);
     return { success: false, error: 'Erro ao seguir usuário' };
+  }
+
+  // Enviar notificação para o usuário seguido
+  try {
+    const { data: followerProfile } = await supabase
+      .from('profiles')
+      .select('full_name, avatar_url')
+      .eq('id', user.id)
+      .single();
+
+    if (followerProfile) {
+      await notifyNewFollower(
+        userId,
+        followerProfile.full_name || 'Alguém',
+        followerProfile.avatar_url || undefined
+      );
+    }
+  } catch (notifyError) {
+    // Não falhar a operação se a notificação falhar
+    console.error('Erro ao enviar notificação de follow:', notifyError);
   }
 
   revalidatePath(`/profile/${userId}`);
