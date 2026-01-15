@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar } from '@/components/ui';
+import { NotificationDropdown } from '@/components/notifications';
 import { cn } from '@/lib/utils';
 
 interface HeaderProps {
@@ -105,13 +106,18 @@ export function Header({ className, siteName = 'Arena Te Amo', logoUrl = '/logo.
             </Link>
           </div>
 
-          {/* Right: User menu or Login */}
-          <div className="flex items-center gap-3">
+          {/* Right: Notifications + User menu or Login */}
+          <div className="flex items-center gap-2">
             {isLoading ? (
               /* Skeleton enquanto carrega */
               <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
             ) : user ? (
-              <div className="relative" ref={dropdownRef}>
+              <>
+                {/* Notificações */}
+                <NotificationDropdown />
+
+                {/* Menu do usuário */}
+                <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100"
@@ -178,6 +184,7 @@ export function Header({ className, siteName = 'Arena Te Amo', logoUrl = '/logo.
                   </button>
                 </div>
               </div>
+              </>
             ) : (
               <Link
                 href="/login"

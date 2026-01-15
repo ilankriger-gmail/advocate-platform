@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { Card, Badge } from '@/components/ui';
 import { RewardActions, ClaimActions, NewRewardForm } from './RewardAdminComponents';
+import { ShopImportButton } from './ShopImportModal';
 
 export default async function AdminPrêmiosPage() {
   const supabase = await createClient();
@@ -137,6 +138,9 @@ export default async function AdminPrêmiosPage() {
           </div>
         </Card>
       )}
+
+      {/* Importar da Loja */}
+      <ShopImportButton />
 
       {/* Criar Nova Recompensa */}
       <NewRewardForm />

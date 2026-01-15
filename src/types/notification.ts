@@ -1,7 +1,113 @@
 /**
- * Tipos para o Sistema de Notificações Hibrido
- * Email + WhatsApp Fallback
+ * Tipos para o Sistema de Notificações
+ * - In-App Notifications (novo)
+ * - Email + WhatsApp Fallback (híbrido)
  */
+
+// ============ NOTIFICAÇÕES IN-APP ============
+
+/**
+ * Tipos de notificação in-app
+ */
+export type InAppNotificationType =
+  | 'post_approved'
+  | 'post_rejected'
+  | 'new_comment'
+  | 'new_like'
+  | 'new_follower'
+  | 'challenge_approved'
+  | 'challenge_rejected'
+  | 'challenge_winner'
+  | 'reward_claimed'
+  | 'reward_shipped'
+  | 'reward_delivered'
+  | 'event_reminder'
+  | 'event_updated'
+  | 'coins_earned'
+  | 'level_up'
+  | 'system';
+
+/**
+ * Notificação in-app do usuário
+ */
+export interface UserNotification {
+  id: string;
+  user_id: string;
+  type: InAppNotificationType;
+  title: string;
+  message: string | null;
+  link: string | null;
+  icon: string | null;
+  is_read: boolean;
+  metadata: Record<string, unknown>;
+  created_at: string;
+}
+
+/**
+ * Dados para criar uma notificação in-app
+ */
+export interface CreateNotificationInput {
+  user_id: string;
+  type: InAppNotificationType;
+  title: string;
+  message?: string;
+  link?: string;
+  icon?: string;
+  metadata?: Record<string, unknown>;
+}
+
+/**
+ * Resposta paginada de notificações in-app
+ */
+export interface PaginatedNotificationsResponse {
+  data: UserNotification[];
+  nextCursor: string | null;
+  hasMore: boolean;
+  unreadCount: number;
+}
+
+/**
+ * Ícones padrão por tipo de notificação
+ */
+export const NOTIFICATION_ICONS: Record<InAppNotificationType, string> = {
+  post_approved: '✅',
+  post_rejected: '❌',
+  new_comment: '💬',
+  new_like: '❤️',
+  new_follower: '👤',
+  challenge_approved: '🏆',
+  challenge_rejected: '😔',
+  challenge_winner: '🎉',
+  reward_claimed: '🎁',
+  reward_shipped: '📦',
+  reward_delivered: '✨',
+  event_reminder: '📅',
+  event_updated: '📢',
+  coins_earned: '💰',
+  level_up: '⭐',
+  system: '🔔',
+};
+
+/**
+ * Links padrão por tipo de notificação
+ */
+export const NOTIFICATION_DEFAULT_LINKS: Partial<Record<InAppNotificationType, string>> = {
+  post_approved: '/perfil',
+  post_rejected: '/perfil',
+  new_follower: '/perfil',
+  challenge_approved: '/desafios',
+  challenge_rejected: '/desafios',
+  challenge_winner: '/desafios',
+  reward_claimed: '/premios',
+  reward_shipped: '/premios',
+  reward_delivered: '/premios',
+  event_reminder: '/eventos',
+  event_updated: '/eventos',
+  coins_earned: '/desafios',
+  level_up: '/ranking',
+};
+
+// ============ NOTIFICAÇÕES EMAIL/WHATSAPP ============
 
 // ============ NOTIFICACOES ============
 
