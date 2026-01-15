@@ -152,21 +152,37 @@ REGRAS OBRIGATÓRIAS:
 - Tom profissional e motivador`;
   }
 
-  // Instruções para outros tipos (engajamento/participe)
-  return `Crie uma descrição para este desafio:
+  // Instruções para engajamento/participe (desafios de comentário em vídeos)
+  return `Crie uma descrição para este desafio de engajamento:
 
 DADOS DO DESAFIO:
 - Título: ${input.title}
 - Tipo: ${typeLabels[input.type]}
-- Ícone: ${input.icon || '💪'}${contextDetails}
+- Ícone: ${input.icon || '💬'}${contextDetails}
 
-INSTRUÇÕES:
-1. Crie uma descrição CURTA e DIRETA (máximo 2-3 frases)
-2. Use linguagem motivacional e energética
-3. Baseie-se no título para entender o que o participante deve fazer
-4. Inclua um CTA (call-to-action) no final
-5. Use emojis com moderação (1-2 no máximo)
-6. O tom deve ser amigável e encorajador
-7. NÃO use hashtags na descrição
-8. NÃO mencione valores de prêmios em dinheiro`;
+ESTRUTURA OBRIGATÓRIA (use quebras de linha entre cada seção):
+
+Parágrafo 1: Uma frase motivacional convidando a participar.
+
+Parágrafo 2: COMO PARTICIPAR:
+- Clique no link do desafio para acessar a publicação
+- Assista o vídeo completo
+- Deixe um comentário criativo que tenha a ver com o tema do vídeo
+- Capriche! Comentários genéricos têm menos chances
+
+Parágrafo 3: REGRAS:
+- Apenas 1 comentário por pessoa vale para o sorteio
+- Comentários duplicados serão desconsiderados
+
+Parágrafo 4: IMPORTANTE (Segurança):
+- Os ganhadores serão contatados APENAS por DM da conta verificada @nextleveldj1 (mais de 8.1 milhões de seguidores)
+- Nenhuma outra conta entrará em contato com você
+- NUNCA pedimos pagamento, pix, dados bancários ou qualquer valor
+
+REGRAS DE FORMATAÇÃO:
+- Use emojis com moderação (máximo 2-3)
+- Tom amigável e encorajador
+- NÃO use formatação markdown (nada de ** ou *)
+- NÃO mencione valores de prêmios em dinheiro
+- Mantenha o aviso de segurança SEMPRE no final`;
 }
