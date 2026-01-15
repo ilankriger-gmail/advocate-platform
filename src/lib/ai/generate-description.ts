@@ -134,13 +134,15 @@ ESTRUTURA (use quebras de linha entre cada seção):
 
 Parágrafo 1: Duas frases motivacionais sobre o desafio.
 
-Parágrafo 2: Como participar (gravar vídeo, postar nas redes).
+Parágrafo 2: Como participar (gravar vídeo com boa iluminação, postar no YouTube).
 
 Parágrafo 3: Passo a passo numerado:
 1. Realize o exercício
-2. Grave um vídeo
-3. Poste no Instagram ou TikTok${input.hashtag ? `\n4. Use a hashtag ${input.hashtag}` : ''}${input.profileToTag ? `\n${input.hashtag ? '5' : '4'}. Marque ${input.profileToTag}` : ''}
-${input.hashtag && input.profileToTag ? '6' : input.hashtag || input.profileToTag ? '5' : '4'}. Envie o link aqui na plataforma
+2. Grave um vídeo com BOA ILUMINAÇÃO (ambiente bem iluminado)
+3. Publique o vídeo COMPLETO no YouTube (NÃO aceitamos Shorts!)
+4. O vídeo deve estar como PÚBLICO no YouTube
+5. Postar no Instagram é OPCIONAL (pode editar como quiser)${input.hashtag ? `\n6. Use a hashtag ${input.hashtag}` : ''}${input.profileToTag ? `\n${input.hashtag ? '7' : '6'}. Marque ${input.profileToTag}` : ''}
+${input.hashtag && input.profileToTag ? '8' : input.hashtag || input.profileToTag ? '7' : '6'}. Envie o link do YouTube aqui na plataforma
 
 Parágrafo 4: Aviso de segurança começando com "IMPORTANTE:" sobre consultar profissional de saúde, respeitar limites, e que a plataforma não se responsabiliza por lesões.
 

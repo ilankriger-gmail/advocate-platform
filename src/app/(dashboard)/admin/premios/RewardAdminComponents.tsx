@@ -151,13 +151,14 @@ export function NewRewardForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
+  const [moneyValue, setMoneyValue] = useState('');
 
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     coins_required: '',
     stock: '',
-    type: 'digital' as 'digital' | 'physical',
+    type: 'digital' as 'digital' | 'physical' | 'money',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -188,8 +189,8 @@ export function NewRewardForm() {
       name: formData.name,
       description: formData.description || null,
       coins_required: parseInt(formData.coins_required),
-      quantity_available: formData.stock ? parseInt(formData.stock) : null,
-      type: formData.type,
+      quantity_available: formData.type === 'money' ? null : (formData.stock ? parseInt(formData.stock) : null),
+      type: formData.type === 'money' ? 'digital' : formData.type, // Salva como digital (sem migration)
       image_url: imageUrl,
     });
 

@@ -126,9 +126,18 @@ export function ChallengeParticipationModal({
 
   const goalLabel = challenge.goal_type === 'time' ? 'segundos' : 'repeticoes';
 
-  // Validar que é URL do YouTube
+  // Validar que é URL do YouTube (NAO aceita Shorts)
   const isYouTubeUrl = (url: string) => {
-    return /youtube\.com\/watch|youtu\.be\/|youtube\.com\/shorts\//.test(url);
+    // Bloquear Shorts
+    if (/youtube\.com\/shorts\//i.test(url)) {
+      return false;
+    }
+    return /youtube\.com\/watch|youtu\.be\//.test(url);
+  };
+
+  // Verificar se é URL de Shorts (para mostrar erro específico)
+  const isYouTubeShorts = (url: string) => {
+    return /youtube\.com\/shorts\//i.test(url);
   };
 
   // Validar que é URL do Instagram
@@ -451,11 +460,24 @@ export function ChallengeParticipationModal({
           placeholder="https://youtube.com/watch?v=..."
           required
         />
+        {/* Erro específico para Shorts */}
+        {formData.proofUrl && isYouTubeShorts(formData.proofUrl) && (
+          <div className="mt-2 p-2 bg-red-50 border border-red-300 rounded-lg">
+            <p className="text-xs text-red-700 font-medium">
+              ❌ <strong>YouTube Shorts não é aceito!</strong> Envie um vídeo completo (não Shorts).
+            </p>
+          </div>
+        )}
         <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
           <p className="text-xs text-yellow-800">
-            ⚠️ <strong>Importante:</strong> O vídeo deve ser <strong>PÚBLICO</strong> no YouTube.
-            Vídeos não listados ou privados não serão analisados.
+            ⚠️ <strong>Regras do vídeo:</strong>
           </p>
+          <ul className="text-xs text-yellow-700 mt-1 space-y-0.5 list-disc list-inside">
+            <li>Deve ser <strong>PÚBLICO</strong> no YouTube</li>
+            <li><strong>NÃO</strong> aceitamos YouTube Shorts (vídeo deve ser completo)</li>
+            <li>Grave com <strong>BOA ILUMINAÇÃO</strong></li>
+            <li>Instagram é <strong>OPCIONAL</strong></li>
+          </ul>
         </div>
         <p className="text-xs text-gray-500 mt-2">
           Nossa IA vai assistir seu vídeo e validar se você bateu a meta!

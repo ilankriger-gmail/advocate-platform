@@ -428,8 +428,13 @@ export function isValidYouTubeUrl(url: string): boolean {
     return false;
   }
 
-  // Verificar formato da URL
-  return /youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\//.test(trimmedUrl);
+  // BLOQUEIO: Nao aceitar YouTube Shorts (apenas videos completos)
+  if (/youtube\.com\/shorts\//i.test(trimmedUrl)) {
+    return false;
+  }
+
+  // Verificar formato da URL (apenas watch e youtu.be - videos completos)
+  return /youtube\.com\/watch\?v=|youtu\.be\//.test(trimmedUrl);
 }
 
 /**
