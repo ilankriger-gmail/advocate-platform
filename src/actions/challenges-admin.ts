@@ -6,6 +6,7 @@ import type { ActionResponse } from './types';
 import { verifyAdminOrCreator, getAuthenticatedUser } from './utils';
 import { logger, maskId, sanitizeError } from '@/lib';
 import { generateChallengeThumbnail } from '@/lib/ai/generate-thumbnail';
+import { notifyChallengeApproved, notifyChallengeRejected, notifyChallengeWinner } from '@/actions/notifications';
 
 // Logger contextualizado para o módulo de desafios admin
 const challengesAdminLogger = logger.withContext('[ChallengesAdmin]');
@@ -36,7 +37,7 @@ export async function approveParticipation(
     // Buscar participação e desafio
     const { data: participation } = await supabase
       .from('challenge_participants')
-      .select('*, challenges:challenge_id(coins_reward)')
+      .select('*, challenges:challenge_id(coins_reward, title)')
       .eq('id', participationId)
       .single();
 
@@ -44,9 +45,10 @@ export async function approveParticipation(
       return { error: 'Participacao nao encontrada' };
     }
 
-    // Extrair coins_reward do desafio relacionado
-    const challengeData = participation.challenges as { coins_reward: number } | null;
+    // Extrair dados do desafio relacionado
+    const challengeData = participation.challenges as { coins_reward: number; title: string } | null;
     const coinsReward = customCoins !== undefined ? customCoins : (challengeData?.coins_reward || 0);
+    const challengeTitle = challengeData?.title || 'Desafio';
 
     // Aprovar participação
     const { error: updateError } = await supabase
@@ -100,6 +102,13 @@ export async function approveParticipation(
       });
     }
 
+    // Notificar usuário da aprovação
+    try {
+      await notifyChallengeApproved(participation.user_id, challengeTitle, coinsReward);
+    } catch (notifyError) {
+      challengesAdminLogger.error('Erro ao enviar notificação de aprovação', { error: sanitizeError(notifyError) });
+    }
+
     revalidatePath('/desafios');
     revalidatePath('/admin/desafios');
     return { success: true };
@@ -131,6 +140,13 @@ export async function rejectParticipation(
 
     const supabase = await createClient();
 
+    // Buscar participação e desafio para notificação
+    const { data: participation } = await supabase
+      .from('challenge_participants')
+      .select('user_id, challenges:challenge_id(title)')
+      .eq('id', participationId)
+      .single();
+
     const { error } = await supabase
       .from('challenge_participants')
       .update({
@@ -142,6 +158,20 @@ export async function rejectParticipation(
 
     if (error) {
       return { error: 'Erro ao rejeitar participacao' };
+    }
+
+    // Notificar usuário da rejeição
+    if (participation) {
+      try {
+        const challengeData = participation.challenges as unknown as { title: string } | null;
+        await notifyChallengeRejected(
+          participation.user_id,
+          challengeData?.title || 'Desafio',
+          reason
+        );
+      } catch (notifyError) {
+        challengesAdminLogger.error('Erro ao enviar notificação de rejeição', { error: sanitizeError(notifyError) });
+      }
     }
 
     revalidatePath('/desafios');
@@ -606,6 +636,13 @@ export async function registerWinner(data: {
 
     const supabase = await createClient();
 
+    // Buscar título do desafio para notificação
+    const { data: challenge } = await supabase
+      .from('challenges')
+      .select('title')
+      .eq('id', data.challengeId)
+      .single();
+
     const { data: winner, error } = await supabase
       .from('challenge_winners')
       .insert({
@@ -620,6 +657,19 @@ export async function registerWinner(data: {
 
     if (error) {
       return { error: 'Erro ao registrar ganhador' };
+    }
+
+    // Notificar usuário que ganhou (se tiver userId)
+    if (data.userId && challenge) {
+      try {
+        await notifyChallengeWinner(
+          data.userId,
+          challenge.title || 'Desafio',
+          data.prizeAmount || 0
+        );
+      } catch (notifyError) {
+        challengesAdminLogger.error('Erro ao enviar notificação de ganhador', { error: sanitizeError(notifyError) });
+      }
     }
 
     revalidatePath('/desafios');

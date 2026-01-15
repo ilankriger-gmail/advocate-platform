@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { ActionResponse } from '@/types/action';
 import type { Reward, RewardClaim, ClaimWithReward } from '@/lib/supabase/types';
 import { logger, sanitizeError } from '@/lib';
+import { notifyRewardClaimed, notifyRewardShipped } from '@/actions/notifications';
 
 // Logger contextualizado para o módulo de rewards
 const rewardsLogger = logger.withContext('[Rewards]');
@@ -144,6 +145,13 @@ export async function claimReward(
       rewardId,
       hasDeliveryAddress: !!deliveryAddress
     });
+
+    // Notificar usuário do resgate bem-sucedido
+    try {
+      await notifyRewardClaimed(user.id, reward.name, rewardId);
+    } catch (notifyError) {
+      rewardsLogger.error('Erro ao enviar notificação de resgate', { error: sanitizeError(notifyError) });
+    }
 
     revalidatePath('/premios');
     revalidatePath('/dashboard');
@@ -339,6 +347,13 @@ export async function markClaimShipped(claimId: string): Promise<ActionResponse>
       return { error: 'Acesso não autorizado' };
     }
 
+    // Buscar dados do claim para notificação
+    const { data: claim } = await supabase
+      .from('reward_claims')
+      .select('user_id, rewards(name)')
+      .eq('id', claimId)
+      .single();
+
     const { error } = await supabase
       .from('reward_claims')
       .update({ status: 'shipped' })
@@ -346,6 +361,16 @@ export async function markClaimShipped(claimId: string): Promise<ActionResponse>
 
     if (error) {
       return { error: 'Erro ao atualizar status' };
+    }
+
+    // Notificar usuário do envio
+    if (claim) {
+      try {
+        const rewardData = claim.rewards as unknown as { name: string } | null;
+        await notifyRewardShipped(claim.user_id, rewardData?.name || 'Seu prêmio');
+      } catch (notifyError) {
+        rewardsLogger.error('Erro ao enviar notificação de envio', { error: sanitizeError(notifyError) });
+      }
     }
 
     revalidatePath('/admin/premios');

@@ -9,6 +9,7 @@ import { moderatePost, getBlockedMessage, getPendingReviewMessage } from '@/lib/
 import { logModerationAction, checkRateLimit, RATE_LIMITS, validateFileMagicBytes, sanitizeText } from '@/lib/security';
 import { logger, maskId, sanitizeError } from '@/lib';
 import { verifyAdminOrCreator } from './utils';
+import { notifyPostApproved, notifyPostRejected, notifyNewLike, notifyNewComment } from '@/actions/notifications';
 
 // Logger contextualizado para o módulo de posts
 const postsLogger = logger.withContext('[Posts]');
@@ -396,6 +397,13 @@ export async function approvePost(postId: string): Promise<ActionResponse> {
       return { error: 'Acesso não autorizado. Apenas administradores podem aprovar posts.' };
     }
 
+    // Buscar dados do post para notificação
+    const { data: post } = await supabase
+      .from('posts')
+      .select('user_id, title')
+      .eq('id', postId)
+      .single();
+
     const { error } = await supabase
       .from('posts')
       .update({
@@ -411,6 +419,15 @@ export async function approvePost(postId: string): Promise<ActionResponse> {
 
     // Audit log
     await logModerationAction('admin.post_approve', user.id, postId);
+
+    // Notificar autor do post
+    if (post) {
+      try {
+        await notifyPostApproved(post.user_id, postId, post.title || 'Seu post');
+      } catch (notifyError) {
+        postsLogger.error('Erro ao enviar notificação de aprovação', { error: sanitizeError(notifyError) });
+      }
+    }
 
     revalidatePath('/feed');
     return { success: true };
@@ -442,6 +459,13 @@ export async function rejectPost(postId: string, reason: string): Promise<Action
       return { error: 'Acesso não autorizado. Apenas administradores podem rejeitar posts.' };
     }
 
+    // Buscar dados do post para notificação
+    const { data: post } = await supabase
+      .from('posts')
+      .select('user_id, title')
+      .eq('id', postId)
+      .single();
+
     const { error } = await supabase
       .from('posts')
       .update({
@@ -458,6 +482,15 @@ export async function rejectPost(postId: string, reason: string): Promise<Action
 
     // Audit log
     await logModerationAction('admin.post_reject', user.id, postId, { reason });
+
+    // Notificar autor do post
+    if (post) {
+      try {
+        await notifyPostRejected(post.user_id, post.title || 'Seu post', reason);
+      } catch (notifyError) {
+        postsLogger.error('Erro ao enviar notificação de rejeição', { error: sanitizeError(notifyError) });
+      }
+    }
 
     revalidatePath('/feed');
     revalidatePath('/admin/moderacao');
@@ -565,6 +598,20 @@ export async function likePost(postId: string): Promise<ActionResponse> {
 
       // Incrementar contador
       await supabase.rpc('increment_likes', { post_id: postId });
+
+      // Notificar autor do post
+      try {
+        const [{ data: post }, { data: likerProfile }] = await Promise.all([
+          supabase.from('posts').select('user_id').eq('id', postId).single(),
+          supabase.from('users').select('full_name').eq('id', user.id).single(),
+        ]);
+
+        if (post && post.user_id !== user.id) {
+          await notifyNewLike(post.user_id, likerProfile?.full_name || 'Alguém', postId);
+        }
+      } catch (notifyError) {
+        postsLogger.error('Erro ao enviar notificação de like', { error: sanitizeError(notifyError) });
+      }
     }
 
     revalidatePath('/feed');
@@ -685,7 +732,7 @@ export async function commentPost(postId: string, content: string): Promise<Acti
     // Incrementar contador de comentários
     const { data: post } = await supabase
       .from('posts')
-      .select('comments_count')
+      .select('comments_count, user_id')
       .eq('id', postId)
       .single();
 
@@ -694,6 +741,26 @@ export async function commentPost(postId: string, content: string): Promise<Acti
         .from('posts')
         .update({ comments_count: (post.comments_count || 0) + 1 })
         .eq('id', postId);
+
+      // Notificar autor do post (se não for o próprio autor comentando)
+      if (post.user_id !== user.id) {
+        try {
+          const { data: commenterProfile } = await supabase
+            .from('users')
+            .select('full_name')
+            .eq('id', user.id)
+            .single();
+
+          await notifyNewComment(
+            post.user_id,
+            commenterProfile?.full_name || 'Alguém',
+            postId,
+            sanitizedContent
+          );
+        } catch (notifyError) {
+          postsLogger.error('Erro ao enviar notificação de comentário', { error: sanitizeError(notifyError) });
+        }
+      }
     }
 
     revalidatePath('/feed');

@@ -57,9 +57,9 @@ CREATE POLICY "Admins can insert notifications"
   TO authenticated
   WITH CHECK (
     EXISTS (
-      SELECT 1 FROM profiles
-      WHERE profiles.id = auth.uid()
-      AND (profiles.role = 'admin' OR profiles.is_creator = true)
+      SELECT 1 FROM users
+      WHERE users.id = auth.uid()
+      AND (users.role = 'admin' OR users.is_creator = true)
     )
   );
 
