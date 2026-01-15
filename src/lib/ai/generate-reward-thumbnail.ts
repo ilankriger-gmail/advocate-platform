@@ -25,7 +25,7 @@ export interface RewardThumbnailInput {
   name: string;
   description?: string | null;
   type: 'digital' | 'physical';
-  coins_cost: number;
+  coins_required: number;
 }
 
 /**
@@ -155,11 +155,11 @@ function buildRewardThumbnailPrompt(input: RewardThumbnailInput): string {
 
   // Determinar valor/raridade baseado no custo
   let rarityHint = '';
-  if (input.coins_cost >= 1000) {
+  if (input.coins_required >= 1000) {
     rarityHint = 'Ultra premium and rare. Use gold, platinum, and diamond accents. Maximum luxury feel.';
-  } else if (input.coins_cost >= 500) {
+  } else if (input.coins_required >= 500) {
     rarityHint = 'Premium and valuable. Use gold accents and rich colors.';
-  } else if (input.coins_cost >= 100) {
+  } else if (input.coins_required >= 100) {
     rarityHint = 'Special edition. Use silver accents and vibrant colors.';
   } else {
     rarityHint = 'Starter reward. Use bronze accents and warm colors.';
@@ -202,7 +202,7 @@ Exclusive, desirable, premium, collectible, achievement unlocked.
 REWARD CONTEXT:
 Name: "${input.name}"
 ${input.description ? `Description: ${input.description}` : ''}
-Cost: ${input.coins_cost} hearts (loyalty points)
+Cost: ${input.coins_required} hearts (loyalty points)
 
 COMPOSITION:
 - Center the product prominently

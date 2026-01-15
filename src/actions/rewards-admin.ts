@@ -232,14 +232,14 @@ export async function createReward(data: {
   name: string;
   description?: string | null;
   image_url?: string | null;
-  coins_cost: number;
-  stock?: number | null;
+  coins_required: number;
+  quantity_available?: number | null;
   type: 'digital' | 'physical';
 }): Promise<ActionResponse> {
   rewardsAdminLogger.info('Iniciando criação de recompensa', {
     name: data.name,
     type: data.type,
-    coinsCost: data.coins_cost
+    coinsRequired: data.coins_required
   });
 
   try {
@@ -266,8 +266,8 @@ export async function createReward(data: {
       name: data.name,
       description: data.description || null,
       image_url: data.image_url || null,
-      coins_cost: data.coins_cost,
-      stock: data.stock || null,
+      coins_required: data.coins_required,
+      quantity_available: data.quantity_available || null,
       type: data.type,
       is_active: true,
     };
@@ -312,8 +312,8 @@ export async function updateReward(
   data: Partial<{
     name: string;
     description: string | null;
-    coins_cost: number;
-    stock: number | null;
+    coins_required: number;
+    quantity_available: number | null;
     type: 'digital' | 'physical';
     image_url: string | null;
     is_active: boolean;
@@ -525,7 +525,7 @@ export async function generateRewardThumbnailAction(
     name: string;
     description?: string | null;
     type: 'digital' | 'physical';
-    coins_cost: number;
+    coins_required: number;
   }
 ): Promise<ActionResponse<{ url: string }>> {
   rewardsAdminLogger.info('Iniciando geração de thumbnail para recompensa', {
@@ -553,7 +553,7 @@ export async function generateRewardThumbnailAction(
       name: data.name,
       description: data.description,
       type: data.type,
-      coins_cost: data.coins_cost,
+      coins_required: data.coins_required,
     });
 
     if (!result.success || !result.url) {

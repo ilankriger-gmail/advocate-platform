@@ -20,7 +20,7 @@ export default async function AdminPrêmiosPage() {
       rewards:reward_id (
         id,
         name,
-        coins_cost
+        coins_required
       ),
       profiles:user_id (
         id,
@@ -74,7 +74,7 @@ export default async function AdminPrêmiosPage() {
             {/* Lista de resgates */}
             <div className="space-y-3">
               {pendingClaims.map((claim) => {
-                const reward = claim.rewards as { id: string; name: string; coins_cost: number } | null;
+                const reward = claim.rewards as { id: string; name: string; coins_required: number } | null;
                 const profile = claim.profiles as { id: string; full_name: string; email: string } | null;
 
                 return (
@@ -193,7 +193,7 @@ interface RewardCardProps {
     id: string;
     name: string;
     description: string | null;
-    coins_cost: number;
+    coins_required: number;
     stock: number | null;
     image_url: string | null;
     is_active: boolean;
@@ -224,7 +224,7 @@ function RewardCard({ reward }: RewardCardProps) {
           <div>
             <h3 className="font-bold text-lg">{reward.name}</h3>
             <p className={reward.is_active ? 'text-indigo-100 text-sm' : 'text-gray-200 text-sm'}>
-              {reward.coins_cost} corações
+              {reward.coins_required} corações
             </p>
           </div>
           <Badge className="bg-white/20 text-white border-0">

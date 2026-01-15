@@ -426,8 +426,8 @@ export async function createReward(data: {
   name: string;
   description?: string | null;
   image_url?: string | null;
-  coins_cost: number;
-  stock?: number | null;
+  coins_required: number;
+  quantity_available?: number | null;
   type: 'digital' | 'physical';
 }): Promise<ActionResponse<Reward>> {
   try {
@@ -455,8 +455,8 @@ export async function createReward(data: {
         name: data.name,
         description: data.description || null,
         image_url: data.image_url || null,
-        coins_cost: data.coins_cost,
-        stock: data.stock || null,
+        coins_required: data.coins_required,
+        quantity_available: data.quantity_available || null,
         type: data.type,
         is_active: true,
       })

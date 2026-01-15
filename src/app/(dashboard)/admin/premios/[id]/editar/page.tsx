@@ -25,7 +25,7 @@ export default function EditRewardPage({ params }: PageProps) {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    coins_cost: '',
+    coins_required: '',
     stock: '',
     type: 'digital' as 'digital' | 'physical',
     image_url: '',
@@ -50,8 +50,8 @@ export default function EditRewardPage({ params }: PageProps) {
         setFormData({
           name: result.data.name,
           description: result.data.description || '',
-          coins_cost: result.data.coins_cost.toString(),
-          stock: result.data.stock?.toString() || '',
+          coins_required: result.data.coins_required.toString(),
+          stock: result.data.quantity_available?.toString() || '',
           type: result.data.type || 'digital',
           image_url: result.data.image_url || '',
           is_active: result.data.is_active,
@@ -69,7 +69,7 @@ export default function EditRewardPage({ params }: PageProps) {
     setError(null);
     setSuccessMessage(null);
 
-    if (!formData.name || !formData.coins_cost) {
+    if (!formData.name || !formData.coins_required) {
       setError('Nome e custo em corações são obrigatórios');
       return;
     }
@@ -81,8 +81,8 @@ export default function EditRewardPage({ params }: PageProps) {
     const result = await updateReward(rewardId, {
       name: formData.name,
       description: formData.description || null,
-      coins_cost: parseInt(formData.coins_cost),
-      stock: formData.stock ? parseInt(formData.stock) : null,
+      coins_required: parseInt(formData.coins_required),
+      quantity_available: formData.stock ? parseInt(formData.stock) : null,
       type: formData.type,
       image_url: formData.image_url || null,
       is_active: formData.is_active,
@@ -112,7 +112,7 @@ export default function EditRewardPage({ params }: PageProps) {
       name: formData.name,
       description: formData.description || null,
       type: formData.type,
-      coins_cost: parseInt(formData.coins_cost) || 100,
+      coins_required: parseInt(formData.coins_required) || 100,
     });
 
     if (result.error) {
@@ -253,8 +253,8 @@ export default function EditRewardPage({ params }: PageProps) {
               <label className="block text-sm font-medium text-gray-700 mb-1">Custo (corações) *</label>
               <Input
                 type="number"
-                value={formData.coins_cost}
-                onChange={(e) => setFormData({ ...formData, coins_cost: e.target.value })}
+                value={formData.coins_required}
+                onChange={(e) => setFormData({ ...formData, coins_required: e.target.value })}
                 placeholder="100"
                 min="1"
                 required

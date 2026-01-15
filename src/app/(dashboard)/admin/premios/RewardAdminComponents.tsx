@@ -153,7 +153,7 @@ export function NewRewardForm() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    coins_cost: '',
+    coins_required: '',
     stock: '',
     type: 'digital' as 'digital' | 'physical',
     image_url: '',
@@ -163,7 +163,7 @@ export function NewRewardForm() {
     e.preventDefault();
     setError(null);
 
-    if (!formData.name || !formData.coins_cost) {
+    if (!formData.name || !formData.coins_required) {
       setError('Nome e custo em corações sao obrigatorios');
       return;
     }
@@ -173,8 +173,8 @@ export function NewRewardForm() {
     const result = await createReward({
       name: formData.name,
       description: formData.description || null,
-      coins_cost: parseInt(formData.coins_cost),
-      stock: formData.stock ? parseInt(formData.stock) : null,
+      coins_required: parseInt(formData.coins_required),
+      quantity_available: formData.stock ? parseInt(formData.stock) : null,
       type: formData.type,
       image_url: formData.image_url || null,
     });
@@ -188,7 +188,7 @@ export function NewRewardForm() {
     setFormData({
       name: '',
       description: '',
-      coins_cost: '',
+      coins_required: '',
       stock: '',
       type: 'digital',
       image_url: '',
@@ -256,8 +256,8 @@ export function NewRewardForm() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Custo (corações) *</label>
             <Input
               type="number"
-              value={formData.coins_cost}
-              onChange={(e) => setFormData({ ...formData, coins_cost: e.target.value })}
+              value={formData.coins_required}
+              onChange={(e) => setFormData({ ...formData, coins_required: e.target.value })}
               placeholder="100"
               min="1"
               required

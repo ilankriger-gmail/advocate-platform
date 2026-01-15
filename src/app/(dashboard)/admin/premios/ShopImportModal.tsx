@@ -118,8 +118,8 @@ function ShopImportModal({ storeUrl, onClose }: ShopImportModalInnerProps) {
         const result = await createReward({
           name: product.name.trim(),
           description: `Produto da loja: ${product.productUrl}`,
-          coins_cost: config.coinsCost,
-          stock: config.stock,
+          coins_required: config.coinsCost,
+          quantity_available: config.stock,
           type: 'physical',
           image_url: product.imageUrl || null,
         });
