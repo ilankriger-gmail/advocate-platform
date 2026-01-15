@@ -264,6 +264,7 @@ O resgate acontece só por aqui, de forma clara e transparente.`,
             <Input
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onFocus={(e) => e.target.select()}
               placeholder="Ex: Camiseta Exclusiva"
               required
             />
@@ -288,6 +289,7 @@ O resgate acontece só por aqui, de forma clara e transparente.`,
           <Textarea
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            onFocus={(e) => e.target.select()}
             placeholder="Descreva a recompensa..."
             rows={2}
           />
