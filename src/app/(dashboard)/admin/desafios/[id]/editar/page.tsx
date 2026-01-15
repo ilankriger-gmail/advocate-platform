@@ -351,12 +351,14 @@ export default function EditarDesafioPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Recompensa em Coracoes *
+              Recompensa em Corações *
             </label>
             <Input
               type="number"
               value={formData.coins_reward}
               onChange={(e) => setFormData({ ...formData, coins_reward: parseInt(e.target.value) || 0 })}
+              onFocus={(e) => e.target.select()}
+              placeholder="10"
               min="0"
               required
             />
@@ -460,6 +462,7 @@ export default function EditarDesafioPage() {
                   type="number"
                   value={formData.goal_value}
                   onChange={(e) => setFormData({ ...formData, goal_value: e.target.value })}
+                  onFocus={(e) => e.target.select()}
                   placeholder={formData.goal_type === 'time' ? '60' : '50'}
                   min="1"
                 />

@@ -144,10 +144,10 @@ export default async function DesafiosPage() {
     prizes: prizesMap.get(c.id) || []
   })) as Challenge[];
 
-  // Agrupar por tipo
-  const engagementChallenges = challengesWithPrizes.filter(
-    c => c.type === 'participe' || c.type === 'engajamento'
-  );
+  // Agrupar por tipo (engajamento ordenado por prêmio, maior primeiro)
+  const engagementChallenges = challengesWithPrizes
+    .filter(c => c.type === 'participe' || c.type === 'engajamento')
+    .sort((a, b) => (b.prize_amount || 0) - (a.prize_amount || 0));
   const physicalChallenges = challengesWithPrizes.filter(c => c.type === 'fisico');
   const atosAmorChallenges = challengesWithPrizes.filter(c => c.type === 'atos_amor');
 
@@ -218,14 +218,14 @@ export default async function DesafiosPage() {
       {/* Desafios de Engajamento - Só se tiver desafios */}
       {engagementChallenges.length > 0 && (
         <section className="space-y-4 sm:space-y-6">
-          {/* Header da Seção - Centralizado */}
-          <div className="flex flex-col items-center text-center gap-2">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/25">
-              <span className="text-2xl sm:text-3xl">🎁</span>
-            </div>
-            <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Participe e Concorra</h2>
-              <p className="text-gray-500 text-xs sm:text-sm">Interaja no Instagram e ganhe prêmios em dinheiro</p>
+          {/* Header da Seção - Destaque para prêmios em dinheiro */}
+          <div className="bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 p-4 sm:p-5 rounded-xl text-white shadow-lg max-w-2xl mx-auto">
+            <div className="flex items-center gap-3">
+              <span className="text-3xl sm:text-4xl animate-bounce">💰</span>
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold">Ganhe Dinheiro de Verdade!</h2>
+                <p className="text-sm opacity-90">Participe e concorra a prêmios em PIX</p>
+              </div>
             </div>
           </div>
 
@@ -236,7 +236,11 @@ export default async function DesafiosPage() {
               );
 
               return (
-                <AccordionItem key={challenge.id} value={challenge.id}>
+                <AccordionItem
+                  key={challenge.id}
+                  value={challenge.id}
+                  className="border-2 border-yellow-400 rounded-xl overflow-hidden shadow-lg shadow-yellow-200/50"
+                >
                   <AccordionTrigger className="p-0 hover:no-underline">
                     <div className="relative w-full overflow-hidden rounded-t-xl">
                       {/* Background: Thumbnail ou Gradiente */}
@@ -253,6 +257,13 @@ export default async function DesafiosPage() {
                         <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-500" />
                       )}
 
+                      {/* Badge de prêmio em dinheiro */}
+                      {challenge.prize_amount && challenge.prize_amount > 0 && (
+                        <div className="absolute top-0 right-0 bg-green-500 text-white px-3 py-1 text-sm font-bold rounded-bl-lg z-20">
+                          💵 R$ {challenge.prize_amount.toFixed(0)}
+                        </div>
+                      )}
+
                       {/* Conteúdo */}
                       <div className="relative z-10 p-4 flex items-center gap-3 w-full">
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
@@ -262,10 +273,11 @@ export default async function DesafiosPage() {
                         </div>
                         <div className="flex-1 text-left">
                           <h3 className="font-semibold text-white">{challenge.title}</h3>
-                          {challenge.prize_amount && (
-                            <p className="text-sm text-white/90">
-                              R$ {challenge.prize_amount.toFixed(2)} no Pix
-                            </p>
+                          {/* Badge de data limite */}
+                          {challenge.ends_at && (
+                            <span className="inline-block mt-1 px-2 py-0.5 bg-yellow-400 text-yellow-900 text-xs font-bold rounded-full">
+                              ⏰ Até {new Date(challenge.ends_at).toLocaleDateString('pt-BR')}
+                            </span>
                           )}
                         </div>
                         <span className="text-sm font-medium text-white whitespace-nowrap">

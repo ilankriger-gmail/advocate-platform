@@ -278,12 +278,13 @@ export default function EditEventPage({ params }: PageProps) {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Numero Maximo de Participantes
+              Número Máximo de Participantes
             </label>
             <Input
               type="number"
               value={formData.max_participants}
               onChange={(e) => setFormData({ ...formData, max_participants: e.target.value })}
+              onFocus={(e) => e.target.select()}
               placeholder="Deixe vazio para ilimitado"
               min="1"
             />

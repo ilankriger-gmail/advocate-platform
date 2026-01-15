@@ -196,6 +196,7 @@ export default function NovoEventoPage() {
               type="number"
               value={formData.max_participants}
               onChange={(e) => setFormData({ ...formData, max_participants: e.target.value })}
+              onFocus={(e) => e.target.select()}
               placeholder="Deixe vazio para ilimitado"
               min="1"
             />

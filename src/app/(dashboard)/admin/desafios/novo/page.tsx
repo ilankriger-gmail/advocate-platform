@@ -26,7 +26,7 @@ export default function NovoChallengeDesafioPage() {
     icon: '💪',
     // Tipo de recompensa: moedas ou dinheiro
     reward_type: 'coins' as RewardType,
-    coins_reward: 10,
+    coins_reward: '',
     prize_amount: '',
     num_winners: '',
     // Campos para engajamento/participe
@@ -56,7 +56,7 @@ export default function NovoChallengeDesafioPage() {
       type: formData.type,
       icon: formData.icon,
       // Se reward_type é moedas, usa coins_reward; se é dinheiro, coins = 0
-      coins_reward: formData.reward_type === 'coins' ? formData.coins_reward : 0,
+      coins_reward: formData.reward_type === 'coins' ? parseInt(formData.coins_reward) || 0 : 0,
       instagram_embed_url: formData.instagram_embed_url || null,
       // Se reward_type é dinheiro, usa prize_amount
       prize_amount: formData.reward_type === 'money' && formData.prize_amount ? parseFloat(formData.prize_amount) : null,
@@ -115,7 +115,15 @@ export default function NovoChallengeDesafioPage() {
               <button
                 key={type.value}
                 type="button"
-                onClick={() => setFormData({ ...formData, type: type.value as ChallengeType })}
+                onClick={() => {
+                  const newType = type.value as ChallengeType;
+                  setFormData({
+                    ...formData,
+                    type: newType,
+                    // Auto-selecionar dinheiro para engajamento/participe
+                    reward_type: (newType === 'engajamento' || newType === 'participe') ? 'money' : formData.reward_type
+                  });
+                }}
                 className={`p-4 rounded-lg border-2 text-center transition-all ${
                   formData.type === type.value
                     ? 'border-indigo-500 bg-indigo-50'
@@ -197,7 +205,7 @@ export default function NovoChallengeDesafioPage() {
                   title: formData.title,
                   type: formData.type,
                   icon: formData.icon,
-                  coinsReward: formData.coins_reward,
+                  coinsReward: parseInt(formData.coins_reward) || 0,
                   goalType: formData.goal_type,
                   goalValue: formData.goal_value ? parseInt(formData.goal_value) : null,
                   hashtag: formData.hashtag || undefined,
@@ -260,7 +268,9 @@ export default function NovoChallengeDesafioPage() {
               <Input
                 type="number"
                 value={formData.coins_reward}
-                onChange={(e) => setFormData({ ...formData, coins_reward: parseInt(e.target.value) || 0 })}
+                onChange={(e) => setFormData({ ...formData, coins_reward: e.target.value })}
+                onFocus={(e) => e.target.select()}
+                placeholder="10"
                 min="1"
                 required
               />
@@ -281,6 +291,7 @@ export default function NovoChallengeDesafioPage() {
                   type="number"
                   value={formData.prize_amount}
                   onChange={(e) => setFormData({ ...formData, prize_amount: e.target.value })}
+                  onFocus={(e) => e.target.select()}
                   placeholder="100.00"
                   min="0"
                   step="0.01"
@@ -295,6 +306,7 @@ export default function NovoChallengeDesafioPage() {
                   type="number"
                   value={formData.num_winners}
                   onChange={(e) => setFormData({ ...formData, num_winners: e.target.value })}
+                  onFocus={(e) => e.target.select()}
                   placeholder="1"
                   min="1"
                 />
@@ -379,6 +391,7 @@ export default function NovoChallengeDesafioPage() {
                   type="number"
                   value={formData.goal_value}
                   onChange={(e) => setFormData({ ...formData, goal_value: e.target.value })}
+                  onFocus={(e) => e.target.select()}
                   placeholder={formData.goal_type === 'time' ? '60' : '50'}
                   min="1"
                 />

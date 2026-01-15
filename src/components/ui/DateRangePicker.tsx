@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { DayPicker, DateRange } from 'react-day-picker';
+import { DayPicker, DateRange, getDefaultClassNames } from 'react-day-picker';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import 'react-day-picker/style.css';
 
 export interface DateRangePickerProps {
   startDate: Date | null;
@@ -32,6 +33,7 @@ export function DateRangePicker({
       : undefined
   );
   const containerRef = useRef<HTMLDivElement>(null);
+  const defaultClassNames = getDefaultClassNames();
 
   // Sincronizar range com props
   useEffect(() => {
@@ -130,51 +132,53 @@ export function DateRangePicker({
             disabled={minDate ? { before: minDate } : undefined}
             showOutsideDays
             classNames={{
-              months: 'flex gap-4 flex-col sm:flex-row',
-              month: 'space-y-4',
-              caption: 'flex justify-center pt-1 relative items-center',
-              caption_label: 'text-sm font-medium text-gray-900',
-              nav: 'space-x-1 flex items-center',
-              nav_button: cn(
+              // Estrutura principal
+              months: `${defaultClassNames.months} flex gap-4 flex-col sm:flex-row`,
+              month: `${defaultClassNames.month} space-y-4`,
+              month_caption: `${defaultClassNames.month_caption} flex justify-center pt-1 relative items-center`,
+              caption_label: `${defaultClassNames.caption_label} text-sm font-medium text-gray-900`,
+              nav: `${defaultClassNames.nav} space-x-1 flex items-center`,
+              button_previous: cn(
+                defaultClassNames.button_previous,
                 'h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100',
                 'inline-flex items-center justify-center rounded-md',
-                'hover:bg-gray-100 transition-colors'
+                'hover:bg-gray-100 transition-colors absolute left-1'
               ),
-              nav_button_previous: 'absolute left-1',
-              nav_button_next: 'absolute right-1',
-              table: 'w-full border-collapse space-y-1',
-              head_row: 'flex',
-              head_cell: 'text-gray-500 rounded-md w-9 font-normal text-[0.8rem]',
-              row: 'flex w-full mt-2',
-              cell: cn(
+              button_next: cn(
+                defaultClassNames.button_next,
+                'h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100',
+                'inline-flex items-center justify-center rounded-md',
+                'hover:bg-gray-100 transition-colors absolute right-1'
+              ),
+              // Tabela
+              month_grid: `${defaultClassNames.month_grid} w-full border-collapse space-y-1`,
+              weekdays: `${defaultClassNames.weekdays} flex`,
+              weekday: `${defaultClassNames.weekday} text-gray-500 rounded-md w-9 font-normal text-[0.8rem]`,
+              week: `${defaultClassNames.week} flex w-full mt-2`,
+              // Células e dias
+              day: cn(
+                defaultClassNames.day,
                 'relative p-0 text-center text-sm focus-within:relative focus-within:z-20',
                 'first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md'
               ),
-              day: cn(
+              day_button: cn(
+                defaultClassNames.day_button,
                 'h-9 w-9 p-0 font-normal',
                 'inline-flex items-center justify-center rounded-md',
                 'hover:bg-gray-100 transition-colors',
                 'aria-selected:opacity-100'
               ),
-              day_range_start: 'day-range-start bg-pink-500 text-white hover:bg-pink-600 rounded-l-md',
-              day_range_end: 'day-range-end bg-pink-500 text-white hover:bg-pink-600 rounded-r-md',
-              day_selected: 'bg-pink-500 text-white hover:bg-pink-600',
-              day_today: 'bg-gray-100 text-gray-900',
-              day_outside: 'text-gray-400 opacity-50',
-              day_disabled: 'text-gray-400 opacity-50 cursor-not-allowed',
-              day_range_middle: 'bg-pink-50 text-pink-900 rounded-none',
-              day_hidden: 'invisible',
-            }}
-            components={{
-              Chevron: ({ orientation }) => (
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  {orientation === 'left' ? (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  ) : (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  )}
-                </svg>
-              ),
+              // Estados de seleção
+              range_start: `${defaultClassNames.range_start} bg-pink-500 text-white hover:bg-pink-600 rounded-l-md`,
+              range_end: `${defaultClassNames.range_end} bg-pink-500 text-white hover:bg-pink-600 rounded-r-md`,
+              range_middle: `${defaultClassNames.range_middle} bg-pink-50 text-pink-900 rounded-none`,
+              selected: `${defaultClassNames.selected} bg-pink-500 text-white hover:bg-pink-600`,
+              today: `${defaultClassNames.today} bg-gray-100 text-gray-900`,
+              outside: `${defaultClassNames.outside} text-gray-400 opacity-50`,
+              disabled: `${defaultClassNames.disabled} text-gray-400 opacity-50 cursor-not-allowed`,
+              hidden: `${defaultClassNames.hidden} invisible`,
+              // Chevron para navegação
+              chevron: `${defaultClassNames.chevron} fill-gray-500`,
             }}
           />
 

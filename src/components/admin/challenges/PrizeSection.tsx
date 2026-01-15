@@ -57,7 +57,7 @@ export function PrizeSection({ prizes, onChange, disabled }: PrizeSectionProps) 
 
   // Adicionar prêmio
   const addPrize = (type: PrizeType) => {
-    setNewPrize({ type, name: '', quantity: 1 });
+    setNewPrize({ type, name: '' });
   };
 
   // Salvar novo prêmio
@@ -162,6 +162,7 @@ export function PrizeSection({ prizes, onChange, disabled }: PrizeSectionProps) 
                             placeholder="Ex: 100"
                             className="w-32"
                             disabled={disabled}
+                            onFocus={(e) => e.target.select()}
                             onKeyDown={(e) => {
                               if (e.key === 'Enter') {
                                 e.preventDefault();
@@ -248,6 +249,7 @@ export function PrizeSection({ prizes, onChange, disabled }: PrizeSectionProps) 
                                 step="0.01"
                                 value={newPrize.value || ''}
                                 onChange={(e) => setNewPrize({ ...newPrize, value: parseFloat(e.target.value) || undefined })}
+                                onFocus={(e) => e.target.select()}
                                 placeholder="100.00"
                                 disabled={disabled}
                               />
@@ -259,8 +261,10 @@ export function PrizeSection({ prizes, onChange, disabled }: PrizeSectionProps) 
                               <Input
                                 type="number"
                                 min="1"
-                                value={newPrize.quantity || 1}
-                                onChange={(e) => setNewPrize({ ...newPrize, quantity: parseInt(e.target.value) || 1 })}
+                                value={newPrize.quantity || ''}
+                                onChange={(e) => setNewPrize({ ...newPrize, quantity: e.target.value ? parseInt(e.target.value) : undefined })}
+                                onFocus={(e) => e.target.select()}
+                                placeholder="1"
                                 disabled={disabled}
                               />
                             </div>
