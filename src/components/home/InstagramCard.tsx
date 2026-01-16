@@ -111,7 +111,7 @@ export function InstagramCard({ post }: InstagramCardProps) {
           )}
           {post.content && post.content !== '<p></p>' && (
             <div
-              className="text-sm text-gray-600 mt-1 line-clamp-3 prose prose-sm max-w-none"
+              className="text-sm text-gray-600 mt-1 line-clamp-3 prose prose-sm max-w-none whitespace-pre-line"
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content) }}
             />
           )}
