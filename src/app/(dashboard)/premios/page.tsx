@@ -135,7 +135,7 @@ export default async function PremiosPage() {
               const hasStock = reward.quantity_available === null || reward.quantity_available > 0;
 
               return (
-                <Card key={reward.id} className={`overflow-hidden ${isMoney ? 'ring-2 ring-green-500 ring-offset-2' : ''}`}>
+                <Card key={reward.id} className={`overflow-hidden flex flex-col h-full ${isMoney ? 'ring-2 ring-green-500 ring-offset-2' : ''}`}>
                   {/* Imagem do prêmio */}
                   <div className={`aspect-video relative ${isMoney ? 'bg-gradient-to-br from-green-400 to-emerald-600' : 'bg-gray-100'}`}>
                     {reward.image_url ? (
@@ -177,28 +177,30 @@ export default async function PremiosPage() {
                     )}
                   </div>
 
-                  <div className="p-4">
-                    <h3 className="font-semibold text-gray-900">{reward.name}</h3>
-                    <p className="text-sm text-gray-500 mt-1 line-clamp-2">{reward.description}</p>
+                  <div className="p-4 flex flex-col flex-grow">
+                    <div className="flex-grow">
+                      <h3 className="font-semibold text-gray-900">{reward.name}</h3>
+                      <p className="text-sm text-gray-500 mt-1 line-clamp-2">{reward.description}</p>
 
-                    {/* Informação sobre entrega para físicos */}
-                    {isPhysical && (
-                      <p className="text-xs text-amber-600 mt-2">
-                        * Você precisará informar seu endereço para receber em casa
-                      </p>
-                    )}
+                      {/* Informação sobre entrega para físicos */}
+                      {isPhysical && (
+                        <p className="text-xs text-amber-600 mt-2">
+                          * Você precisará informar seu endereço para receber em casa
+                        </p>
+                      )}
 
-                    {/* Prêmio em Dinheiro - Info especial */}
-                    {isMoney && (
-                      <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                        <p className="text-sm font-medium text-green-800">
-                          💰 Prêmio em Dinheiro via PIX
-                        </p>
-                        <p className="text-xs text-green-700 mt-1">
-                          O valor será depositado na sua conta via PIX em até 48 horas após a aprovação.
-                        </p>
-                      </div>
-                    )}
+                      {/* Prêmio em Dinheiro - Info especial */}
+                      {isMoney && (
+                        <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                          <p className="text-sm font-medium text-green-800">
+                            💰 Prêmio em Dinheiro via PIX
+                          </p>
+                          <p className="text-xs text-green-700 mt-1">
+                            O valor será depositado na sua conta via PIX em até 48 horas após a aprovação.
+                          </p>
+                        </div>
+                      )}
+                    </div>
 
                     {/* Barra de Progresso */}
                     <div className="mt-4">
