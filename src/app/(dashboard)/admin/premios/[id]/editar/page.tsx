@@ -31,6 +31,10 @@ export default function EditRewardPage({ params }: PageProps) {
     description: string;
     materials: string[];
   } | null>(null);
+  const [savedOptions, setSavedOptions] = useState<{
+    colors?: Array<{ name: string; hex: string }>;
+    sizes?: string[];
+  } | null>(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -68,6 +72,18 @@ export default function EditRewardPage({ params }: PageProps) {
         });
         // Definir se é ilimitado baseado no estoque
         setIsUnlimited(!result.data.quantity_available);
+
+        // Carregar opções salvas (cores e tamanhos)
+        if (result.data.available_options) {
+          setSavedOptions(result.data.available_options);
+          // Também popula shopDetails para exibição
+          setShopDetails({
+            colors: result.data.available_options.colors || [],
+            sizes: result.data.available_options.sizes || [],
+            description: '',
+            materials: [],
+          });
+        }
       }
 
       setIsLoading(false);
@@ -111,6 +127,7 @@ export default function EditRewardPage({ params }: PageProps) {
       type: formData.type,
       image_url: finalImageUrl,
       is_active: formData.is_active,
+      available_options: savedOptions,
     });
 
     if (result.error) {
@@ -176,7 +193,12 @@ export default function EditRewardPage({ params }: PageProps) {
       setError(result.error);
     } else if (result.data) {
       setShopDetails(result.data);
-      setSuccessMessage('Detalhes carregados da loja!');
+      // Salvar opções para persistir no banco
+      setSavedOptions({
+        colors: result.data.colors,
+        sizes: result.data.sizes,
+      });
+      setSuccessMessage('Detalhes carregados da loja! Salve para persistir as opções.');
     }
 
     setIsLoadingShopDetails(false);
@@ -328,11 +350,16 @@ export default function EditRewardPage({ params }: PageProps) {
             )}
 
             {/* Detalhes da Loja */}
-            {shopDetails && (
+            {shopDetails && (shopDetails.colors.length > 0 || shopDetails.sizes.length > 0) && (
               <div className="mt-3 p-4 bg-purple-50 rounded-lg border border-purple-200">
                 <h4 className="text-sm font-medium text-purple-800 mb-3 flex items-center gap-2">
                   <Store className="w-4 h-4" />
-                  Detalhes do Produto
+                  Opções Disponíveis
+                  {savedOptions && (savedOptions.colors?.length || savedOptions.sizes?.length) ? (
+                    <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full">Salvo</span>
+                  ) : (
+                    <span className="text-xs px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full">Pendente</span>
+                  )}
                 </h4>
 
                 {/* Cores */}

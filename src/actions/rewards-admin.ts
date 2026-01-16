@@ -323,6 +323,10 @@ export async function updateReward(
     type: 'digital' | 'physical' | 'money';
     image_url: string | null;
     is_active: boolean;
+    available_options: {
+      colors?: Array<{ name: string; hex: string }>;
+      sizes?: string[];
+    } | null;
   }>
 ): Promise<ActionResponse> {
   rewardsAdminLogger.info('Atualizando recompensa', {
