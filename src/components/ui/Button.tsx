@@ -12,8 +12,9 @@ import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
  * - `outline`: Botão com borda e fundo transparente (ações alternativas)
  * - `ghost`: Botão sem borda e fundo transparente (ações sutis)
  * - `danger`: Botão vermelho para ações destrutivas (excluir, cancelar)
+ * - `cta`: Botão verde para CTAs de alta conversão (landing pages)
  */
-type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
+type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'cta';
 
 /**
  * Tamanhos disponíveis para o botão
@@ -133,6 +134,12 @@ const variantStyles: Record<ButtonVariant, string> = {
     bg-red-600 text-white
     hover:bg-red-700
     focus:ring-red-500
+  `,
+  cta: `
+    bg-emerald-500 text-white
+    hover:bg-emerald-600
+    focus:ring-emerald-400
+    shadow-lg shadow-emerald-500/30
   `,
 };
 

@@ -417,7 +417,7 @@ export default async function LandingPage({ params, searchParams }: PageProps) {
 
         {/* Hero Image */}
         {data.imageUrl ? (
-          <div className="relative aspect-video rounded-2xl overflow-hidden shadow-lg mb-6">
+          <div className="relative aspect-[21/9] rounded-2xl overflow-hidden shadow-lg mb-6">
             <Image
               src={data.imageUrl}
               alt={data.title}
@@ -429,11 +429,11 @@ export default async function LandingPage({ params, searchParams }: PageProps) {
             />
           </div>
         ) : data.type === 'challenge' && data.icon ? (
-          <div className="aspect-video rounded-2xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center mb-6 shadow-lg">
+          <div className="aspect-[21/9] rounded-2xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center mb-6 shadow-lg">
             <span className="text-7xl">{data.icon}</span>
           </div>
         ) : (
-          <div className="aspect-video rounded-2xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center mb-6 shadow-lg">
+          <div className="aspect-[21/9] rounded-2xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center mb-6 shadow-lg">
             {data.type === 'challenge' ? (
               <Target className="w-20 h-20 text-white" />
             ) : (
@@ -447,6 +447,7 @@ export default async function LandingPage({ params, searchParams }: PageProps) {
           <Link href={npsUrl}>
             <Button
               size="lg"
+              variant="cta"
               className="cta-button w-full py-5 text-lg font-semibold shadow-lg"
             >
               {ctaText.primary}
@@ -526,6 +527,7 @@ export default async function LandingPage({ params, searchParams }: PageProps) {
             <Link href={npsUrl}>
               <Button
                 size="lg"
+                variant="cta"
                 className="cta-button w-full py-6 text-lg font-semibold shadow-lg animate-pulse-ring"
               >
                 {ctaText.primary}
