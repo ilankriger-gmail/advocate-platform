@@ -76,14 +76,24 @@ export async function GET() {
       variables: ['UPSTASH_REDIS_REST_URL', 'UPSTASH_REDIS_REST_TOKEN'],
     },
 
-    // Sightengine (Moderação)
+    // Sightengine (Moderação de Imagens)
     sightengine: {
       name: 'Sightengine',
-      description: 'Moderação automática de imagens',
+      description: 'Moderação automática de imagens (nudez, armas, violência)',
       configured: !!(process.env.SIGHTENGINE_API_USER && process.env.SIGHTENGINE_API_SECRET),
       required: false,
       docs: 'https://sightengine.com/docs',
       variables: ['SIGHTENGINE_API_USER', 'SIGHTENGINE_API_SECRET'],
+    },
+
+    // Perspective API (Moderação de Texto)
+    perspective: {
+      name: 'Google Perspective',
+      description: 'Moderação de texto (toxicidade, insultos, ameaças) - Gratuita',
+      configured: !!process.env.PERSPECTIVE_API_KEY,
+      required: false,
+      docs: 'https://perspectiveapi.com',
+      variables: ['PERSPECTIVE_API_KEY'],
     },
 
     // Cron

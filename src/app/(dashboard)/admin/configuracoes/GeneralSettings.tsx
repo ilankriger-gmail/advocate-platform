@@ -40,7 +40,7 @@ const CATEGORIES: Record<string, Category> = {
   apis_ai: {
     title: 'Inteligência Artificial',
     description: 'APIs para análise de vídeos, geração de thumbnails e análise de leads.',
-    keys: ['openai_api_key', 'gemini_api_key'],
+    keys: ['openai_api_key', 'gemini_api_key', 'perspective_api_key'],
     isSecret: true,
     className: 'border-purple-200 bg-purple-50/30',
   },

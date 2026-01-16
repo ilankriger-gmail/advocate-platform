@@ -31,6 +31,7 @@ export type SiteSettingKey =
   | 'whatsapp_webhook_verify_token'
   | 'youtube_api_key'
   | 'youtube_channel_handle'
+  | 'perspective_api_key'
   | 'email_approval_subject'
   | 'email_approval_greeting'
   | 'email_approval_message'
@@ -135,6 +136,7 @@ const DEFAULT_VALUES: Record<SiteSettingKey, string> = {
   whatsapp_webhook_verify_token: '',
   youtube_api_key: '',
   youtube_channel_handle: '',
+  perspective_api_key: '',
   // Email de aprovação
   email_approval_subject: 'Você foi aprovado para o {{site_name}}!',
   email_approval_greeting: 'Olá {{name}}!',
