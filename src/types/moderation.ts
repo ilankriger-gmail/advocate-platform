@@ -21,6 +21,8 @@ export interface ImageAnalysisResult {
   flags: ImageModerationFlags;
   blocked_reasons: string[];
   raw_response?: unknown; // resposta original da API
+  skipped?: boolean;      // true se análise foi pulada (API indisponível)
+  skip_reason?: string;   // motivo pelo qual foi pulada
 }
 
 // ============================================
@@ -42,6 +44,8 @@ export interface ToxicityAnalysisResult {
   scores: ToxicityScores;
   blocked_reasons: string[];
   raw_response?: unknown;
+  skipped?: boolean;      // true se análise foi pulada (API indisponível)
+  skip_reason?: string;   // motivo pelo qual foi pulada
 }
 
 // ============================================

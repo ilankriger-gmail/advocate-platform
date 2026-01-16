@@ -30,7 +30,8 @@ export default async function AdminModeracaoPage({ searchParams }: PageProps) {
   if (filter === 'blocked') {
     query = query.eq('status', 'blocked');
   } else if (filter === 'help_request') {
-    query = query.eq('content_category', 'help_request').eq('status', 'approved');
+    // Mostra TODOS os pedidos de ajuda, independente do status
+    query = query.eq('content_category', 'help_request');
   } else {
     query = query.eq('status', 'pending');
   }
@@ -44,7 +45,8 @@ export default async function AdminModeracaoPage({ searchParams }: PageProps) {
     { count: pendingCount },
   ] = await Promise.all([
     supabase.from('posts').select('*', { count: 'exact', head: true }).eq('status', 'blocked'),
-    supabase.from('posts').select('*', { count: 'exact', head: true }).eq('content_category', 'help_request').eq('status', 'approved'),
+    // Conta TODOS os pedidos de ajuda, independente do status
+    supabase.from('posts').select('*', { count: 'exact', head: true }).eq('content_category', 'help_request'),
     supabase.from('posts').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
   ]);
 

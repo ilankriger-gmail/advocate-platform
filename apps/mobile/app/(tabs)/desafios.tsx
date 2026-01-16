@@ -9,6 +9,7 @@ import {
   ScrollView,
 } from 'react-native';
 import ChallengeCard from '@/components/ChallengeCard';
+import ParticipationModal from '@/components/ParticipationModal';
 import { challengesApi } from '@/lib/api';
 
 type StatusType = 'active' | 'closed' | 'finished';
@@ -64,6 +65,8 @@ export default function DesafiosScreen() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [status, setStatus] = useState<StatusType>('active');
   const [type, setType] = useState<ChallengeType>('all');
+  const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchChallenges = useCallback(async (isRefresh = false) => {
     if (isRefresh) {
@@ -101,8 +104,21 @@ export default function DesafiosScreen() {
   };
 
   const handleParticipate = (challengeId: string) => {
-    // TODO: Abrir modal de participação
-    console.log('Participar do desafio:', challengeId);
+    const challenge = challenges.find(c => c.id === challengeId);
+    if (challenge) {
+      setSelectedChallenge(challenge);
+      setIsModalOpen(true);
+    }
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedChallenge(null);
+  };
+
+  const handleParticipationSuccess = () => {
+    // Atualizar lista de desafios após participação bem-sucedida
+    fetchChallenges(true);
   };
 
   const renderHeader = () => (
@@ -213,6 +229,14 @@ export default function DesafiosScreen() {
         }
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingTop: 12, paddingBottom: 20 }}
+      />
+
+      {/* Modal de Participação */}
+      <ParticipationModal
+        challenge={selectedChallenge}
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        onSuccess={handleParticipationSuccess}
       />
     </View>
   );

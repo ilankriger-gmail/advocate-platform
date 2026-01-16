@@ -71,12 +71,12 @@ export async function analyzeImage(
   const apiUser = process.env.SIGHTENGINE_API_USER;
   const apiSecret = process.env.SIGHTENGINE_API_SECRET;
 
-  // Se não configurado, retorna como seguro (skip moderation)
+  // Se não configurado, envia para revisão manual (não aprova automaticamente)
   if (!apiUser || !apiSecret) {
-    console.warn('[Moderation] Sightengine não configurado - pulando análise de imagem');
+    console.warn('[Moderation] Sightengine não configurado - enviando para revisão manual');
     return {
-      safe: true,
-      score: 0,
+      safe: false,
+      score: 0.35, // Acima do review_threshold (0.3) para forçar revisão
       flags: {
         nudity: 0,
         weapon: 0,
@@ -86,6 +86,8 @@ export async function analyzeImage(
         offensive: 0,
       },
       blocked_reasons: [],
+      skipped: true,
+      skip_reason: 'Sightengine API não configurada',
     };
   }
 
@@ -149,11 +151,10 @@ export async function analyzeImage(
   } catch (error) {
     console.error('[Moderation] Erro ao analisar imagem:', error);
 
-    // Em caso de erro, retorna como seguro para não bloquear usuários
-    // mas loga o erro para investigação
+    // Em caso de erro, envia para revisão manual (não aprova automaticamente)
     return {
-      safe: true,
-      score: 0,
+      safe: false,
+      score: 0.35, // Acima do review_threshold (0.3) para forçar revisão
       flags: {
         nudity: 0,
         weapon: 0,
@@ -163,6 +164,8 @@ export async function analyzeImage(
         offensive: 0,
       },
       blocked_reasons: [],
+      skipped: true,
+      skip_reason: `Erro na API: ${error instanceof Error ? error.message : 'Erro desconhecido'}`,
     };
   }
 }
@@ -226,11 +229,17 @@ export async function analyzeImages(
 
   const allBlockedReasons = Array.from(new Set(results.flatMap(r => r.blocked_reasons)));
 
+  // Verificar se alguma análise foi pulada
+  const anySkipped = results.some(r => r.skipped);
+  const skipReasons = results.filter(r => r.skip_reason).map(r => r.skip_reason);
+
   const combined: ImageAnalysisResult = {
-    safe: allBlockedReasons.length === 0,
+    safe: allBlockedReasons.length === 0 && !anySkipped,
     score: Math.max(...results.map(r => r.score)),
     flags: combinedFlags,
     blocked_reasons: allBlockedReasons,
+    skipped: anySkipped,
+    skip_reason: skipReasons.length > 0 ? skipReasons[0] : undefined,
   };
 
   return { results, combined };

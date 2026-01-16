@@ -69,7 +69,10 @@ export async function moderatePost(
     const imgScore = imageResult.combined.score;
     maxScore = Math.max(maxScore, imgScore);
 
-    if (imgScore >= mergedConfig.image_block_threshold) {
+    // Se análise de imagem foi pulada, forçar revisão manual
+    if (imageResult.combined.skipped) {
+      review_reasons.push(`Análise de imagem indisponível: ${imageResult.combined.skip_reason}`);
+    } else if (imgScore >= mergedConfig.image_block_threshold) {
       blocked_reasons.push(...imageResult.combined.blocked_reasons);
     } else if (imgScore >= mergedConfig.review_threshold) {
       review_reasons.push('Imagem requer revisão manual');
@@ -80,7 +83,10 @@ export async function moderatePost(
   const toxScore = toxicityResult.score;
   maxScore = Math.max(maxScore, toxScore);
 
-  if (toxScore >= mergedConfig.text_block_threshold) {
+  // Se análise de toxicidade foi pulada, forçar revisão manual
+  if (toxicityResult.skipped) {
+    review_reasons.push(`Análise de texto indisponível: ${toxicityResult.skip_reason}`);
+  } else if (toxScore >= mergedConfig.text_block_threshold) {
     blocked_reasons.push(...toxicityResult.blocked_reasons);
   } else if (toxScore >= mergedConfig.review_threshold) {
     review_reasons.push('Texto pode conter conteúdo inadequado');

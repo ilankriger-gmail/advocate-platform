@@ -1,6 +1,34 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { persist, createJSONStorage, StateStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
+
+// Storage compatível com web e mobile
+const storage: StateStorage = Platform.OS === 'web'
+  ? {
+      getItem: (name) => {
+        const value = localStorage.getItem(name);
+        return value ?? null;
+      },
+      setItem: (name, value) => {
+        localStorage.setItem(name, value);
+      },
+      removeItem: (name) => {
+        localStorage.removeItem(name);
+      },
+    }
+  : {
+      getItem: async (name) => {
+        const value = await AsyncStorage.getItem(name);
+        return value ?? null;
+      },
+      setItem: async (name, value) => {
+        await AsyncStorage.setItem(name, value);
+      },
+      removeItem: async (name) => {
+        await AsyncStorage.removeItem(name);
+      },
+    };
 
 interface User {
   id: string;
@@ -96,7 +124,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: createJSONStorage(() => storage),
       partialize: (state) => ({
         user: state.user,
         session: state.session,

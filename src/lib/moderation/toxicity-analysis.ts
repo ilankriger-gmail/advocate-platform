@@ -60,12 +60,12 @@ export async function analyzeToxicity(
 ): Promise<ToxicityAnalysisResult> {
   const apiKey = process.env.PERSPECTIVE_API_KEY;
 
-  // Se não configurado, retorna como seguro (skip moderation)
+  // Se não configurado, envia para revisão manual (não aprova automaticamente)
   if (!apiKey) {
-    console.warn('[Moderation] Perspective API não configurada - pulando análise de toxicidade');
+    console.warn('[Moderation] Perspective API não configurada - enviando para revisão manual');
     return {
-      safe: true,
-      score: 0,
+      safe: false,
+      score: 0.35, // Acima do review_threshold (0.3) para forçar revisão
       scores: {
         toxicity: 0,
         severe_toxicity: 0,
@@ -75,6 +75,8 @@ export async function analyzeToxicity(
         profanity: 0,
       },
       blocked_reasons: [],
+      skipped: true,
+      skip_reason: 'Perspective API não configurada',
     };
   }
 
@@ -168,10 +170,10 @@ export async function analyzeToxicity(
   } catch (error) {
     console.error('[Moderation] Erro ao analisar toxicidade:', error);
 
-    // Em caso de erro, retorna como seguro para não bloquear usuários
+    // Em caso de erro, envia para revisão manual (não aprova automaticamente)
     return {
-      safe: true,
-      score: 0,
+      safe: false,
+      score: 0.35, // Acima do review_threshold (0.3) para forçar revisão
       scores: {
         toxicity: 0,
         severe_toxicity: 0,
@@ -181,6 +183,8 @@ export async function analyzeToxicity(
         profanity: 0,
       },
       blocked_reasons: [],
+      skipped: true,
+      skip_reason: `Erro na API: ${error instanceof Error ? error.message : 'Erro desconhecido'}`,
     };
   }
 }

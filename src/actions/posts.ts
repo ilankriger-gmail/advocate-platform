@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { ActionResponse, CreatePostResponse } from '@/types/action';
 import type { CreatePostData, UpdatePostData } from '@/types/post';
 import type { Post, PostComment } from '@/lib/supabase/types';
-import { moderatePost, getBlockedMessage, getPendingReviewMessage } from '@/lib/moderation';
+import { moderatePost, moderateText, getBlockedMessage, getPendingReviewMessage } from '@/lib/moderation';
 import { logModerationAction, checkRateLimit, RATE_LIMITS, validateFileMagicBytes, sanitizeText } from '@/lib/security';
 import { logger, maskId, sanitizeError } from '@/lib';
 import { verifyAdminOrCreator } from './utils';
@@ -87,11 +87,17 @@ export async function createPost(data: CreatePostData): Promise<CreatePostRespon
 
     // Executar moderação para todos os posts (incluindo criadores)
     try {
+      console.log('[MODERATION DEBUG] Iniciando moderação...');
+      console.log('[MODERATION DEBUG] Título:', data.title);
+      console.log('[MODERATION DEBUG] Conteúdo:', finalContent?.substring(0, 100));
+
       const moderationResult = await moderatePost({
         title: data.title || '',
         content: finalContent || '',
         images: Array.isArray(data.media_url) ? data.media_url : data.media_url ? [data.media_url] : undefined,
       });
+
+      console.log('[MODERATION DEBUG] Resultado:', JSON.stringify(moderationResult, null, 2));
 
       moderationScore = moderationResult.overall_score;
       moderationFlags = {
@@ -105,6 +111,8 @@ export async function createPost(data: CreatePostData): Promise<CreatePostRespon
       // Capturar categoria de conteúdo (normal ou help_request)
       contentCategory = moderationResult.content_category;
 
+      console.log('[MODERATION DEBUG] Decision:', moderationDecision, 'Score:', moderationScore);
+
       postsLogger.debug('Resultado da moderação', {
         decision: moderationResult.decision,
         score: moderationScore,
@@ -117,15 +125,20 @@ export async function createPost(data: CreatePostData): Promise<CreatePostRespon
         // Conteúdo bloqueado - salvar com status 'blocked' para revisão admin
         postStatus = 'blocked';
         moderationMessage = getBlockedMessage(moderationResult.blocked_reasons);
+        console.log('[MODERATION DEBUG] Post BLOQUEADO! Mensagem:', moderationMessage);
       } else if (moderationResult.decision === 'pending_review') {
         // Precisa revisão manual - mesmo criadores
         postStatus = 'pending';
         moderationMessage = getPendingReviewMessage();
+        console.log('[MODERATION DEBUG] Post em PENDING_REVIEW');
+      } else {
+        console.log('[MODERATION DEBUG] Post APPROVED');
       }
       // Se 'approved', mantém o status original (approved para criadores, pending para comunidade)
 
     } catch (moderationError) {
       // Em caso de erro na moderação, continua com fluxo normal
+      console.error('[MODERATION DEBUG] ERRO na moderação:', moderationError);
       postsLogger.error('Erro na moderação', { error: sanitizeError(moderationError) });
     }
 
@@ -720,7 +733,27 @@ export async function commentPost(postId: string, content: string): Promise<Acti
     const sanitizedContent = sanitizeText(content, 2000);
 
     if (!sanitizedContent.trim()) {
-      return { error: 'Comentario nao pode ser vazio' };
+      return { error: 'Comentário não pode ser vazio' };
+    }
+
+    // MODERAÇÃO: Verificar toxicidade do comentário
+    try {
+      const moderationResult = await moderateText(sanitizedContent);
+
+      if (moderationResult.decision === 'blocked') {
+        postsLogger.warn('Comentário bloqueado por moderação', {
+          userId: user.id,
+          postId,
+          score: moderationResult.overall_score,
+          reasons: moderationResult.blocked_reasons,
+        });
+        return {
+          error: `Comentário bloqueado: ${moderationResult.blocked_reasons.join(', ') || 'conteúdo inadequado detectado'}`,
+        };
+      }
+    } catch (moderationError) {
+      // Em caso de erro na moderação, permite o comentário mas loga o erro
+      postsLogger.error('Erro na moderação de comentário', { error: sanitizeError(moderationError) });
     }
 
     const { data: comment, error } = await supabase
