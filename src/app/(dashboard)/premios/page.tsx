@@ -5,6 +5,7 @@ import { getSiteSettings } from '@/lib/config/site';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, Badge } from '@/components/ui';
 import { RewardClaimButton } from './RewardClaimButton';
+import { RewardImageZoom } from './RewardImageZoom';
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings([
@@ -137,18 +138,12 @@ export default async function PremiosPage() {
               return (
                 <Card key={reward.id} className={`overflow-hidden flex flex-col h-full ${isMoney ? 'ring-2 ring-green-500 ring-offset-2' : ''}`}>
                   {/* Imagem do prêmio */}
-                  <div className={`aspect-video relative ${isMoney ? 'bg-gradient-to-br from-green-400 to-emerald-600' : 'bg-gray-100'}`}>
-                    {reward.image_url ? (
-                      <img
-                        src={reward.image_url}
-                        alt={reward.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className={`w-full h-full flex items-center justify-center text-5xl ${isMoney ? '' : 'bg-gradient-to-br from-purple-100 to-pink-100'}`}>
-                        {isMoney ? '💰' : '🎁'}
-                      </div>
-                    )}
+                  <div className={`h-40 relative ${isMoney ? 'bg-gradient-to-br from-green-400 to-emerald-600' : 'bg-gray-100'}`}>
+                    <RewardImageZoom
+                      imageUrl={reward.image_url}
+                      altText={reward.name}
+                      isMoney={isMoney}
+                    />
                     {/* Badges */}
                     <div className="absolute top-2 right-2 flex flex-col gap-1">
                       {isMoney && (
