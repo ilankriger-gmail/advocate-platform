@@ -194,7 +194,7 @@ interface RewardCardProps {
     name: string;
     description: string | null;
     coins_required: number;
-    stock: number | null;
+    quantity_available: number | null;
     image_url: string | null;
     is_active: boolean;
     type: string;
@@ -250,9 +250,9 @@ function RewardCard({ reward }: RewardCardProps) {
         </p>
 
         {/* Stock */}
-        {reward.stock !== null && (
-          <p className={`text-sm font-medium ${reward.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
-            {reward.stock > 0 ? `${reward.stock} em estoque` : 'Esgotado'}
+        {reward.quantity_available !== null && (
+          <p className={`text-sm font-medium ${reward.quantity_available > 0 ? 'text-green-600' : 'text-red-600'}`}>
+            {reward.quantity_available > 0 ? `${reward.quantity_available} em estoque` : 'Esgotado'}
           </p>
         )}
 
