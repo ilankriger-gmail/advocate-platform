@@ -2,11 +2,11 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Heart, Trophy, Target, Clock, Repeat, Gift, Package, Users, Sparkles, Banknote, Zap } from 'lucide-react';
+import { Heart, Trophy, Target, Clock, Repeat, Gift, Package, Users, Sparkles, Banknote } from 'lucide-react';
 import { getLandingPageData, LandingPageData } from '@/actions/landing-pages';
 import { getSiteSettings } from '@/lib/config/site';
 import { Button } from '@/components/ui';
-import { CountdownTimer, ScarcityIndicator, FadeInSection } from '@/components/landing';
+import { CountdownTimer, FadeInSection } from '@/components/landing';
 
 // Função para sanitizar HTML (sem dependência de JSDOM para funcionar no Vercel)
 // Remove tags perigosas mantendo formatação básica
@@ -357,7 +357,6 @@ export default async function LandingPageDireto({ params }: PageProps) {
   const ctaUrl = `/registro?source=${sourceType}&id=${data.id}&name=${encodeURIComponent(data.title)}`;
 
   // Obter textos dinâmicos
-  const { headline, subheadline } = getHeadline(data);
   const ctaText = getCTAText(data);
   const participantsCount = data.type === 'challenge' ? data.participantsCount : data.redemptionsCount;
 
@@ -379,61 +378,124 @@ export default async function LandingPageDireto({ params }: PageProps) {
               <span className="text-xl font-bold text-primary-600">{settings.site_name}</span>
             )}
           </Link>
-          {/* Badge de cadastro rápido */}
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
-            <Zap className="w-3 h-3" />
-            Cadastro Rápido
-          </span>
+          {/* Mini CTA no header */}
+          <Link href={ctaUrl}>
+            <Button size="sm" className="bg-primary-600 hover:bg-primary-700 text-white text-xs px-4">
+              Participar
+            </Button>
+          </Link>
         </div>
       </header>
 
       {/* Conteúdo principal */}
-      <main className="max-w-2xl mx-auto px-4 py-8">
-        {/* Seção do Criador - Comunidade oficial (só mostra se tiver nome configurado) */}
-        {settings.creator_name && (
-          <CreatorSection
-            name={settings.creator_name}
-            avatarUrl={settings.creator_avatar_url || undefined}
-          />
-        )}
+      <main className="max-w-2xl mx-auto px-4 py-6">
+        {/* Hero Card - Tudo integrado */}
+        <div className="mb-6">
+          {data.imageUrl ? (
+            /* Quando tem imagem, mostra imagem + info abaixo */
+            <div className="space-y-4">
+              <div className="relative aspect-video rounded-2xl overflow-hidden shadow-lg">
+                <Image
+                  src={data.imageUrl}
+                  alt={data.title}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 672px"
+                  className="object-cover"
+                  priority
+                  quality={85}
+                />
+              </div>
+              <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+                <div className="flex items-start gap-4">
+                  <span className="text-4xl">{data.type === 'challenge' ? data.icon || '🎯' : '🎁'}</span>
+                  <div className="flex-1">
+                    <TypeBadge data={data} />
+                    <h1 className="text-xl md:text-2xl font-bold text-gray-900 mt-2">
+                      {data.title}
+                    </h1>
+                  </div>
+                </div>
+                {/* Recompensa em destaque */}
+                {data.type === 'challenge' && data.coinsReward && data.coinsReward > 0 && (
+                  <div className="mt-4 flex items-center gap-2 bg-gradient-to-r from-pink-50 to-rose-50 rounded-xl p-3">
+                    <Heart className="w-5 h-5 text-pink-500 fill-current" />
+                    <span className="text-lg font-bold text-pink-600">+{data.coinsReward}</span>
+                    <span className="text-sm text-pink-600">corações de recompensa</span>
+                  </div>
+                )}
+                {/* Meta do desafio */}
+                {data.type === 'challenge' && data.goalType && data.goalValue && (
+                  <div className="mt-2 flex items-center gap-2 text-sm text-gray-600">
+                    {data.goalType === 'repetitions' ? (
+                      <><Repeat className="w-4 h-4" /> Meta: {data.goalValue} repetições</>
+                    ) : (
+                      <><Clock className="w-4 h-4" /> Meta: {data.goalValue} segundos</>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            /* Quando NÃO tem imagem, Hero Card com gradiente integrado */
+            <div className={`rounded-2xl p-6 shadow-lg ${
+              data.type === 'challenge'
+                ? data.challengeType === 'fisico'
+                  ? 'bg-gradient-to-br from-blue-500 to-indigo-600'
+                  : data.challengeType === 'atos_amor'
+                  ? 'bg-gradient-to-br from-pink-500 to-rose-600'
+                  : 'bg-gradient-to-br from-primary-500 to-accent-500'
+                : 'bg-gradient-to-br from-amber-500 to-orange-600'
+            }`}>
+              <div className="flex items-start gap-4">
+                <div className="w-16 h-16 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center flex-shrink-0">
+                  <span className="text-4xl">{data.type === 'challenge' ? data.icon || '🎯' : '🎁'}</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="mb-2">
+                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-white/20 text-white">
+                      {data.type === 'challenge' ? (
+                        data.challengeType === 'fisico' ? 'Desafio Físico' :
+                        data.challengeType === 'engajamento' ? 'Engajamento' :
+                        data.challengeType === 'participe' ? 'Participe & Ganhe' :
+                        data.challengeType === 'atos_amor' ? 'Atos de Amor' : 'Desafio'
+                      ) : 'Prêmio'}
+                    </span>
+                  </div>
+                  <h1 className="text-xl md:text-2xl font-bold text-white leading-tight">
+                    {data.title}
+                  </h1>
+                </div>
+              </div>
 
-        {/* Headline impactante acima da dobra */}
-        <div className="text-center mb-8">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-            {headline}
-          </h2>
-          <p className="text-lg text-gray-600">{subheadline}</p>
+              {/* Recompensa em destaque */}
+              {data.type === 'challenge' && data.coinsReward && data.coinsReward > 0 && (
+                <div className="mt-5 flex items-center gap-3 bg-white/20 backdrop-blur rounded-xl p-4">
+                  <div className="w-10 h-10 bg-white/30 rounded-full flex items-center justify-center">
+                    <Heart className="w-5 h-5 text-white fill-current" />
+                  </div>
+                  <div>
+                    <span className="text-2xl font-black text-white">+{data.coinsReward}</span>
+                    <p className="text-sm text-white/80">corações de recompensa</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Meta do desafio */}
+              {data.type === 'challenge' && data.goalType && data.goalValue && (
+                <div className="mt-3 flex items-center gap-2 text-sm text-white/80">
+                  {data.goalType === 'repetitions' ? (
+                    <><Repeat className="w-4 h-4" /> Meta: {data.goalValue} repetições</>
+                  ) : (
+                    <><Clock className="w-4 h-4" /> Meta: {data.goalValue} segundos</>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Hero Image */}
-        {data.imageUrl ? (
-          <div className="relative aspect-[21/9] rounded-2xl overflow-hidden shadow-lg mb-6">
-            <Image
-              src={data.imageUrl}
-              alt={data.title}
-              fill
-              sizes="(max-width: 768px) 100vw, 672px"
-              className="object-cover"
-              priority
-              quality={85}
-            />
-          </div>
-        ) : data.type === 'challenge' && data.icon ? (
-          <div className="aspect-[21/9] rounded-2xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center mb-6 shadow-lg">
-            <span className="text-7xl">{data.icon}</span>
-          </div>
-        ) : (
-          <div className="aspect-[21/9] rounded-2xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center mb-6 shadow-lg">
-            {data.type === 'challenge' ? (
-              <Target className="w-20 h-20 text-white" />
-            ) : (
-              <Gift className="w-20 h-20 text-white" />
-            )}
-          </div>
-        )}
-
-        {/* CTA Button - Topo */}
-        <div className="mb-6">
+        {/* CTA Principal - Único e destacado */}
+        <div className="mb-4">
           <Link href={ctaUrl}>
             <Button
               size="lg"
@@ -443,95 +505,84 @@ export default async function LandingPageDireto({ params }: PageProps) {
               {ctaText.primary}
             </Button>
           </Link>
+          <p className="text-center text-sm text-gray-500 mt-2">
+            {ctaText.secondary}
+          </p>
         </div>
 
-        {/* Contador de participantes (social proof) */}
-        <ParticipantCounter count={participantsCount || 0} type={data.type} />
+        {/* Social Proof + Urgência - Compacto */}
+        <div className="flex flex-wrap items-center justify-center gap-3 text-sm text-gray-600 mb-6">
+          {participantsCount && participantsCount > 0 && (
+            <span className="flex items-center gap-1.5 bg-gray-100 px-3 py-1.5 rounded-full">
+              <Users className="w-4 h-4" />
+              {participantsCount} {participantsCount === 1 ? 'participou' : 'participaram'}
+            </span>
+          )}
+          {data.type === 'challenge' && data.endsAt && (
+            <span className="flex items-center gap-1.5 bg-orange-100 text-orange-700 px-3 py-1.5 rounded-full">
+              <Clock className="w-4 h-4" />
+              Termina em breve
+            </span>
+          )}
+        </div>
 
-        {/* Countdown timer para desafios com data limite */}
+        {/* Countdown timer se tiver data limite */}
         {data.type === 'challenge' && data.endsAt && (
           <div className="mb-6">
             <CountdownTimer endsAt={data.endsAt} />
           </div>
         )}
 
-        {/* Badges de urgência/escassez */}
-        <ScarcityIndicator
-          quantityAvailable={data.quantityAvailable}
-          participantsCount={data.participantsCount}
-          endsAt={data.endsAt}
-          type={data.type}
-          className="mb-4"
-        />
-
-        {/* Badge de tipo */}
-        <div className="mb-4">
-          <TypeBadge data={data} />
-        </div>
-
-        {/* Título */}
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-          {data.title}
-        </h1>
-
-        {/* Descrição */}
+        {/* Descrição do desafio */}
         {data.description && (
-          <div
-            className="prose prose-lg text-gray-600 mb-6"
-            dangerouslySetInnerHTML={{ __html: sanitizeHtml(data.description) }}
-          />
+          <FadeInSection delay={100}>
+            <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mb-6">
+              <h2 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                <span className="text-lg">📝</span> Sobre o Desafio
+              </h2>
+              <div
+                className="prose prose-sm text-gray-600"
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(data.description) }}
+              />
+            </div>
+          </FadeInSection>
         )}
 
-        {/* CTA Button - Meio */}
-        <div className="my-6">
-          <Link href={ctaUrl}>
-            <Button
-              size="lg"
-              variant="outline"
-              className="w-full py-4 text-base font-semibold border-2 border-primary-500 text-primary-600 hover:bg-primary-50"
-            >
-              {ctaText.primary}
-            </Button>
-          </Link>
-        </div>
-
-        {/* Informações específicas */}
-        <FadeInSection delay={100}>
-          {data.type === 'challenge' ? (
-            <ChallengeInfo data={data} />
-          ) : (
-            <RewardInfo data={data} />
-          )}
-        </FadeInSection>
-
-        {/* FOMO - Corações viram dinheiro (apenas para desafios) */}
+        {/* O que você ganha - FOMO */}
         {data.type === 'challenge' && (
           <FadeInSection delay={150}>
             <CashPrizeFomo />
           </FadeInSection>
         )}
 
-        {/* CTA Button */}
-        <FadeInSection delay={200}>
-          <div className="mt-8 space-y-4">
+        {/* Seção do Criador - No final */}
+        {settings.creator_name && (
+          <FadeInSection delay={200}>
+            <CreatorSection
+              name={settings.creator_name}
+              avatarUrl={settings.creator_avatar_url || undefined}
+            />
+          </FadeInSection>
+        )}
+
+        {/* CTA Final */}
+        <FadeInSection delay={250}>
+          <div className="mt-6">
             <Link href={ctaUrl}>
               <Button
                 size="lg"
                 variant="cta"
-                className="cta-button w-full py-6 text-lg font-semibold shadow-lg animate-pulse-ring"
+                className="cta-button w-full py-5 text-lg font-semibold shadow-lg"
               >
                 {ctaText.primary}
               </Button>
             </Link>
-            <p className="text-center text-sm text-gray-500">
-              {ctaText.secondary}
-            </p>
           </div>
         </FadeInSection>
 
         {/* Badge de segurança */}
         <FadeInSection delay={300}>
-          <div className="mt-8 pt-6 border-t border-gray-100">
+          <div className="mt-6 pt-6 border-t border-gray-100">
             <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
