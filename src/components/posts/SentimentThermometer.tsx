@@ -32,11 +32,20 @@ function getEmoji(score: number): string {
 
 // Cor de fundo baseada na média
 function getAverageBackground(score: number): string {
-  if (score >= 1.5) return 'bg-pink-50';
-  if (score >= 0.5) return 'bg-green-50';
-  if (score >= -0.5) return 'bg-gray-50';
-  if (score >= -1.5) return 'bg-orange-50';
-  return 'bg-red-50';
+  if (score >= 1.5) return 'bg-pink-100';
+  if (score >= 0.5) return 'bg-green-100';
+  if (score >= -0.5) return 'bg-gray-100';
+  if (score >= -1.5) return 'bg-orange-100';
+  return 'bg-red-100';
+}
+
+// Cor da borda baseada na média
+function getAverageBorder(score: number): string {
+  if (score >= 1.5) return 'border-pink-300';
+  if (score >= 0.5) return 'border-green-300';
+  if (score >= -0.5) return 'border-gray-300';
+  if (score >= -1.5) return 'border-orange-300';
+  return 'border-red-300';
 }
 
 export function SentimentThermometer({
@@ -105,18 +114,19 @@ export function SentimentThermometer({
   if (compact) {
     return (
       <div className="flex items-center gap-2">
-        {/* Resultado atual */}
+        {/* Resultado atual - Emoji em destaque */}
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className={cn(
-            'flex items-center gap-1.5 px-2 py-1 rounded-full transition-all',
+            'flex items-center gap-2 px-3 py-1.5 rounded-full transition-all shadow-sm border',
             getAverageBackground(currentAverage),
-            'hover:scale-105'
+            getAverageBorder(currentAverage),
+            'hover:scale-110 hover:shadow-md'
           )}
         >
-          <span className="text-base">{getEmoji(currentAverage)}</span>
+          <span className="text-2xl drop-shadow-sm">{getEmoji(currentAverage)}</span>
           {currentTotal > 0 && (
-            <span className="text-xs text-gray-600 font-medium">
+            <span className="text-sm text-gray-700 font-semibold">
               {currentTotal}
             </span>
           )}
@@ -189,18 +199,21 @@ export function SentimentThermometer({
         })}
       </div>
 
-      {/* Resultado da comunidade */}
+      {/* Resultado da comunidade - Destaque */}
       <div className={cn(
-        'flex items-center justify-center gap-2 px-3 py-2 rounded-full mx-auto',
-        getAverageBackground(currentAverage)
+        'flex items-center justify-center gap-3 px-4 py-2.5 rounded-full mx-auto shadow-md border',
+        getAverageBackground(currentAverage),
+        getAverageBorder(currentAverage)
       )}>
-        <span className="text-lg">{getEmoji(currentAverage)}</span>
-        <span className="text-sm text-gray-700">
-          {currentAverage >= 0 ? '+' : ''}{currentAverage.toFixed(1)}
-        </span>
-        <span className="text-xs text-gray-500">
-          · {currentTotal} {currentTotal === 1 ? 'voto' : 'votos'}
-        </span>
+        <span className="text-3xl drop-shadow-sm">{getEmoji(currentAverage)}</span>
+        <div className="flex flex-col items-start">
+          <span className="text-base font-bold text-gray-800">
+            {currentAverage >= 0 ? '+' : ''}{currentAverage.toFixed(1)}
+          </span>
+          <span className="text-xs text-gray-500">
+            {currentTotal} {currentTotal === 1 ? 'voto' : 'votos'}
+          </span>
+        </div>
       </div>
 
       {/* Feedback do voto do usuário */}
