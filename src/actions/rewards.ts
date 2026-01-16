@@ -28,13 +28,24 @@ export interface DeliveryAddress {
 }
 
 /**
+ * Interface para dados do PIX (prêmios em dinheiro)
+ */
+export interface PixData {
+  recipient_name: string;  // Nome completo do titular da conta
+  pix_key_type: 'cpf' | 'email' | 'phone' | 'random';  // Tipo da chave PIX
+  pix_key: string;  // Chave PIX
+}
+
+/**
  * Resgatar uma recompensa
  * @param rewardId ID da recompensa
  * @param deliveryAddress Endereço de entrega (obrigatório para prêmios físicos)
+ * @param pixData Dados do PIX (obrigatório para prêmios em dinheiro)
  */
 export async function claimReward(
   rewardId: string,
-  deliveryAddress?: DeliveryAddress
+  deliveryAddress?: DeliveryAddress,
+  pixData?: PixData
 ): Promise<ActionResponse<RewardClaim>> {
   try {
     const supabase = await createClient();
@@ -61,6 +72,28 @@ export async function claimReward(
       return { error: 'Endereço de entrega é obrigatório para prêmios físicos' };
     }
 
+    // Verificar se é prêmio em dinheiro e exige dados do PIX
+    if (reward.type === 'money' && !pixData) {
+      return { error: 'Dados do PIX são obrigatórios para prêmios em dinheiro' };
+    }
+
+    // Validar dados do PIX se fornecido
+    if (pixData) {
+      if (!pixData.recipient_name || !pixData.pix_key_type || !pixData.pix_key) {
+        return { error: 'Preencha todos os campos obrigatórios do PIX' };
+      }
+      // Validação básica de chave PIX
+      if (pixData.pix_key_type === 'cpf' && !/^\d{11}$/.test(pixData.pix_key.replace(/\D/g, ''))) {
+        return { error: 'CPF inválido. Digite apenas os 11 números.' };
+      }
+      if (pixData.pix_key_type === 'phone' && !/^\d{10,11}$/.test(pixData.pix_key.replace(/\D/g, ''))) {
+        return { error: 'Telefone inválido. Digite DDD + número.' };
+      }
+      if (pixData.pix_key_type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(pixData.pix_key)) {
+        return { error: 'E-mail inválido.' };
+      }
+    }
+
     // Validar endereço se fornecido
     if (deliveryAddress) {
       if (!deliveryAddress.cep || !deliveryAddress.street || !deliveryAddress.number ||
@@ -85,7 +118,7 @@ export async function claimReward(
       return { error: 'Saldo insuficiente' };
     }
 
-    // Criar resgate com endereço de entrega
+    // Criar resgate com endereço de entrega ou dados PIX
     const { data: claim, error: claimError } = await supabase
       .from('reward_claims')
       .insert({
@@ -93,7 +126,7 @@ export async function claimReward(
         reward_id: rewardId,
         status: 'pending',
         coins_spent: reward.coins_required,
-        delivery_address: deliveryAddress || null,
+        delivery_address: deliveryAddress || pixData || null,
       })
       .select()
       .single();

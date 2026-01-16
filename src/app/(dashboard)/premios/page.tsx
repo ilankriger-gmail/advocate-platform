@@ -192,10 +192,10 @@ export default async function PremiosPage() {
                     {isMoney && (
                       <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
                         <p className="text-sm font-medium text-green-800">
-                          🏆 Premiação de Desafios
+                          💰 Prêmio em Dinheiro via PIX
                         </p>
                         <p className="text-xs text-green-700 mt-1">
-                          Este prêmio é concedido aos vencedores de desafios especiais. Participe dos desafios para ter a chance de ganhar!
+                          O valor será depositado na sua conta via PIX em até 48 horas após a aprovação.
                         </p>
                       </div>
                     )}
@@ -232,29 +232,27 @@ export default async function PremiosPage() {
                       </div>
                     )}
 
-                    {/* Botão de Resgatar - apenas para prêmios que custam corações */}
-                    {!isMoney && (
-                      <div className="mt-4 flex items-center justify-between">
-                        <span className="text-indigo-600 font-bold text-lg">
-                          {reward.coins_required} ❤️
-                        </span>
-                        <RewardClaimButton
-                          reward={{
-                            id: reward.id,
-                            name: reward.name,
-                            type: reward.type || 'digital',
-                            coins_required: reward.coins_required,
-                            available_options: reward.available_options as {
-                              colors?: string[];
-                              sizes?: string[];
-                            } | null,
-                          }}
-                          canClaim={canClaim && hasStock}
-                          userName={userData?.full_name || ''}
-                          userBalance={balance}
-                        />
-                      </div>
-                    )}
+                    {/* Botão de Resgatar */}
+                    <div className="mt-4 flex items-center justify-between">
+                      <span className={`font-bold text-lg ${isMoney ? 'text-green-600' : 'text-indigo-600'}`}>
+                        {reward.coins_required} ❤️
+                      </span>
+                      <RewardClaimButton
+                        reward={{
+                          id: reward.id,
+                          name: reward.name,
+                          type: reward.type || 'digital',
+                          coins_required: reward.coins_required,
+                          available_options: reward.available_options as {
+                            colors?: string[];
+                            sizes?: string[];
+                          } | null,
+                        }}
+                        canClaim={canClaim && hasStock}
+                        userName={userData?.full_name || ''}
+                        userBalance={balance}
+                      />
+                    </div>
 
                     {/* Estoque baixo */}
                     {reward.quantity_available !== null && reward.quantity_available <= 10 && reward.quantity_available > 0 && (

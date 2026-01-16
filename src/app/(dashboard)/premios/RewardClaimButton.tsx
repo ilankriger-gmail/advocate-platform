@@ -3,14 +3,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Input } from '@/components/ui';
-import { claimReward, type DeliveryAddress } from '@/actions/rewards';
-import { X, MapPin, Loader2, CheckCircle, Search, AlertCircle } from 'lucide-react';
+import { claimReward, type DeliveryAddress, type PixData } from '@/actions/rewards';
+import { X, MapPin, Loader2, CheckCircle, Search, AlertCircle, Banknote, Clock } from 'lucide-react';
 
 interface RewardClaimButtonProps {
   reward: {
     id: string;
     name: string;
-    type: 'digital' | 'physical';
+    type: 'digital' | 'physical' | 'money';
     coins_required: number;
     available_options?: {
       colors?: string[];
@@ -48,7 +48,15 @@ export function RewardClaimButton({ reward, canClaim, userName = '', userBalance
   const [cepFound, setCepFound] = useState(false);
   const [cepError, setCepError] = useState(false);
 
+  // Estado para dados do PIX
+  const [pixData, setPixData] = useState<PixData>({
+    recipient_name: userName,
+    pix_key_type: 'cpf',
+    pix_key: '',
+  });
+
   const isPhysical = reward.type === 'physical';
+  const isMoney = reward.type === 'money';
   const hasColors = reward.available_options?.colors && reward.available_options.colors.length > 0;
   const hasSizes = reward.available_options?.sizes && reward.available_options.sizes.length > 0;
 
@@ -110,7 +118,7 @@ export function RewardClaimButton({ reward, canClaim, userName = '', userBalance
 
   // Lidar com clique no botão de resgatar
   const handleClaimClick = () => {
-    if (isPhysical) {
+    if (isPhysical || isMoney) {
       setIsModalOpen(true);
     } else {
       handleClaim();
@@ -125,7 +133,8 @@ export function RewardClaimButton({ reward, canClaim, userName = '', userBalance
     try {
       const result = await claimReward(
         reward.id,
-        isPhysical ? address : undefined
+        isPhysical ? address : undefined,
+        isMoney ? pixData : undefined
       );
 
       if (result.error) {
@@ -159,6 +168,65 @@ export function RewardClaimButton({ reward, canClaim, userName = '', userBalance
     // Cor obrigatória se houver opções
     (!hasColors || address.color?.trim() !== '');
 
+  // Validar formulário de PIX
+  const isPixValid =
+    pixData.recipient_name.trim() !== '' &&
+    pixData.pix_key_type !== undefined &&
+    pixData.pix_key.trim() !== '';
+
+  // Formatar CPF
+  const formatCpf = (value: string) => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 3) return numbers;
+    if (numbers.length <= 6) return `${numbers.slice(0, 3)}.${numbers.slice(3)}`;
+    if (numbers.length <= 9) return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6)}`;
+    return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6, 9)}-${numbers.slice(9, 11)}`;
+  };
+
+  // Formatar telefone
+  const formatPhone = (value: string) => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 2) return numbers;
+    if (numbers.length <= 7) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
+  };
+
+  // Lidar com mudança da chave PIX
+  const handlePixKeyChange = (value: string) => {
+    let formattedValue = value;
+    if (pixData.pix_key_type === 'cpf') {
+      formattedValue = formatCpf(value);
+    } else if (pixData.pix_key_type === 'phone') {
+      formattedValue = formatPhone(value);
+    }
+    setPixData({ ...pixData, pix_key: formattedValue });
+  };
+
+  // Limpar chave PIX ao mudar o tipo
+  const handlePixKeyTypeChange = (type: PixData['pix_key_type']) => {
+    setPixData({ ...pixData, pix_key_type: type, pix_key: '' });
+  };
+
+  // Placeholder baseado no tipo de chave
+  const getPixKeyPlaceholder = () => {
+    switch (pixData.pix_key_type) {
+      case 'cpf': return '000.000.000-00';
+      case 'email': return 'seu@email.com';
+      case 'phone': return '(00) 00000-0000';
+      case 'random': return 'Cole sua chave aleatória';
+      default: return '';
+    }
+  };
+
+  // Max length baseado no tipo de chave
+  const getPixKeyMaxLength = () => {
+    switch (pixData.pix_key_type) {
+      case 'cpf': return 14;
+      case 'phone': return 15;
+      default: return 100;
+    }
+  };
+
   return (
     <>
       <button
@@ -173,7 +241,7 @@ export function RewardClaimButton({ reward, canClaim, userName = '', userBalance
         {isLoading ? '...' : canClaim ? '✓ Resgatar' : 'Resgatar'}
       </button>
 
-      {/* Modal de Endereço */}
+      {/* Modal de Endereço ou PIX */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Backdrop */}
@@ -185,10 +253,16 @@ export function RewardClaimButton({ reward, canClaim, userName = '', userBalance
           {/* Modal */}
           <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
             {/* Header */}
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between rounded-t-xl">
+            <div className={`sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between rounded-t-xl ${isMoney ? 'bg-gradient-to-r from-green-50 to-emerald-50' : ''}`}>
               <div className="flex items-center gap-2">
-                <MapPin className="w-5 h-5 text-amber-500" />
-                <h2 className="text-lg font-semibold">Endereço de Entrega</h2>
+                {isMoney ? (
+                  <Banknote className="w-5 h-5 text-green-600" />
+                ) : (
+                  <MapPin className="w-5 h-5 text-amber-500" />
+                )}
+                <h2 className="text-lg font-semibold">
+                  {isMoney ? 'Dados para PIX' : 'Endereço de Entrega'}
+                </h2>
               </div>
               <button
                 onClick={() => !isLoading && setIsModalOpen(false)}
@@ -207,20 +281,37 @@ export function RewardClaimButton({ reward, canClaim, userName = '', userBalance
                   Resgate Confirmado!
                 </h3>
                 <p className="text-gray-600">
-                  Seu prêmio será enviado para o endereço informado.
+                  {isMoney
+                    ? 'Seu PIX será enviado em até 48 horas para a chave informada.'
+                    : 'Seu prêmio será enviado para o endereço informado.'}
                 </p>
               </div>
             ) : (
               <div className="p-4 space-y-4">
                 {/* Info do prêmio */}
-                <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                  <p className="text-sm font-medium text-amber-800">
-                    Prêmio: {reward.name}
+                <div className={`p-3 rounded-lg ${isMoney ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200'}`}>
+                  <p className={`text-sm font-medium ${isMoney ? 'text-green-800' : 'text-amber-800'}`}>
+                    {isMoney ? '💰' : '🎁'} Prêmio: {reward.name}
                   </p>
-                  <p className="text-xs text-amber-700 mt-1">
+                  <p className={`text-xs mt-1 ${isMoney ? 'text-green-700' : 'text-amber-700'}`}>
                     Parabéns por chegar até aqui! Sua dedicação está sendo recompensada.
                   </p>
                 </div>
+
+                {/* Aviso de prazo para PIX */}
+                {isMoney && (
+                  <div className="p-3 bg-amber-50 border border-amber-300 rounded-lg flex items-start gap-3">
+                    <Clock className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-amber-800">
+                        Prazo de até 48 horas
+                      </p>
+                      <p className="text-xs text-amber-700 mt-1">
+                        O depósito via PIX pode levar até 48 horas úteis para ser processado após a aprovação do resgate.
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 {/* Resumo de corações */}
                 <div className="p-4 bg-gradient-to-r from-pink-50 to-red-50 border border-pink-200 rounded-lg">
@@ -247,8 +338,87 @@ export function RewardClaimButton({ reward, canClaim, userName = '', userBalance
                   </div>
                 </div>
 
-                {/* Seleção de Cor e Tamanho */}
-                {(hasColors || hasSizes) && (
+                {/* Formulário de PIX para prêmios em dinheiro */}
+                {isMoney && (
+                  <div className="space-y-4">
+                    {/* Nome do titular */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Nome completo do titular da conta *
+                      </label>
+                      <Input
+                        value={pixData.recipient_name}
+                        onChange={(e) =>
+                          setPixData({ ...pixData, recipient_name: e.target.value })
+                        }
+                        placeholder="Nome como está no banco"
+                        disabled={isLoading}
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Deve ser o mesmo nome registrado na conta PIX
+                      </p>
+                    </div>
+
+                    {/* Tipo de chave PIX */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Tipo de chave PIX *
+                      </label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {[
+                          { value: 'cpf', label: 'CPF' },
+                          { value: 'email', label: 'E-mail' },
+                          { value: 'phone', label: 'Telefone' },
+                          { value: 'random', label: 'Chave aleatória' },
+                        ].map((option) => (
+                          <button
+                            key={option.value}
+                            type="button"
+                            onClick={() => handlePixKeyTypeChange(option.value as PixData['pix_key_type'])}
+                            disabled={isLoading}
+                            className={`px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                              pixData.pix_key_type === option.value
+                                ? 'bg-green-100 border-green-500 text-green-700'
+                                : 'bg-white border-gray-300 text-gray-700 hover:border-green-300'
+                            }`}
+                          >
+                            {option.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Chave PIX */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Chave PIX *
+                      </label>
+                      <Input
+                        value={pixData.pix_key}
+                        onChange={(e) => handlePixKeyChange(e.target.value)}
+                        placeholder={getPixKeyPlaceholder()}
+                        maxLength={getPixKeyMaxLength()}
+                        disabled={isLoading}
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        {pixData.pix_key_type === 'cpf' && 'Digite apenas os números do CPF'}
+                        {pixData.pix_key_type === 'email' && 'Digite o e-mail cadastrado no PIX'}
+                        {pixData.pix_key_type === 'phone' && 'Digite DDD + número (ex: 11999999999)'}
+                        {pixData.pix_key_type === 'random' && 'Cole a chave aleatória gerada pelo seu banco'}
+                      </p>
+                    </div>
+
+                    {/* Aviso importante */}
+                    <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                      <p className="text-xs text-gray-600">
+                        <strong>Importante:</strong> Confira os dados antes de confirmar. O PIX será enviado para a chave informada e não poderá ser alterado após a confirmação.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Seleção de Cor e Tamanho (apenas para físicos) */}
+                {isPhysical && (hasColors || hasSizes) && (
                   <div className="space-y-3">
                     <p className="text-sm font-medium text-gray-700">Escolha suas opções:</p>
                     <div className="grid grid-cols-2 gap-3">
@@ -295,7 +465,8 @@ export function RewardClaimButton({ reward, canClaim, userName = '', userBalance
                   </div>
                 )}
 
-                {/* Formulário de endereço */}
+                {/* Formulário de endereço (apenas para físicos) */}
+                {isPhysical && (
                 <div className="space-y-4">
                   {/* Nome do destinatário */}
                   <div>
@@ -447,6 +618,7 @@ export function RewardClaimButton({ reward, canClaim, userName = '', userBalance
                     </div>
                   )}
                 </div>
+                )}
 
                 {/* Erro */}
                 {error && (
@@ -468,7 +640,7 @@ export function RewardClaimButton({ reward, canClaim, userName = '', userBalance
                   </Button>
                   <Button
                     onClick={handleClaim}
-                    disabled={isLoading || !isAddressValid}
+                    disabled={isLoading || (isMoney ? !isPixValid : !isAddressValid)}
                     className="flex-1 bg-green-500 hover:bg-green-600"
                   >
                     {isLoading ? (
@@ -477,7 +649,9 @@ export function RewardClaimButton({ reward, canClaim, userName = '', userBalance
                         Processando...
                       </>
                     ) : (
-                      `Confirmar Resgate (${reward.coins_required} ❤️)`
+                      isMoney
+                        ? `Solicitar PIX (${reward.coins_required} ❤️)`
+                        : `Confirmar Resgate (${reward.coins_required} ❤️)`
                     )}
                   </Button>
                 </div>
