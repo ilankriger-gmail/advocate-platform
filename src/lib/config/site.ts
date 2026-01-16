@@ -18,12 +18,19 @@ export type SiteSettingKey =
   | 'meta_description'
   | 'email_from_name'
   | 'footer_text'
+  // APIs e Integrações
   | 'openai_api_key'
+  | 'gemini_api_key'
   | 'resend_api_key'
+  | 'resend_from_email'
   | 'meta_pixel_id'
   | 'meta_access_token'
   | 'whatsapp_phone_number_id'
   | 'whatsapp_access_token'
+  | 'whatsapp_app_secret'
+  | 'whatsapp_webhook_verify_token'
+  | 'youtube_api_key'
+  | 'youtube_channel_handle'
   | 'email_approval_subject'
   | 'email_approval_greeting'
   | 'email_approval_message'
@@ -115,13 +122,19 @@ const DEFAULT_VALUES: Record<SiteSettingKey, string> = {
   meta_description: 'Comunidade oficial do O Moço do Te Amo | NextlevelDJ',
   email_from_name: 'Arena Te Amo',
   footer_text: 'O Moço do Te Amo - Arena Te Amo',
-  // Chavês de API (sem valor padrão - devem ser configuradas no banco)
+  // Chaves de API (sem valor padrão - devem ser configuradas no banco)
   openai_api_key: '',
+  gemini_api_key: '',
   resend_api_key: '',
+  resend_from_email: '',
   meta_pixel_id: '',
   meta_access_token: '',
   whatsapp_phone_number_id: '',
   whatsapp_access_token: '',
+  whatsapp_app_secret: '',
+  whatsapp_webhook_verify_token: '',
+  youtube_api_key: '',
+  youtube_channel_handle: '',
   // Email de aprovação
   email_approval_subject: 'Você foi aprovado para o {{site_name}}!',
   email_approval_greeting: 'Olá {{name}}!',
