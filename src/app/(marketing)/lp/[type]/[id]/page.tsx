@@ -210,32 +210,6 @@ function ParticipantCounter({ count, type }: { count: number; type: 'challenge' 
   );
 }
 
-// Componente do Criador - Mostra quem é o criador da comunidade
-function CreatorSection({ name, avatarUrl }: { name: string; avatarUrl?: string }) {
-  return (
-    <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-6 my-6">
-      <div className="flex flex-col items-center text-center">
-        {avatarUrl ? (
-          <img
-            src={avatarUrl}
-            alt={name}
-            className="w-20 h-20 rounded-full object-cover border-3 border-purple-300 shadow-lg mb-3"
-          />
-        ) : (
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center text-white text-3xl font-bold mb-3">
-            {name.charAt(0)}
-          </div>
-        )}
-        <p className="text-sm text-purple-700 font-medium">Comunidade oficial de</p>
-        <h3 className="font-bold text-gray-900 text-xl mt-1">{name}</h3>
-        <p className="text-sm text-gray-600 mt-2">
-          Participe dos desafios, ganhe corações e troque por prêmios reais!
-        </p>
-      </div>
-    </div>
-  );
-}
-
 // Componente FOMO - Mostra que corações viram dinheiro
 function CashPrizeFomo() {
   return (
@@ -399,14 +373,6 @@ export default async function LandingPage({ params, searchParams }: PageProps) {
 
       {/* Conteúdo principal */}
       <main className="max-w-2xl mx-auto px-4 py-8">
-        {/* Seção do Criador - Comunidade oficial (só mostra se tiver nome configurado) */}
-        {settings.creator_name && (
-          <CreatorSection
-            name={settings.creator_name}
-            avatarUrl={settings.creator_avatar_url || undefined}
-          />
-        )}
-
         {/* Headline impactante acima da dobra */}
         <div className="text-center mb-8">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
