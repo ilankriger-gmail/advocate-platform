@@ -58,7 +58,7 @@ export function PendingParticipationsList({ participations, onClose }: PendingPa
   const handleReject = async (participationId: string) => {
     setLoadingId(participationId);
     try {
-      const result = await rejectParticipation(participationId, 'Participacao rejeitada pelo admin');
+      const result = await rejectParticipation(participationId, 'Participação rejeitada pelo admin');
       if (result.success) {
         // Remove da lista local
         setLocalParticipations(prev => prev.filter(p => p.id !== participationId));
@@ -99,7 +99,7 @@ export function PendingParticipationsList({ participations, onClose }: PendingPa
             </div>
             <div>
               <p className="font-semibold text-green-800">Tudo em dia!</p>
-              <p className="text-sm text-green-600">Nenhuma participacao pendente no momento</p>
+              <p className="text-sm text-green-600">Nenhuma participação pendente no momento</p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-green-100 rounded-lg transition-colors">
@@ -119,8 +119,8 @@ export function PendingParticipationsList({ participations, onClose }: PendingPa
             <span className="text-xl">⏳</span>
           </div>
           <div>
-            <h2 className="font-bold text-lg">{localParticipations.length} Participacoes Pendentes</h2>
-            <p className="text-sm text-white/80">Revise e aprove as participacoes abaixo</p>
+            <h2 className="font-bold text-lg">{localParticipations.length} Participações Pendentes</h2>
+            <p className="text-sm text-white/80">Revise e aprove as participações abaixo</p>
           </div>
         </div>
         <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg transition-colors">

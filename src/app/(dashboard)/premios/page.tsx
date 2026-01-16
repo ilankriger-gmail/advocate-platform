@@ -178,20 +178,24 @@ export default async function PremiosPage() {
                   </div>
 
                   <div className="p-4 flex flex-col flex-grow">
+                    {/* Área que cresce - apenas título e descrição */}
                     <div className="flex-grow">
                       <h3 className="font-semibold text-gray-900">{reward.name}</h3>
                       <p className="text-sm text-gray-500 mt-1 line-clamp-2">{reward.description}</p>
+                    </div>
 
+                    {/* Área de info condicional - altura fixa para consistência */}
+                    <div className="min-h-[72px] mt-3">
                       {/* Informação sobre entrega para físicos */}
                       {isPhysical && (
-                        <p className="text-xs text-amber-600 mt-2">
+                        <p className="text-xs text-amber-600">
                           * Você precisará informar seu endereço para receber em casa
                         </p>
                       )}
 
                       {/* Prêmio em Dinheiro - Info especial */}
                       {isMoney && (
-                        <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
                           <p className="text-sm font-medium text-green-800">
                             💰 Prêmio em Dinheiro via PIX
                           </p>
