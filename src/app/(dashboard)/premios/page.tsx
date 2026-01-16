@@ -200,37 +200,35 @@ export default async function PremiosPage() {
                       </div>
                     )}
 
-                    {/* Barra de Progresso - apenas para prêmios que custam corações */}
-                    {!isMoney && (
-                      <div className="mt-4">
-                        <div className="flex justify-between text-sm mb-1">
-                          <span className="text-gray-600">Seu progresso</span>
-                          <span className="font-medium text-gray-900">
-                            {balance} / {reward.coins_required} ❤️
-                          </span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                          <div
-                            className={`h-full rounded-full transition-all duration-500 ${
-                              canClaim
-                                ? 'bg-green-500'
-                                : 'bg-gradient-to-r from-pink-500 to-red-500'
-                            }`}
-                            style={{ width: `${progress}%` }}
-                          />
-                        </div>
-                        {!canClaim && (
-                          <p className="text-xs text-gray-500 mt-1">
-                            Faltam {reward.coins_required - balance} corações
-                          </p>
-                        )}
-                        {canClaim && hasStock && (
-                          <p className="text-xs text-green-600 mt-1 font-medium">
-                            Você pode resgatar este prêmio!
-                          </p>
-                        )}
+                    {/* Barra de Progresso */}
+                    <div className="mt-4">
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="text-gray-600">Seu progresso</span>
+                        <span className="font-medium text-gray-900">
+                          {balance} / {reward.coins_required} ❤️
+                        </span>
                       </div>
-                    )}
+                      <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all duration-500 ${
+                            canClaim
+                              ? 'bg-green-500'
+                              : 'bg-gradient-to-r from-pink-500 to-red-500'
+                          }`}
+                          style={{ width: `${progress}%` }}
+                        />
+                      </div>
+                      {!canClaim && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Faltam {reward.coins_required - balance} corações
+                        </p>
+                      )}
+                      {canClaim && hasStock && (
+                        <p className="text-xs text-green-600 mt-1 font-medium">
+                          Você pode resgatar este prêmio!
+                        </p>
+                      )}
+                    </div>
 
                     {/* Botão de Resgatar */}
                     <div className="mt-4 flex items-center justify-between">
