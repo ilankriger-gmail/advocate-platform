@@ -194,6 +194,28 @@ export default async function DesafiosPage() {
         </div>
       </Card>
 
+      {/* Minhas Participações - Logo após o saldo */}
+      {userParticipationsWithChallenge.length > 0 && (
+        <section className="space-y-4 sm:space-y-6">
+          {/* Header da Seção - Centralizado */}
+          <div className="flex flex-col items-center text-center gap-2">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-amber-500 to-yellow-500 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/25">
+              <Trophy className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
+            </div>
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Minhas Participações</h2>
+              <p className="text-gray-500 text-xs sm:text-sm">Acompanhe o status dos seus desafios enviados</p>
+            </div>
+          </div>
+
+          <div className="max-w-2xl mx-auto space-y-3 sm:space-y-4">
+            {userParticipationsWithChallenge.map((participation) => (
+              <MyParticipationCard key={participation.id} participation={participation} />
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* ============================================= */}
       {/* DESAFIOS COM PRÊMIO PIX - DESTAQUE MÁXIMO */}
       {/* ============================================= */}
@@ -308,30 +330,8 @@ export default async function DesafiosPage() {
         </section>
       )}
 
-      {/* Minhas Participações - No topo, após saldo */}
-      {userParticipationsWithChallenge.length > 0 && (
-        <section className="space-y-4 sm:space-y-6">
-          {/* Header da Seção - Centralizado */}
-          <div className="flex flex-col items-center text-center gap-2">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-amber-500 to-yellow-500 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/25">
-              <Trophy className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
-            </div>
-            <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Minhas Participações</h2>
-              <p className="text-gray-500 text-xs sm:text-sm">Acompanhe o status dos seus desafios enviados</p>
-            </div>
-          </div>
-
-          <div className="max-w-2xl mx-auto space-y-3 sm:space-y-4">
-            {userParticipationsWithChallenge.map((participation) => (
-              <MyParticipationCard key={participation.id} participation={participation} />
-            ))}
-          </div>
-        </section>
-      )}
-
       {/* =============================================== */}
-      {/* CATEGORIAS COM DESAFIOS - Aparecem primeiro */}
+      {/* CATEGORIAS COM DESAFIOS */}
       {/* =============================================== */}
 
       {/* Desafios de Engajamento (sem PIX) - Só se tiver desafios */}
