@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { register } from '@/actions/auth';
 import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
+import PasswordStrengthIndicator from './PasswordStrengthIndicator';
 
 /**
  * Icone do Google em SVG
@@ -56,6 +57,7 @@ export default function RegisterForm({ prefilledEmail }: RegisterFormProps) {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [email, setEmail] = useState(emailFromUrl);
+  const [password, setPassword] = useState('');
 
   // Salvar origem em cookie para uso no callback de autenticação
   useEffect(() => {
@@ -222,11 +224,19 @@ export default function RegisterForm({ prefilledEmail }: RegisterFormProps) {
             type="password"
             autoComplete="new-password"
             required
-            minLength={6}
+            minLength={8}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            placeholder="Mínimo 6 caracteres"
+            placeholder="Crie uma senha segura"
           />
         </div>
+        {/* Indicador de força e requisitos da senha */}
+        {password && (
+          <div className="mt-2">
+            <PasswordStrengthIndicator password={password} />
+          </div>
+        )}
       </div>
 
       <div>
@@ -240,7 +250,7 @@ export default function RegisterForm({ prefilledEmail }: RegisterFormProps) {
             type="password"
             autoComplete="new-password"
             required
-            minLength={6}
+            minLength={8}
             className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             placeholder="Repita a senha"
           />
