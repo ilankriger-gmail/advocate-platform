@@ -324,14 +324,6 @@ export function RewardClaimButton({ reward, canClaim, userName = '', userBalance
                     <span className="font-bold text-red-600">-{reward.coins_required} ❤️</span>
                   </div>
 
-                  {/* Barra de progresso */}
-                  <div className="h-3 bg-gray-200 rounded-full overflow-hidden mb-3">
-                    <div
-                      className="h-full bg-gradient-to-r from-pink-500 to-red-500 transition-all"
-                      style={{ width: `${userBalance > 0 ? Math.min((reward.coins_required / userBalance) * 100, 100) : 0}%` }}
-                    />
-                  </div>
-
                   <div className="flex justify-between items-center pt-2 border-t border-pink-200">
                     <span className="text-sm font-medium text-gray-700">Saldo após resgate</span>
                     <span className="font-bold text-green-600">{userBalance - reward.coins_required} ❤️</span>
@@ -500,19 +492,19 @@ export function RewardClaimButton({ reward, canClaim, userName = '', userBalance
                         placeholder="00000-000"
                         maxLength={9}
                         disabled={isLoading}
-                        className={`pr-10 ${cepError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''} ${cepFound ? 'border-green-500 focus:border-green-500 focus:ring-green-500' : ''}`}
+                        className={`pr-10 ${cepError ? 'border-amber-400 focus:border-amber-500 focus:ring-amber-500' : ''} ${cepFound ? 'border-green-500 focus:border-green-500 focus:ring-green-500' : ''}`}
                       />
                       <div className="absolute right-3 top-1/2 -translate-y-1/2">
                         {isFetchingCep && <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />}
                         {cepFound && !isFetchingCep && <CheckCircle className="w-5 h-5 text-green-500" />}
-                        {cepError && !isFetchingCep && <AlertCircle className="w-5 h-5 text-red-500" />}
+                        {cepError && !isFetchingCep && <AlertCircle className="w-5 h-5 text-amber-500" />}
                         {!isFetchingCep && !cepFound && !cepError && address.cep.length < 9 && (
                           <Search className="w-5 h-5 text-gray-300" />
                         )}
                       </div>
                     </div>
                     {cepError && (
-                      <p className="text-xs text-red-500 mt-1">CEP não encontrado. Verifique e tente novamente.</p>
+                      <p className="text-xs text-amber-600 mt-1">CEP não encontrado na base. Preencha o endereço manualmente abaixo.</p>
                     )}
                     {!cepFound && !cepError && !isFetchingCep && (
                       <p className="text-xs text-gray-500 mt-1">Digite o CEP para buscar o endereço automaticamente</p>
@@ -573,8 +565,8 @@ export function RewardClaimButton({ reward, canClaim, userName = '', userBalance
                     </div>
                   )}
 
-                  {/* Campos manuais caso CEP não encontre tudo */}
-                  {!cepFound && address.cep.replace(/\D/g, '').length === 8 && !isFetchingCep && !cepError && (
+                  {/* Campos manuais caso CEP não encontre ou dê erro */}
+                  {!cepFound && address.cep.replace(/\D/g, '').length === 8 && !isFetchingCep && (
                     <div className="space-y-3">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Rua *</label>
