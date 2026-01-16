@@ -158,7 +158,7 @@ export default function PostDetailPage() {
         {post.content && (
           <div className="px-4 pb-4">
             <div
-              className="prose prose-sm max-w-none text-surface-700 [&_a]:text-primary-600 [&_a]:underline [&_a:hover]:text-primary-800"
+              className="prose prose-sm max-w-none text-surface-700 whitespace-pre-line [&_a]:text-primary-600 [&_a]:underline [&_a:hover]:text-primary-800"
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content) }}
             />
           </div>

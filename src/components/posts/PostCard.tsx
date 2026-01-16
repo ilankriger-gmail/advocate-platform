@@ -320,7 +320,7 @@ export const PostCard = memo(function PostCard({
           return (
             <>
               <div
-                className="prose prose-sm max-w-none text-surface-700 [&_a]:text-primary-600 [&_a]:underline [&_a:hover]:text-primary-800"
+                className="prose prose-sm max-w-none text-surface-700 whitespace-pre-line [&_a]:text-primary-600 [&_a]:underline [&_a:hover]:text-primary-800"
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(displayContent) }}
               />
               {wasTruncated && !isContentExpanded && (
