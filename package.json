@@ -2,10 +2,18 @@
   "name": "advocate-platform",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "overrides": {
     "glob": "^11.0.0"
   },
   "scripts": {
+    "mobile": "cd apps/mobile && npx expo start",
+    "mobile:ios": "cd apps/mobile && npx expo run:ios",
+    "mobile:android": "cd apps/mobile && npx expo run:android",
+    "mobile:build": "cd apps/mobile && npx eas build",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
