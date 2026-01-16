@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, Badge } from '@/components/ui';
 import { RewardClaimButton } from './RewardClaimButton';
 import { RewardImageZoom } from './RewardImageZoom';
+import { RewardsFilter } from './RewardsFilter';
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings([
@@ -23,7 +24,15 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function PremiosPage() {
+interface PageProps {
+  searchParams: Promise<{ ordem?: string; tipo?: string }>;
+}
+
+export default async function PremiosPage({ searchParams }: PageProps) {
+  const params = await searchParams;
+  const sortOrder = (params.ordem === 'desc' ? 'desc' : 'asc') as 'asc' | 'desc';
+  const filterType = (params.tipo || 'all') as 'all' | 'physical' | 'digital' | 'money';
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -45,12 +54,21 @@ export default async function PremiosPage() {
     .eq('user_id', user.id)
     .single();
 
-  // Buscar prêmios disponíveis
-  const { data: rewards } = await supabase
+  // Buscar prêmios disponíveis com filtros
+  let rewardsQuery = supabase
     .from('rewards')
     .select('*')
-    .eq('is_active', true)
-    .order('coins_required', { ascending: true });
+    .eq('is_active', true);
+
+  // Filtrar por tipo
+  if (filterType !== 'all') {
+    rewardsQuery = rewardsQuery.eq('type', filterType);
+  }
+
+  // Ordenar por moedas
+  rewardsQuery = rewardsQuery.order('coins_required', { ascending: sortOrder === 'asc' });
+
+  const { data: rewards } = await rewardsQuery;
 
   // Buscar resgates do usuário
   const { data: claims } = await supabase
@@ -125,7 +143,15 @@ export default async function PremiosPage() {
 
       {/* Prêmios Disponíveis */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Prêmios Disponíveis</h2>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+          <h2 className="text-lg font-semibold text-gray-900">Prêmios Disponíveis</h2>
+        </div>
+
+        {/* Filtros */}
+        <div className="mb-4">
+          <RewardsFilter currentSort={sortOrder} currentType={filterType} />
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {rewards && rewards.length > 0 ? (
             rewards.map((reward) => {
