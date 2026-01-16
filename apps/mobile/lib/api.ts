@@ -73,6 +73,16 @@ export const challengesApi = {
     const query = searchParams.toString();
     return api(`/api/mobile/challenges${query ? `?${query}` : ''}`);
   },
+  participate: (data: {
+    challengeId: string;
+    resultValue?: number;
+    videoProofUrl: string;
+    instagramProofUrl?: string;
+  }) =>
+    api('/api/mobile/challenges/participate', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
 };
 
 export const rewardsApi = {
@@ -83,6 +93,10 @@ export const rewardsApi = {
     const query = searchParams.toString();
     return api(`/api/mobile/rewards${query ? `?${query}` : ''}`);
   },
+};
+
+export const eventsApi = {
+  getAll: () => api('/api/mobile/events'),
 };
 
 export const profileApi = {
