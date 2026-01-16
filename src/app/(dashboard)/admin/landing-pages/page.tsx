@@ -39,6 +39,7 @@ export default async function AdminLandingPagesPage() {
     leadsCount: leadsMap.get(c.id) || 0,
     lpType: 'desafio' as const,
     lpUrl: `/lp/desafio/${c.id}`,
+    lpUrlDireto: `/lp-direto/desafio/${c.id}`,
   }));
 
   const rewardItems = (rewards || []).map((r) => ({
@@ -46,6 +47,7 @@ export default async function AdminLandingPagesPage() {
     leadsCount: leadsMap.get(r.id) || 0,
     lpType: 'premio' as const,
     lpUrl: `/lp/premio/${r.id}`,
+    lpUrlDireto: `/lp-direto/premio/${r.id}`,
   }));
 
   // Calcular totais
@@ -142,6 +144,7 @@ export default async function AdminLandingPagesPage() {
                 isActive={item.is_active}
                 leadsCount={item.leadsCount}
                 lpUrl={item.lpUrl}
+                lpUrlDireto={item.lpUrlDireto}
                 lpType="desafio"
                 thumbnailUrl={item.thumbnail_url}
               />
@@ -177,6 +180,7 @@ export default async function AdminLandingPagesPage() {
                 isActive={item.is_active}
                 leadsCount={item.leadsCount}
                 lpUrl={item.lpUrl}
+                lpUrlDireto={item.lpUrlDireto}
                 lpType="premio"
                 imageUrl={item.image_url}
               />
@@ -203,6 +207,7 @@ interface LandingPageCardProps {
   isActive: boolean;
   leadsCount: number;
   lpUrl: string;
+  lpUrlDireto: string;
   lpType: 'desafio' | 'premio';
   thumbnailUrl?: string | null;
   imageUrl?: string | null;
@@ -216,6 +221,7 @@ function LandingPageCard({
   isActive,
   leadsCount,
   lpUrl,
+  lpUrlDireto,
   lpType,
   thumbnailUrl,
   imageUrl,
@@ -271,7 +277,7 @@ function LandingPageCard({
 
         {/* Actions */}
         <div className="flex items-center gap-2 flex-shrink-0">
-          <CopyUrlButton url={lpUrl} />
+          <CopyUrlButton url={lpUrl} urlDireto={lpUrlDireto} />
           <Link href={lpUrl} target="_blank">
             <Button size="sm" variant="outline" className="border-indigo-300 text-indigo-600 hover:bg-indigo-50">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
