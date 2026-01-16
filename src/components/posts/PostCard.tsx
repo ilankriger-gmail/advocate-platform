@@ -10,7 +10,7 @@ import { usePosts } from '@/hooks';
 import ImageCarousel from './ImageCarousel';
 import YouTubeEmbed from './YouTubeEmbed';
 import InstagramEmbed from './InstagramEmbed';
-import { VoteButtons } from './VoteButtons';
+import { SentimentThermometer } from './SentimentThermometer';
 import { CommentsSection } from './CommentsSection';
 import type { PostWithAuthor } from '@/types/post';
 
@@ -126,7 +126,8 @@ export const PostCard = memo(function PostCard({
   const [isContentExpanded, setIsContentExpanded] = useState(false);
 
   const statusConfig = POST_STATUS[post.status];
-  const voteScore = (post as unknown as Record<string, unknown>).vote_score as number || 0;
+  const voteAverage = (post as unknown as Record<string, unknown>).vote_average as number || 0;
+  const voteCount = (post as unknown as Record<string, unknown>).vote_count as number || 0;
 
   const handleApprove = async () => {
     await approve(post.id);
@@ -187,12 +188,13 @@ export const PostCard = memo(function PostCard({
                   {statusConfig.label}
                 </Badge>
               )}
-              <span className="flex items-center gap-1 text-primary-600">
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                </svg>
-                {voteScore}
-              </span>
+              <SentimentThermometer
+                postId={post.id}
+                averageScore={voteAverage}
+                totalVotes={voteCount}
+                userVote={userVote}
+                compact
+              />
               {isOwner && (
                 <>
                   <Link
@@ -370,12 +372,12 @@ export const PostCard = memo(function PostCard({
       {/* Actions */}
       {post.status === 'approved' && (
         <>
-          <div className="px-4 py-3 border-t border-surface-100 flex items-center gap-6">
-            <VoteButtons
+          <div className="px-4 py-3 border-t border-surface-100 flex items-center gap-4">
+            <SentimentThermometer
               postId={post.id}
-              initialScore={voteScore}
-              initialUserVote={userVote}
-              vertical={false}
+              averageScore={voteAverage}
+              totalVotes={voteCount}
+              userVote={userVote}
             />
           </div>
 
