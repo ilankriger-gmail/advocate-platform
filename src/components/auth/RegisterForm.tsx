@@ -59,6 +59,10 @@ export default function RegisterForm({ prefilledEmail }: RegisterFormProps) {
   const [email, setEmail] = useState(emailFromUrl);
   const [password, setPassword] = useState('');
 
+  // Cadastro direto via landing page: formulário de email/senha começa fechado
+  const isDirectRegistration = !!(source && sourceId);
+  const [showEmailForm, setShowEmailForm] = useState(!isDirectRegistration);
+
   // Salvar origem em cookie para uso no callback de autenticação
   useEffect(() => {
     if (source && sourceId) {
@@ -159,17 +163,28 @@ export default function RegisterForm({ prefilledEmail }: RegisterFormProps) {
         )}
       </button>
 
-      {/* Divisor */}
+      {/* Divisor e opção de email/senha */}
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-gray-300"></div>
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="px-4 bg-white text-gray-500">ou</span>
+          {showEmailForm ? (
+            <span className="px-4 bg-white text-gray-500">ou</span>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowEmailForm(true)}
+              className="px-4 bg-white text-gray-500 hover:text-indigo-600 transition-colors"
+            >
+              Usar email e senha
+            </button>
+          )}
         </div>
       </div>
 
       {/* Formulário de email/senha */}
+      {showEmailForm && (
       <form action={handleSubmit} className="space-y-4">
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700">
@@ -286,6 +301,7 @@ export default function RegisterForm({ prefilledEmail }: RegisterFormProps) {
       </div>
 
       </form>
+      )}
 
       <div className="text-sm text-center">
         <span className="text-gray-600">Já tem uma conta? </span>
