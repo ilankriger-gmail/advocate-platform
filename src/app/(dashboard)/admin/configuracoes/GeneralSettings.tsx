@@ -201,7 +201,7 @@ export function GeneralSettings({ initialSettings }: GeneralSettingsProps) {
           isLoading={saving || isPending}
           disabled={!hasChanges || saving || isPending}
         >
-          {hasChanges ? 'Salvar Alteracoes' : 'Sem alteracoes'}
+          {hasChanges ? 'Salvar Alterações' : 'Sem alterações'}
         </Button>
       </div>
     </div>

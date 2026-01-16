@@ -81,7 +81,7 @@ export function StatsCardsClient({
             </div>
             <div>
               <p className="text-2xl font-bold text-purple-700">{totalParticipants}</p>
-              <p className="text-xs text-purple-600">Participacoes</p>
+              <p className="text-xs text-purple-600">Participações</p>
             </div>
           </div>
         </Card>

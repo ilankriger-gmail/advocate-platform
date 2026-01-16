@@ -212,7 +212,7 @@ function RewardCard({ reward }: RewardCardProps) {
 
   const getTypeBadge = () => {
     if (reward.type === 'money') return { label: 'PIX', className: 'bg-green-400/30 text-white border-0' };
-    if (reward.type === 'physical') return { label: 'Fisico', className: 'bg-white/20 text-white border-0' };
+    if (reward.type === 'physical') return { label: 'Físico', className: 'bg-white/20 text-white border-0' };
     return { label: 'Digital', className: 'bg-white/20 text-white border-0' };
   };
   const typeBadge = getTypeBadge();

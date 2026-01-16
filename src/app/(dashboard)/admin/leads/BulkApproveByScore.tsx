@@ -317,16 +317,16 @@ export function BulkApproveByScore({ leads }: BulkApproveByScoreProps) {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
           <div className="bg-white rounded-xl p-6 w-full max-w-md">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Confirmar Aprovacao
+              Confirmar Aprovação
             </h3>
             <p className="text-sm text-gray-600 mb-4">
-              Voce esta prestes a aprovar <strong>{matchingLeads.length} lead(s)</strong>
-              {showConfirm === 'approveNotify' && ' e enviar notificacoes de boas-vindas'}.
+              Você está prestes a aprovar <strong>{matchingLeads.length} lead(s)</strong>
+              {showConfirm === 'approveNotify' && ' e enviar notificações de boas-vindas'}.
             </p>
 
             <div className="bg-gray-50 rounded-lg p-3 mb-4">
               <p className="text-xs text-gray-600">
-                <strong>Criterios:</strong>{' '}
+                <strong>Critérios:</strong>{' '}
                 {filterMode === 'nps' && `NPS >= ${minNpsScore}`}
                 {filterMode === 'ai' && `Score IA >= ${minAiScore}`}
                 {filterMode === 'both' && `NPS >= ${minNpsScore} E Score IA >= ${minAiScore}`}

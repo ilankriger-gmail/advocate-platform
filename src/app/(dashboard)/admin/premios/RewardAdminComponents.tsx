@@ -278,7 +278,7 @@ O resgate acontece só por aqui, de forma clara e transparente.`,
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             >
               <option value="digital">Digital</option>
-              <option value="physical">Fisico</option>
+              <option value="physical">Físico</option>
               <option value="money">PIX / Dinheiro</option>
             </select>
           </div>

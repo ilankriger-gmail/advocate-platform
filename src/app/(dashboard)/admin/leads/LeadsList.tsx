@@ -178,12 +178,12 @@ export function LeadsList({ leads, currentStatus }: LeadsListProps) {
           <h3 className="text-lg font-medium text-gray-900 mb-1">Nenhum lead encontrado</h3>
           <p className="text-gray-500">
             {currentStatus === 'pending'
-              ? 'Nao ha leads pendentes no momento.'
+              ? 'Não há leads pendentes no momento.'
               : currentStatus === 'approved'
               ? 'Nenhum lead foi aprovado ainda.'
               : currentStatus === 'rejected'
               ? 'Nenhum lead foi reprovado.'
-              : 'Nao ha leads cadastrados.'}
+              : 'Não há leads cadastrados.'}
           </p>
         </div>
       )}

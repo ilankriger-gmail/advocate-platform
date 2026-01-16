@@ -41,7 +41,7 @@ export function LeadCard({ lead }: LeadCardProps) {
   // Obter nome do email baseado no sequence_step
   const getEmailStepName = (step: number | null) => {
     switch (step) {
-      case 1: return 'Email 1 (Aprovacao)';
+      case 1: return 'Email 1 (Aprovação)';
       case 2: return 'Email 2 (Follow-up)';
       case 3: return 'WhatsApp';
       default: return 'Nenhum';
@@ -354,7 +354,7 @@ export function LeadCard({ lead }: LeadCardProps) {
                       if (result.error) {
                         showFeedback('error', result.error);
                       } else {
-                        showFeedback('success', 'Email 1 (Aprovacao) enviado com sucesso!');
+                        showFeedback('success', 'Email 1 (Aprovação) enviado com sucesso!');
                         router.refresh();
                       }
                     }}

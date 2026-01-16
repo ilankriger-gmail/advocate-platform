@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
+import type { ReactElement } from 'react';
 import type { NotificationLogWithLead } from '@/lib/supabase/types';
 
 interface NotificationsListProps {
@@ -18,7 +19,7 @@ const statusLabels: Record<string, { label: string; color: string }> = {
   cancelled: { label: 'Cancelado', color: 'bg-gray-100 text-gray-500' },
 };
 
-const channelLabels: Record<string, { label: string; icon: JSX.Element }> = {
+const channelLabels: Record<string, { label: string; icon: ReactElement }> = {
   email: {
     label: 'Email',
     icon: (

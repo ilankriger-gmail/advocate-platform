@@ -143,7 +143,7 @@ export const CAMPAIGN_STATUS = {
   draft: { label: 'Rascunho', color: 'gray', bgColor: 'bg-gray-100', textColor: 'text-gray-700' },
   active: { label: 'Ativa', color: 'green', bgColor: 'bg-green-100', textColor: 'text-green-700' },
   paused: { label: 'Pausada', color: 'yellow', bgColor: 'bg-yellow-100', textColor: 'text-yellow-700' },
-  completed: { label: 'Concluida', color: 'blue', bgColor: 'bg-blue-100', textColor: 'text-blue-700' },
+  completed: { label: 'Concluída', color: 'blue', bgColor: 'bg-blue-100', textColor: 'text-blue-700' },
 } as const;
 
 // Status de resgates (mantido para compatibilidade)

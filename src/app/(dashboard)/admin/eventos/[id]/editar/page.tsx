@@ -79,7 +79,7 @@ export default function EditEventPage({ params }: PageProps) {
     setError(null);
 
     if (!formData.title || !formData.starts_at) {
-      setError('Titulo e data de inicio sao obrigatorios');
+      setError('Título e data de início são obrigatórios');
       return;
     }
 
@@ -146,9 +146,9 @@ export default function EditEventPage({ params }: PageProps) {
           <h2 className="font-bold text-gray-900 mb-4">Tipo de Evento</h2>
           <div className="grid grid-cols-3 gap-3">
             {[
-              { value: 'virtual', label: 'Virtual', icon: '💻', desc: 'Online via video' },
-              { value: 'presencial', label: 'Presencial', icon: '📍', desc: 'Encontro fisico' },
-              { value: 'hibrido', label: 'Hibrido', icon: '🔄', desc: 'Online e presencial' },
+              { value: 'virtual', label: 'Virtual', icon: '💻', desc: 'Online via vídeo' },
+              { value: 'presencial', label: 'Presencial', icon: '📍', desc: 'Encontro físico' },
+              { value: 'hibrido', label: 'Híbrido', icon: '🔄', desc: 'Online e presencial' },
             ].map((type) => (
               <button
                 key={type.value}
@@ -168,12 +168,12 @@ export default function EditEventPage({ params }: PageProps) {
           </div>
         </Card>
 
-        {/* Informacoes Basicas */}
+        {/* Informações Básicas */}
         <Card className="p-5 space-y-4">
-          <h2 className="font-bold text-gray-900">Informacoes Basicas</h2>
+          <h2 className="font-bold text-gray-900">Informações Básicas</h2>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Titulo *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Título *</label>
             <Input
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -183,7 +183,7 @@ export default function EditEventPage({ params }: PageProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Descricao</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
             <Textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -223,7 +223,7 @@ export default function EditEventPage({ params }: PageProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Inicio *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Início *</label>
               <Input
                 type="datetime-local"
                 value={formData.starts_at}
@@ -232,7 +232,7 @@ export default function EditEventPage({ params }: PageProps) {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Termino</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Término</label>
               <Input
                 type="datetime-local"
                 value={formData.ends_at}
@@ -248,11 +248,11 @@ export default function EditEventPage({ params }: PageProps) {
 
           {(formData.type === 'presencial' || formData.type === 'hibrido') && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Endereco</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Endereço</label>
               <Input
                 value={formData.location}
                 onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                placeholder="Rua, numero, cidade..."
+                placeholder="Rua, número, cidade..."
               />
             </div>
           )}
@@ -260,7 +260,7 @@ export default function EditEventPage({ params }: PageProps) {
           {(formData.type === 'virtual' || formData.type === 'hibrido') && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Link da Reuniao (Zoom, Meet, etc.)
+                Link da Reunião (Zoom, Meet, etc.)
               </label>
               <Input
                 type="url"
@@ -274,7 +274,7 @@ export default function EditEventPage({ params }: PageProps) {
 
         {/* Configurações */}
         <Card className="p-5 space-y-4">
-          <h2 className="font-bold text-gray-900">Configuracoes</h2>
+          <h2 className="font-bold text-gray-900">Configurações</h2>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -315,7 +315,7 @@ export default function EditEventPage({ params }: PageProps) {
             disabled={isSaving}
             className="flex-1"
           >
-            {isSaving ? 'Salvando...' : 'Salvar Alteracoes'}
+            {isSaving ? 'Salvando...' : 'Salvar Alterações'}
           </Button>
         </div>
       </form>

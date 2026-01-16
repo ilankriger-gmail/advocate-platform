@@ -29,7 +29,7 @@ export default function NovoEventoPage() {
     setError(null);
 
     if (!formData.title || !formData.starts_at) {
-      setError('Título e data de início sao obrigatorios');
+      setError('Título e data de início são obrigatórios');
       return;
     }
 
@@ -71,8 +71,8 @@ export default function NovoEventoPage() {
           <div className="grid grid-cols-3 gap-3">
             {[
               { value: 'virtual', label: 'Virtual', icon: '💻', desc: 'Online via vídeo' },
-              { value: 'presencial', label: 'Presencial', icon: '📍', desc: 'Encontro fisico' },
-              { value: 'hibrido', label: 'Hibrido', icon: '🔄', desc: 'Online e presencial' },
+              { value: 'presencial', label: 'Presencial', icon: '📍', desc: 'Encontro físico' },
+              { value: 'hibrido', label: 'Híbrido', icon: '🔄', desc: 'Online e presencial' },
             ].map((type) => (
               <button
                 key={type.value}
@@ -92,9 +92,9 @@ export default function NovoEventoPage() {
           </div>
         </Card>
 
-        {/* Informacoes Basicas */}
+        {/* Informações Básicas */}
         <Card className="p-5 space-y-4">
-          <h2 className="font-bold text-gray-900">Informacoes Basicas</h2>
+          <h2 className="font-bold text-gray-900">Informações Básicas</h2>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Título *</label>
@@ -160,7 +160,7 @@ export default function NovoEventoPage() {
 
           {(formData.type === 'presencial' || formData.type === 'hibrido') && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Endereco</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Endereço</label>
               <Input
                 value={formData.location}
                 onChange={(e) => setFormData({ ...formData, location: e.target.value })}
@@ -172,7 +172,7 @@ export default function NovoEventoPage() {
           {(formData.type === 'virtual' || formData.type === 'hibrido') && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Link da Reuniao (Zoom, Meet, etc.)
+                Link da Reunião (Zoom, Meet, etc.)
               </label>
               <Input
                 type="url"

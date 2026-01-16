@@ -57,7 +57,7 @@ export default async function AdminUsuáriosPage({ searchParams }: PageProps) {
         </Card>
         <Card className="p-4 text-center">
           <p className="text-2xl font-bold text-pink-500">{totalCoins}</p>
-          <p className="text-sm text-gray-500">Coracoes em Circulacao</p>
+          <p className="text-sm text-gray-500">Corações em Circulação</p>
         </Card>
       </div>
 

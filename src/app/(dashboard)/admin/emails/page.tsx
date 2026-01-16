@@ -676,7 +676,7 @@ export default function AdminEmailsPage() {
               isLoading={saving || isPending}
               disabled={!hasChanges || saving || isPending}
             >
-              {hasChanges ? 'Salvar Alteracoes' : 'Sem alterações'}
+              {hasChanges ? 'Salvar Alterações' : 'Sem alterações'}
             </Button>
           </div>
         </div>

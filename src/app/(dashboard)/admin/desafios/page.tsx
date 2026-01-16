@@ -239,7 +239,7 @@ function ChallengeAdminCard({ challenge }: ChallengeCardProps) {
         {/* Content */}
         <div className="p-5 space-y-4">
           <p className="text-sm text-gray-600 line-clamp-2 whitespace-pre-line leading-relaxed">
-            {challenge.description || 'Sem descricao'}
+            {challenge.description || 'Sem descrição'}
           </p>
 
           {/* Stats Grid */}

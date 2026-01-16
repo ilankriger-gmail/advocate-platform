@@ -124,7 +124,7 @@ export function ChallengeParticipationModal({
     }
   };
 
-  const goalLabel = challenge.goal_type === 'time' ? 'segundos' : 'repeticoes';
+  const goalLabel = challenge.goal_type === 'time' ? 'segundos' : 'repetições';
 
   // Validar que é URL do YouTube (NAO aceita Shorts)
   const isYouTubeUrl = (url: string) => {

@@ -5,8 +5,8 @@ import { SettingsTabs } from './SettingsTabs';
 import type { SiteSetting } from '@/lib/config/site';
 
 export const metadata = {
-  title: 'Configuracoes | Admin',
-  description: 'Personalize as configuracoes da plataforma',
+  title: 'Configurações | Admin',
+  description: 'Personalize as configurações da plataforma',
 };
 
 /**
@@ -41,11 +41,11 @@ export default async function AdminConfiguracoesPage() {
     return (
       <div className="space-y-8">
         <PageHeader
-          title="Configuracoes do Site"
-          description="Personalize o nome, descricao e textos da sua comunidade"
+          title="Configurações do Site"
+          description="Personalize o nome, descrição e textos da sua comunidade"
         />
         <Card className="p-4 bg-red-50 border-red-200">
-          <p className="text-red-700">Erro ao carregar configuracoes: {error.message}</p>
+          <p className="text-red-700">Erro ao carregar configurações: {error.message}</p>
         </Card>
       </div>
     );
@@ -54,8 +54,8 @@ export default async function AdminConfiguracoesPage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        title="Configuracoes do Site"
-        description="Personalize o nome, descricao e textos da sua comunidade"
+        title="Configurações do Site"
+        description="Personalize o nome, descrição e textos da sua comunidade"
       />
 
       <SettingsTabs

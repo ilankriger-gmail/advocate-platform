@@ -99,10 +99,10 @@ export default function EditarPerfilPage() {
 
       <form onSubmit={handleSubmit}>
         <Card className="p-6 space-y-6">
-          {/* Informacoes Basicas */}
+          {/* Informações Básicas */}
           <div>
             <h3 className="text-lg font-medium text-gray-900 mb-4">
-              Informacoes Basicas
+              Informações Básicas
             </h3>
             <div className="space-y-4">
               <Input
@@ -119,7 +119,7 @@ export default function EditarPerfilPage() {
                 value={formData.bio}
                 onChange={handleChange}
                 rows={3}
-                placeholder="Conte um pouco sobre voce..."
+                placeholder="Conte um pouco sobre você..."
                 hint="Opcional - máximo 160 caracteres"
                 maxLength={160}
               />
@@ -178,7 +178,7 @@ export default function EditarPerfilPage() {
               variant="primary"
               disabled={isPending || !formData.full_name}
             >
-              {isPending ? 'Salvando...' : 'Salvar Alteracoes'}
+              {isPending ? 'Salvando...' : 'Salvar Alterações'}
             </Button>
           </div>
         </Card>

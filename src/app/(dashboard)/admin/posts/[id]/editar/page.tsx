@@ -238,7 +238,7 @@ export default function EditPostPage({ params }: PageProps) {
             disabled={isSaving}
             className="flex-1"
           >
-            {isSaving ? 'Salvando...' : 'Salvar Alteracoes'}
+            {isSaving ? 'Salvando...' : 'Salvar Alterações'}
           </Button>
         </div>
       </form>

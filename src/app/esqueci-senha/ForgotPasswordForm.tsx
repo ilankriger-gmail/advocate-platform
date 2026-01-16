@@ -95,8 +95,8 @@ export default function ForgotPasswordForm({
                     Email enviado!
                   </p>
                   <p className="text-sm text-green-700 mt-1">
-                    Se o email estiver cadastrado, voce recebera um link para redefinir sua senha.
-                    Verifique tambem a pasta de spam.
+                    Se o email estiver cadastrado, você receberá um link para redefinir sua senha.
+                    Verifique também a pasta de spam.
                   </p>
                 </div>
               </div>

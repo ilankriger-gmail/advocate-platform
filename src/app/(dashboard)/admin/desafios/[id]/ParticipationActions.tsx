@@ -38,7 +38,7 @@ export function ParticipationActions({ participationId, coinsReward }: Participa
     <div className="space-y-3">
       {showCustom && (
         <div className="flex items-center gap-2">
-          <label className="text-sm text-gray-600">Coracoes:</label>
+          <label className="text-sm text-gray-600">Corações:</label>
           <input
             type="number"
             value={customCoins}

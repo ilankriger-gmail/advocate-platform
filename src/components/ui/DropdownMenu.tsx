@@ -15,8 +15,8 @@ import { cn } from '@/lib/utils';
 interface DropdownMenuContextValue {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
-  triggerRef: React.RefObject<HTMLButtonElement>;
-  menuRef: React.RefObject<HTMLDivElement>;
+  triggerRef: React.RefObject<HTMLButtonElement | null>;
+  menuRef: React.RefObject<HTMLDivElement | null>;
   focusedIndex: number;
   setFocusedIndex: React.Dispatch<React.SetStateAction<number>>;
   itemsCount: number;

@@ -213,7 +213,7 @@ export default function ResetPasswordForm({
                   Senha redefinida com sucesso!
                 </p>
                 <p className="text-sm text-green-700 mt-1">
-                  Sua nova senha foi salva. Agora voce pode fazer login.
+                  Sua nova senha foi salva. Agora você pode fazer login.
                 </p>
               </div>
             </div>

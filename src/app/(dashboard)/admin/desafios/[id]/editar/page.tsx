@@ -244,8 +244,8 @@ export default function EditarDesafioPage() {
           <h2 className="font-bold text-gray-900 mb-4">Tipo de Desafio</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { value: 'fisico', label: 'Fisico', icon: '💪', desc: 'Exercicios e metas' },
-              { value: 'atos_amor', label: 'Atos de Amor', icon: '💝', desc: 'Boas acoes' },
+              { value: 'fisico', label: 'Físico', icon: '💪', desc: 'Exercícios e metas' },
+              { value: 'atos_amor', label: 'Atos de Amor', icon: '💝', desc: 'Boas ações' },
               { value: 'engajamento', label: 'Engajamento', icon: '💬', desc: 'Comentar/curtir' },
               { value: 'participe', label: 'Participe', icon: '🎁', desc: 'Sorteios' },
             ].map((type) => (
@@ -268,10 +268,10 @@ export default function EditarDesafioPage() {
         </Card>
 
         <Card className="p-5 space-y-4">
-          <h2 className="font-bold text-gray-900">Informacoes Basicas</h2>
+          <h2 className="font-bold text-gray-900">Informações Básicas</h2>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Icone</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Ícone</label>
 
             <div className="flex flex-wrap gap-1 mb-3">
               {Object.keys(iconCategories).map((category) => (
@@ -317,7 +317,7 @@ export default function EditarDesafioPage() {
             <Input
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              placeholder="Ex: Desafio de Flexoes"
+              placeholder="Ex: Desafio de Flexões"
               required
             />
           </div>
@@ -442,7 +442,7 @@ export default function EditarDesafioPage() {
 
         {formData.type === 'fisico' && (
           <Card className="p-5 space-y-4">
-            <h2 className="font-bold text-gray-900">Configurações do Desafio Fisico</h2>
+            <h2 className="font-bold text-gray-900">Configurações do Desafio Físico</h2>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -452,7 +452,7 @@ export default function EditarDesafioPage() {
                   onChange={(e) => setFormData({ ...formData, goal_type: e.target.value as GoalType })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 >
-                  <option value="repetitions">Repeticoes</option>
+                  <option value="repetitions">Repetições</option>
                   <option value="time">Tempo (segundos)</option>
                 </select>
               </div>
@@ -471,7 +471,7 @@ export default function EditarDesafioPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Link do Video de Recorde (opcional)
+                Link do Vídeo de Recorde (opcional)
               </label>
               <div className="flex gap-2">
                 <Input
@@ -503,7 +503,7 @@ export default function EditarDesafioPage() {
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
-                      Video selecionado
+                      Vídeo selecionado
                     </p>
                   </div>
                 </div>
@@ -532,7 +532,7 @@ export default function EditarDesafioPage() {
         )}
 
         <Card className="p-5 space-y-4">
-          <h2 className="font-bold text-gray-900">Periodo de Validade (opcional)</h2>
+          <h2 className="font-bold text-gray-900">Período de Validade (opcional)</h2>
 
           <label className="flex items-center gap-3 cursor-pointer">
             <input

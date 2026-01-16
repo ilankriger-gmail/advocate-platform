@@ -73,11 +73,11 @@ export function AutoApprovalSettings({
             </svg>
           </div>
           <div>
-            <h3 className="font-medium text-gray-900">Auto-Aprovacao</h3>
+            <h3 className="font-medium text-gray-900">Auto-Aprovação</h3>
             <p className="text-xs text-gray-500">
               {enabled
-                ? `Leads com score AI >= ${minScore} sao aprovados automaticamente`
-                : 'Desativado - todos os leads aguardam aprovacao manual'}
+                ? `Leads com score AI >= ${minScore} são aprovados automaticamente`
+                : 'Desativado - todos os leads aguardam aprovação manual'}
             </p>
           </div>
         </div>

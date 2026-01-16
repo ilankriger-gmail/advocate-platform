@@ -92,19 +92,19 @@ export function AddCoinsButton({ userId, userName }: AddCoinsButtonProps) {
         size="sm"
         variant="outline"
       >
-        + Coracoes
+        + Corações
       </Button>
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-md w-full p-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-2">Adicionar Coracoes</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Adicionar Corações</h3>
             <p className="text-sm text-gray-500 mb-4">Para: {userName}</p>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Quantidade de Coracoes *
+                  Quantidade de Corações *
                 </label>
                 <Input
                   type="number"

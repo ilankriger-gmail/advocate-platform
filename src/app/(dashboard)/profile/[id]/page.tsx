@@ -138,7 +138,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
 
           {/* Info */}
           <Card className="p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Informacoes</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Informações</h3>
             <div className="space-y-3 text-sm">
               <div className="flex items-center justify-between">
                 <span className="text-gray-500">Membro desde</span>
