@@ -37,14 +37,23 @@ export function Header({ className, siteName = 'Arena Te Amo', logoUrl = '/logo.
 
   // Fechar dropdown ao clicar fora
   useEffect(() => {
+    if (!isDropdownOpen) return;
+
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
       }
     }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    // Usar timeout para evitar que o click que abriu o menu o feche imediatamente
+    const timeoutId = setTimeout(() => {
+      document.addEventListener('click', handleClickOutside);
+    }, 0);
+
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [isDropdownOpen]);
 
   // Mostrar link admin se tiver role='admin' OU is_creator=true
   const showAdminLink = profile?.role === 'admin' || profile?.is_creator === true;
