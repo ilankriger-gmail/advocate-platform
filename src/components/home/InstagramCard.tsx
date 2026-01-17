@@ -1,9 +1,10 @@
 'use client';
 
+import Link from 'next/link';
 import DOMPurify from 'isomorphic-dompurify';
 import { Card, Avatar } from '@/components/ui';
 import {
-  VoteButtons,
+  SentimentThermometer,
   CommentsSection,
   ImageCarousel,
   YouTubeEmbed,
@@ -32,19 +33,27 @@ export function InstagramCard({ post }: InstagramCardProps) {
   const hasInstagram = !!post.instagram_url;
   const hasMedia = hasImages || hasYoutube || hasInstagram;
 
+  // Extrair campos de votação
+  const voteAverage = (post as unknown as Record<string, unknown>).vote_average as number || 0;
+  const voteCount = (post as unknown as Record<string, unknown>).vote_count as number || 0;
+
   return (
     <Card className="overflow-hidden">
       {/* Header: Avatar + Nome + Tempo */}
       <div className="flex items-center p-3">
-        <Avatar
-          src={post.author?.avatar_url || undefined}
-          name={post.author?.full_name || 'Usuário'}
-          size="md"
-        />
+        <Link href={`/profile/${post.author?.id}`}>
+          <Avatar
+            src={post.author?.avatar_url || undefined}
+            name={post.author?.full_name || 'Usuário'}
+            size="md"
+          />
+        </Link>
         <div className="ml-3 flex-1 min-w-0">
-          <p className="font-semibold text-sm text-gray-900 truncate">
-            {post.author?.full_name || 'Usuário'}
-          </p>
+          <Link href={`/profile/${post.author?.id}`} className="hover:underline">
+            <p className="font-semibold text-sm text-gray-900 truncate">
+              {post.author?.full_name || 'Usuário'}
+            </p>
+          </Link>
           <p className="text-xs text-gray-500">
             {formatRelativeTime(post.created_at)}
           </p>
@@ -91,10 +100,12 @@ export function InstagramCard({ post }: InstagramCardProps) {
 
       {/* Ações - Votos, Save, Share */}
       <div className="p-3 flex items-center gap-2">
-        <VoteButtons
+        <SentimentThermometer
           postId={post.id}
-          initialScore={post.likes_count || 0}
-          initialUserVote={null}
+          averageScore={voteAverage}
+          totalVotes={voteCount}
+          userVote={null}
+          compact
         />
         <span className="text-sm text-gray-500 flex-1">
           {post.comments_count || 0} comentários

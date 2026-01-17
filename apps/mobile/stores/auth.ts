@@ -3,32 +3,36 @@ import { persist, createJSONStorage, StateStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
-// Storage compatível com web e mobile
-const storage: StateStorage = Platform.OS === 'web'
-  ? {
-      getItem: (name) => {
-        const value = localStorage.getItem(name);
-        return value ?? null;
-      },
-      setItem: (name, value) => {
-        localStorage.setItem(name, value);
-      },
-      removeItem: (name) => {
-        localStorage.removeItem(name);
-      },
+// Verificar se estamos no servidor (SSR)
+const isServer = typeof window === 'undefined';
+
+// Storage compatível com web, mobile e SSR
+const storage: StateStorage = {
+  getItem: (name) => {
+    if (isServer) return null; // SSR: retorna null
+    if (Platform.OS === 'web') {
+      return localStorage.getItem(name) ?? null;
     }
-  : {
-      getItem: async (name) => {
-        const value = await AsyncStorage.getItem(name);
-        return value ?? null;
-      },
-      setItem: async (name, value) => {
-        await AsyncStorage.setItem(name, value);
-      },
-      removeItem: async (name) => {
-        await AsyncStorage.removeItem(name);
-      },
-    };
+    // Mobile: AsyncStorage é async, mas zustand espera sync/Promise
+    return AsyncStorage.getItem(name);
+  },
+  setItem: (name, value) => {
+    if (isServer) return; // SSR: não faz nada
+    if (Platform.OS === 'web') {
+      localStorage.setItem(name, value);
+      return;
+    }
+    AsyncStorage.setItem(name, value);
+  },
+  removeItem: (name) => {
+    if (isServer) return; // SSR: não faz nada
+    if (Platform.OS === 'web') {
+      localStorage.removeItem(name);
+      return;
+    }
+    AsyncStorage.removeItem(name);
+  },
+};
 
 interface User {
   id: string;
@@ -130,6 +134,8 @@ export const useAuthStore = create<AuthState>()(
         session: state.session,
         isAuthenticated: state.isAuthenticated,
       }),
+      // Pular hidratação no SSR
+      skipHydration: isServer,
     }
   )
 );

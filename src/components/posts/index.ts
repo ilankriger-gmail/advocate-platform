@@ -4,6 +4,7 @@ export { VoteButtons } from './VoteButtons';
 export { CommentsSection } from './CommentsSection';
 export { SaveButton } from './SaveButton';
 export { ShareButton } from './ShareButton';
+export { SentimentThermometer } from './SentimentThermometer';
 
 // Default exports re-exported as named
 export { default as MediaUploader } from './MediaUploader';
