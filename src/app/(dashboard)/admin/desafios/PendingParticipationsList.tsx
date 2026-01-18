@@ -28,7 +28,7 @@ interface Participation {
     id: string;
     full_name: string | null;
     avatar_url: string | null;
-    instagram_username: string | null;
+    instagram_handle: string | null;
   } | null;
 }
 
@@ -160,9 +160,9 @@ export function PendingParticipationsList({ participations, onClose }: PendingPa
                     <span className="font-semibold text-gray-900">
                       {participation.profiles?.full_name || 'Usuário'}
                     </span>
-                    {participation.profiles?.instagram_username && (
+                    {participation.profiles?.instagram_handle && (
                       <span className="text-sm text-pink-600">
-                        @{participation.profiles.instagram_username}
+                        @{participation.profiles.instagram_handle}
                       </span>
                     )}
                   </div>

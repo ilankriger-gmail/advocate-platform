@@ -61,7 +61,7 @@ export default async function AdminDesafiosPage() {
         id,
         full_name,
         avatar_url,
-        instagram_username
+        instagram_handle
       )
     `)
     .eq('status', 'pending')

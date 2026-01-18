@@ -26,7 +26,7 @@ interface Participation {
     id: string;
     full_name: string | null;
     avatar_url: string | null;
-    instagram_username: string | null;
+    instagram_handle: string | null;
   } | null;
 }
 

@@ -33,7 +33,7 @@ export default async function AdminDesafioDetalhesPage({ params }: PageProps) {
       profiles:user_id (
         id,
         full_name,
-        instagram_username,
+        instagram_handle,
         avatar_url
       )
     `)
@@ -48,7 +48,7 @@ export default async function AdminDesafioDetalhesPage({ params }: PageProps) {
       profiles:user_id (
         id,
         full_name,
-        instagram_username
+        instagram_handle
       )
     `)
     .eq('challenge_id', id)
@@ -158,7 +158,7 @@ export default async function AdminDesafioDetalhesPage({ params }: PageProps) {
           {winners && winners.length > 0 ? (
             <div className="space-y-3">
               {winners.map((winner) => {
-                const profile = winner.profiles as { id: string; full_name: string; instagram_username: string } | null;
+                const profile = winner.profiles as { id: string; full_name: string; instagram_handle: string } | null;
                 return (
                   <div
                     key={winner.id}
@@ -168,8 +168,8 @@ export default async function AdminDesafioDetalhesPage({ params }: PageProps) {
                       <span className="text-2xl">🏆</span>
                       <div>
                         <p className="font-medium text-gray-900">{profile?.full_name || 'Usuário'}</p>
-                        {winner.instagram_username && (
-                          <p className="text-sm text-gray-500">@{winner.instagram_username}</p>
+                        {winner.instagram_handle && (
+                          <p className="text-sm text-gray-500">@{winner.instagram_handle}</p>
                         )}
                       </div>
                     </div>
@@ -229,7 +229,7 @@ export default async function AdminDesafioDetalhesPage({ params }: PageProps) {
 
           <div className="space-y-3">
             {approvedParticipations.map((p) => {
-              const profile = p.profiles as { id: string; full_name: string; instagram_username: string } | null;
+              const profile = p.profiles as { id: string; full_name: string; instagram_handle: string } | null;
               const unit = challenge.goal_type === 'time' ? 's' : 'x';
 
               return (
@@ -289,7 +289,7 @@ interface ParticipationCardProps {
 }
 
 function ParticipationCard({ participation, goalType, coinsReward, challengeType }: ParticipationCardProps) {
-  const profile = participation.profiles as { id: string; full_name: string; instagram_username: string; avatar_url: string } | null;
+  const profile = participation.profiles as { id: string; full_name: string; instagram_handle: string; avatar_url: string } | null;
   const unit = goalType === 'time' ? 'segundos' : 'repeticoes';
   const isAtosAmor = challengeType === 'atos_amor';
 
@@ -338,8 +338,8 @@ function ParticipationCard({ participation, goalType, coinsReward, challengeType
           )}
           <div>
             <p className="font-medium text-gray-900">{profile?.full_name || 'Usuário'}</p>
-            {profile?.instagram_username && (
-              <p className="text-sm text-gray-500">@{profile.instagram_username}</p>
+            {profile?.instagram_handle && (
+              <p className="text-sm text-gray-500">@{profile.instagram_handle}</p>
             )}
           </div>
         </div>
