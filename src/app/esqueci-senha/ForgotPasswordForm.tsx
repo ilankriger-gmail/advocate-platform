@@ -57,6 +57,7 @@ export default function ForgotPasswordForm({
               width={180}
               height={60}
               className="h-16 w-auto mx-auto mb-4"
+              style={{ filter: 'sepia(100%) saturate(300%) brightness(95%) hue-rotate(-5deg)' }}
               priority
             />
           ) : (
@@ -64,6 +65,7 @@ export default function ForgotPasswordForm({
               src={logoUrl}
               alt={siteName}
               className="h-16 w-auto mx-auto mb-4"
+              style={{ filter: 'sepia(100%) saturate(300%) brightness(95%) hue-rotate(-5deg)' }}
             />
           )}
           <h1 className="text-xl font-bold text-gray-800">

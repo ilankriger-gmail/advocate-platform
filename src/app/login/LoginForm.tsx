@@ -174,6 +174,7 @@ export default function LoginForm({ siteName, subtitle, logoUrl = '/logo.png' }:
               width={180}
               height={60}
               className="h-16 w-auto mx-auto mb-4"
+              style={{ filter: 'sepia(100%) saturate(300%) brightness(95%) hue-rotate(-5deg)' }}
               priority
             />
           ) : (
@@ -181,6 +182,7 @@ export default function LoginForm({ siteName, subtitle, logoUrl = '/logo.png' }:
               src={logoUrl}
               alt={siteName}
               className="h-16 w-auto mx-auto mb-4"
+              style={{ filter: 'sepia(100%) saturate(300%) brightness(95%) hue-rotate(-5deg)' }}
             />
           )}
           <p className="text-gray-600">
