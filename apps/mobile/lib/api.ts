@@ -12,9 +12,9 @@ export async function api<T>(
 ): Promise<{ data?: T; error?: string }> {
   const { requireAuth = true, ...fetchOptions } = options;
 
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...(options.headers || {}),
+    ...(options.headers as Record<string, string> || {}),
   };
 
   // Adicionar token de autenticação se necessário
@@ -36,9 +36,12 @@ export async function api<T>(
     const data = await response.json();
 
     if (!response.ok) {
-      // Se token expirado, fazer logout
+      // Se token expirado, fazer logout (apenas se ainda estiver autenticado)
       if (response.status === 401) {
-        useAuthStore.getState().logout();
+        const { isAuthenticated, logout } = useAuthStore.getState();
+        if (isAuthenticated) {
+          logout();
+        }
       }
       return { error: data.error || 'Erro na requisição' };
     }
@@ -62,6 +65,28 @@ export const feedApi = {
     const query = searchParams.toString();
     return api(`/api/mobile/feed${query ? `?${query}` : ''}`);
   },
+  vote: (postId: string, value: number) =>
+    api('/api/mobile/votes', {
+      method: 'POST',
+      body: JSON.stringify({ postId, value }),
+    }),
+};
+
+export const postsApi = {
+  getById: (id: string) => api(`/api/mobile/posts/${id}`),
+  getComments: (postId: string, params?: { cursor?: string; limit?: number }) => {
+    const searchParams = new URLSearchParams();
+    if (params?.cursor) searchParams.set('cursor', params.cursor);
+    if (params?.limit) searchParams.set('limit', params.limit.toString());
+
+    const query = searchParams.toString();
+    return api(`/api/mobile/posts/${postId}/comments${query ? `?${query}` : ''}`);
+  },
+  createComment: (postId: string, content: string) =>
+    api(`/api/mobile/posts/${postId}/comments`, {
+      method: 'POST',
+      body: JSON.stringify({ content }),
+    }),
 };
 
 export const challengesApi = {
@@ -73,6 +98,8 @@ export const challengesApi = {
     const query = searchParams.toString();
     return api(`/api/mobile/challenges${query ? `?${query}` : ''}`);
   },
+  getById: (id: string) => api(`/api/mobile/challenges/${id}`),
+  getMyParticipations: () => api('/api/mobile/challenges/my-participations'),
   participate: (data: {
     challengeId: string;
     resultValue?: number;
@@ -93,10 +120,40 @@ export const rewardsApi = {
     const query = searchParams.toString();
     return api(`/api/mobile/rewards${query ? `?${query}` : ''}`);
   },
+  getMyClaims: () => api('/api/mobile/rewards/my-claims'),
+  claim: (data: {
+    rewardId: string;
+    selectedOption?: string;
+    deliveryInfo?: {
+      name?: string;
+      address?: string;
+      city?: string;
+      state?: string;
+      zipCode?: string;
+      phone?: string;
+      pixKey?: string;
+      pixKeyType?: 'cpf' | 'email' | 'phone' | 'random';
+    };
+  }) =>
+    api('/api/mobile/rewards/claim', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
 };
 
 export const eventsApi = {
   getAll: () => api('/api/mobile/events'),
+  getMyRegistrations: () => api('/api/mobile/events/my-registrations'),
+  register: (eventId: string) =>
+    api('/api/mobile/events/register', {
+      method: 'POST',
+      body: JSON.stringify({ eventId }),
+    }),
+  cancelRegistration: (eventId: string) =>
+    api('/api/mobile/events/register', {
+      method: 'DELETE',
+      body: JSON.stringify({ eventId }),
+    }),
 };
 
 export const profileApi = {

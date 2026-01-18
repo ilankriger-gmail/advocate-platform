@@ -27,8 +27,8 @@ if (Platform.OS !== 'web') {
 }
 
 export default function RootLayout() {
-  const [appReady, setAppReady] = useState(false);
-  const [fontError, setFontError] = useState<Error | null>(null);
+  const isWeb = Platform.OS === 'web';
+  const [appReady, setAppReady] = useState(isWeb); // Na web, começa pronto
 
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
@@ -36,17 +36,8 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    // Na web, marca como pronto imediatamente
-    if (Platform.OS === 'web') {
-      console.log('[Layout] Web detected, marking app ready');
-      setAppReady(true);
-    }
-  }, []);
-
-  useEffect(() => {
     if (error) {
       console.error('[Layout] Font loading error:', error);
-      setFontError(error);
       setAppReady(true);
     }
   }, [error]);
@@ -54,17 +45,15 @@ export default function RootLayout() {
   useEffect(() => {
     if (loaded) {
       console.log('[Layout] Fonts loaded');
-      if (Platform.OS !== 'web') {
+      if (!isWeb) {
         SplashScreen.hideAsync();
       }
       setAppReady(true);
     }
-  }, [loaded]);
+  }, [loaded, isWeb]);
 
-  console.log('[Layout] Render - appReady:', appReady, 'loaded:', loaded, 'Platform:', Platform.OS);
-
-  if (!appReady) {
-    // Loading fallback
+  // Na web, renderiza imediatamente sem esperar fonts
+  if (!appReady && !isWeb) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
         <Text style={{ fontSize: 18, color: '#333' }}>Carregando...</Text>
@@ -81,6 +70,7 @@ function RootLayoutNav() {
   const segments = useSegments();
   const router = useRouter();
   const [isNavigationReady, setNavigationReady] = useState(false);
+  const [hasRedirected, setHasRedirected] = useState(false);
 
   useEffect(() => {
     // Pequeno delay para garantir que a navegação está pronta
@@ -90,20 +80,29 @@ function RootLayoutNav() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Resetar flag de redirect quando autenticação mudar
   useEffect(() => {
-    if (!isNavigationReady) return;
+    setHasRedirected(false);
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (!isNavigationReady || hasRedirected) return;
 
     const inAuthGroup = segments[0] === '(auth)';
+    const inTabsGroup = segments[0] === '(tabs)';
     console.log('[Layout] Auth check - isAuthenticated:', isAuthenticated, 'inAuthGroup:', inAuthGroup, 'segments:', segments);
 
+    // Só redireciona se realmente precisa mudar de grupo
     if (!isAuthenticated && !inAuthGroup) {
       console.log('[Layout] Redirecting to login');
+      setHasRedirected(true);
       router.replace('/(auth)/login');
     } else if (isAuthenticated && inAuthGroup) {
       console.log('[Layout] Redirecting to tabs');
+      setHasRedirected(true);
       router.replace('/(tabs)');
     }
-  }, [isAuthenticated, segments, isNavigationReady]);
+  }, [isAuthenticated, segments, isNavigationReady, hasRedirected]);
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>

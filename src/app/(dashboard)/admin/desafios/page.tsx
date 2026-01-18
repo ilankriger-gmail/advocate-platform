@@ -57,7 +57,7 @@ export default async function AdminDesafiosPage() {
       challenge_id,
       user_id,
       challenges(id, title, type, icon, coins_reward),
-      profiles(display_name, avatar_url, instagram_username)
+      profiles:user_id(id, full_name, avatar_url, instagram_username)
     `)
     .eq('status', 'pending')
     .order('created_at', { ascending: false });
