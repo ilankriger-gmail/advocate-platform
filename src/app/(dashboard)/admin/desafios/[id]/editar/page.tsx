@@ -161,6 +161,9 @@ export default function EditarDesafioPage() {
     const prizesResult = await saveChallengePrizes(challengeId, prizes);
     if (prizesResult.error) {
       console.error('Erro ao salvar prêmios:', prizesResult.error);
+      setError('Erro ao salvar prêmios: ' + prizesResult.error);
+      setIsLoading(false);
+      return;
     }
 
     router.push('/admin/desafios');
