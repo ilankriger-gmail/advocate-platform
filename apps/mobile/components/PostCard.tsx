@@ -1,4 +1,4 @@
-import { View, Text, Image, TouchableOpacity, Pressable } from 'react-native';
+import { View, Text, Image, TouchableOpacity, Pressable, Share } from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 interface Author {
@@ -31,6 +31,7 @@ interface PostCardProps {
   post: Post;
   onVote?: (postId: string, value: number) => void;
   onPress?: () => void;
+  onComment?: () => void;
 }
 
 function getInitials(name: string): string {
@@ -55,8 +56,35 @@ function formatDate(dateString: string): string {
   return date.toLocaleDateString('pt-BR');
 }
 
-export default function PostCard({ post, onVote, onPress }: PostCardProps) {
+// Extrair ID do YouTube para thumbnail
+function extractYouTubeId(url: string): string | null {
+  if (!url) return null;
+  const patterns = [
+    /youtube\.com\/watch\?v=([^&]+)/,
+    /youtu\.be\/([^?]+)/,
+    /youtube\.com\/embed\/([^?]+)/,
+  ];
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match && match[1]) return match[1];
+  }
+  return null;
+}
+
+export default function PostCard({ post, onVote, onPress, onComment }: PostCardProps) {
   const hasMedia = post.media_url || post.youtube_url || post.instagram_url;
+  const youtubeId = post.youtube_url ? extractYouTubeId(post.youtube_url) : null;
+
+  const handleShare = async () => {
+    try {
+      await Share.share({
+        message: `${post.title || ''}\n\n${post.content?.substring(0, 200)}...`,
+        title: post.title || 'Compartilhar post',
+      });
+    } catch (err) {
+      console.error('Erro ao compartilhar:', err);
+    }
+  };
 
   return (
     <Pressable
@@ -117,11 +145,41 @@ export default function PostCard({ post, onVote, onPress }: PostCardProps) {
         />
       )}
 
-      {/* Video indicator */}
-      {(post.youtube_url || (post.media_url && post.media_type === 'video')) && (
+      {/* YouTube Video with Thumbnail */}
+      {post.youtube_url && youtubeId && (
+        <View className="w-full aspect-video bg-gray-900 relative">
+          <Image
+            source={{ uri: `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` }}
+            className="w-full h-full"
+            resizeMode="cover"
+          />
+          <View className="absolute inset-0 bg-black/30 items-center justify-center">
+            <View className="w-14 h-14 rounded-full bg-red-600 items-center justify-center">
+              <FontAwesome name="play" size={22} color="#fff" style={{ marginLeft: 3 }} />
+            </View>
+          </View>
+          <View className="absolute bottom-2 right-2 bg-red-600 px-2 py-1 rounded flex-row items-center">
+            <FontAwesome name="youtube-play" size={10} color="#fff" />
+            <Text className="text-white text-[10px] font-bold ml-1">YouTube</Text>
+          </View>
+        </View>
+      )}
+
+      {/* Video indicator (non-YouTube) */}
+      {post.media_url && post.media_type === 'video' && !post.youtube_url && (
         <View className="w-full aspect-video bg-gray-900 items-center justify-center">
           <View className="w-16 h-16 rounded-full bg-white/90 items-center justify-center">
             <FontAwesome name="play" size={24} color="#8B5CF6" />
+          </View>
+        </View>
+      )}
+
+      {/* Instagram indicator */}
+      {post.instagram_url && !post.youtube_url && !post.media_url && (
+        <View className="mx-4 mb-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl p-3">
+          <View className="flex-row items-center gap-2">
+            <FontAwesome name="instagram" size={20} color="#fff" />
+            <Text className="text-white font-medium text-sm">Ver no Instagram</Text>
           </View>
         </View>
       )}
@@ -146,7 +204,10 @@ export default function PostCard({ post, onVote, onPress }: PostCardProps) {
         </View>
 
         {/* Comments */}
-        <TouchableOpacity className="flex-row items-center ml-6">
+        <TouchableOpacity
+          onPress={onComment || onPress}
+          className="flex-row items-center ml-6"
+        >
           <FontAwesome name="comment-o" size={18} color="#9CA3AF" />
           <Text className="text-gray-500 ml-2">
             {post.comments_count || 0}
@@ -154,7 +215,7 @@ export default function PostCard({ post, onVote, onPress }: PostCardProps) {
         </TouchableOpacity>
 
         {/* Share */}
-        <TouchableOpacity className="ml-auto p-2">
+        <TouchableOpacity onPress={handleShare} className="ml-auto p-2">
           <FontAwesome name="share" size={18} color="#9CA3AF" />
         </TouchableOpacity>
       </View>

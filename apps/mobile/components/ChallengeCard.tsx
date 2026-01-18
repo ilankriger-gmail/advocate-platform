@@ -1,4 +1,4 @@
-import { View, Text, Image, TouchableOpacity } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleProp, ViewStyle } from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 interface Challenge {
@@ -16,8 +16,11 @@ interface Challenge {
   starts_at: string | null;
   ends_at: string | null;
   image_url: string | null;
+  thumbnail_url?: string | null;
   prize_amount: number | null;
   num_winners: number | null;
+  record_video_url?: string | null;
+  instagram_embed_url?: string | null;
   participants_count: number;
   user_participation: {
     status: string;
@@ -31,6 +34,7 @@ interface ChallengeCardProps {
   challenge: Challenge;
   onPress?: () => void;
   onParticipate?: () => void;
+  style?: StyleProp<ViewStyle>;
 }
 
 const TYPE_LABELS: Record<string, { label: string; color: string }> = {
@@ -54,20 +58,22 @@ function getDaysLeft(endDate: string | null): number | null {
   return Math.ceil(diff / (1000 * 60 * 60 * 24));
 }
 
-export default function ChallengeCard({ challenge, onPress, onParticipate }: ChallengeCardProps) {
+export default function ChallengeCard({ challenge, onPress, onParticipate, style }: ChallengeCardProps) {
   const typeInfo = TYPE_LABELS[challenge.type] || { label: challenge.type, color: 'bg-gray-100 text-gray-700' };
   const daysLeft = getDaysLeft(challenge.ends_at);
+  const imageUrl = challenge.thumbnail_url || challenge.image_url;
 
   return (
     <TouchableOpacity
       onPress={onPress}
       className="bg-white rounded-2xl shadow-sm mb-4 overflow-hidden border border-gray-100"
       activeOpacity={0.7}
+      style={style}
     >
       {/* Image */}
-      {challenge.image_url && (
+      {imageUrl && (
         <Image
-          source={{ uri: challenge.image_url }}
+          source={{ uri: imageUrl }}
           className="w-full h-40 bg-gray-100"
           resizeMode="cover"
         />

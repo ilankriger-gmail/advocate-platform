@@ -8,7 +8,10 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import RewardCard from '@/components/RewardCard';
+import RewardClaimModal from '@/components/RewardClaimModal';
+import MyClaimCard from '@/components/MyClaimCard';
 import { rewardsApi } from '@/lib/api';
 
 type RewardType = 'all' | 'digital' | 'physical' | 'money';
@@ -32,6 +35,25 @@ interface RewardsResponse {
   user_balance: number;
 }
 
+interface Claim {
+  id: string;
+  coins_spent: number;
+  status: 'pending' | 'processing' | 'completed' | 'cancelled';
+  selected_option: string | null;
+  created_at: string;
+  reward: {
+    id: string;
+    name: string;
+    description: string;
+    image_url: string | null;
+    type: string;
+  };
+}
+
+interface ClaimsResponse {
+  claims: Claim[];
+}
+
 const TYPE_OPTIONS: { key: RewardType; label: string }[] = [
   { key: 'all', label: 'Todos' },
   { key: 'digital', label: '🎁 Digital' },
@@ -41,10 +63,14 @@ const TYPE_OPTIONS: { key: RewardType; label: string }[] = [
 
 export default function PremiosScreen() {
   const [rewards, setRewards] = useState<Reward[]>([]);
+  const [claims, setClaims] = useState<Claim[]>([]);
   const [userBalance, setUserBalance] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [type, setType] = useState<RewardType>('all');
+  const [selectedReward, setSelectedReward] = useState<Reward | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showAllClaims, setShowAllClaims] = useState(false);
 
   const fetchRewards = useCallback(async (isRefresh = false) => {
     if (isRefresh) {
@@ -58,12 +84,21 @@ export default function PremiosScreen() {
         type: type === 'all' ? undefined : type,
       };
 
-      const result = await rewardsApi.getAll(params);
+      // Buscar prêmios e resgates em paralelo
+      const [rewardsResult, claimsResult] = await Promise.all([
+        rewardsApi.getAll(params),
+        rewardsApi.getMyClaims(),
+      ]);
 
-      if (result.data) {
-        const response = result.data as RewardsResponse;
+      if (rewardsResult.data) {
+        const response = rewardsResult.data as RewardsResponse;
         setRewards(response.rewards);
         setUserBalance(response.user_balance);
+      }
+
+      if (claimsResult.data) {
+        const response = claimsResult.data as ClaimsResponse;
+        setClaims(response.claims);
       }
     } catch (error) {
       console.error('Erro ao carregar prêmios:', error);
@@ -82,14 +117,29 @@ export default function PremiosScreen() {
   };
 
   const handleClaim = (rewardId: string) => {
-    // TODO: Abrir modal de resgate
-    console.log('Resgatar prêmio:', rewardId);
+    const reward = rewards.find(r => r.id === rewardId);
+    if (reward) {
+      setSelectedReward(reward);
+      setIsModalOpen(true);
+    }
   };
 
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedReward(null);
+  };
+
+  const handleClaimSuccess = () => {
+    fetchRewards(true);
+  };
+
+  // Limitar resgates exibidos
+  const displayedClaims = showAllClaims ? claims : claims.slice(0, 3);
+
   const renderHeader = () => (
-    <View className="pb-4">
+    <View className="pb-4 space-y-4">
       {/* Balance Card */}
-      <View className="mx-4 mb-4 bg-gradient-to-r from-primary-500 to-accent-500 rounded-2xl p-5">
+      <View className="mx-4 bg-gradient-to-r from-primary-500 to-accent-500 rounded-2xl p-5">
         <Text className="text-white/80 text-sm font-medium mb-1">
           Seu saldo
         </Text>
@@ -103,6 +153,45 @@ export default function PremiosScreen() {
         <Text className="text-white/60 text-xs mt-2">
           Complete desafios para ganhar mais corações!
         </Text>
+      </View>
+
+      {/* Meus Resgates */}
+      {claims.length > 0 && (
+        <View className="px-4 space-y-3">
+          <View className="flex-row items-center justify-between">
+            <View className="flex-row items-center gap-2">
+              <View className="w-10 h-10 bg-green-100 rounded-xl items-center justify-center">
+                <FontAwesome name="gift" size={18} color="#059669" />
+              </View>
+              <View>
+                <Text className="text-gray-900 font-bold text-lg">Meus Resgates</Text>
+                <Text className="text-gray-500 text-xs">Acompanhe seus prêmios</Text>
+              </View>
+            </View>
+            {claims.length > 3 && (
+              <TouchableOpacity
+                onPress={() => setShowAllClaims(!showAllClaims)}
+                className="px-3 py-1.5 bg-gray-100 rounded-full"
+              >
+                <Text className="text-gray-600 text-xs font-medium">
+                  {showAllClaims ? 'Ver menos' : `Ver todos (${claims.length})`}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          <View className="space-y-2">
+            {displayedClaims.map((claim) => (
+              <MyClaimCard key={claim.id} claim={claim} />
+            ))}
+          </View>
+        </View>
+      )}
+
+      {/* Título da seção de prêmios */}
+      <View className="px-4 pt-2">
+        <Text className="text-gray-900 font-bold text-lg mb-1">Prêmios Disponíveis</Text>
+        <Text className="text-gray-500 text-sm">Troque seus corações por prêmios incríveis</Text>
       </View>
 
       {/* Type Filter */}
@@ -168,9 +257,7 @@ export default function PremiosScreen() {
             <RewardCard
               reward={item}
               userBalance={userBalance}
-              onPress={() => {
-                // TODO: Navegar para detalhe do prêmio
-              }}
+              onPress={() => handleClaim(item.id)}
               onClaim={() => handleClaim(item.id)}
             />
           </View>
@@ -187,6 +274,15 @@ export default function PremiosScreen() {
         }
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingTop: 12, paddingBottom: 20 }}
+      />
+
+      {/* Modal de Resgate */}
+      <RewardClaimModal
+        reward={selectedReward}
+        isOpen={isModalOpen}
+        userBalance={userBalance}
+        onClose={handleModalClose}
+        onSuccess={handleClaimSuccess}
       />
     </View>
   );

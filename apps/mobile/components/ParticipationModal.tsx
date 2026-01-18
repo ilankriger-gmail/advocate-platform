@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { challengesApi } from '@/lib/api';
+import YouTubePreview from './YouTubePreview';
 
 interface Challenge {
   id: string;
@@ -24,6 +25,7 @@ interface Challenge {
   goal_value: number | null;
   hashtag: string | null;
   profile_to_tag: string | null;
+  record_video_url: string | null;
 }
 
 interface ParticipationModalProps {
@@ -233,6 +235,19 @@ export default function ParticipationModal({
               <Text className="text-primary-600 ml-2">{challenge.profile_to_tag}</Text>
             </View>
           )}
+        </View>
+      )}
+
+      {/* Vídeo de referência (se houver) */}
+      {challenge.record_video_url && (
+        <View className="mb-4">
+          <Text className="text-sm font-medium text-gray-700 mb-2">
+            📹 Vídeo de Referência
+          </Text>
+          <YouTubePreview
+            url={challenge.record_video_url}
+            title="Assista como fazer o desafio"
+          />
         </View>
       )}
 

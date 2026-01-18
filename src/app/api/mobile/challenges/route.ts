@@ -58,8 +58,15 @@ export async function GET(request: NextRequest) {
         starts_at,
         ends_at,
         image_url,
+        thumbnail_url,
         prize_amount,
         num_winners,
+        record_video_url,
+        action_instructions,
+        raffle_enabled,
+        raffle_prize_amount,
+        raffle_frequency_days,
+        instagram_embed_url,
         created_at
       `)
       .eq('status', status)

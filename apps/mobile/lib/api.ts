@@ -163,4 +163,5 @@ export const profileApi = {
       method: 'PUT',
       body: JSON.stringify(data),
     }),
+  getPosts: () => api('/api/mobile/profile/posts'),
 };

@@ -6,8 +6,12 @@ import {
   RefreshControl,
   ActivityIndicator,
   TouchableOpacity,
-  Image,
+  ScrollView,
+  Alert,
 } from 'react-native';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import EventCard from '@/components/EventCard';
+import EventRegistrationModal from '@/components/EventRegistrationModal';
 import { eventsApi } from '@/lib/api';
 
 interface Event {
@@ -19,17 +23,55 @@ interface Event {
   ends_at: string | null;
   location: string | null;
   is_online: boolean;
+  online_url?: string | null;
   max_participants: number | null;
   participants_count: number;
   is_active: boolean;
+  is_live?: boolean;
+  is_registered?: boolean;
+  is_full?: boolean;
+  can_register?: boolean;
+}
+
+interface Registration {
+  id: string;
+  status: string;
+  created_at: string;
+  event: {
+    id: string;
+    title: string;
+    description: string;
+    image_url: string | null;
+    starts_at: string;
+    ends_at: string | null;
+    location: string | null;
+    is_online: boolean;
+    online_url: string | null;
+    is_active: boolean;
+    is_live?: boolean;
+    is_past?: boolean;
+    is_upcoming?: boolean;
+  };
+}
+
+interface EventsResponse {
+  events: Event[];
+}
+
+interface RegistrationsResponse {
+  registrations: Registration[];
 }
 
 export default function EventosScreen() {
   const [events, setEvents] = useState<Event[]>([]);
+  const [myRegistrations, setMyRegistrations] = useState<Registration[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showAllRegistrations, setShowAllRegistrations] = useState(false);
 
-  const fetchEvents = useCallback(async (isRefresh = false) => {
+  const fetchData = useCallback(async (isRefresh = false) => {
     if (isRefresh) {
       setIsRefreshing(true);
     } else {
@@ -37,10 +79,19 @@ export default function EventosScreen() {
     }
 
     try {
-      const result = await eventsApi.getAll();
+      const [eventsResult, registrationsResult] = await Promise.all([
+        eventsApi.getAll(),
+        eventsApi.getMyRegistrations(),
+      ]);
 
-      if (result.data) {
-        setEvents(result.data as Event[]);
+      if (eventsResult.data) {
+        const response = eventsResult.data as EventsResponse;
+        setEvents(response.events || []);
+      }
+
+      if (registrationsResult.data) {
+        const response = registrationsResult.data as RegistrationsResponse;
+        setMyRegistrations(response.registrations || []);
       }
     } catch (error) {
       console.error('Erro ao carregar eventos:', error);
@@ -51,76 +102,139 @@ export default function EventosScreen() {
   }, []);
 
   useEffect(() => {
-    fetchEvents();
+    fetchData();
   }, []);
 
   const handleRefresh = () => {
-    fetchEvents(true);
+    fetchData(true);
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+  const handleRegister = (event: Event) => {
+    setSelectedEvent(event);
+    setIsModalOpen(true);
   };
 
-  const renderEventCard = ({ item }: { item: Event }) => (
-    <TouchableOpacity
-      className="mx-4 mb-4 bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100"
-      activeOpacity={0.8}
-    >
-      {item.image_url && (
-        <Image
-          source={{ uri: item.image_url }}
-          className="w-full h-40"
-          resizeMode="cover"
-        />
+  const handleCancelRegistration = async (eventId: string) => {
+    Alert.alert(
+      'Cancelar Inscrição',
+      'Tem certeza que deseja cancelar sua inscrição neste evento?',
+      [
+        { text: 'Não', style: 'cancel' },
+        {
+          text: 'Sim, cancelar',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const result = await eventsApi.cancelRegistration(eventId);
+              if (result.error) {
+                Alert.alert('Erro', result.error);
+              } else {
+                fetchData(true);
+              }
+            } catch {
+              Alert.alert('Erro', 'Erro ao cancelar inscrição');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedEvent(null);
+  };
+
+  const handleRegistrationSuccess = () => {
+    fetchData(true);
+  };
+
+  // Separar eventos
+  const liveEvents = events.filter(e => e.is_live);
+  const upcomingEvents = events.filter(e => !e.is_live);
+
+  // Separar registros
+  const upcomingRegistrations = myRegistrations.filter(r => r.event?.is_upcoming);
+  const pastRegistrations = myRegistrations.filter(r => r.event?.is_past);
+  const displayedRegistrations = showAllRegistrations
+    ? upcomingRegistrations
+    : upcomingRegistrations.slice(0, 2);
+
+  const renderHeader = () => (
+    <View className="space-y-4 pb-4">
+      {/* Acontecendo Agora */}
+      {liveEvents.length > 0 && (
+        <View className="px-4">
+          <View className="flex-row items-center gap-2 mb-3">
+            <View className="w-3 h-3 bg-red-500 rounded-full" />
+            <Text className="text-gray-900 font-bold text-lg">Acontecendo Agora</Text>
+          </View>
+
+          {liveEvents.map((event) => (
+            <View key={event.id} className="mb-3">
+              <EventCard
+                event={event}
+                onPress={() => handleRegister(event)}
+                onRegister={() => handleRegister(event)}
+                onCancel={() => handleCancelRegistration(event.id)}
+              />
+            </View>
+          ))}
+        </View>
       )}
-      <View className="p-4">
-        <View className="flex-row items-center mb-2">
-          <View className={`px-2 py-1 rounded-full ${item.is_online ? 'bg-blue-100' : 'bg-green-100'}`}>
-            <Text className={`text-xs font-medium ${item.is_online ? 'text-blue-700' : 'text-green-700'}`}>
-              {item.is_online ? 'Online' : 'Presencial'}
-            </Text>
+
+      {/* Meus Próximos Eventos */}
+      {upcomingRegistrations.length > 0 && (
+        <View className="px-4 space-y-3">
+          <View className="flex-row items-center justify-between">
+            <View className="flex-row items-center gap-2">
+              <View className="w-10 h-10 bg-green-100 rounded-xl items-center justify-center">
+                <FontAwesome name="calendar-check-o" size={18} color="#059669" />
+              </View>
+              <View>
+                <Text className="text-gray-900 font-bold text-lg">Meus Próximos Eventos</Text>
+                <Text className="text-gray-500 text-xs">Eventos que você está inscrito</Text>
+              </View>
+            </View>
+            {upcomingRegistrations.length > 2 && (
+              <TouchableOpacity
+                onPress={() => setShowAllRegistrations(!showAllRegistrations)}
+                className="px-3 py-1.5 bg-gray-100 rounded-full"
+              >
+                <Text className="text-gray-600 text-xs font-medium">
+                  {showAllRegistrations ? 'Ver menos' : `Ver todos (${upcomingRegistrations.length})`}
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
-          {item.max_participants && (
-            <Text className="text-gray-500 text-xs ml-2">
-              {item.participants_count}/{item.max_participants} participantes
-            </Text>
-          )}
-        </View>
 
-        <Text className="text-gray-900 font-semibold text-lg mb-1">
-          {item.title}
-        </Text>
-
-        {item.description && (
-          <Text className="text-gray-600 text-sm mb-3" numberOfLines={2}>
-            {item.description}
-          </Text>
-        )}
-
-        <View className="flex-row items-center">
-          <Text className="text-2xl mr-2">📅</Text>
-          <Text className="text-gray-700 text-sm font-medium">
-            {formatDate(item.starts_at)}
-          </Text>
-        </View>
-
-        {item.location && !item.is_online && (
-          <View className="flex-row items-center mt-2">
-            <Text className="text-2xl mr-2">📍</Text>
-            <Text className="text-gray-600 text-sm" numberOfLines={1}>
-              {item.location}
-            </Text>
+          <View className="space-y-2">
+            {displayedRegistrations.map((reg) => (
+              <EventCard
+                key={reg.id}
+                event={{
+                  ...reg.event,
+                  participants_count: 0,
+                  max_participants: null,
+                  is_active: true,
+                  is_registered: true,
+                } as Event}
+                compact
+                onCancel={() => handleCancelRegistration(reg.event.id)}
+              />
+            ))}
           </View>
-        )}
-      </View>
-    </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Título da seção de próximos eventos */}
+      {upcomingEvents.length > 0 && (
+        <View className="px-4 pt-2">
+          <Text className="text-gray-900 font-bold text-lg mb-1">Próximos Eventos</Text>
+          <Text className="text-gray-500 text-sm">Confira os eventos que estão por vir</Text>
+        </View>
+      )}
+    </View>
   );
 
   const renderEmpty = () => {
@@ -150,10 +264,20 @@ export default function EventosScreen() {
   return (
     <View className="flex-1 bg-gray-50">
       <FlatList
-        data={events}
+        data={upcomingEvents}
         keyExtractor={item => item.id}
-        renderItem={renderEventCard}
-        ListEmptyComponent={renderEmpty}
+        renderItem={({ item }) => (
+          <View className="px-4 mb-4">
+            <EventCard
+              event={item}
+              onPress={() => handleRegister(item)}
+              onRegister={() => handleRegister(item)}
+              onCancel={() => handleCancelRegistration(item.id)}
+            />
+          </View>
+        )}
+        ListHeaderComponent={renderHeader}
+        ListEmptyComponent={liveEvents.length === 0 ? renderEmpty : null}
         refreshControl={
           <RefreshControl
             refreshing={isRefreshing}
@@ -164,6 +288,14 @@ export default function EventosScreen() {
         }
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingTop: 12, paddingBottom: 20 }}
+      />
+
+      {/* Modal de Inscrição */}
+      <EventRegistrationModal
+        event={selectedEvent}
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        onSuccess={handleRegistrationSuccess}
       />
     </View>
   );

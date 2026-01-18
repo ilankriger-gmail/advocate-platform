@@ -8,8 +8,12 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
+import { useRouter } from 'expo-router';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import ChallengeCard from '@/components/ChallengeCard';
 import ParticipationModal from '@/components/ParticipationModal';
+import CoinsBalanceCard from '@/components/CoinsBalanceCard';
+import MyParticipationCard from '@/components/MyParticipationCard';
 import { challengesApi } from '@/lib/api';
 
 type StatusType = 'active' | 'closed' | 'finished';
@@ -30,8 +34,11 @@ interface Challenge {
   starts_at: string | null;
   ends_at: string | null;
   image_url: string | null;
+  thumbnail_url: string | null;
   prize_amount: number | null;
   num_winners: number | null;
+  record_video_url: string | null;
+  instagram_embed_url: string | null;
   participants_count: number;
   user_participation: {
     status: string;
@@ -41,8 +48,30 @@ interface Challenge {
   has_participated: boolean;
 }
 
+interface Participation {
+  id: string;
+  status: 'pending' | 'approved' | 'rejected';
+  result_value: number | null;
+  coins_earned: number | null;
+  video_proof_url: string | null;
+  created_at: string;
+  challenge: {
+    id: string;
+    title: string;
+    icon: string | null;
+    goal_type: 'repetitions' | 'time' | null;
+    goal_value: number | null;
+    coins_reward: number;
+  };
+}
+
 interface ChallengesResponse {
   challenges: Challenge[];
+}
+
+interface ParticipationsResponse {
+  participations: Participation[];
+  coins_balance: number;
 }
 
 const STATUS_OPTIONS: { key: StatusType; label: string }[] = [
@@ -60,15 +89,19 @@ const TYPE_OPTIONS: { key: ChallengeType; label: string }[] = [
 ];
 
 export default function DesafiosScreen() {
+  const router = useRouter();
   const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [participations, setParticipations] = useState<Participation[]>([]);
+  const [coinsBalance, setCoinsBalance] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [status, setStatus] = useState<StatusType>('active');
   const [type, setType] = useState<ChallengeType>('all');
   const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showAllParticipations, setShowAllParticipations] = useState(false);
 
-  const fetchChallenges = useCallback(async (isRefresh = false) => {
+  const fetchData = useCallback(async (isRefresh = false) => {
     if (isRefresh) {
       setIsRefreshing(true);
     } else {
@@ -76,16 +109,24 @@ export default function DesafiosScreen() {
     }
 
     try {
-      const params: { status?: string; type?: string } = {
-        status,
-        type: type === 'all' ? undefined : type,
-      };
+      // Buscar desafios e participações em paralelo
+      const [challengesResult, participationsResult] = await Promise.all([
+        challengesApi.getAll({
+          status,
+          type: type === 'all' ? undefined : type,
+        }),
+        challengesApi.getMyParticipations(),
+      ]);
 
-      const result = await challengesApi.getAll(params);
-
-      if (result.data) {
-        const response = result.data as ChallengesResponse;
+      if (challengesResult.data) {
+        const response = challengesResult.data as ChallengesResponse;
         setChallenges(response.challenges);
+      }
+
+      if (participationsResult.data) {
+        const response = participationsResult.data as ParticipationsResponse;
+        setParticipations(response.participations);
+        setCoinsBalance(response.coins_balance);
       }
     } catch (error) {
       console.error('Erro ao carregar desafios:', error);
@@ -96,11 +137,11 @@ export default function DesafiosScreen() {
   }, [status, type]);
 
   useEffect(() => {
-    fetchChallenges();
+    fetchData();
   }, [status, type]);
 
   const handleRefresh = () => {
-    fetchChallenges(true);
+    fetchData(true);
   };
 
   const handleParticipate = (challengeId: string) => {
@@ -117,14 +158,81 @@ export default function DesafiosScreen() {
   };
 
   const handleParticipationSuccess = () => {
-    // Atualizar lista de desafios após participação bem-sucedida
-    fetchChallenges(true);
+    fetchData(true);
   };
 
+  // Separar desafios com prêmio PIX
+  const pixChallenges = challenges.filter(c => c.prize_amount && c.prize_amount > 0);
+  const regularChallenges = challenges.filter(c => !c.prize_amount || c.prize_amount === 0);
+
+  // Limitar participações exibidas
+  const displayedParticipations = showAllParticipations
+    ? participations
+    : participations.slice(0, 3);
+
   const renderHeader = () => (
-    <View className="pb-3">
+    <View className="space-y-4 pb-3">
+      {/* Card de Saldo */}
+      <View className="px-4 pt-2">
+        <CoinsBalanceCard balance={coinsBalance} />
+      </View>
+
+      {/* Minhas Participações */}
+      {participations.length > 0 && (
+        <View className="px-4 space-y-3">
+          <View className="flex-row items-center justify-between">
+            <View className="flex-row items-center gap-2">
+              <View className="w-10 h-10 bg-amber-100 rounded-xl items-center justify-center">
+                <FontAwesome name="trophy" size={18} color="#F59E0B" />
+              </View>
+              <View>
+                <Text className="text-gray-900 font-bold text-lg">Minhas Participações</Text>
+                <Text className="text-gray-500 text-xs">Acompanhe seus envios</Text>
+              </View>
+            </View>
+            {participations.length > 3 && (
+              <TouchableOpacity
+                onPress={() => setShowAllParticipations(!showAllParticipations)}
+                className="px-3 py-1.5 bg-gray-100 rounded-full"
+              >
+                <Text className="text-gray-600 text-xs font-medium">
+                  {showAllParticipations ? 'Ver menos' : `Ver todas (${participations.length})`}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          <View className="space-y-2">
+            {displayedParticipations.map((participation) => (
+              <MyParticipationCard
+                key={participation.id}
+                participation={participation}
+                onPress={() => router.push(`/desafio/${participation.challenge.id}`)}
+              />
+            ))}
+          </View>
+        </View>
+      )}
+
+      {/* Banner de PIX (se houver desafios com prêmio) */}
+      {pixChallenges.length > 0 && (
+        <View className="mx-4 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl p-4 shadow-lg">
+          <View className="flex-row items-center gap-3">
+            <View className="w-12 h-12 bg-white/20 rounded-xl items-center justify-center">
+              <Text className="text-3xl">💵</Text>
+            </View>
+            <View className="flex-1">
+              <Text className="text-white font-black text-xl">GANHE PIX!</Text>
+              <Text className="text-white/80 text-sm">
+                {pixChallenges.length} desafio(s) com prêmio em dinheiro
+              </Text>
+            </View>
+          </View>
+        </View>
+      )}
+
       {/* Status Tabs */}
-      <View className="flex-row px-4 mb-3">
+      <View className="flex-row px-4">
         {STATUS_OPTIONS.map(opt => (
           <TouchableOpacity
             key={opt.key}
@@ -175,6 +283,34 @@ export default function DesafiosScreen() {
     </View>
   );
 
+  const renderChallengeItem = ({ item }: { item: Challenge }) => {
+    const isPix = item.prize_amount && item.prize_amount > 0;
+
+    return (
+      <View className="px-4">
+        {/* Badge de PIX para desafios com prêmio */}
+        {isPix && (
+          <View className="bg-green-500 rounded-t-xl px-3 py-1.5 flex-row items-center gap-2">
+            <Text className="text-white font-bold text-sm">
+              💵 PRÊMIO: R$ {item.prize_amount?.toFixed(0)}
+            </Text>
+            {item.num_winners && (
+              <Text className="text-white/80 text-xs">
+                • {item.num_winners} ganhador(es)
+              </Text>
+            )}
+          </View>
+        )}
+        <ChallengeCard
+          challenge={item}
+          onPress={() => router.push(`/desafio/${item.id}`)}
+          onParticipate={() => handleParticipate(item.id)}
+          style={isPix ? { borderTopLeftRadius: 0, borderTopRightRadius: 0 } : undefined}
+        />
+      </View>
+    );
+  };
+
   const renderEmpty = () => {
     if (isLoading) return null;
     return (
@@ -206,17 +342,7 @@ export default function DesafiosScreen() {
       <FlatList
         data={challenges}
         keyExtractor={item => item.id}
-        renderItem={({ item }) => (
-          <View className="px-4">
-            <ChallengeCard
-              challenge={item}
-              onPress={() => {
-                // TODO: Navegar para detalhe do desafio
-              }}
-              onParticipate={() => handleParticipate(item.id)}
-            />
-          </View>
-        )}
+        renderItem={renderChallengeItem}
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={renderEmpty}
         refreshControl={

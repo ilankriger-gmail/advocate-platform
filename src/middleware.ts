@@ -11,8 +11,8 @@ export const config = {
   matcher: [
     /*
      * Regex para caminhos que requerem atualização de sessão:
-     * - todas as rotas exceto arquivos estáticos, favicon, api, etc.
+     * - todas as rotas exceto arquivos estáticos, favicon, api/mobile, etc.
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/mobile|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

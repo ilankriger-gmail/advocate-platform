@@ -8,8 +8,10 @@ import {
   TouchableOpacity,
   Image,
   Alert,
+  Linking,
 } from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { useRouter } from 'expo-router';
 import { profileApi } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth';
 
@@ -71,12 +73,49 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
 };
 
 export default function PerfilScreen() {
+  const router = useRouter();
   const { logout } = useAuthStore();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
   const [participations, setParticipations] = useState<Participation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Funções para abrir redes sociais
+  const openSocialLink = async (platform: string, handle: string) => {
+    let url = '';
+    let fallbackUrl = '';
+
+    switch (platform) {
+      case 'instagram':
+        url = `instagram://user?username=${handle}`;
+        fallbackUrl = `https://instagram.com/${handle}`;
+        break;
+      case 'tiktok':
+        url = `tiktok://user?username=${handle}`;
+        fallbackUrl = `https://tiktok.com/@${handle}`;
+        break;
+      case 'youtube':
+        url = `youtube://www.youtube.com/@${handle}`;
+        fallbackUrl = `https://youtube.com/@${handle}`;
+        break;
+      case 'twitter':
+        url = `twitter://user?screen_name=${handle}`;
+        fallbackUrl = `https://twitter.com/${handle}`;
+        break;
+    }
+
+    try {
+      const canOpen = await Linking.canOpenURL(url);
+      if (canOpen) {
+        await Linking.openURL(url);
+      } else {
+        await Linking.openURL(fallbackUrl);
+      }
+    } catch {
+      await Linking.openURL(fallbackUrl);
+    }
+  };
 
   const fetchProfile = useCallback(async (isRefresh = false) => {
     if (isRefresh) {
@@ -185,26 +224,47 @@ export default function PerfilScreen() {
         {/* Social Links */}
         <View className="flex-row mt-4 gap-4">
           {profile?.instagram_handle && (
-            <TouchableOpacity className="items-center">
+            <TouchableOpacity
+              onPress={() => openSocialLink('instagram', profile.instagram_handle!)}
+              className="w-10 h-10 rounded-full bg-pink-50 items-center justify-center"
+            >
               <FontAwesome name="instagram" size={20} color="#E4405F" />
             </TouchableOpacity>
           )}
           {profile?.tiktok_handle && (
-            <TouchableOpacity className="items-center">
-              <FontAwesome name="music" size={20} color="#000" />
+            <TouchableOpacity
+              onPress={() => openSocialLink('tiktok', profile.tiktok_handle!)}
+              className="w-10 h-10 rounded-full bg-gray-100 items-center justify-center"
+            >
+              <FontAwesome name="music" size={18} color="#000" />
             </TouchableOpacity>
           )}
           {profile?.youtube_handle && (
-            <TouchableOpacity className="items-center">
-              <FontAwesome name="youtube-play" size={20} color="#FF0000" />
+            <TouchableOpacity
+              onPress={() => openSocialLink('youtube', profile.youtube_handle!)}
+              className="w-10 h-10 rounded-full bg-red-50 items-center justify-center"
+            >
+              <FontAwesome name="youtube-play" size={18} color="#FF0000" />
             </TouchableOpacity>
           )}
           {profile?.twitter_handle && (
-            <TouchableOpacity className="items-center">
-              <FontAwesome name="twitter" size={20} color="#1DA1F2" />
+            <TouchableOpacity
+              onPress={() => openSocialLink('twitter', profile.twitter_handle!)}
+              className="w-10 h-10 rounded-full bg-blue-50 items-center justify-center"
+            >
+              <FontAwesome name="twitter" size={18} color="#1DA1F2" />
             </TouchableOpacity>
           )}
         </View>
+
+        {/* Edit Profile Button */}
+        <TouchableOpacity
+          onPress={() => router.push('/perfil/editar')}
+          className="mt-4 flex-row items-center bg-primary-50 px-4 py-2 rounded-full"
+        >
+          <FontAwesome name="pencil" size={14} color="#8B5CF6" />
+          <Text className="text-primary-600 font-medium ml-2">Editar Perfil</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Stats */}
@@ -299,6 +359,22 @@ export default function PerfilScreen() {
 
       {/* Actions */}
       <View className="bg-white mt-3 px-4 py-3 mb-8">
+        {stats && stats.posts_count > 0 && (
+          <TouchableOpacity
+            onPress={() => router.push('/perfil/posts')}
+            className="flex-row items-center py-4 border-b border-gray-100"
+          >
+            <FontAwesome name="file-text-o" size={20} color="#3B82F6" />
+            <Text className="flex-1 ml-4 text-gray-900 font-medium">
+              Meus Posts
+            </Text>
+            <View className="bg-blue-100 px-2 py-0.5 rounded-full mr-2">
+              <Text className="text-blue-600 text-xs font-medium">{stats.posts_count}</Text>
+            </View>
+            <FontAwesome name="chevron-right" size={14} color="#9CA3AF" />
+          </TouchableOpacity>
+        )}
+
         <TouchableOpacity
           className="flex-row items-center py-4 border-b border-gray-100"
         >
