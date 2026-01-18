@@ -226,7 +226,7 @@ export async function getDiscoverContent() {
         .eq('is_active', true)
         .gt('quantity_available', 0)
         .order('coins_required', { ascending: true })
-        .limit(4),
+        .limit(6),
 
       // Eventos próximos
       supabase
