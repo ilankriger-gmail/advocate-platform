@@ -5,7 +5,8 @@ import { createClient } from '@/lib/supabase/server';
 import { getSiteSettings } from '@/lib/config/site';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui';
-import { PhysicalChallengeCard, MyParticipationCard } from '@/components/challenges';
+import { PhysicalChallengeCard } from '@/components/challenges';
+import { MyParticipationItem } from '@/components/challenges/MyParticipationItem';
 import type { ParticipationWithChallenge, ChallengePrize } from '@/lib/supabase/types';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -194,25 +195,26 @@ export default async function DesafiosPage() {
         </div>
       </Card>
 
-      {/* Minhas Participações - Logo após o saldo */}
+      {/* Minhas Participações - Lista compacta */}
       {userParticipationsWithChallenge.length > 0 && (
-        <section className="space-y-4 sm:space-y-6">
-          {/* Header da Seção - Centralizado */}
-          <div className="flex flex-col items-center text-center gap-2">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-amber-500 to-yellow-500 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/25">
-              <Trophy className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
+        <section className="max-w-2xl mx-auto">
+          <Card className="overflow-hidden">
+            {/* Header compacto */}
+            <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-amber-500 to-yellow-500 text-white">
+              <Trophy className="w-5 h-5" />
+              <div>
+                <h2 className="font-bold text-sm">Minhas Participações</h2>
+                <p className="text-amber-100 text-xs">{userParticipationsWithChallenge.length} envio(s)</p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Minhas Participações</h2>
-              <p className="text-gray-500 text-xs sm:text-sm">Acompanhe o status dos seus desafios enviados</p>
-            </div>
-          </div>
 
-          <div className="max-w-2xl mx-auto space-y-3 sm:space-y-4">
-            {userParticipationsWithChallenge.map((participation) => (
-              <MyParticipationCard key={participation.id} participation={participation} />
-            ))}
-          </div>
+            {/* Lista de participações */}
+            <div>
+              {userParticipationsWithChallenge.map((participation) => (
+                <MyParticipationItem key={participation.id} participation={participation} />
+              ))}
+            </div>
+          </Card>
         </section>
       )}
 

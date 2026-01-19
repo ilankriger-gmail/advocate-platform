@@ -474,8 +474,11 @@ export default function EditarDesafioPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Link do Vídeo de Recorde (opcional)
+                Link do Vídeo no YouTube *
               </label>
+              <p className="text-xs text-gray-500 mb-2">
+                Obrigatório - Este vídeo será exibido para os participantes
+              </p>
               <div className="flex gap-2">
                 <Input
                   type="url"
@@ -483,6 +486,7 @@ export default function EditarDesafioPage() {
                   onChange={(e) => setFormData({ ...formData, record_video_url: e.target.value })}
                   placeholder="https://youtube.com/..."
                   className="flex-1"
+                  required
                 />
                 <YouTubeVideoPicker
                   onSelect={(video) => {
@@ -511,6 +515,18 @@ export default function EditarDesafioPage() {
                   </div>
                 </div>
               )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Link do Vídeo no Instagram (opcional)
+              </label>
+              <Input
+                type="url"
+                value={formData.instagram_embed_url}
+                onChange={(e) => setFormData({ ...formData, instagram_embed_url: e.target.value })}
+                placeholder="https://instagram.com/reel/..."
+              />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
