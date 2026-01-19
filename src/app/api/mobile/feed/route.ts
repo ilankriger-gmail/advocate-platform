@@ -16,23 +16,13 @@ function getTokenFromHeader(request: NextRequest): string | null {
 
 export async function GET(request: NextRequest) {
   try {
+    // Temporariamente sem autenticação obrigatória para testes
     const token = getTokenFromHeader(request);
+    let userId: string | null = null;
 
-    if (!token) {
-      return NextResponse.json(
-        { error: 'Token não fornecido' },
-        { status: 401 }
-      );
-    }
-
-    // Verificar token
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
-
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Token inválido ou expirado' },
-        { status: 401 }
-      );
+    if (token) {
+      const { data: { user } } = await supabaseAdmin.auth.getUser(token);
+      userId = user?.id || null;
     }
 
     // Parâmetros de paginação e filtro
@@ -104,15 +94,19 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Buscar votos do usuário para os posts retornados
+    // Buscar votos do usuário para os posts retornados (se autenticado)
     const postIds = posts?.map(p => p.id) || [];
-    const { data: userVotes } = await supabaseAdmin
-      .from('post_votes')
-      .select('post_id, value')
-      .eq('user_id', user.id)
-      .in('post_id', postIds);
+    let votesMap = new Map();
 
-    const votesMap = new Map(userVotes?.map(v => [v.post_id, v.value]) || []);
+    if (userId && postIds.length > 0) {
+      const { data: userVotes } = await supabaseAdmin
+        .from('post_votes')
+        .select('post_id, value')
+        .eq('user_id', userId)
+        .in('post_id', postIds);
+
+      votesMap = new Map(userVotes?.map(v => [v.post_id, v.value]) || []);
+    }
 
     // Formatar resposta
     const formattedPosts = posts?.map(post => ({

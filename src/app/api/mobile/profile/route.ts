@@ -18,53 +18,73 @@ function getTokenFromHeader(request: NextRequest): string | null {
 export async function GET(request: NextRequest) {
   try {
     const token = getTokenFromHeader(request);
+    let userId: string | null = null;
+    let userEmail: string | null = null;
 
-    if (!token) {
-      return NextResponse.json(
-        { error: 'Token não fornecido' },
-        { status: 401 }
-      );
+    if (token) {
+      const { data: { user } } = await supabaseAdmin.auth.getUser(token);
+      userId = user?.id || null;
+      userEmail = user?.email || null;
     }
 
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
-
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Token inválido ou expirado' },
-        { status: 401 }
-      );
+    // Se não autenticado, retorna dados de demonstração
+    if (!userId) {
+      return NextResponse.json({
+        profile: {
+          id: 'demo',
+          full_name: 'Usuário Demo',
+          email: 'demo@exemplo.com',
+          avatar_url: null,
+          bio: 'Perfil de demonstração',
+          instagram_handle: null,
+          tiktok_handle: null,
+          youtube_handle: null,
+          twitter_handle: null,
+          is_creator: false,
+          coins_balance: 0,
+          followers_count: 0,
+          following_count: 0,
+        },
+        stats: {
+          challenges_completed: 0,
+          rewards_claimed: 0,
+          posts_count: 0,
+          coins_balance: 0,
+        },
+        recent_participations: [],
+      });
     }
 
     // Buscar perfil completo
     const { data: profile } = await supabaseAdmin
       .from('users')
       .select('*')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single();
 
     // Buscar saldo
     const { data: coins } = await supabaseAdmin
       .from('user_coins')
       .select('balance')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .single();
 
     // Buscar estatísticas
     const { count: challengesCompleted } = await supabaseAdmin
       .from('challenge_participants')
       .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('status', 'approved');
 
     const { count: rewardsClaimed } = await supabaseAdmin
       .from('reward_claims')
       .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id);
+      .eq('user_id', userId);
 
     const { count: postsCount } = await supabaseAdmin
       .from('posts')
       .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('status', 'approved');
 
     // Buscar histórico de participações recentes
@@ -84,14 +104,14 @@ export async function GET(request: NextRequest) {
           coins_reward
         )
       `)
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .limit(10);
 
     return NextResponse.json({
       profile: {
         ...profile,
-        email: user.email,
+        email: userEmail,
         coins_balance: coins?.balance || 0,
       },
       stats: {
@@ -118,7 +138,7 @@ export async function PUT(request: NextRequest) {
 
     if (!token) {
       return NextResponse.json(
-        { error: 'Token não fornecido' },
+        { error: 'Autenticação necessária para atualizar perfil' },
         { status: 401 }
       );
     }

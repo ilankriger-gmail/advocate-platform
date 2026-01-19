@@ -16,23 +16,13 @@ function getTokenFromHeader(request: NextRequest): string | null {
 
 export async function GET(request: NextRequest) {
   try {
+    // Temporariamente sem autenticação obrigatória para testes
     const token = getTokenFromHeader(request);
+    let userId: string | null = null;
 
-    if (!token) {
-      return NextResponse.json(
-        { error: 'Token não fornecido' },
-        { status: 401 }
-      );
-    }
-
-    // Verificar token
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
-
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Token inválido ou expirado' },
-        { status: 401 }
-      );
+    if (token) {
+      const { data: { user } } = await supabaseAdmin.auth.getUser(token);
+      userId = user?.id || null;
     }
 
     // Parâmetros
@@ -86,17 +76,21 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Buscar participações do usuário
+    // Buscar participações do usuário (se autenticado)
     const challengeIds = challenges?.map(c => c.id) || [];
-    const { data: participations } = await supabaseAdmin
-      .from('challenge_participants')
-      .select('challenge_id, status, result_value, coins_earned, created_at')
-      .eq('user_id', user.id)
-      .in('challenge_id', challengeIds);
+    let participationsMap = new Map();
 
-    const participationsMap = new Map(
-      participations?.map(p => [p.challenge_id, p]) || []
-    );
+    if (userId && challengeIds.length > 0) {
+      const { data: participations } = await supabaseAdmin
+        .from('challenge_participants')
+        .select('challenge_id, status, result_value, coins_earned, created_at')
+        .eq('user_id', userId)
+        .in('challenge_id', challengeIds);
+
+      participationsMap = new Map(
+        participations?.map(p => [p.challenge_id, p]) || []
+      );
+    }
 
     // Contar participantes por desafio
     const { data: participantCounts } = await supabaseAdmin
