@@ -719,9 +719,12 @@ export async function votePost(
 }
 
 /**
- * Comentar em post
+ * Comentar em post (ou responder a um comentário)
+ * @param postId - ID do post
+ * @param content - Conteúdo do comentário
+ * @param parentId - ID do comentário pai (opcional, para respostas)
  */
-export async function commentPost(postId: string, content: string): Promise<ActionResponse<PostComment>> {
+export async function commentPost(postId: string, content: string, parentId?: string): Promise<ActionResponse<PostComment>> {
   try {
     const supabase = await createClient();
 
@@ -763,6 +766,7 @@ export async function commentPost(postId: string, content: string): Promise<Acti
         post_id: postId,
         user_id: user.id,
         content: sanitizedContent,
+        parent_id: parentId || null,
       })
       .select()
       .single();
@@ -802,6 +806,34 @@ export async function commentPost(postId: string, content: string): Promise<Acti
           );
         } catch (notifyError) {
           postsLogger.error('Erro ao enviar notificação de comentário', { error: sanitizeError(notifyError) });
+        }
+      }
+
+      // Se for resposta, notificar autor do comentário pai
+      if (parentId) {
+        try {
+          const { data: parentComment } = await supabase
+            .from('post_comments')
+            .select('user_id')
+            .eq('id', parentId)
+            .single();
+
+          if (parentComment && parentComment.user_id !== user.id) {
+            const { data: commenterProfile } = await supabase
+              .from('users')
+              .select('full_name')
+              .eq('id', user.id)
+              .single();
+
+            await notifyNewComment(
+              parentComment.user_id,
+              commenterProfile?.full_name || 'Alguém',
+              postId,
+              `Respondeu seu comentário: ${sanitizedContent}`
+            );
+          }
+        } catch (notifyError) {
+          postsLogger.error('Erro ao enviar notificação de resposta', { error: sanitizeError(notifyError) });
         }
       }
     }
@@ -935,7 +967,31 @@ export async function getPostComments(postId: string) {
       throw error;
     }
 
-    return data || [];
+    // Organizar comentários em estrutura hierárquica (pais com respostas)
+    const commentsMap = new Map<string, typeof data[0] & { replies: typeof data }>();
+    const rootComments: (typeof data[0] & { replies: typeof data })[] = [];
+
+    // Primeiro passo: criar mapa de todos os comentários
+    data?.forEach(comment => {
+      commentsMap.set(comment.id, { ...comment, replies: [] });
+    });
+
+    // Segundo passo: organizar hierarquia
+    data?.forEach(comment => {
+      const commentWithReplies = commentsMap.get(comment.id)!;
+      if (comment.parent_id) {
+        // É uma resposta - adicionar ao pai
+        const parent = commentsMap.get(comment.parent_id);
+        if (parent) {
+          parent.replies.push(commentWithReplies);
+        }
+      } else {
+        // É um comentário raiz
+        rootComments.push(commentWithReplies);
+      }
+    });
+
+    return rootComments;
   } catch {
     return [];
   }

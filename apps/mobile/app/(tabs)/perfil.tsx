@@ -27,6 +27,8 @@ interface Profile {
   twitter_handle: string | null;
   is_creator: boolean;
   coins_balance: number;
+  followers_count: number;
+  following_count: number;
 }
 
 interface Stats {
@@ -219,6 +221,22 @@ export default function PerfilScreen() {
               {profile.bio}
             </Text>
           )}
+        </View>
+
+        {/* Followers/Following */}
+        <View className="flex-row mt-4 gap-8">
+          <View className="items-center">
+            <Text className="font-bold text-gray-900 text-lg">
+              {profile?.followers_count || 0}
+            </Text>
+            <Text className="text-gray-500 text-sm">Seguidores</Text>
+          </View>
+          <View className="items-center">
+            <Text className="font-bold text-gray-900 text-lg">
+              {profile?.following_count || 0}
+            </Text>
+            <Text className="text-gray-500 text-sm">Seguindo</Text>
+          </View>
         </View>
 
         {/* Social Links */}

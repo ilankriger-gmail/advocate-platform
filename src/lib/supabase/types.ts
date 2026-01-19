@@ -175,6 +175,7 @@ export interface Database {
           content: string
           created_at: string
           is_deleted: boolean
+          parent_id: string | null
         }
         Insert: {
           id?: string
@@ -183,6 +184,7 @@ export interface Database {
           content: string
           created_at?: string
           is_deleted?: boolean
+          parent_id?: string | null
         }
         Update: {
           id?: string
@@ -191,6 +193,7 @@ export interface Database {
           content?: string
           created_at?: string
           is_deleted?: boolean
+          parent_id?: string | null
         }
       }
     }
@@ -237,6 +240,7 @@ export interface CommentWithAuthor extends PostComment {
     full_name: string | null;
     avatar_url: string | null;
   } | null;
+  replies?: CommentWithAuthor[];
 }
 
 /**
