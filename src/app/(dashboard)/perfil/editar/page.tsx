@@ -20,6 +20,7 @@ export default function EditarPerfilPage() {
     instagram_handle: '',
     tiktok_handle: '',
     avatar_url: '',
+    website_url: '',
   });
 
   useEffect(() => {
@@ -41,6 +42,7 @@ export default function EditarPerfilPage() {
             instagram_handle: data.instagram_handle || '',
             tiktok_handle: data.tiktok_handle || '',
             avatar_url: data.avatar_url || user.user_metadata?.avatar_url || '',
+            website_url: data.website_url || '',
           });
         }
       }
@@ -59,6 +61,7 @@ export default function EditarPerfilPage() {
       instagram_handle: formData.instagram_handle || undefined,
       tiktok_handle: formData.tiktok_handle || undefined,
       avatar_url: formData.avatar_url || undefined,
+      website_url: formData.website_url || undefined,
     });
 
     if (result.success) {
@@ -125,10 +128,10 @@ export default function EditarPerfilPage() {
                 name="bio"
                 value={formData.bio}
                 onChange={handleChange}
-                rows={3}
+                rows={4}
                 placeholder="Conte um pouco sobre você..."
-                hint="Opcional - máximo 160 caracteres"
-                maxLength={160}
+                hint="Opcional - máximo 500 caracteres"
+                maxLength={500}
               />
             </div>
           </div>
@@ -139,6 +142,15 @@ export default function EditarPerfilPage() {
               Redes Sociais
             </h3>
             <div className="space-y-4">
+              <Input
+                label="Link Pessoal"
+                name="website_url"
+                value={formData.website_url}
+                onChange={handleChange}
+                placeholder="https://seusite.com"
+                hint="Seu site, portfólio ou link favorito"
+              />
+
               <Input
                 label="Instagram"
                 name="instagram_handle"

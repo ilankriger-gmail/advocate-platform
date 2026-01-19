@@ -4,6 +4,7 @@ import { useState, useTransition, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
+import { useQueryClient } from '@tanstack/react-query';
 import { createPost } from '@/actions/posts';
 import { getCurrentProfile } from '@/actions/profile';
 import MediaUploader from '@/components/posts/MediaUploader';
@@ -27,6 +28,7 @@ type MediaTab = 'none' | 'images' | 'youtube' | 'instagram';
 
 export default function NovoPostPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [isPending, startTransition] = useTransition();
 
   // Estado do formulário
@@ -115,9 +117,13 @@ export default function NovoPostPage() {
       if (result.error) {
         setError(result.error);
       } else if (result.contentCategory === 'help_request') {
+        // Invalidar cache do feed antes de mostrar alerta
+        queryClient.invalidateQueries({ queryKey: ['feed'] });
         // Mostrar alerta especial para pedido de ajuda
         setShowHelpRequestAlert(true);
       } else {
+        // Invalidar cache do feed para mostrar o novo post
+        queryClient.invalidateQueries({ queryKey: ['feed'] });
         router.push('/');
         router.refresh();
       }
