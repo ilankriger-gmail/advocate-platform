@@ -25,60 +25,41 @@ interface CommentsSectionProps {
   defaultExpanded?: boolean;
 }
 
-// Componente para um único comentário (recursivo para respostas)
+// Componente para um único comentário (estilo Instagram - só 1 nível de indentação)
 function CommentItem({
   comment,
-  postId,
   onReply,
   isReply = false,
 }: {
   comment: Comment;
-  postId: string;
   onReply: (parentId: string, authorName: string) => void;
   isReply?: boolean;
 }) {
   return (
-    <div className={`flex gap-3 ${isReply ? 'ml-10 mt-2' : ''}`}>
+    <div className={`flex gap-3 ${isReply ? 'ml-12' : ''}`}>
       <Avatar
         name={comment.author?.full_name || 'Usuário'}
         src={comment.author?.avatar_url || undefined}
         size="sm"
       />
-      <div className="flex-1">
-        <div className={`bg-gray-50 rounded-lg p-3 ${isReply ? 'bg-gray-100' : ''}`}>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="font-medium text-sm text-gray-900">
-              {comment.author?.full_name || 'Usuário'}
-            </span>
-            <span className="text-xs text-gray-400">
-              {formatRelativeTime(comment.created_at)}
-            </span>
-          </div>
-          <p className="text-sm text-gray-700">{comment.content}</p>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-baseline gap-2 flex-wrap">
+          <span className="font-semibold text-sm text-gray-900">
+            {comment.author?.full_name || 'Usuário'}
+          </span>
+          <span className="text-sm text-gray-700 break-words">{comment.content}</span>
         </div>
-
-        {/* Botão Responder */}
-        <button
-          onClick={() => onReply(comment.id, comment.author?.full_name || 'Usuário')}
-          className="text-xs text-gray-500 hover:text-indigo-600 mt-1 ml-1"
-        >
-          Responder
-        </button>
-
-        {/* Respostas */}
-        {comment.replies && comment.replies.length > 0 && (
-          <div className="mt-2 space-y-2">
-            {comment.replies.map((reply) => (
-              <CommentItem
-                key={reply.id}
-                comment={reply}
-                postId={postId}
-                onReply={onReply}
-                isReply={true}
-              />
-            ))}
-          </div>
-        )}
+        <div className="flex items-center gap-3 mt-1">
+          <span className="text-xs text-gray-400">
+            {formatRelativeTime(comment.created_at)}
+          </span>
+          <button
+            onClick={() => onReply(comment.id, comment.author?.full_name || 'Usuário')}
+            className="text-xs font-medium text-gray-500 hover:text-indigo-600"
+          >
+            Responder
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -141,6 +122,21 @@ export function CommentsSection({
     });
   };
 
+  // Flatten replies para mostrar estilo Instagram (todas as respostas no mesmo nível)
+  const flattenReplies = (replies: Comment[] | undefined): Comment[] => {
+    if (!replies || replies.length === 0) return [];
+
+    const flattened: Comment[] = [];
+    for (const reply of replies) {
+      flattened.push(reply);
+      // Recursivamente pegar respostas das respostas (mas todas ficam no mesmo nível visual)
+      if (reply.replies && reply.replies.length > 0) {
+        flattened.push(...flattenReplies(reply.replies));
+      }
+    }
+    return flattened;
+  };
+
   return (
     <div className="border-t border-gray-100">
       {/* Toggle button */}
@@ -175,14 +171,30 @@ export function CommentsSection({
               Carregando comentários...
             </div>
           ) : comments.length > 0 ? (
-            <div className="space-y-3 mb-4">
+            <div className="space-y-4 mb-4">
               {comments.map((comment) => (
-                <CommentItem
-                  key={comment.id}
-                  comment={comment}
-                  postId={postId}
-                  onReply={handleReply}
-                />
+                <div key={comment.id}>
+                  {/* Comentário principal */}
+                  <CommentItem
+                    comment={comment}
+                    onReply={handleReply}
+                    isReply={false}
+                  />
+
+                  {/* Respostas (todas no mesmo nível - estilo Instagram) */}
+                  {comment.replies && comment.replies.length > 0 && (
+                    <div className="mt-3 space-y-3">
+                      {flattenReplies(comment.replies).map((reply) => (
+                        <CommentItem
+                          key={reply.id}
+                          comment={reply}
+                          onReply={handleReply}
+                          isReply={true}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           ) : (
