@@ -275,23 +275,33 @@ export default function PostDetailScreen() {
           <View className="bg-white border-b border-gray-100">
             {/* Author Header */}
             <View className="flex-row items-center p-4">
-              {post.author?.avatar_url ? (
-                <Image
-                  source={{ uri: post.author.avatar_url }}
-                  className="w-12 h-12 rounded-full bg-gray-200"
-                />
-              ) : (
-                <View className="w-12 h-12 rounded-full bg-primary-100 items-center justify-center">
-                  <Text className="text-primary-600 font-semibold">
-                    {getInitials(post.author?.full_name || 'U')}
-                  </Text>
-                </View>
-              )}
+              <TouchableOpacity
+                onPress={() => post.author?.id && router.push(`/profile/${post.author.id}`)}
+                disabled={!post.author?.id}
+              >
+                {post.author?.avatar_url ? (
+                  <Image
+                    source={{ uri: post.author.avatar_url }}
+                    className="w-12 h-12 rounded-full bg-gray-200"
+                  />
+                ) : (
+                  <View className="w-12 h-12 rounded-full bg-primary-100 items-center justify-center">
+                    <Text className="text-primary-600 font-semibold">
+                      {getInitials(post.author?.full_name || 'U')}
+                    </Text>
+                  </View>
+                )}
+              </TouchableOpacity>
               <View className="flex-1 ml-3">
                 <View className="flex-row items-center">
-                  <Text className="font-bold text-gray-900 text-base">
-                    {post.author?.full_name || 'Usuário'}
-                  </Text>
+                  <TouchableOpacity
+                    onPress={() => post.author?.id && router.push(`/profile/${post.author.id}`)}
+                    disabled={!post.author?.id}
+                  >
+                    <Text className="font-bold text-gray-900 text-base">
+                      {post.author?.full_name || 'Usuário'}
+                    </Text>
+                  </TouchableOpacity>
                   {post.author?.is_creator && (
                     <View className="ml-2 bg-primary-100 px-2 py-0.5 rounded-full">
                       <Text className="text-primary-600 text-xs font-medium">Creator</Text>
@@ -403,23 +413,33 @@ export default function PostDetailScreen() {
             {comments.map((comment) => (
               <View key={comment.id} className="bg-white rounded-xl p-4 mb-3 border border-gray-100">
                 <View className="flex-row items-start">
-                  {comment.author?.avatar_url ? (
-                    <Image
-                      source={{ uri: comment.author.avatar_url }}
-                      className="w-9 h-9 rounded-full bg-gray-200"
-                    />
-                  ) : (
-                    <View className="w-9 h-9 rounded-full bg-primary-100 items-center justify-center">
-                      <Text className="text-primary-600 font-semibold text-xs">
-                        {getInitials(comment.author?.full_name || 'U')}
-                      </Text>
-                    </View>
-                  )}
+                  <TouchableOpacity
+                    onPress={() => comment.author?.id && router.push(`/profile/${comment.author.id}`)}
+                    disabled={!comment.author?.id}
+                  >
+                    {comment.author?.avatar_url ? (
+                      <Image
+                        source={{ uri: comment.author.avatar_url }}
+                        className="w-9 h-9 rounded-full bg-gray-200"
+                      />
+                    ) : (
+                      <View className="w-9 h-9 rounded-full bg-primary-100 items-center justify-center">
+                        <Text className="text-primary-600 font-semibold text-xs">
+                          {getInitials(comment.author?.full_name || 'U')}
+                        </Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
                   <View className="flex-1 ml-3">
                     <View className="flex-row items-center">
-                      <Text className="font-semibold text-gray-900 text-sm">
-                        {comment.author?.full_name || 'Usuário'}
-                      </Text>
+                      <TouchableOpacity
+                        onPress={() => comment.author?.id && router.push(`/profile/${comment.author.id}`)}
+                        disabled={!comment.author?.id}
+                      >
+                        <Text className="font-semibold text-gray-900 text-sm">
+                          {comment.author?.full_name || 'Usuário'}
+                        </Text>
+                      </TouchableOpacity>
                       {comment.author?.is_creator && (
                         <View className="ml-2 bg-primary-100 px-1.5 py-0.5 rounded">
                           <Text className="text-primary-600 text-[10px] font-medium">Creator</Text>

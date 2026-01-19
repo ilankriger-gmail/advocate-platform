@@ -1,15 +1,18 @@
 'use client';
 
 import { useState, useTransition, useEffect } from 'react';
+import Link from 'next/link';
 import { Avatar, Button } from '@/components/ui';
 import { formatRelativeTime } from '@/lib/utils';
-import { commentPost, getPostComments } from '@/actions/posts';
+import { commentPost, getPostComments, likeComment } from '@/actions/posts';
 
 interface Comment {
   id: string;
   content: string;
   created_at: string;
   parent_id?: string | null;
+  likes_count?: number;
+  is_liked_by_user?: boolean;
   author?: {
     id: string;
     full_name: string | null;
@@ -29,24 +32,46 @@ interface CommentsSectionProps {
 function CommentItem({
   comment,
   onReply,
+  onLike,
   isReply = false,
 }: {
   comment: Comment;
   onReply: (parentId: string, authorName: string) => void;
+  onLike: (commentId: string) => void;
   isReply?: boolean;
 }) {
+  const authorId = comment.author?.id;
+  const authorName = comment.author?.full_name || 'Usuário';
+  const authorAvatar = comment.author?.avatar_url || undefined;
+  const likesCount = comment.likes_count || 0;
+  const isLiked = comment.is_liked_by_user || false;
+
   return (
     <div className={`flex gap-3 ${isReply ? 'ml-12' : ''}`}>
-      <Avatar
-        name={comment.author?.full_name || 'Usuário'}
-        src={comment.author?.avatar_url || undefined}
-        size="sm"
-      />
+      {authorId ? (
+        <Link href={`/profile/${authorId}`} className="flex-shrink-0">
+          <Avatar
+            name={authorName}
+            src={authorAvatar}
+            size="sm"
+            className="hover:ring-2 hover:ring-indigo-300 transition-all"
+          />
+        </Link>
+      ) : (
+        <Avatar name={authorName} src={authorAvatar} size="sm" />
+      )}
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline gap-2 flex-wrap">
-          <span className="font-semibold text-sm text-gray-900">
-            {comment.author?.full_name || 'Usuário'}
-          </span>
+          {authorId ? (
+            <Link
+              href={`/profile/${authorId}`}
+              className="font-semibold text-sm text-gray-900 hover:text-indigo-600 transition-colors"
+            >
+              {authorName}
+            </Link>
+          ) : (
+            <span className="font-semibold text-sm text-gray-900">{authorName}</span>
+          )}
           <span className="text-sm text-gray-700 break-words">{comment.content}</span>
         </div>
         <div className="flex items-center gap-3 mt-1">
@@ -54,7 +79,28 @@ function CommentItem({
             {formatRelativeTime(comment.created_at)}
           </span>
           <button
-            onClick={() => onReply(comment.id, comment.author?.full_name || 'Usuário')}
+            onClick={() => onLike(comment.id)}
+            className={`flex items-center gap-1 text-xs font-medium transition-colors ${
+              isLiked ? 'text-red-500' : 'text-gray-500 hover:text-red-500'
+            }`}
+          >
+            <svg
+              className="w-3.5 h-3.5"
+              fill={isLiked ? 'currentColor' : 'none'}
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+              />
+            </svg>
+            {likesCount > 0 && <span>{likesCount}</span>}
+          </button>
+          <button
+            onClick={() => onReply(comment.id, authorName)}
             className="text-xs font-medium text-gray-500 hover:text-indigo-600"
           >
             Responder
@@ -101,6 +147,57 @@ export function CommentsSection({
   const cancelReply = () => {
     setReplyingTo(null);
     setNewComment('');
+  };
+
+  // Função auxiliar para atualizar likes em comentários aninhados
+  const updateCommentLikes = (
+    commentsList: Comment[],
+    commentId: string,
+    liked: boolean,
+    likesCount: number
+  ): Comment[] => {
+    return commentsList.map((c) => {
+      if (c.id === commentId) {
+        return { ...c, is_liked_by_user: liked, likes_count: likesCount };
+      }
+      if (c.replies && c.replies.length > 0) {
+        return { ...c, replies: updateCommentLikes(c.replies, commentId, liked, likesCount) };
+      }
+      return c;
+    });
+  };
+
+  const handleLike = (commentId: string) => {
+    // Encontrar o comentário para fazer optimistic update
+    const findComment = (list: Comment[]): Comment | undefined => {
+      for (const c of list) {
+        if (c.id === commentId) return c;
+        if (c.replies) {
+          const found = findComment(c.replies);
+          if (found) return found;
+        }
+      }
+      return undefined;
+    };
+
+    const comment = findComment(comments);
+    if (!comment) return;
+
+    // Optimistic update
+    const newLiked = !comment.is_liked_by_user;
+    const newCount = (comment.likes_count || 0) + (newLiked ? 1 : -1);
+    setComments((prev) => updateCommentLikes(prev, commentId, newLiked, newCount));
+
+    // Chamar API
+    startTransition(async () => {
+      const result = await likeComment(commentId);
+      if (result.success && result.data) {
+        // Atualizar com dados reais do servidor
+        setComments((prev) =>
+          updateCommentLikes(prev, commentId, result.data!.liked, result.data!.likesCount)
+        );
+      }
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -178,6 +275,7 @@ export function CommentsSection({
                   <CommentItem
                     comment={comment}
                     onReply={handleReply}
+                    onLike={handleLike}
                     isReply={false}
                   />
 
@@ -189,6 +287,7 @@ export function CommentsSection({
                           key={reply.id}
                           comment={reply}
                           onReply={handleReply}
+                          onLike={handleLike}
                           isReply={true}
                         />
                       ))}

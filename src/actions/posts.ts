@@ -636,6 +636,72 @@ export async function likePost(postId: string): Promise<ActionResponse> {
 }
 
 /**
+ * Curtir comentário
+ */
+export async function likeComment(commentId: string): Promise<ActionResponse<{ liked: boolean; likesCount: number }>> {
+  try {
+    const supabase = await createClient();
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return { error: 'Usuário não autenticado' };
+    }
+
+    // Verificar se já curtiu
+    const { data: existing } = await supabase
+      .from('comment_likes')
+      .select('id')
+      .eq('comment_id', commentId)
+      .eq('user_id', user.id)
+      .single();
+
+    let liked: boolean;
+
+    if (existing) {
+      // Remover like
+      await supabase
+        .from('comment_likes')
+        .delete()
+        .eq('id', existing.id);
+
+      // Decrementar contador
+      await supabase.rpc('decrement_comment_likes', { p_comment_id: commentId });
+      liked = false;
+    } else {
+      // Adicionar like
+      await supabase
+        .from('comment_likes')
+        .insert({
+          comment_id: commentId,
+          user_id: user.id,
+        });
+
+      // Incrementar contador
+      await supabase.rpc('increment_comment_likes', { p_comment_id: commentId });
+      liked = true;
+    }
+
+    // Buscar contador atualizado
+    const { data: comment } = await supabase
+      .from('post_comments')
+      .select('likes_count')
+      .eq('id', commentId)
+      .single();
+
+    revalidatePath('/feed');
+    return {
+      success: true,
+      data: {
+        liked,
+        likesCount: comment?.likes_count || 0,
+      },
+    };
+  } catch {
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+/**
  * Votar em post (termômetro de sentimento)
  * @param voteType -5 a +5 para votar, 0 para remover voto
  */
@@ -952,6 +1018,9 @@ export async function getPostComments(postId: string) {
   try {
     const supabase = await createClient();
 
+    // Buscar usuário atual para verificar quais comentários ele curtiu
+    const { data: { user } } = await supabase.auth.getUser();
+
     const { data, error } = await supabase
       .from('post_comments')
       .select(`
@@ -967,13 +1036,33 @@ export async function getPostComments(postId: string) {
       throw error;
     }
 
-    // Organizar comentários em estrutura hierárquica (pais com respostas)
-    const commentsMap = new Map<string, typeof data[0] & { replies: typeof data }>();
-    const rootComments: (typeof data[0] & { replies: typeof data })[] = [];
+    // Buscar quais comentários o usuário curtiu
+    let userLikedCommentIds: Set<string> = new Set();
+    if (user && data && data.length > 0) {
+      const commentIds = data.map(c => c.id);
+      const { data: userLikes } = await supabase
+        .from('comment_likes')
+        .select('comment_id')
+        .eq('user_id', user.id)
+        .in('comment_id', commentIds);
 
-    // Primeiro passo: criar mapa de todos os comentários
+      if (userLikes) {
+        userLikedCommentIds = new Set(userLikes.map(l => l.comment_id));
+      }
+    }
+
+    // Organizar comentários em estrutura hierárquica (pais com respostas)
+    type CommentWithLikes = typeof data[0] & { replies: CommentWithLikes[]; is_liked_by_user: boolean };
+    const commentsMap = new Map<string, CommentWithLikes>();
+    const rootComments: CommentWithLikes[] = [];
+
+    // Primeiro passo: criar mapa de todos os comentários com info de like
     data?.forEach(comment => {
-      commentsMap.set(comment.id, { ...comment, replies: [] });
+      commentsMap.set(comment.id, {
+        ...comment,
+        replies: [],
+        is_liked_by_user: userLikedCommentIds.has(comment.id),
+      });
     });
 
     // Segundo passo: organizar hierarquia

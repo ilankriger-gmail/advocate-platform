@@ -176,6 +176,7 @@ export interface Database {
           created_at: string
           is_deleted: boolean
           parent_id: string | null
+          likes_count: number
         }
         Insert: {
           id?: string
@@ -185,6 +186,7 @@ export interface Database {
           created_at?: string
           is_deleted?: boolean
           parent_id?: string | null
+          likes_count?: number
         }
         Update: {
           id?: string
@@ -194,6 +196,27 @@ export interface Database {
           created_at?: string
           is_deleted?: boolean
           parent_id?: string | null
+          likes_count?: number
+        }
+      }
+      comment_likes: {
+        Row: {
+          id: string
+          comment_id: string
+          user_id: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          comment_id: string
+          user_id: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          comment_id?: string
+          user_id?: string
+          created_at?: string
         }
       }
     }
@@ -209,6 +232,14 @@ export interface Database {
         Args: { post_id: string }
         Returns: void
       }
+      increment_comment_likes: {
+        Args: { p_comment_id: string }
+        Returns: void
+      }
+      decrement_comment_likes: {
+        Args: { p_comment_id: string }
+        Returns: void
+      }
     }
   }
 }
@@ -218,6 +249,7 @@ export type User = Database['public']['Tables']['users']['Row'];
 export type Post = Database['public']['Tables']['posts']['Row'];
 export type PostLike = Database['public']['Tables']['post_likes']['Row'];
 export type PostComment = Database['public']['Tables']['post_comments']['Row'];
+export type CommentLike = Database['public']['Tables']['comment_likes']['Row'];
 
 // Tipos com relacionamentos
 export interface UserWithStats extends User {
@@ -241,6 +273,7 @@ export interface CommentWithAuthor extends PostComment {
     avatar_url: string | null;
   } | null;
   replies?: CommentWithAuthor[];
+  is_liked_by_user?: boolean;
 }
 
 /**

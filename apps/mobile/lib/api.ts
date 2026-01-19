@@ -165,3 +165,15 @@ export const profileApi = {
     }),
   getPosts: () => api('/api/mobile/profile/posts'),
 };
+
+export const usersApi = {
+  getById: (id: string) => api(`/api/mobile/users/${id}`),
+  follow: (id: string) =>
+    api(`/api/mobile/users/${id}/follow`, {
+      method: 'POST',
+    }),
+  unfollow: (id: string) =>
+    api(`/api/mobile/users/${id}/follow`, {
+      method: 'DELETE',
+    }),
+};
