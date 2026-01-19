@@ -110,12 +110,8 @@ export default function ParticipationModal({
       return;
     }
 
-    // Validar Instagram para Atos de Amor
-    if (isAtosAmor) {
-      if (!formData.instagramUrl) {
-        setError('Link do Instagram é obrigatório para Atos de Amor');
-        return;
-      }
+    // Validar Instagram para Atos de Amor (opcional, mas se preenchido deve ser válido)
+    if (isAtosAmor && formData.instagramUrl) {
       if (!isValidInstagramUrl(formData.instagramUrl)) {
         setError('Link do Instagram inválido. Use instagram.com/p/... ou /reel/...');
         return;
@@ -129,7 +125,7 @@ export default function ParticipationModal({
         challengeId: challenge.id,
         resultValue,
         videoProofUrl: formData.videoUrl,
-        instagramProofUrl: isAtosAmor ? formData.instagramUrl : undefined,
+        instagramProofUrl: formData.instagramUrl || undefined,
       });
 
       if (response.error) {
@@ -306,11 +302,11 @@ export default function ParticipationModal({
         </View>
       </View>
 
-      {/* Link do Instagram (apenas para Atos de Amor) */}
+      {/* Link do Instagram (apenas para Atos de Amor - opcional) */}
       {isAtosAmor && (
         <View className="mb-4">
           <Text className="text-sm font-medium text-gray-700 mb-2">
-            Link do post/reel no Instagram *
+            Link do post/reel no Instagram (opcional)
           </Text>
           <TextInput
             value={formData.instagramUrl}

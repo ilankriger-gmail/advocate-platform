@@ -113,21 +113,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Para Atos de Amor, validar também o Instagram
+    // Para Atos de Amor, Instagram é opcional mas se preenchido deve ser válido
     const isAtosAmor = challenge.type === 'atos_amor';
-    if (isAtosAmor) {
-      if (!instagramProofUrl) {
-        return NextResponse.json(
-          { error: 'Link do Instagram é obrigatório para Atos de Amor' },
-          { status: 400 }
-        );
-      }
-      if (!isValidInstagramUrl(instagramProofUrl)) {
-        return NextResponse.json(
-          { error: 'Link do Instagram inválido. Use instagram.com/p/... ou instagram.com/reel/...' },
-          { status: 400 }
-        );
-      }
+    if (instagramProofUrl && !isValidInstagramUrl(instagramProofUrl)) {
+      return NextResponse.json(
+        { error: 'Link do Instagram inválido. Use instagram.com/p/... ou instagram.com/reel/...' },
+        { status: 400 }
+      );
     }
 
     // Validar resultado para desafios físicos

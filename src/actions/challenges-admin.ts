@@ -55,14 +55,16 @@ export async function approveParticipation(
       .from('challenge_participants')
       .update({
         status: 'approved',
-        approved_by: user.id,
-        approved_at: new Date().toISOString(),
         coins_earned: coinsReward,
       })
       .eq('id', participationId);
 
     if (updateError) {
-      return { error: 'Erro ao aprovar participacao' };
+      challengesAdminLogger.error('Erro ao aprovar participação', {
+        participationId,
+        error: sanitizeError(updateError)
+      });
+      return { error: `Erro ao aprovar: ${updateError.message || updateError.code}` };
     }
 
     // Adicionar moedas ao usuário
@@ -151,13 +153,15 @@ export async function rejectParticipation(
       .from('challenge_participants')
       .update({
         status: 'rejected',
-        approved_by: user.id,
-        approved_at: new Date().toISOString(),
       })
       .eq('id', participationId);
 
     if (error) {
-      return { error: 'Erro ao rejeitar participacao' };
+      challengesAdminLogger.error('Erro ao rejeitar participação', {
+        participationId,
+        error: sanitizeError(error)
+      });
+      return { error: `Erro ao rejeitar: ${error.message || error.code}` };
     }
 
     // Notificar usuário da rejeição

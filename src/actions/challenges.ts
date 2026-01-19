@@ -88,15 +88,10 @@ export async function participateInChallenge(data: {
       return { error: 'Apenas links do YouTube são aceitos. O vídeo deve ser público.' };
     }
 
-    // Para Atos de Amor, validar também o Instagram
+    // Instagram é opcional, mas se preenchido deve ser válido
     const isAtosAmor = challenge.type === 'atos_amor';
-    if (isAtosAmor) {
-      if (!data.instagramProofUrl) {
-        return { error: 'Link do Instagram é obrigatório para Atos de Amor' };
-      }
-      if (!isValidInstagramUrl(data.instagramProofUrl)) {
-        return { error: 'Link do Instagram inválido. Use instagram.com/p/... ou instagram.com/reel/...' };
-      }
+    if (data.instagramProofUrl && !isValidInstagramUrl(data.instagramProofUrl)) {
+      return { error: 'Link do Instagram inválido. Use instagram.com/p/... ou instagram.com/reel/...' };
     }
 
     // Analisar vídeo com IA (Gemini assiste o vídeo do YouTube)
