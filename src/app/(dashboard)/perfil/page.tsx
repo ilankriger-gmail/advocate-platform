@@ -56,6 +56,18 @@ export default async function PerfilPage() {
           <p className="mt-3 sm:mt-4 text-xs sm:text-sm text-white/80 max-w-md mx-auto">{profile.bio}</p>
         )}
 
+        {/* Followers/Following */}
+        <div className="mt-3 sm:mt-4 flex justify-center gap-6 sm:gap-8">
+          <div className="text-center">
+            <p className="text-lg sm:text-xl font-bold">{profile?.followers_count || 0}</p>
+            <p className="text-xs sm:text-sm text-white/70">Seguidores</p>
+          </div>
+          <div className="text-center">
+            <p className="text-lg sm:text-xl font-bold">{profile?.following_count || 0}</p>
+            <p className="text-xs sm:text-sm text-white/70">Seguindo</p>
+          </div>
+        </div>
+
         {/* Social Links - min-h-[44px] para touch target */}
         <div className="mt-3 sm:mt-4 flex justify-center gap-3">
           {profile?.instagram_handle && (
