@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { ActionResponse } from '@/types/action';
 import type { UpdateProfileData } from '@/types/profile';
 import { validateFileMagicBytes } from '@/lib/security';
+import { verifyLinkSafety } from '@/lib/ai/verify-link';
 
 /**
  * Atualizar perfil do usuário
@@ -16,6 +17,22 @@ export async function updateProfile(data: UpdateProfileData): Promise<ActionResp
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return { error: 'Usuário não autenticado' };
+    }
+
+    // Verificar segurança do link se foi fornecido
+    if (data.website_url) {
+      const linkVerification = await verifyLinkSafety(data.website_url);
+      if (!linkVerification.isSafe) {
+        const categoryMessages: Record<string, string> = {
+          spam: 'O link parece ser spam ou marketing agressivo.',
+          phishing: 'O link parece ser uma tentativa de phishing.',
+          malware: 'O link pode conter malware ou downloads suspeitos.',
+          adult: 'O link parece conter conteúdo adulto.',
+          suspicious: 'O link possui características suspeitas.',
+        };
+        const message = categoryMessages[linkVerification.category] || 'Link não permitido.';
+        return { error: `Link não permitido: ${message}` };
+      }
     }
 
     const { error } = await supabase
@@ -31,6 +48,7 @@ export async function updateProfile(data: UpdateProfileData): Promise<ActionResp
     }
 
     revalidatePath('/profile');
+    revalidatePath('/perfil');
     revalidatePath('/dashboard');
     return { success: true };
   } catch {

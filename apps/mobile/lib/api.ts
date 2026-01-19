@@ -1,5 +1,3 @@
-import { useAuthStore } from '../stores/auth';
-
 const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
 
 interface FetchOptions extends RequestInit {
@@ -10,22 +8,15 @@ export async function api<T>(
   endpoint: string,
   options: FetchOptions = {}
 ): Promise<{ data?: T; error?: string }> {
-  const { requireAuth = true, ...fetchOptions } = options;
+  const { requireAuth = false, ...fetchOptions } = options;
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string> || {}),
   };
 
-  // Adicionar token de autenticação se necessário
-  if (requireAuth) {
-    const session = useAuthStore.getState().session;
-    if (session?.access_token) {
-      headers['Authorization'] = `Bearer ${session.access_token}`;
-    } else {
-      return { error: 'Não autenticado' };
-    }
-  }
+  // Por enquanto, autenticação desabilitada
+  // TODO: Reativar autenticação depois
 
   try {
     const response = await fetch(`${API_URL}${endpoint}`, {
@@ -36,13 +27,6 @@ export async function api<T>(
     const data = await response.json();
 
     if (!response.ok) {
-      // Se token expirado, fazer logout (apenas se ainda estiver autenticado)
-      if (response.status === 401) {
-        const { isAuthenticated, logout } = useAuthStore.getState();
-        if (isAuthenticated) {
-          logout();
-        }
-      }
       return { error: data.error || 'Erro na requisição' };
     }
 

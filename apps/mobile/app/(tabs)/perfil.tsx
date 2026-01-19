@@ -13,7 +13,6 @@ import {
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useRouter } from 'expo-router';
 import { profileApi } from '@/lib/api';
-import { useAuthStore } from '@/stores/auth';
 
 interface Profile {
   id: string;
@@ -76,7 +75,6 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
 
 export default function PerfilScreen() {
   const router = useRouter();
-  const { logout } = useAuthStore();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
   const [participations, setParticipations] = useState<Participation[]>([]);
@@ -152,18 +150,7 @@ export default function PerfilScreen() {
   };
 
   const handleLogout = () => {
-    Alert.alert(
-      'Sair',
-      'Tem certeza que deseja sair da sua conta?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Sair',
-          style: 'destructive',
-          onPress: () => logout(),
-        },
-      ]
-    );
+    Alert.alert('Sair', 'Função desabilitada temporariamente');
   };
 
   if (isLoading && !profile) {

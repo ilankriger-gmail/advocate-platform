@@ -1,7 +1,7 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Stack, useRouter, useSegments } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
 import { Platform, View, Text } from 'react-native';
@@ -9,7 +9,6 @@ import 'react-native-reanimated';
 import '../global.css';
 
 import { useColorScheme } from '@/components/useColorScheme';
-import { useAuthStore } from '../stores/auth';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -17,8 +16,8 @@ export {
 } from 'expo-router';
 
 export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: '(auth)',
+  // Vai direto para tabs (sem autenticação por enquanto)
+  initialRouteName: '(tabs)',
 };
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -28,7 +27,7 @@ if (Platform.OS !== 'web') {
 
 export default function RootLayout() {
   const isWeb = Platform.OS === 'web';
-  const [appReady, setAppReady] = useState(isWeb); // Na web, começa pronto
+  const [appReady, setAppReady] = useState(isWeb);
 
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
@@ -52,7 +51,6 @@ export default function RootLayout() {
     }
   }, [loaded, isWeb]);
 
-  // Na web, renderiza imediatamente sem esperar fonts
   if (!appReady && !isWeb) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
@@ -66,48 +64,20 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
-  const { isAuthenticated } = useAuthStore();
-  const segments = useSegments();
   const router = useRouter();
-  const [isNavigationReady, setNavigationReady] = useState(false);
   const [hasRedirected, setHasRedirected] = useState(false);
 
+  // Redireciona direto para tabs ao iniciar
   useEffect(() => {
-    // Pequeno delay para garantir que a navegação está pronta
-    const timer = setTimeout(() => {
-      setNavigationReady(true);
-    }, 100);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Resetar flag de redirect quando autenticação mudar
-  useEffect(() => {
-    setHasRedirected(false);
-  }, [isAuthenticated]);
-
-  useEffect(() => {
-    if (!isNavigationReady || hasRedirected) return;
-
-    const inAuthGroup = segments[0] === '(auth)';
-    const inTabsGroup = segments[0] === '(tabs)';
-    console.log('[Layout] Auth check - isAuthenticated:', isAuthenticated, 'inAuthGroup:', inAuthGroup, 'segments:', segments);
-
-    // Só redireciona se realmente precisa mudar de grupo
-    if (!isAuthenticated && !inAuthGroup) {
-      console.log('[Layout] Redirecting to login');
-      setHasRedirected(true);
-      router.replace('/(auth)/login');
-    } else if (isAuthenticated && inAuthGroup) {
-      console.log('[Layout] Redirecting to tabs');
+    if (!hasRedirected) {
       setHasRedirected(true);
       router.replace('/(tabs)');
     }
-  }, [isAuthenticated, segments, isNavigationReady, hasRedirected]);
+  }, [hasRedirected]);
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(auth)" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
       </Stack>
