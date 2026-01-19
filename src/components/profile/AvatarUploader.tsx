@@ -8,12 +8,14 @@ import { uploadAvatar, removeAvatar } from '@/actions/profile';
 interface AvatarUploaderProps {
   currentUrl: string | null;
   userName: string;
+  highlighted?: boolean;
 }
 
 /**
  * Componente para upload de avatar do perfil
+ * Se highlighted=true e não tem foto, mostra versão destacada
  */
-export function AvatarUploader({ currentUrl, userName }: AvatarUploaderProps) {
+export function AvatarUploader({ currentUrl, userName, highlighted }: AvatarUploaderProps) {
   const router = useRouter();
   const [avatarUrl, setAvatarUrl] = useState(currentUrl);
   const [uploading, setUploading] = useState(false);
@@ -63,6 +65,76 @@ export function AvatarUploader({ currentUrl, userName }: AvatarUploaderProps) {
     setRemoving(false);
   };
 
+  // Versão destacada quando não tem foto
+  const showHighlight = highlighted && !avatarUrl;
+
+  if (showHighlight) {
+    return (
+      <div className="p-5 rounded-xl border-2 border-dashed border-pink-300 bg-gradient-to-br from-pink-50 to-indigo-50">
+        {message && (
+          <div className={`mb-4 p-3 rounded-lg text-sm ${
+            message.type === 'success'
+              ? 'bg-green-50 text-green-700 border border-green-200'
+              : 'bg-red-50 text-red-700 border border-red-200'
+          }`}>
+            {message.text}
+          </div>
+        )}
+
+        <div className="text-center mb-4">
+          <span className="text-4xl">📷</span>
+          <h3 className="font-semibold text-gray-900 mt-2 text-lg">
+            Adicione uma foto de perfil!
+          </h3>
+          <p className="text-sm text-gray-600">
+            Sua foto aparece nos posts e comentários
+          </p>
+        </div>
+
+        <div className="flex flex-col items-center gap-4">
+          <Avatar
+            src={avatarUrl}
+            name={userName}
+            size="xl"
+            className="!w-24 !h-24 ring-4 ring-white shadow-lg"
+          />
+
+          <label className="cursor-pointer">
+            <input
+              type="file"
+              accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"
+              onChange={handleFileChange}
+              className="hidden"
+              disabled={uploading}
+            />
+            <span className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold transition-all shadow-md ${
+              uploading
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-gradient-to-r from-pink-500 to-indigo-500 text-white hover:from-pink-600 hover:to-indigo-600 cursor-pointer hover:shadow-lg'
+            }`}>
+              {uploading ? (
+                <>
+                  <LoadingSpinner />
+                  Enviando...
+                </>
+              ) : (
+                <>
+                  <UploadIcon />
+                  Escolher foto
+                </>
+              )}
+            </span>
+          </label>
+
+          <p className="text-xs text-gray-500">
+            PNG, JPEG ou WebP. Máximo 2MB.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Versão normal (quando já tem foto ou highlighted=false)
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-3">

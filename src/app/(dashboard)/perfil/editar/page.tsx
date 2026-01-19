@@ -99,6 +99,13 @@ export default function EditarPerfilPage() {
 
       <form onSubmit={handleSubmit}>
         <Card className="p-6 space-y-6">
+          {/* Upload de Foto - No topo, destacado quando não tem foto */}
+          <AvatarUploader
+            currentUrl={formData.avatar_url || null}
+            userName={formData.full_name}
+            highlighted={!formData.avatar_url}
+          />
+
           {/* Informações Básicas */}
           <div>
             <h3 className="text-lg font-medium text-gray-900 mb-4">
@@ -122,11 +129,6 @@ export default function EditarPerfilPage() {
                 placeholder="Conte um pouco sobre você..."
                 hint="Opcional - máximo 160 caracteres"
                 maxLength={160}
-              />
-
-              <AvatarUploader
-                currentUrl={formData.avatar_url || null}
-                userName={formData.full_name}
               />
             </div>
           </div>

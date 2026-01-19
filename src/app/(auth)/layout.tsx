@@ -26,7 +26,6 @@ export default async function AuthLayout({
               width={180}
               height={60}
               className="h-16 w-auto"
-              style={{ filter: 'sepia(100%) saturate(300%) brightness(95%) hue-rotate(-5deg)' }}
               priority
             />
           ) : (
@@ -34,7 +33,6 @@ export default async function AuthLayout({
               src={logoUrl}
               alt={siteName}
               className="h-16 w-auto"
-              style={{ filter: 'sepia(100%) saturate(300%) brightness(95%) hue-rotate(-5deg)' }}
             />
           )}
         </div>

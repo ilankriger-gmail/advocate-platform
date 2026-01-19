@@ -103,7 +103,6 @@ export function Header({ className, siteName = 'Arena Te Amo', logoUrl = '/logo.
                   width={120}
                   height={40}
                   className="h-10 w-auto"
-                  style={{ filter: 'sepia(100%) saturate(300%) brightness(95%) hue-rotate(-5deg)' }}
                   priority
                 />
               ) : (
@@ -111,7 +110,6 @@ export function Header({ className, siteName = 'Arena Te Amo', logoUrl = '/logo.
                   src={logoUrl}
                   alt={siteName}
                   className="h-10 w-auto"
-                  style={{ filter: 'sepia(100%) saturate(300%) brightness(95%) hue-rotate(-5deg)' }}
                 />
               )}
             </Link>
