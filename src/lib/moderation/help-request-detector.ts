@@ -62,6 +62,11 @@ const HELP_PATTERNS: PatternGroup[] = [
     weight: 1.5,
     patterns: [
       'preciso de ajuda',
+      'me ajuda',
+      'me ajude',
+      'me ajudem',
+      'alguem me ajuda',
+      'alguém me ajuda',
       'ajuda urgente',
       'socorro',
       'emergência',

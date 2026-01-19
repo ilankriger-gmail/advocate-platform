@@ -93,8 +93,7 @@ export const BOTTOM_NAV_ITEMS = [
 // Navegação do criador/admin (adicional)
 export const CREATOR_NAV = [
   { href: '/admin', label: 'Painel Admin', icon: 'Shield' },
-  { href: '/admin/moderacao', label: 'Moderação', icon: 'Shield' },
-  { href: '/admin/posts', label: 'Moderar Posts', icon: 'FileText' },
+  { href: '/admin/posts', label: 'Moderação de Posts', icon: 'FileText' },
   { href: '/admin/desafios', label: 'Desafios', icon: 'Target' },
   { href: '/admin/eventos', label: 'Eventos', icon: 'Calendar' },
   { href: '/admin/premios', label: 'Prêmios', icon: 'Gift' },
