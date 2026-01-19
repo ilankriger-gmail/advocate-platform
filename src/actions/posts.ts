@@ -76,8 +76,9 @@ export async function createPost(data: CreatePostData): Promise<CreatePostRespon
     // ============================================
     // MODERAÇÃO AUTOMÁTICA COM IA
     // Sightengine (imagens) + Perspective API (texto)
+    // Posts são aprovados automaticamente, só vão para moderação se houver problema
     // ============================================
-    let postStatus: 'approved' | 'pending' | 'blocked' = isCreator ? 'approved' : 'pending';
+    let postStatus: 'approved' | 'pending' | 'blocked' = 'approved';
     let moderationScore: number | null = null;
     let moderationFlags: Record<string, unknown> | null = null;
     let moderationMessage: string | null = null;
@@ -134,7 +135,7 @@ export async function createPost(data: CreatePostData): Promise<CreatePostRespon
       } else {
         console.log('[MODERATION DEBUG] Post APPROVED');
       }
-      // Se 'approved', mantém o status original (approved para criadores, pending para comunidade)
+      // Se 'approved', mantém status approved (todos os posts são aprovados automaticamente)
 
     } catch (moderationError) {
       // Em caso de erro na moderação, continua com fluxo normal
