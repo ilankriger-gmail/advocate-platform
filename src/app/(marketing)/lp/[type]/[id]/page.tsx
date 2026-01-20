@@ -210,35 +210,35 @@ function ParticipantCounter({ count, type }: { count: number; type: 'challenge' 
   );
 }
 
-// Componente FOMO - Mostra que corações viram dinheiro
-function CashPrizeFomo() {
+// Componente "Como Funciona" - Explica o processo para ganhar prêmios
+function HowItWorks() {
   return (
-    <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4 my-6">
+    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 my-6">
       <div className="flex items-center gap-3 mb-3">
-        <div className="p-2 bg-green-500 rounded-full">
-          <Banknote className="w-5 h-5 text-white" />
+        <div className="p-2 bg-blue-500 rounded-full">
+          <Zap className="w-5 h-5 text-white" />
         </div>
         <div>
-          <h3 className="font-bold text-green-800 text-sm">Ganhe corações!</h3>
-          <p className="text-xs text-green-600">Troque por produtos, experiências e dinheiro</p>
+          <h3 className="font-bold text-blue-800 text-sm">Como funciona?</h3>
+          <p className="text-xs text-blue-600">Complete o desafio para ganhar prêmios</p>
         </div>
       </div>
       <div className="grid grid-cols-3 gap-2 text-center">
         <div className="bg-white/70 rounded-lg p-2">
-          <Gift className="w-4 h-4 text-pink-500 mx-auto mb-1" />
-          <p className="text-xs font-medium text-gray-700">Produtos</p>
+          <Target className="w-4 h-4 text-blue-500 mx-auto mb-1" />
+          <p className="text-xs font-medium text-gray-700">1. Faça as tarefas</p>
         </div>
         <div className="bg-white/70 rounded-lg p-2">
-          <Sparkles className="w-4 h-4 text-purple-500 mx-auto mb-1" />
-          <p className="text-xs font-medium text-gray-700">Experiências</p>
+          <Heart className="w-4 h-4 text-pink-500 mx-auto mb-1" />
+          <p className="text-xs font-medium text-gray-700">2. Ganhe corações</p>
         </div>
         <div className="bg-white/70 rounded-lg p-2">
-          <Banknote className="w-4 h-4 text-green-500 mx-auto mb-1" />
-          <p className="text-xs font-medium text-gray-700">Dinheiro</p>
+          <Gift className="w-4 h-4 text-green-500 mx-auto mb-1" />
+          <p className="text-xs font-medium text-gray-700">3. Troque por prêmios</p>
         </div>
       </div>
-      <p className="text-xs text-center text-green-700 mt-3 font-medium">
-        Quanto mais corações, mais chances de ganhar!
+      <p className="text-xs text-center text-blue-700 mt-3 font-medium">
+        Quanto mais tarefas completar, mais corações você ganha!
       </p>
     </div>
   );
@@ -249,20 +249,20 @@ function getHeadline(data: LandingPageData): { headline: string; subheadline: st
   if (data.type === 'challenge') {
     const headlines: Record<string, { headline: string; subheadline: string }> = {
       fisico: {
-        headline: `Ganhe ${data.coinsReward || 0} corações com este desafio!`,
-        subheadline: 'Troque por produtos, experiências e dinheiro!',
+        headline: `Complete o desafio e ganhe ${data.coinsReward || 0} corações!`,
+        subheadline: 'Faça as tarefas e troque por prêmios incríveis!',
       },
       engajamento: {
-        headline: `Complete o desafio e ganhe ${data.coinsReward || 0} corações!`,
-        subheadline: 'Troque por produtos, experiências e dinheiro!',
+        headline: `Participe e ganhe ${data.coinsReward || 0} corações!`,
+        subheadline: 'Complete as tarefas para trocar por prêmios!',
       },
       participe: {
-        headline: 'Participe e concorra a prêmios incríveis!',
-        subheadline: 'Ganhe corações e troque por produtos, experiências e dinheiro!',
+        headline: 'Participe do desafio e concorra a prêmios!',
+        subheadline: 'Complete as tarefas, ganhe corações e troque por prêmios!',
       },
       atos_amor: {
         headline: 'Faça a diferença com um ato de amor!',
-        subheadline: `Ganhe ${data.coinsReward || 0} corações e troque por prêmios!`,
+        subheadline: `Complete a tarefa, ganhe ${data.coinsReward || 0} corações e troque por prêmios!`,
       },
     };
     return headlines[data.challengeType || 'engajamento'];
@@ -271,7 +271,7 @@ function getHeadline(data: LandingPageData): { headline: string; subheadline: st
   // Para prêmios
   return {
     headline: 'Resgate seu prêmio exclusivo!',
-    subheadline: `Use seus corações e garanta o seu`,
+    subheadline: `Use seus corações para resgatar`,
   };
 }
 
@@ -480,10 +480,10 @@ export default async function LandingPage({ params, searchParams }: PageProps) {
           )}
         </FadeInSection>
 
-        {/* FOMO - Corações viram dinheiro (apenas para desafios) */}
+        {/* Como Funciona - Explica o processo (apenas para desafios) */}
         {data.type === 'challenge' && (
           <FadeInSection delay={150}>
-            <CashPrizeFomo />
+            <HowItWorks />
           </FadeInSection>
         )}
 
