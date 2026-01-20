@@ -1,5 +1,9 @@
 const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
 
+// Log para debug - mostra a URL da API configurada
+console.log('[API Config] API_URL:', API_URL);
+console.log('[API Config] EXPO_PUBLIC_API_URL:', process.env.EXPO_PUBLIC_API_URL);
+
 interface FetchOptions extends RequestInit {
   requireAuth?: boolean;
 }
@@ -8,6 +12,9 @@ export async function api<T>(
   endpoint: string,
   options: FetchOptions = {}
 ): Promise<{ data?: T; error?: string }> {
+  const url = `${API_URL}${endpoint}`;
+  console.log('[API] Fetching:', url);
+
   const { requireAuth = false, ...fetchOptions } = options;
 
   const headers: Record<string, string> = {
@@ -19,20 +26,24 @@ export async function api<T>(
   // TODO: Reativar autenticação depois
 
   try {
-    const response = await fetch(`${API_URL}${endpoint}`, {
+    console.log('[API] Starting request to:', url);
+    const response = await fetch(url, {
       ...fetchOptions,
       headers,
     });
 
+    console.log('[API] Response status:', response.status);
     const data = await response.json();
 
     if (!response.ok) {
+      console.log('[API] Error response:', data);
       return { error: data.error || 'Erro na requisição' };
     }
 
+    console.log('[API] Success, data received');
     return { data };
   } catch (error) {
-    console.error('API Error:', error);
+    console.error('[API] Connection error:', error);
     return { error: 'Erro de conexão' };
   }
 }

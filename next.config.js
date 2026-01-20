@@ -62,8 +62,13 @@ const nextConfig = {
     const allowedOrigins = [
       'https://comunidade.omocodoteamo.com.br',
       'https://comece.omocodoteamo.com.br',
-      // Adicionar localhost em desenvolvimento
-      ...(process.env.NODE_ENV === 'development' ? ['http://localhost:3000'] : []),
+      // Adicionar localhost em desenvolvimento (incluindo Expo)
+      ...(process.env.NODE_ENV === 'development' ? [
+        'http://localhost:3000',
+        'http://localhost:8081',  // Expo Web
+        'http://localhost:8082',  // Expo Web (porta alternativa)
+        'http://192.168.4.133:8081',  // Expo na rede local
+      ] : []),
     ].join(', ');
 
     return [
@@ -161,7 +166,8 @@ const nextConfig = {
               // 'self': Requisições para a mesma origem
               // https://*.supabase.co: Permite conexões com API do Supabase
               // wss://*.supabase.co: Permite WebSocket connections do Supabase Realtime
-              "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+              // Em desenvolvimento: permite localhost em qualquer porta
+              `connect-src 'self' https://*.supabase.co wss://*.supabase.co${process.env.NODE_ENV === 'development' ? ' http://localhost:* ws://localhost:*' : ''}`,
               // font-src: Controla de onde fontes podem ser carregadas
               // 'self': Fontes da mesma origem
               // data:: Permite fontes em data URIs
