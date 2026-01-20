@@ -39,7 +39,6 @@
     "jest.setup.ts",
     "jest.config.js",
     "**/*.test.ts",
-    "**/*.test.tsx",
-    "apps/mobile"
+    "**/*.test.tsx"
   ]
 }

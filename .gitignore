@@ -50,17 +50,3 @@ next-env.d.ts
 # Env backup
 .env.local.save
 
-# Expo
-apps/mobile/.expo/
-apps/mobile/dist/
-apps/mobile/web-build/
-apps/mobile/*.jks
-apps/mobile/*.p8
-apps/mobile/*.p12
-apps/mobile/*.key
-apps/mobile/*.mobileprovision
-apps/mobile/*.orig.*
-apps/mobile/node_modules/
-
-# Expo EAS
-.easignore
