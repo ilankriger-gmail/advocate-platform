@@ -65,6 +65,8 @@ export default function FeedScreen() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchFeed = useCallback(async (isRefresh = false) => {
+    console.log('[Feed] fetchFeed chamado, isRefresh:', isRefresh);
+
     if (isRefresh) {
       setIsRefreshing(true);
       setError(null);
@@ -85,7 +87,9 @@ export default function FeedScreen() {
         params.cursor = cursor;
       }
 
+      console.log('[Feed] Chamando feedApi.getFeed com params:', params);
       const result = await feedApi.getFeed(params);
+      console.log('[Feed] Resultado da API:', result);
 
       if (result.error) {
         setError(result.error);

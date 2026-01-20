@@ -7,6 +7,7 @@ import { QueryProvider } from '@/providers/QueryProvider';
 import { ToastProvider } from '@/components/ui/Toast';
 import { Header } from '@/components/layout/Header';
 import { getSiteSettings } from '@/lib/config/site';
+import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics';
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
@@ -98,6 +99,7 @@ export default async function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={`${spaceGrotesk.variable} font-sans`}>
+        <GoogleAnalytics />
         <QueryProvider>
           <AuthProvider>
             <ToastProvider>
