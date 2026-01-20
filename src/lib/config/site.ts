@@ -90,7 +90,9 @@ export type SiteSettingKey =
   | 'email_onboarding3_message'
   | 'email_onboarding3_benefits'
   | 'email_onboarding3_cta'
-  | 'email_onboarding3_footer';
+  | 'email_onboarding3_footer'
+  // Google Analytics
+  | 'google_analytics_id';
 
 /**
  * Tipo para uma configuração do site
@@ -200,6 +202,8 @@ const DEFAULT_VALUES: Record<SiteSettingKey, string> = {
   email_onboarding3_benefits: 'Prêmios exclusivos esperando por você,Novos desafios toda semana,Comunidade ativa para te apoiar,Rankings e competições especiais',
   email_onboarding3_cta: 'Resgatar Prêmios',
   email_onboarding3_footer: 'Não perca a chance de ganhar prêmios!',
+  // Google Analytics
+  google_analytics_id: '',
 };
 
 /**

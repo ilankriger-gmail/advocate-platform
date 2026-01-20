@@ -72,6 +72,12 @@ const CATEGORIES: Record<string, Category> = {
     isSecret: true,
     className: 'border-amber-200 bg-amber-50/30',
   },
+  google_analytics: {
+    title: 'Google Analytics',
+    description: 'Rastreamento de pageviews e eventos com GA4.',
+    keys: ['google_analytics_id'],
+    className: 'border-indigo-200 bg-indigo-50/30',
+  },
   outros: {
     title: 'Outros',
     keys: ['email_from_name', 'footer_text'],

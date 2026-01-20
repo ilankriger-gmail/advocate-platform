@@ -123,16 +123,31 @@ export async function getLandingPageReward(id: string): Promise<ActionResponse<L
 }
 
 /**
+ * Verificar se é um UUID válido
+ */
+function isUUID(str: string): boolean {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(str);
+}
+
+/**
  * Buscar dados para landing page (desafio ou prêmio)
+ * Aceita tanto UUID quanto slug
  */
 export async function getLandingPageData(
   type: 'desafio' | 'premio',
-  id: string
+  idOrSlug: string
 ): Promise<ActionResponse<LandingPageData>> {
+  const isId = isUUID(idOrSlug);
+
   if (type === 'desafio') {
-    return getLandingPageChallenge(id);
+    return isId
+      ? getLandingPageChallenge(idOrSlug)
+      : getLandingPageChallengeBySlug(idOrSlug);
   } else if (type === 'premio') {
-    return getLandingPageReward(id);
+    return isId
+      ? getLandingPageReward(idOrSlug)
+      : getLandingPageRewardBySlug(idOrSlug);
   }
 
   return { error: 'Tipo inválido' };
