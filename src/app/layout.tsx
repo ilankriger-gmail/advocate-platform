@@ -91,15 +91,16 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Buscar logo server-side para passar ao Header
-  const settings = await getSiteSettings(['logo_url', 'site_name']);
+  // Buscar configurações server-side
+  const settings = await getSiteSettings(['logo_url', 'site_name', 'google_analytics_id']);
   const logoUrl = settings.logo_url || '/logo.png';
   const siteName = settings.site_name || 'Arena Te Amo';
+  const gaId = settings.google_analytics_id;
 
   return (
     <html lang="pt-BR">
       <body className={`${spaceGrotesk.variable} font-sans`}>
-        <GoogleAnalytics />
+        <GoogleAnalytics measurementId={gaId} />
         <QueryProvider>
           <AuthProvider>
             <ToastProvider>

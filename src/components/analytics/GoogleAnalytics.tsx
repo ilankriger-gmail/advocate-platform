@@ -4,8 +4,6 @@ import Script from 'next/script';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useEffect, Suspense } from 'react';
 
-const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
-
 // Declaração do tipo para gtag
 declare global {
   interface Window {
@@ -14,27 +12,38 @@ declare global {
   }
 }
 
-function GoogleAnalyticsInner() {
+interface GoogleAnalyticsInnerProps {
+  measurementId: string;
+}
+
+function GoogleAnalyticsInner({ measurementId }: GoogleAnalyticsInnerProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    if (!GA_MEASUREMENT_ID || !window.gtag) return;
+    if (!measurementId || !window.gtag) return;
 
     const url = pathname + (searchParams?.toString() ? `?${searchParams}` : '');
-    window.gtag('config', GA_MEASUREMENT_ID, { page_path: url });
-  }, [pathname, searchParams]);
+    window.gtag('config', measurementId, { page_path: url });
+  }, [pathname, searchParams, measurementId]);
 
   return null;
 }
 
-export function GoogleAnalytics() {
-  if (!GA_MEASUREMENT_ID) return null;
+interface GoogleAnalyticsProps {
+  measurementId?: string;
+}
+
+export function GoogleAnalytics({ measurementId }: GoogleAnalyticsProps) {
+  // Usa prop ou fallback para variável de ambiente
+  const gaId = measurementId || process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+
+  if (!gaId) return null;
 
   return (
     <>
       <Script
-        src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+        src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
         strategy="afterInteractive"
       />
       <Script id="google-analytics" strategy="afterInteractive">
@@ -42,11 +51,11 @@ export function GoogleAnalytics() {
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
-          gtag('config', '${GA_MEASUREMENT_ID}');
+          gtag('config', '${gaId}');
         `}
       </Script>
       <Suspense fallback={null}>
-        <GoogleAnalyticsInner />
+        <GoogleAnalyticsInner measurementId={gaId} />
       </Suspense>
     </>
   );
