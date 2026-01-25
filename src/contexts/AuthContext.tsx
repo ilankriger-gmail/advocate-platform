@@ -41,7 +41,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const supabase = createClient();
+  // Criar cliente uma única vez
+  const [supabase] = useState(() => createClient());
 
   // Função para buscar dados do perfil do usuário
   const fetchProfile = useCallback(async (userId: string) => {
@@ -72,31 +73,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [supabase]);
 
   useEffect(() => {
-    // Obtém a sessão inicial
-    const getInitialSession = async () => {
-      try {
-        const { data: { session: initialSession } } = await supabase.auth.getSession();
-        setSession(initialSession);
-        setUser(initialSession?.user ?? null);
-
-        // Buscar dados do perfil se usuário autenticado
-        if (initialSession?.user) {
-          await fetchProfile(initialSession.user.id);
-        } else {
-          setProfile(null);
-        }
-      } catch (error) {
-        console.error('Erro ao obter sessão inicial:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    getInitialSession();
-
-    // Listener para mudanças de autenticação
+    // Listener para mudanças de autenticação (configurar primeiro)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
+        console.log('[Auth] Estado alterado:', event, currentSession?.user?.email);
+
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
 
@@ -110,6 +91,43 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setIsLoading(false);
       }
     );
+
+    // Obtém a sessão inicial
+    const getInitialSession = async () => {
+      try {
+        // Usar getUser() ao invés de getSession() para validar o token
+        const { data: { user: currentUser }, error } = await supabase.auth.getUser();
+
+        if (error) {
+          console.log('[Auth] Erro ao obter usuário:', error.message);
+          setUser(null);
+          setSession(null);
+          setProfile(null);
+          setIsLoading(false);
+          return;
+        }
+
+        if (currentUser) {
+          console.log('[Auth] Usuário encontrado:', currentUser.email);
+          // Buscar sessão completa
+          const { data: { session: currentSession } } = await supabase.auth.getSession();
+          setSession(currentSession);
+          setUser(currentUser);
+          await fetchProfile(currentUser.id);
+        } else {
+          console.log('[Auth] Nenhum usuário autenticado');
+          setUser(null);
+          setSession(null);
+          setProfile(null);
+        }
+      } catch (error) {
+        console.error('[Auth] Erro ao obter sessão inicial:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    getInitialSession();
 
     // Cleanup do listener
     return () => {
@@ -134,13 +152,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Login com Email
   const signInWithEmail = useCallback(async (email: string, password: string): Promise<{ error: string | null }> => {
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error) {
-      console.error('Erro ao fazer login com email:', error);
+      console.error('[Auth] Erro ao fazer login com email:', error);
       if (error.message === 'Invalid login credentials') {
         return { error: 'Email ou senha incorretos' };
       }
@@ -150,6 +168,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       return { error: error.message };
     }
 
+    console.log('[Auth] Login com email bem sucedido:', data.user?.email);
     return { error: null };
   }, [supabase.auth]);
 
