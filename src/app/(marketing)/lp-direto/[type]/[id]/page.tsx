@@ -133,19 +133,30 @@ function TypeBadge({ data }: { data: LandingPageData }) {
     );
   }
 
+  // Tipos de prêmio: physical, digital, money
+  if (data.rewardType === 'physical') {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-amber-100 text-amber-700">
+        <Package className="w-4 h-4" />
+        Prêmio Físico
+      </span>
+    );
+  }
+
+  if (data.rewardType === 'money') {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700">
+        <Banknote className="w-4 h-4" />
+        Recompensa em Dinheiro
+      </span>
+    );
+  }
+
+  // Default: digital
   return (
     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-amber-100 text-amber-700">
-      {data.rewardType === 'physical' ? (
-        <>
-          <Package className="w-4 h-4" />
-          Prêmio Físico
-        </>
-      ) : (
-        <>
-          <Gift className="w-4 h-4" />
-          Prêmio Digital
-        </>
-      )}
+      <Gift className="w-4 h-4" />
+      Prêmio Digital
     </span>
   );
 }
