@@ -25,7 +25,8 @@ const COMUNIDADE_PUBLIC_ROUTES = [
   '/registro',
   '/termos',
   '/privacidade',
-  '/lp', // Landing pages de desafios e prêmios
+  '/lp', // Landing pages de desafios e prêmios (com NPS)
+  '/convite', // Landing pages diretas (sem NPS)
 ];
 
 // Rotas que requerem role de admin
