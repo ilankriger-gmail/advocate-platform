@@ -8,8 +8,9 @@ import { LinkDoBemInline } from './LinkDoBemInline';
 import type { FeedType, FeedSortType } from '@/actions/feed';
 import type { PostWithAuthor } from '@/types/post';
 
-// Posição onde inserir as campanhas do Link do Bem (após N posts)
-const LINKDOBEM_POSITION = 3;
+// Posições onde inserir as campanhas do Link do Bem (após N posts)
+// Aparece após o post 3, 10, 20, 35, 50...
+const LINKDOBEM_POSITIONS = [3, 10, 20, 35, 50];
 
 /**
  * Props do componente InfiniteFeed
@@ -246,8 +247,8 @@ export function InfiniteFeed({ type, sort = 'new', initialPosts }: InfiniteFeedP
           >
             <MemoizedCard post={post} />
           </div>
-          {/* Inserir campanhas do Link do Bem após N posts (apenas no feed community) */}
-          {index === LINKDOBEM_POSITION - 1 && type === 'community' && (
+          {/* Inserir campanhas do Link do Bem em várias posições (apenas no feed community) */}
+          {LINKDOBEM_POSITIONS.includes(index + 1) && type === 'community' && (
             <div className="mt-6">
               <LinkDoBemInline />
             </div>
