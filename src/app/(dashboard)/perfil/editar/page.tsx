@@ -26,24 +26,16 @@ export default function EditarPerfilPage() {
   });
 
   useEffect(() => {
-    // Timeout de segurança - não deixar a página travada
-    const timeout = setTimeout(() => {
-      if (loading) {
-        console.warn('[EditarPerfil] Timeout - forçando carregamento');
-        setLoading(false);
-      }
-    }, 5000);
-
-    // Esperar o AuthContext carregar
+    // Se ainda está carregando auth, espera
     if (authLoading) return;
 
-    // Se não tem usuário, não precisa carregar
+    // Se não tem usuário, para de carregar
     if (!user) {
       setLoading(false);
-      clearTimeout(timeout);
       return;
     }
 
+    // Carregar dados do perfil
     async function loadProfile() {
       try {
         const supabase = createClient();
@@ -51,34 +43,32 @@ export default function EditarPerfilPage() {
           .from('users')
           .select('*')
           .eq('id', user!.id)
-          .single();
+          .maybeSingle(); // maybeSingle ao invés de single para não dar erro se não existir
 
         if (queryError) {
-          console.error('Erro ao carregar perfil:', queryError);
+          console.error('[EditarPerfil] Erro ao carregar perfil:', queryError);
         }
 
-        if (data) {
-          setFormData({
-            full_name: data.full_name || user!.user_metadata?.full_name || '',
-            bio: data.bio || '',
-            instagram_handle: data.instagram_handle || '',
-            tiktok_handle: data.tiktok_handle || '',
-            avatar_url: data.avatar_url || user!.user_metadata?.avatar_url || '',
-            website_url: data.website_url || '',
-          });
-        } else {
-          // Usar dados do auth se não tiver perfil
-          setFormData({
-            full_name: authProfile?.full_name || user!.user_metadata?.full_name || '',
-            bio: '',
-            instagram_handle: '',
-            tiktok_handle: '',
-            avatar_url: authProfile?.avatar_url || user!.user_metadata?.avatar_url || '',
-            website_url: '',
-          });
-        }
+        // Usar dados do banco se existirem, senão usar dados do auth
+        setFormData({
+          full_name: data?.full_name || authProfile?.full_name || user!.user_metadata?.full_name || '',
+          bio: data?.bio || '',
+          instagram_handle: data?.instagram_handle || '',
+          tiktok_handle: data?.tiktok_handle || '',
+          avatar_url: data?.avatar_url || authProfile?.avatar_url || user!.user_metadata?.avatar_url || '',
+          website_url: data?.website_url || '',
+        });
       } catch (err) {
-        console.error('Erro ao carregar perfil:', err);
+        console.error('[EditarPerfil] Erro inesperado:', err);
+        // Em caso de erro, usa dados do auth como fallback
+        setFormData({
+          full_name: authProfile?.full_name || user!.user_metadata?.full_name || '',
+          bio: '',
+          instagram_handle: '',
+          tiktok_handle: '',
+          avatar_url: authProfile?.avatar_url || user!.user_metadata?.avatar_url || '',
+          website_url: '',
+        });
       } finally {
         setLoading(false);
       }
