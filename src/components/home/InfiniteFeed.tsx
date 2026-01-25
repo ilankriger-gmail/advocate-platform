@@ -12,6 +12,16 @@ import type { PostWithAuthor } from '@/types/post';
 // Aparece após o post 3, 10, 20, 35, 50...
 const LINKDOBEM_POSITIONS = [3, 10, 20, 35, 50];
 
+// Probabilidade de mostrar (50% chance)
+const LINKDOBEM_SHOW_PROBABILITY = 0.5;
+
+// Função para decidir se mostra baseado em seed consistente (evita flickering)
+function shouldShowLinkDoBem(postIndex: number): boolean {
+  // Usa o índice como seed para ter resultado consistente por posição
+  const seed = postIndex * 13 + 7;
+  return (seed % 100) < (LINKDOBEM_SHOW_PROBABILITY * 100);
+}
+
 /**
  * Props do componente InfiniteFeed
  */
@@ -247,8 +257,8 @@ export function InfiniteFeed({ type, sort = 'new', initialPosts }: InfiniteFeedP
           >
             <MemoizedCard post={post} />
           </div>
-          {/* Inserir campanhas do Link do Bem em várias posições (apenas no feed community) */}
-          {LINKDOBEM_POSITIONS.includes(index + 1) && type === 'community' && (
+          {/* Inserir campanhas do Link do Bem em várias posições (apenas no feed community, com aleatoriedade) */}
+          {LINKDOBEM_POSITIONS.includes(index + 1) && type === 'community' && shouldShowLinkDoBem(index) && (
             <div className="mt-6">
               <LinkDoBemInline />
             </div>
