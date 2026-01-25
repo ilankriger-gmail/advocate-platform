@@ -2,14 +2,17 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui';
+import { Check, Copy, ChevronDown, FileText, Zap } from 'lucide-react';
 
 interface CopyUrlButtonProps {
   url: string;
   urlDireto?: string;
+  label?: string;
+  variant?: 'primary' | 'secondary' | 'dropdown';
 }
 
-export function CopyUrlButton({ url, urlDireto }: CopyUrlButtonProps) {
-  const [copied, setCopied] = useState<'nps' | 'direto' | null>(null);
+export function CopyUrlButton({ url, urlDireto, label, variant = 'dropdown' }: CopyUrlButtonProps) {
+  const [copied, setCopied] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -24,38 +27,59 @@ export function CopyUrlButton({ url, urlDireto }: CopyUrlButtonProps) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleCopy = async (type: 'nps' | 'direto') => {
+  const handleCopy = async (urlToCopy: string) => {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
-    const urlToCopy = type === 'direto' && urlDireto ? urlDireto : url;
     const fullUrl = `${baseUrl}${urlToCopy}`;
 
     try {
       await navigator.clipboard.writeText(fullUrl);
-      setCopied(type);
+      setCopied(true);
       setShowDropdown(false);
-      setTimeout(() => setCopied(null), 2000);
+      setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.error('Erro ao copiar:', err);
     }
   };
 
-  // Se não tem URL direto, mostra botão simples
+  // Modo simples com label (primary ou secondary)
+  if (variant === 'primary' || variant === 'secondary') {
+    const isPrimary = variant === 'primary';
+    return (
+      <button
+        onClick={() => handleCopy(url)}
+        className={`
+          px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5
+          ${copied 
+            ? 'bg-green-100 text-green-700 border border-green-300' 
+            : isPrimary
+              ? 'bg-green-500 text-white hover:bg-green-600'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'
+          }
+        `}
+      >
+        {copied ? (
+          <Check className="w-3.5 h-3.5" />
+        ) : (
+          <Copy className="w-3.5 h-3.5" />
+        )}
+        {label || 'Copiar'}
+      </button>
+    );
+  }
+
+  // Modo dropdown (padrão) - com opção NPS e Direto
   if (!urlDireto) {
     return (
       <Button
-        onClick={() => handleCopy('nps')}
+        onClick={() => handleCopy(url)}
         size="sm"
         variant="outline"
-        className={copied === 'nps' ? 'border-green-300 text-green-600 bg-green-50' : 'border-gray-300 text-gray-600 hover:bg-gray-50'}
+        className={copied ? 'border-green-300 text-green-600 bg-green-50' : 'border-gray-300 text-gray-600 hover:bg-gray-50'}
       >
-        {copied === 'nps' ? (
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
+        {copied ? (
+          <Check className="w-4 h-4" />
         ) : (
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-          </svg>
+          <Copy className="w-4 h-4" />
         )}
       </Button>
     );
@@ -71,17 +95,11 @@ export function CopyUrlButton({ url, urlDireto }: CopyUrlButtonProps) {
         className={copied ? 'border-green-300 text-green-600 bg-green-50' : 'border-gray-300 text-gray-600 hover:bg-gray-50'}
       >
         {copied ? (
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
+          <Check className="w-4 h-4" />
         ) : (
           <>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-            </svg>
-            <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
+            <Copy className="w-4 h-4" />
+            <ChevronDown className="w-3 h-3 ml-1" />
           </>
         )}
       </Button>
@@ -89,24 +107,20 @@ export function CopyUrlButton({ url, urlDireto }: CopyUrlButtonProps) {
       {showDropdown && (
         <div className="absolute right-0 mt-1 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
           <button
-            onClick={() => handleCopy('nps')}
+            onClick={() => handleCopy(url)}
             className="w-full px-4 py-2.5 text-left hover:bg-gray-50 flex items-center gap-2 text-sm"
           >
-            <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
+            <FileText className="w-4 h-4 text-purple-500" />
             <div>
               <p className="font-medium text-gray-900">Link com NPS</p>
               <p className="text-xs text-gray-500">Passa pela pesquisa primeiro</p>
             </div>
           </button>
           <button
-            onClick={() => handleCopy('direto')}
+            onClick={() => handleCopy(urlDireto)}
             className="w-full px-4 py-2.5 text-left hover:bg-gray-50 flex items-center gap-2 text-sm"
           >
-            <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
+            <Zap className="w-4 h-4 text-green-500" />
             <div>
               <p className="font-medium text-gray-900">Link Direto</p>
               <p className="text-xs text-gray-500">Cadastro sem pesquisa NPS</p>
