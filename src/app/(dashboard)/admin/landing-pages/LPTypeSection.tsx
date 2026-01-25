@@ -31,7 +31,8 @@ interface LPTypeSectionProps {
 }
 
 export function LPTypeSection({ title, icon, color, bgColor, items, defaultOpen = true }: LPTypeSectionProps) {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
+  // Força aberto por padrão - sempre inicia true
+  const [isOpen, setIsOpen] = useState(true);
   
   const activeCount = items.filter(i => i.is_active).length;
   const totalLeads = items.reduce((acc, i) => acc + i.leadsCount, 0);
