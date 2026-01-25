@@ -16,6 +16,7 @@ interface UserProfile {
   is_creator: boolean;
   full_name: string | null;
   avatar_url: string | null;
+  onboarding_completed: boolean;
 }
 
 interface AuthContextType {
@@ -27,6 +28,7 @@ interface AuthContextType {
   signInWithEmail: (email: string, password: string) => Promise<{ error: string | null }>;
   signUpWithEmail: (email: string, password: string, name: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
+  setOnboardingCompleted: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -49,7 +51,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       const { data, error } = await supabase
         .from('users')
-        .select('role, is_creator, full_name, avatar_url')
+        .select('role, is_creator, full_name, avatar_url, onboarding_completed')
         .eq('id', userId)
         .maybeSingle();
 
@@ -65,6 +67,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         is_creator: data.is_creator,
         full_name: data.full_name,
         avatar_url: data.avatar_url,
+        onboarding_completed: data.onboarding_completed ?? false,
       } : null);
     } catch (error) {
       console.error('Erro inesperado ao buscar perfil:', error);
@@ -196,6 +199,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return { error: null };
   }, [supabase.auth]);
 
+  // Marcar onboarding como completo localmente
+  const setOnboardingCompleted = useCallback(() => {
+    setProfile((prev) => prev ? { ...prev, onboarding_completed: true } : null);
+  }, []);
+
   // Logout
   const signOut = useCallback(async () => {
     try {
@@ -228,6 +236,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     signInWithEmail,
     signUpWithEmail,
     signOut,
+    setOnboardingCompleted,
   };
 
   return (

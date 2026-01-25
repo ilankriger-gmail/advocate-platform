@@ -5,12 +5,14 @@ import { useRouter } from 'next/navigation';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, Button, Input, Textarea, Skeleton } from '@/components/ui';
 import { useProfile } from '@/hooks';
+import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/lib/supabase/client';
 import ChangePasswordSection from '@/components/auth/ChangePasswordSection';
 import { AvatarUploader } from '@/components/profile/AvatarUploader';
 
 export default function EditarPerfilPage() {
   const router = useRouter();
+  const { user, profile: authProfile, isLoading: authLoading } = useAuth();
   const { update, isPending, error } = useProfile();
 
   const [loading, setLoading] = useState(true);
@@ -24,33 +26,57 @@ export default function EditarPerfilPage() {
   });
 
   useEffect(() => {
-    async function loadProfile() {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+    // Esperar o AuthContext carregar
+    if (authLoading) return;
 
-      if (user) {
-        const { data } = await supabase
+    // Se não tem usuário, não precisa carregar
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    async function loadProfile() {
+      try {
+        const supabase = createClient();
+        const { data, error: queryError } = await supabase
           .from('users')
           .select('*')
-          .eq('id', user.id)
+          .eq('id', user!.id)
           .single();
+
+        if (queryError) {
+          console.error('Erro ao carregar perfil:', queryError);
+        }
 
         if (data) {
           setFormData({
-            full_name: data.full_name || user.user_metadata?.full_name || '',
+            full_name: data.full_name || user!.user_metadata?.full_name || '',
             bio: data.bio || '',
             instagram_handle: data.instagram_handle || '',
             tiktok_handle: data.tiktok_handle || '',
-            avatar_url: data.avatar_url || user.user_metadata?.avatar_url || '',
+            avatar_url: data.avatar_url || user!.user_metadata?.avatar_url || '',
             website_url: data.website_url || '',
           });
+        } else {
+          // Usar dados do auth se não tiver perfil
+          setFormData({
+            full_name: authProfile?.full_name || user!.user_metadata?.full_name || '',
+            bio: '',
+            instagram_handle: '',
+            tiktok_handle: '',
+            avatar_url: authProfile?.avatar_url || user!.user_metadata?.avatar_url || '',
+            website_url: '',
+          });
         }
+      } catch (err) {
+        console.error('Erro ao carregar perfil:', err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
 
     loadProfile();
-  }, []);
+  }, [user, authLoading, authProfile]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,7 +102,7 @@ export default function EditarPerfilPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="max-w-2xl mx-auto space-y-6">
         <Skeleton className="h-8 w-48" />
