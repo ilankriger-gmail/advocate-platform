@@ -3,10 +3,10 @@
 import { useState, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { InfiniteFeed } from './InfiniteFeed';
-// TEMPORARIAMENTE DESABILITADO - Sort
-// import { SortSelector } from './SortSelector';
+import { SortSelector } from './SortSelector';
 import { NewPostsIndicator } from './NewPostsIndicator';
 import { useRealtimeFeed } from '@/hooks/useRealtimeFeed';
+import { usePersistedState } from '@/hooks/usePersistedState';
 import type { FeedSortType } from '@/actions/feed';
 import type { PostWithAuthor } from '@/types/post';
 
@@ -18,9 +18,7 @@ interface FeedTabsProps {
 
 export function FeedTabs({ initialCommunityPosts, initialHelpRequestPosts, isLoggedIn = false }: FeedTabsProps) {
   const [activeTab, setActiveTab] = useState<'comunidade' | 'seguindo' | 'ajuda'>('comunidade');
-  // TEMPORARIAMENTE DESABILITADO - Sort selector
-  // const [sort, setSort] = useState<FeedSortType>('new');
-  const sort: FeedSortType = 'new'; // Fixo em 'new' por enquanto
+  const [sort, setSort] = usePersistedState<FeedSortType>('feed-sort', 'new');
   const queryClient = useQueryClient();
 
   // Realtime para novos posts
@@ -91,11 +89,9 @@ export function FeedTabs({ initialCommunityPosts, initialHelpRequestPosts, isLog
           </button>
         </div>
 
-        {/* TEMPORARIAMENTE DESABILITADO - Sort Selector
-        <div className="flex justify-center mt-3">
+        <div className="flex justify-center mt-2">
           <SortSelector value={sort} onChange={setSort} />
         </div>
-        */}
       </div>
 
       {/* Banner de Pedidos de Ajuda */}

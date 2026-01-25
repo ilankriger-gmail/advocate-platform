@@ -8,9 +8,10 @@ interface SortSelectorProps {
 }
 
 const sortOptions: { value: FeedSortType; label: string; icon: string }[] = [
-  { value: 'new', label: 'Novos', icon: '🕐' },
-  { value: 'top', label: 'Top', icon: '🔥' },
-  { value: 'hot', label: 'Em alta', icon: '⚡' },
+  { value: 'new', label: 'Recentes', icon: '🕐' },
+  { value: 'top', label: 'Curtidos', icon: '❤️' },
+  { value: 'comments', label: 'Comentados', icon: '💬' },
+  { value: 'hot', label: 'Em alta', icon: '🔥' },
 ];
 
 export function SortSelector({ value, onChange }: SortSelectorProps) {

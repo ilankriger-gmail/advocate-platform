@@ -7,7 +7,7 @@ import { logger, sanitizeError } from '@/lib';
 // Logger contextualizado para o módulo de feed
 const feedLogger = logger.withContext('[Feed]');
 
-export type FeedSortType = 'new' | 'top' | 'hot';
+export type FeedSortType = 'new' | 'top' | 'hot' | 'comments';
 export type FeedType = 'creator' | 'community' | 'all' | 'help_request' | 'following';
 
 /**
@@ -35,6 +35,39 @@ function decodeTopCursor(cursor: string): TopCursor | null {
     const decoded = Buffer.from(cursor, 'base64').toString('utf-8');
     const parsed = JSON.parse(decoded);
     if (typeof parsed.likes_count === 'number' && typeof parsed.id === 'string') {
+      return parsed;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Cursor composto para ordenação 'comments'
+ * Codifica comments_count e id para paginação determinística
+ */
+interface CommentsCursor {
+  comments_count: number;
+  id: string;
+}
+
+/**
+ * Codifica um cursor de comments em string base64
+ */
+function encodeCommentsCursor(cursor: CommentsCursor): string {
+  return Buffer.from(JSON.stringify(cursor)).toString('base64');
+}
+
+/**
+ * Decodifica um cursor de comments de string base64
+ * Retorna null se o cursor for inválido
+ */
+function decodeCommentsCursor(cursor: string): CommentsCursor | null {
+  try {
+    const decoded = Buffer.from(cursor, 'base64').toString('utf-8');
+    const parsed = JSON.parse(decoded);
+    if (typeof parsed.comments_count === 'number' && typeof parsed.id === 'string') {
       return parsed;
     }
     return null;
@@ -206,6 +239,24 @@ export async function getFeedPosts({
       }
       break;
     }
+    case 'comments': {
+      // Ordenação estável: comments_count DESC, id DESC
+      query = query
+        .order('comments_count', { ascending: false })
+        .order('id', { ascending: false });
+
+      // Aplicar cursor composto se fornecido
+      if (cursor) {
+        const decodedCursor = decodeCommentsCursor(cursor);
+        if (decodedCursor) {
+          // WHERE (comments_count < cursor_count) OR (comments_count = cursor_count AND id < cursor_id)
+          query = query.or(
+            `comments_count.lt.${decodedCursor.comments_count},and(comments_count.eq.${decodedCursor.comments_count},id.lt.${decodedCursor.id})`
+          );
+        }
+      }
+      break;
+    }
     case 'hot':
       // Hot usa hot_score (calculado no client) com decay temporal
       // Cursor baseado em created_at para garantir paginação estável
@@ -265,6 +316,13 @@ export async function getFeedPosts({
         // Cursor composto com likes_count e id
         nextCursor = encodeTopCursor({
           likes_count: lastPost.likes_count,
+          id: lastPost.id,
+        });
+        break;
+      case 'comments':
+        // Cursor composto com comments_count e id
+        nextCursor = encodeCommentsCursor({
+          comments_count: lastPost.comments_count,
           id: lastPost.id,
         });
         break;
