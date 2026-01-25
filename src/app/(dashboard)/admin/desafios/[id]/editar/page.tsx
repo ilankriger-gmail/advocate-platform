@@ -551,45 +551,67 @@ export default function EditarDesafioPage() {
         )}
 
         <Card className="p-5 space-y-4">
-          <h2 className="font-bold text-gray-900">Período de Validade (opcional)</h2>
+          <h2 className="font-bold text-gray-900">Período de Validade</h2>
 
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={formData.noEndDate}
+          {/* Data de Início */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Data de Início
+            </label>
+            <Input
+              type="datetime-local"
+              value={formData.starts_at ? formData.starts_at.slice(0, 16) : ''}
               onChange={(e) => setFormData({
                 ...formData,
-                noEndDate: e.target.checked,
-                starts_at: e.target.checked ? '' : formData.starts_at,
-                ends_at: e.target.checked ? '' : formData.ends_at,
+                starts_at: e.target.value ? new Date(e.target.value).toISOString() : '',
               })}
-              className="w-5 h-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
             />
-            <div>
-              <span className="text-sm font-medium text-gray-700">Desafio permanente</span>
-              <p className="text-xs text-gray-500">Sem data de início ou término</p>
-            </div>
-          </label>
+            <p className="text-xs text-gray-500 mt-1">
+              Deixe em branco para iniciar imediatamente
+            </p>
+          </div>
 
-          {!formData.noEndDate && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Período do Desafio</label>
-              <DateRangePicker
-                startDate={formData.starts_at ? new Date(formData.starts_at) : null}
-                endDate={formData.ends_at ? new Date(formData.ends_at) : null}
-                onRangeChange={(start, end) => setFormData({
+          {/* Data de Fim com checkbox */}
+          <div className="space-y-3">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.noEndDate}
+                onChange={(e) => setFormData({
                   ...formData,
-                  starts_at: start ? start.toISOString() : '',
-                  ends_at: end ? end.toISOString() : '',
+                  noEndDate: e.target.checked,
+                  ends_at: e.target.checked ? '' : formData.ends_at,
                 })}
-                placeholder="Selecione início e fim"
+                className="w-5 h-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
               />
-            </div>
-          )}
+              <div>
+                <span className="text-sm font-medium text-gray-700">Sem data de término</span>
+                <p className="text-xs text-gray-500">O desafio fica ativo até você encerrar manualmente</p>
+              </div>
+            </label>
+
+            {!formData.noEndDate && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Data de Término
+                </label>
+                <Input
+                  type="datetime-local"
+                  value={formData.ends_at ? formData.ends_at.slice(0, 16) : ''}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    ends_at: e.target.value ? new Date(e.target.value).toISOString() : '',
+                  })}
+                  min={formData.starts_at ? formData.starts_at.slice(0, 16) : undefined}
+                />
+              </div>
+            )}
+          </div>
 
           {formData.noEndDate && (
-            <div className="p-3 bg-green-50 rounded-lg text-green-700 text-sm">
-              Este desafio estará sempre ativo, sem limite de datas.
+            <div className="p-3 bg-amber-50 rounded-lg text-amber-700 text-sm flex items-center gap-2">
+              <span className="text-lg">⏳</span>
+              Este desafio pode acabar a qualquer momento. Você controla quando encerrar.
             </div>
           )}
         </Card>

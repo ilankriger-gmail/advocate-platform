@@ -3,8 +3,15 @@ import { createClient } from '@/lib/supabase/server';
 import { Card, Button, Badge } from '@/components/ui';
 import { ChallengeToggleButton } from './ChallengeToggleButton';
 import { StatsCardsClient } from './StatsCardsClient';
+import { ChallengesViewToggle } from './ChallengesViewToggle';
 
-export default async function AdminDesafiosPage() {
+export default async function AdminDesafiosPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ view?: string }>;
+}) {
+  const params = await searchParams;
+  const viewMode = params.view || 'cards';
   const supabase = await createClient();
 
   // Buscar desafios com contagem de participações
@@ -80,11 +87,14 @@ export default async function AdminDesafiosPage() {
             <p className="text-gray-500 text-sm mt-0.5">Crie e gerencie desafios para seus usuarios</p>
           </div>
         </div>
-        <Link href="/admin/desafios/novo">
-          <Button className="bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 shadow-lg shadow-pink-500/25">
-            + Novo Desafio
-          </Button>
-        </Link>
+        <div className="flex items-center gap-3">
+          <ChallengesViewToggle />
+          <Link href="/admin/desafios/novo">
+            <Button className="bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 shadow-lg shadow-pink-500/25">
+              + Novo Desafio
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Stats Cards - Client Component para interatividade */}
@@ -96,53 +106,203 @@ export default async function AdminDesafiosPage() {
         pendingParticipations={(pendingParticipations || []) as any}
       />
 
-      {/* Desafios Ativos */}
-      <section className="space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-          <h2 className="text-xl font-bold text-gray-900">
-            Desafios Ativos
-          </h2>
-          <Badge className="bg-green-100 text-green-700">{activeChallenges.length}</Badge>
-        </div>
-
-        {activeChallenges.length > 0 ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {activeChallenges.map((challenge) => (
-              <ChallengeAdminCard key={challenge.id} challenge={challenge} />
-            ))}
-          </div>
-        ) : (
-          <Card className="p-8 text-center bg-gray-50">
-            <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-3">
-              <span className="text-2xl">🎯</span>
+      {/* Visualização em Cards */}
+      {viewMode === 'cards' && (
+        <>
+          {/* Desafios Ativos */}
+          <section className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+              <h2 className="text-xl font-bold text-gray-900">
+                Desafios Ativos
+              </h2>
+              <Badge className="bg-green-100 text-green-700">{activeChallenges.length}</Badge>
             </div>
-            <p className="text-gray-500">Nenhum desafio ativo no momento</p>
-            <Link href="/admin/desafios/novo" className="inline-block mt-3">
-              <Button size="sm" variant="outline">Criar primeiro desafio</Button>
-            </Link>
-          </Card>
-        )}
-      </section>
 
-      {/* Desafios Ocultos */}
-      {inactiveChallenges.length > 0 && (
-        <section className="space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
-            <h2 className="text-xl font-bold text-gray-900">
-              Desafios Ocultos
-            </h2>
-            <Badge className="bg-gray-100 text-gray-600">{inactiveChallenges.length}</Badge>
-          </div>
+            {activeChallenges.length > 0 ? (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {activeChallenges.map((challenge) => (
+                  <ChallengeAdminCard key={challenge.id} challenge={challenge} />
+                ))}
+              </div>
+            ) : (
+              <Card className="p-8 text-center bg-gray-50">
+                <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <span className="text-2xl">🎯</span>
+                </div>
+                <p className="text-gray-500">Nenhum desafio ativo no momento</p>
+                <Link href="/admin/desafios/novo" className="inline-block mt-3">
+                  <Button size="sm" variant="outline">Criar primeiro desafio</Button>
+                </Link>
+              </Card>
+            )}
+          </section>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {inactiveChallenges.map((challenge) => (
-              <ChallengeAdminCard key={challenge.id} challenge={challenge} />
-            ))}
-          </div>
-        </section>
+          {/* Desafios Ocultos */}
+          {inactiveChallenges.length > 0 && (
+            <section className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
+                <h2 className="text-xl font-bold text-gray-900">
+                  Desafios Ocultos
+                </h2>
+                <Badge className="bg-gray-100 text-gray-600">{inactiveChallenges.length}</Badge>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {inactiveChallenges.map((challenge) => (
+                  <ChallengeAdminCard key={challenge.id} challenge={challenge} />
+                ))}
+              </div>
+            </section>
+          )}
+        </>
       )}
+
+      {/* Visualização em Lista por Tipo */}
+      {viewMode === 'list' && (
+        <ChallengesListView challenges={processedChallenges} />
+      )}
+    </div>
+  );
+}
+
+// Componente de visualização em lista agrupada por tipo
+function ChallengesListView({ challenges }: { challenges: any[] }) {
+  const typeConfig: Record<string, { label: string; icon: string; color: string; bgColor: string }> = {
+    fisico: { label: 'Físico', icon: '💪', color: 'text-blue-700', bgColor: 'bg-blue-50 border-blue-200' },
+    atos_amor: { label: 'Atos de Amor', icon: '💝', color: 'text-pink-700', bgColor: 'bg-pink-50 border-pink-200' },
+    engajamento: { label: 'Engajamento', icon: '💬', color: 'text-purple-700', bgColor: 'bg-purple-50 border-purple-200' },
+    participe: { label: 'Participe', icon: '🎁', color: 'text-green-700', bgColor: 'bg-green-50 border-green-200' },
+  };
+
+  // Agrupar desafios por tipo
+  const groupedChallenges = challenges.reduce((acc, challenge) => {
+    const type = challenge.type || 'outros';
+    if (!acc[type]) acc[type] = [];
+    acc[type].push(challenge);
+    return acc;
+  }, {} as Record<string, any[]>);
+
+  // Ordenar tipos
+  const orderedTypes = ['fisico', 'atos_amor', 'engajamento', 'participe'];
+  const sortedTypes = orderedTypes.filter(t => groupedChallenges[t]?.length > 0);
+
+  if (challenges.length === 0) {
+    return (
+      <Card className="p-8 text-center bg-gray-50">
+        <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-3">
+          <span className="text-2xl">🎯</span>
+        </div>
+        <p className="text-gray-500">Nenhum desafio cadastrado</p>
+        <Link href="/admin/desafios/novo" className="inline-block mt-3">
+          <Button size="sm" variant="outline">Criar primeiro desafio</Button>
+        </Link>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {sortedTypes.map((type) => {
+        const config = typeConfig[type] || { label: type, icon: '🎯', color: 'text-gray-700', bgColor: 'bg-gray-50 border-gray-200' };
+        const typeChallenges = groupedChallenges[type] || [];
+
+        return (
+          <section key={type} className="space-y-3">
+            {/* Header do tipo */}
+            <div className={`flex items-center gap-3 p-3 rounded-lg border ${config.bgColor}`}>
+              <span className="text-2xl">{config.icon}</span>
+              <h2 className={`text-lg font-bold ${config.color}`}>
+                {config.label}
+              </h2>
+              <Badge className={config.bgColor + ' ' + config.color + ' border'}>
+                {typeChallenges.length}
+              </Badge>
+            </div>
+
+            {/* Lista de desafios */}
+            <div className="space-y-2">
+              {typeChallenges.map((challenge: any) => (
+                <ChallengeListItem key={challenge.id} challenge={challenge} />
+              ))}
+            </div>
+          </section>
+        );
+      })}
+    </div>
+  );
+}
+
+// Item de desafio na lista
+function ChallengeListItem({ challenge }: { challenge: any }) {
+  const formatDate = (date: string | null) => {
+    if (!date) return null;
+    return new Date(date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+  };
+
+  return (
+    <div className={`flex items-center gap-4 p-4 bg-white border rounded-lg hover:shadow-md transition-all ${!challenge.is_active ? 'opacity-60' : ''}`}>
+      {/* Ícone */}
+      <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+        <span className="text-xl">{challenge.icon}</span>
+      </div>
+
+      {/* Info principal */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <h3 className="font-semibold text-gray-900 truncate">{challenge.title}</h3>
+          {!challenge.is_active && (
+            <Badge className="bg-gray-100 text-gray-500 text-xs">Oculto</Badge>
+          )}
+          {challenge.ends_at === null && challenge.is_active && (
+            <Badge className="bg-amber-100 text-amber-700 text-xs">Sem prazo</Badge>
+          )}
+        </div>
+        <div className="flex items-center gap-4 text-sm text-gray-500 mt-1">
+          <span>❤️ +{challenge.coins_reward}</span>
+          {challenge.starts_at && (
+            <span>📅 {formatDate(challenge.starts_at)}{challenge.ends_at ? ` - ${formatDate(challenge.ends_at)}` : ''}</span>
+          )}
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="flex items-center gap-6 text-sm">
+        <div className="text-center">
+          <p className="font-bold text-gray-900">{challenge.totalParticipants}</p>
+          <p className="text-xs text-gray-500">Partic.</p>
+        </div>
+        <div className="text-center">
+          <p className="font-bold text-yellow-600">{challenge.pendingCount}</p>
+          <p className="text-xs text-gray-500">Pend.</p>
+        </div>
+        <div className="text-center">
+          <p className="font-bold text-green-600">{challenge.approvedCount}</p>
+          <p className="text-xs text-gray-500">Aprov.</p>
+        </div>
+      </div>
+
+      {/* Ações */}
+      <div className="flex items-center gap-2">
+        <Link href={`/admin/desafios/${challenge.id}`}>
+          <Button size="sm" className="bg-gray-900 hover:bg-gray-800">
+            Gerenciar
+          </Button>
+        </Link>
+        <Link href={`/admin/desafios/${challenge.id}/editar`}>
+          <Button size="sm" variant="outline">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+          </Button>
+        </Link>
+        <ChallengeToggleButton
+          challengeId={challenge.id}
+          challengeName={challenge.title}
+          isActive={challenge.is_active}
+        />
+      </div>
     </div>
   );
 }
