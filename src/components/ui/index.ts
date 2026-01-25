@@ -4,7 +4,7 @@ export { Input } from './Input';
 export { Textarea } from './Textarea';
 export { Select } from './Select';
 export { Card, CardHeader, CardContent, CardFooter } from './Card';
-export { Avatar, AvatarGroup } from './Avatar';
+export { Avatar } from './Avatar';
 export { Badge, StatusBadge } from './Badge';
 export { Modal, ModalFooter } from './Modal';
 export { ConfirmModal } from './ConfirmModal';

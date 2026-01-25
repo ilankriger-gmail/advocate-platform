@@ -7,7 +7,6 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar } from '@/components/ui';
 import { NotificationDropdown } from '@/components/notifications';
-import { cn } from '@/lib/utils';
 
 interface HeaderProps {
   className?: string;
@@ -16,17 +15,17 @@ interface HeaderProps {
 }
 
 // Rotas onde o Header nao deve aparecer
-const HIDDEN_HEADER_ROUTES = ['/seja-arena', '/login', '/registro', '/lp'];
+const HIDDEN_ROUTES = ['/seja-arena', '/login', '/registro', '/lp'];
 
-// Domínio comece onde o Header nunca aparece
+// Domínio onde o Header nunca aparece
 const COMECE_DOMAIN = 'comece.omocodoteamo.com.br';
 
-export function Header({ className, siteName = 'Arena Te Amo', logoUrl = '/logo.png' }: HeaderProps) {
+export function Header({ className = '', siteName = 'Arena Te Amo', logoUrl = '/logo.png' }: HeaderProps) {
   const { user, profile, signOut, isLoading } = useAuth();
   const pathname = usePathname();
   const [isComeceDomain, setIsComeceDomain] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   // Detectar domínio comece
   useEffect(() => {
@@ -35,54 +34,40 @@ export function Header({ className, siteName = 'Arena Te Amo', logoUrl = '/logo.
     }
   }, []);
 
-  // Fechar dropdown ao clicar fora
+  // Fechar menu ao clicar fora
   useEffect(() => {
-    if (!isDropdownOpen) return;
-
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false);
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false);
       }
     }
-    // Usar timeout para evitar que o click que abriu o menu o feche imediatamente
-    const timeoutId = setTimeout(() => {
-      document.addEventListener('click', handleClickOutside);
-    }, 0);
 
-    return () => {
-      clearTimeout(timeoutId);
-      document.removeEventListener('click', handleClickOutside);
-    };
-  }, [isDropdownOpen]);
+    if (menuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [menuOpen]);
 
-  // Mostrar link admin se tiver role='admin' OU is_creator=true
-  const showAdminLink = profile?.role === 'admin' || profile?.is_creator === true;
-
-  // Nao renderizar Header no domínio comece (totalmente público)
+  // Nao renderizar no domínio comece
   if (isComeceDomain) {
     return null;
   }
 
-  // Nao renderizar Header em certas paginas
-  if (HIDDEN_HEADER_ROUTES.some(route => pathname?.startsWith(route))) {
+  // Nao renderizar em certas páginas
+  if (HIDDEN_ROUTES.some(route => pathname?.startsWith(route))) {
     return null;
   }
 
   const userName = profile?.full_name || user?.user_metadata?.full_name || 'Usuário';
   const userAvatar = profile?.avatar_url || user?.user_metadata?.avatar_url;
+  const showAdminLink = profile?.role === 'admin' || profile?.is_creator === true;
 
   return (
-    <header
-      className={cn(
-        'bg-white border-b border-gray-200 sticky top-0 z-30',
-        className
-      )}
-    >
+    <header className={`bg-white border-b border-gray-200 sticky top-0 z-30 ${className}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14">
-          {/* Left: Criar Post + Logo */}
+          {/* Lado esquerdo: Botão criar post (mobile) + Logo */}
           <div className="flex items-center gap-3">
-            {/* Botão criar post - mobile only (extremo esquerdo, estilo Instagram) */}
             {user && (
               <Link
                 href="/perfil/novo-post"
@@ -94,7 +79,6 @@ export function Header({ className, siteName = 'Arena Te Amo', logoUrl = '/logo.
                 </svg>
               </Link>
             )}
-            {/* Logo */}
             <Link href="/" className="flex items-center gap-2">
               {logoUrl.startsWith('/') ? (
                 <Image
@@ -106,95 +90,97 @@ export function Header({ className, siteName = 'Arena Te Amo', logoUrl = '/logo.
                   priority
                 />
               ) : (
-                <img
-                  src={logoUrl}
-                  alt={siteName}
-                  className="h-10 w-auto"
-                />
+                <img src={logoUrl} alt={siteName} className="h-10 w-auto" />
               )}
             </Link>
           </div>
 
-          {/* Right: Notifications + User menu or Login */}
+          {/* Lado direito: Notificações + Menu do usuário */}
           <div className="flex items-center gap-2">
             {isLoading ? (
-              /* Skeleton enquanto carrega */
               <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
             ) : user ? (
               <>
-                {/* Notificações */}
                 <NotificationDropdown />
 
-                {/* Menu do usuário */}
-                <div className="relative" ref={dropdownRef}>
-                <button
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100"
-                >
-                  <Avatar
-                    name={userName}
-                    src={userAvatar}
-                    size="sm"
-                  />
-                  <svg className={`w-4 h-4 text-gray-500 hidden sm:block transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
+                {/* Menu do perfil */}
+                <div className="relative" ref={menuRef}>
+                  <button
+                    onClick={() => setMenuOpen(!menuOpen)}
+                    className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 transition-colors"
+                    aria-label="Menu do usuário"
+                  >
+                    <Avatar name={userName} src={userAvatar} size="sm" />
+                    <svg
+                      className={`w-4 h-4 text-gray-500 hidden sm:block transition-transform duration-200 ${menuOpen ? 'rotate-180' : ''}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
 
-                {/* Dropdown menu - renderização condicional para compatibilidade cross-browser */}
-                {isDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-                    <div className="px-4 py-2 border-b border-gray-100">
-                      <p className="text-sm font-medium text-gray-900 truncate">{userName}</p>
-                      <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                  {/* Dropdown */}
+                  {menuOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                      <div className="px-4 py-2 border-b border-gray-100">
+                        <p className="text-sm font-medium text-gray-900 truncate">{userName}</p>
+                        <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                      </div>
+
+                      <Link
+                        href="/perfil"
+                        onClick={() => setMenuOpen(false)}
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        Meu Perfil
+                      </Link>
+                      <Link
+                        href="/premios"
+                        onClick={() => setMenuOpen(false)}
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        Prêmios
+                      </Link>
+                      <Link
+                        href="/perfil/editar"
+                        onClick={() => setMenuOpen(false)}
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        Configurações
+                      </Link>
+
+                      {showAdminLink && (
+                        <>
+                          <hr className="my-1" />
+                          <Link
+                            href="/admin"
+                            onClick={() => setMenuOpen(false)}
+                            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-medium"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            Painel Admin
+                          </Link>
+                        </>
+                      )}
+
+                      <hr className="my-1" />
+                      <button
+                        onClick={() => {
+                          setMenuOpen(false);
+                          signOut();
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                      >
+                        Sair
+                      </button>
                     </div>
-                    <Link
-                      href="/perfil"
-                      onClick={() => setIsDropdownOpen(false)}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                    >
-                      Meu Perfil
-                    </Link>
-                    <Link
-                      href="/premios"
-                      onClick={() => setIsDropdownOpen(false)}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                    >
-                      Prêmios
-                    </Link>
-                    <Link
-                      href="/perfil/editar"
-                      onClick={() => setIsDropdownOpen(false)}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                    >
-                      Configurações
-                    </Link>
-                    {showAdminLink && (
-                      <>
-                        <hr className="my-1" />
-                        <Link
-                          href="/admin"
-                          onClick={() => setIsDropdownOpen(false)}
-                          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-medium"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826-3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          </svg>
-                          Painel Admin
-                        </Link>
-                      </>
-                    )}
-                    <hr className="my-1" />
-                    <button
-                      onClick={signOut}
-                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                    >
-                      Sair
-                    </button>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
               </>
             ) : (
               <Link
