@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { Card } from '@/components/ui';
 
+
+export const dynamic = 'force-dynamic';
 interface StatCardProps {
   title: string;
   value: number;

@@ -4,6 +4,8 @@ import { getSiteSettings } from '@/lib/config/site';
 import RegisterForm from '@/components/auth/RegisterForm';
 import { Skeleton } from '@/components/ui';
 
+
+export const dynamic = 'force-dynamic';
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings([
     'seo_registro_title',

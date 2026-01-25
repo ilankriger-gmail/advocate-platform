@@ -2,6 +2,8 @@ import { Metadata } from 'next';
 import { getSiteSettings } from '@/lib/config/site';
 import LoginForm from './LoginForm';
 
+
+export const dynamic = 'force-dynamic';
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings([
     'seo_login_title',

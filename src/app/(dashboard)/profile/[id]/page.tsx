@@ -9,6 +9,8 @@ import { PostCard } from '@/components/posts/PostCard';
 import { FollowButton } from '@/components/social/FollowButton';
 import { formatDate } from '@/lib/utils';
 
+
+export const dynamic = 'force-dynamic';
 interface PageProps {
   params: Promise<{ id: string }>;
 }

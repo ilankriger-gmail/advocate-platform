@@ -2,6 +2,8 @@ import { Suspense } from 'react';
 import { getSiteSettings } from '@/lib/config/site';
 import ResetPasswordForm from './ResetPasswordForm';
 
+
+export const dynamic = 'force-dynamic';
 export const metadata = {
   title: 'Redefinir senha',
   description: 'Defina sua nova senha',

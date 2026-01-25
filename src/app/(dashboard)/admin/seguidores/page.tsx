@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { Card, Badge } from '@/components/ui';
 
+
+export const dynamic = 'force-dynamic';
 export default async function AdminSeguidoresPage() {
   const supabase = await createClient();
 

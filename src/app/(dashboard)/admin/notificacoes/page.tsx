@@ -5,6 +5,8 @@ import { NotificationsList } from './NotificationsList';
 import { SequenceStats } from './SequenceStats';
 import { getSequenceStats } from '@/actions/leads';
 
+
+export const dynamic = 'force-dynamic';
 export const metadata = {
   title: 'Notificações | Admin',
   description: 'Dashboard de notificações do sistema hibrido',

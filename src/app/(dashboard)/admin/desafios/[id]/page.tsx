@@ -6,6 +6,8 @@ import { ParticipationActions } from './ParticipationActions';
 import { WinnerActions } from './WinnerActions';
 import { ChallengeActions } from './ChallengeActions';
 
+
+export const dynamic = 'force-dynamic';
 interface PageProps {
   params: Promise<{ id: string }>;
 }

@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server';
 import { Card, Badge } from '@/components/ui';
 import { UserSearch, AddCoinsButton } from './UserAdminComponents';
 
+
+export const dynamic = 'force-dynamic';
 interface PageProps {
   searchParams: Promise<{ q?: string }>;
 }

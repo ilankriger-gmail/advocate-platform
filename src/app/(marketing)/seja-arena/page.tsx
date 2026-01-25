@@ -2,6 +2,8 @@ import { Metadata } from 'next';
 import { getSiteSettings } from '@/lib/config/site';
 import { NPSForm } from './NPSForm';
 
+
+export const dynamic = 'force-dynamic';
 interface PageProps {
   searchParams: Promise<{
     source?: string;

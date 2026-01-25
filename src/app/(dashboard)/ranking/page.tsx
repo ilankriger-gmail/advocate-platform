@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server';
 import { getSiteSettings } from '@/lib/config/site';
 import { PageHeader } from '@/components/layout/PageHeader';
 
+
+export const dynamic = 'force-dynamic';
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings([
     'seo_ranking_title',

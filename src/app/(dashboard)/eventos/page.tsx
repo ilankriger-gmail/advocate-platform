@@ -7,6 +7,8 @@ import { Card } from '@/components/ui';
 import { EventCard } from '@/components/events/EventCard';
 import { EventRegistrationWithEvent } from '@/lib/supabase/types';
 
+
+export const dynamic = 'force-dynamic';
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings([
     'seo_eventos_title',

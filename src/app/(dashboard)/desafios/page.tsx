@@ -9,6 +9,8 @@ import { PhysicalChallengeCard } from '@/components/challenges';
 import { MyParticipationItem } from '@/components/challenges/MyParticipationItem';
 import type { ParticipationWithChallenge, ChallengePrize } from '@/lib/supabase/types';
 
+
+export const dynamic = 'force-dynamic';
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings([
     'seo_desafios_title',

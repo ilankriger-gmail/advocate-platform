@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server';
 import { Card, Button, Badge } from '@/components/ui';
 import { EventAdminActions } from './EventAdminActions';
 
+
+export const dynamic = 'force-dynamic';
 export default async function AdminEventosPage() {
   const supabase = await createClient();
 

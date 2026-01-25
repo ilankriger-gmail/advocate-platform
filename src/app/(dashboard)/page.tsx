@@ -10,6 +10,8 @@ import { HeroSection, FeedTabs, LeaderboardWidget } from '@/components/home';
 import { SuggestedUsers } from '@/components/social';
 import { Card, Skeleton } from '@/components/ui';
 
+
+export const dynamic = 'force-dynamic';
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings([
     'seo_home_title',

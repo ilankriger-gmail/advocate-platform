@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server';
 import { Card, Button, Badge } from '@/components/ui';
 import { CopyUrlButton } from './CopyUrlButton';
 
+
+export const dynamic = 'force-dynamic';
 export default async function AdminLandingPagesPage() {
   const supabase = await createClient();
 

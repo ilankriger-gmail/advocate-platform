@@ -8,6 +8,8 @@ import { PostCard } from '@/components/posts/PostCard';
 import { MeusDesafios } from '@/components/challenges/MeusDesafios';
 import { formatDate } from '@/lib/utils';
 
+
+export const dynamic = 'force-dynamic';
 export default async function PerfilPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

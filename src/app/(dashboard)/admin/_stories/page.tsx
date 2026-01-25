@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server';
 import { Card, Badge } from '@/components/ui';
 import { StoryAdminCard } from './StoryAdminCard';
 
+
+export const dynamic = 'force-dynamic';
 export default async function AdminStoriesPage() {
   const supabase = await createClient();
 

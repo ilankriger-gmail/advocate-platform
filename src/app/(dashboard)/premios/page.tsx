@@ -8,6 +8,8 @@ import { RewardClaimButton } from './RewardClaimButton';
 import { RewardImageZoom } from './RewardImageZoom';
 import { RewardsFilter } from './RewardsFilter';
 
+
+export const dynamic = 'force-dynamic';
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings([
     'seo_premios_title',

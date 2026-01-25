@@ -8,6 +8,8 @@ import { Card, Badge, Button } from '@/components/ui';
 import { EventActions } from './EventActions';
 import { EventJsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd';
 
+
+export const dynamic = 'force-dynamic';
 interface PageProps {
   params: Promise<{ id: string }>;
 }

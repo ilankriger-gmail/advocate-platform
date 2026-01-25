@@ -2,6 +2,8 @@ import { Suspense } from 'react';
 import { getSiteSettings } from '@/lib/config/site';
 import { ObrigadoContent } from './ObrigadoContent';
 
+export const dynamic = 'force-dynamic';
+
 // Loading fallback para Suspense
 function LoadingFallback() {
   return (

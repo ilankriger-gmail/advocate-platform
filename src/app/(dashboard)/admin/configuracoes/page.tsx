@@ -4,6 +4,8 @@ import { Card } from '@/components/ui';
 import { SettingsTabs } from './SettingsTabs';
 import type { SiteSetting } from '@/lib/config/site';
 
+
+export const dynamic = 'force-dynamic';
 export const metadata = {
   title: 'Configurações | Admin',
   description: 'Personalize as configurações da plataforma',

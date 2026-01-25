@@ -7,6 +7,8 @@ import { Card, Avatar, Badge } from '@/components/ui';
 import { formatRelativeTime } from '@/lib/utils';
 import { LeaderboardPreview } from '@/components/leaderboard';
 
+
+export const dynamic = 'force-dynamic';
 /**
  * Dashboard principal - exibe estatisticas e acoes rapidas
  */

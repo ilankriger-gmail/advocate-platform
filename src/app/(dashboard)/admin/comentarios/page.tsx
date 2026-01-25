@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server';
 import { Card, Badge } from '@/components/ui';
 import { CommentAdminCard } from './CommentAdminCard';
 
+
+export const dynamic = 'force-dynamic';
 export default async function AdminComentariosPage() {
   const supabase = await createClient();
 

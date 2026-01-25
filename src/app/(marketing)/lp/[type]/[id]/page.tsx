@@ -10,6 +10,8 @@ import { CountdownTimer, ScarcityIndicator, FadeInSection } from '@/components/l
 
 // Função para sanitizar HTML (sem dependência de JSDOM para funcionar no Vercel)
 // Remove tags perigosas mantendo formatação básica
+
+export const dynamic = 'force-dynamic';
 function sanitizeHtml(html: string): string {
   // Lista de tags permitidas
   const allowedTags = ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'ol', 'li', 's', 'strike', 'span', 'h1', 'h2', 'h3'];

@@ -6,6 +6,8 @@ import { StatsCardsClient } from './StatsCardsClient';
 import { ChallengesViewToggle } from './ChallengesViewToggle';
 import { CollapsibleTypeSection } from './CollapsibleTypeSection';
 
+
+export const dynamic = 'force-dynamic';
 export default async function AdminDesafiosPage({
   searchParams,
 }: {

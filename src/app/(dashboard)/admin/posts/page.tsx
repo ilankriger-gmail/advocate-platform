@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server';
 import { Card } from '@/components/ui';
 import { UnifiedPostCard } from './UnifiedPostCard';
 
+
+export const dynamic = 'force-dynamic';
 type FilterType = 'pending' | 'blocked' | 'help_request' | 'approved' | 'rejected';
 
 interface PageProps {

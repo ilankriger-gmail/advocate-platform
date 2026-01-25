@@ -9,6 +9,8 @@ import { AutoApprovalSettings } from './AutoApprovalSettings';
 import { getAutoApprovalSettings } from '@/actions/settings';
 import type { NpsLead, LeadStatus } from '@/lib/supabase/types';
 
+
+export const dynamic = 'force-dynamic';
 interface PageProps {
   searchParams: Promise<{
     status?: string;

@@ -3,6 +3,8 @@ import { Card, Badge } from '@/components/ui';
 import { RewardActions, ClaimActions, NewRewardForm } from './RewardAdminComponents';
 import { ShopImportButton } from './ShopImportModal';
 
+
+export const dynamic = 'force-dynamic';
 export default async function AdminPrêmiosPage() {
   const supabase = await createClient();
 

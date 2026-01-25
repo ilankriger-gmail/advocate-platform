@@ -1,6 +1,8 @@
 import { getSiteSettings } from '@/lib/config/site';
 import ForgotPasswordForm from './ForgotPasswordForm';
 
+
+export const dynamic = 'force-dynamic';
 export const metadata = {
   title: 'Esqueci minha senha',
   description: 'Recupere sua senha',
