@@ -1,15 +1,25 @@
--- Função para gerar slug a partir do nome
+-- Função para gerar slug a partir do nome (sem termos sensíveis)
 CREATE OR REPLACE FUNCTION generate_slug(name TEXT)
 RETURNS TEXT AS $$
 DECLARE
   slug TEXT;
 BEGIN
-  -- Converter para minúsculas, remover acentos e caracteres especiais
-  slug := lower(unaccent(name));
+  -- Converter para minúsculas e remover acentos manualmente
+  slug := lower(translate(name, 
+    'áàâãäéèêëíìîïóòôõöúùûüçñÁÀÂÃÄÉÈÊËÍÌÎÏÓÒÔÕÖÚÙÛÜÇÑ',
+    'aaaaaeeeeiiiioooooouuuucnAAAAAEEEEIIIIOOOOOUUUUCN'
+  ));
+  -- Remover termos sensíveis (pix, dinheiro, reais, etc)
+  slug := regexp_replace(slug, '\mpix\M', '', 'gi');
+  slug := regexp_replace(slug, '\mdinheiro\M', '', 'gi');
+  slug := regexp_replace(slug, '\mreais\M', '', 'gi');
+  slug := regexp_replace(slug, '\mr\$', '', 'gi');
   -- Substituir espaços e caracteres especiais por hífen
   slug := regexp_replace(slug, '[^a-z0-9]+', '-', 'g');
   -- Remover hífens do início e fim
   slug := trim(both '-' from slug);
+  -- Remover hífens duplicados
+  slug := regexp_replace(slug, '-+', '-', 'g');
   -- Limitar tamanho
   slug := substring(slug from 1 for 200);
   RETURN slug;

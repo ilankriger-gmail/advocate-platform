@@ -134,7 +134,7 @@ export function LPTypeSection({ title, icon, color, bgColor, items, defaultOpen 
                     <div className="flex items-center gap-1">
                       <CopyUrlButton 
                         url={item.lpUrlDireto} 
-                        label="Direto"
+                        label="Convite"
                         variant="primary"
                       />
                       <a

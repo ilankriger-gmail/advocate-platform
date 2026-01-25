@@ -48,7 +48,7 @@ export default async function AdminLandingPagesPage() {
       leadsCount: leadsMap.get(c.id) || 0,
       lpType: 'desafio' as const,
       lpUrl: `/lp/desafio/${identifier}`,
-      lpUrlDireto: `/lp-direto/desafio/${identifier}`,
+      lpUrlDireto: `/convite/desafio/${identifier}`,
     };
   });
 
@@ -65,7 +65,7 @@ export default async function AdminLandingPagesPage() {
       leadsCount: leadsMap.get(r.id) || 0,
       lpType: 'premio' as const,
       lpUrl: `/lp/premio/${identifier}`,
-      lpUrlDireto: `/lp-direto/premio/${identifier}`,
+      lpUrlDireto: `/convite/premio/${identifier}`,
     };
   });
 
