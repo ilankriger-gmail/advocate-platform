@@ -4,8 +4,12 @@ import { useEffect, useRef, useCallback, memo } from 'react';
 import { useInfiniteFeed } from '@/hooks/useInfiniteFeed';
 import { InstagramCard } from './InstagramCard';
 import { Card, Skeleton, Spinner, Button } from '@/components/ui';
+import { LinkDoBemInline } from './LinkDoBemInline';
 import type { FeedType, FeedSortType } from '@/actions/feed';
 import type { PostWithAuthor } from '@/types/post';
+
+// Posição onde inserir as campanhas do Link do Bem (após N posts)
+const LINKDOBEM_POSITION = 3;
 
 /**
  * Props do componente InfiniteFeed
@@ -232,15 +236,22 @@ export function InfiniteFeed({ type, sort = 'new', initialPosts }: InfiniteFeedP
     <div className="space-y-6">
       {/* Lista de posts com animação de entrada */}
       {posts.map((post, index) => (
-        <div
-          key={post.id}
-          className="animate-fade-in"
-          style={{
-            animationDelay: `${Math.min(index * 50, 500)}ms`,
-            animationFillMode: 'backwards',
-          }}
-        >
-          <MemoizedCard post={post} />
+        <div key={post.id}>
+          <div
+            className="animate-fade-in"
+            style={{
+              animationDelay: `${Math.min(index * 50, 500)}ms`,
+              animationFillMode: 'backwards',
+            }}
+          >
+            <MemoizedCard post={post} />
+          </div>
+          {/* Inserir campanhas do Link do Bem após N posts (apenas no feed community) */}
+          {index === LINKDOBEM_POSITION - 1 && type === 'community' && (
+            <div className="mt-6">
+              <LinkDoBemInline />
+            </div>
+          )}
         </div>
       ))}
 

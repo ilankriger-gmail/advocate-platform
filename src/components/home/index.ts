@@ -7,3 +7,5 @@ export { InstagramCard } from './InstagramCard';
 export { InfiniteFeed } from './InfiniteFeed';
 export { SortSelector } from './SortSelector';
 export { NewPostsIndicator } from './NewPostsIndicator';
+export { LinkDoBemInline } from './LinkDoBemInline';
+export { LinkDoBemSection } from './LinkDoBemSection';
