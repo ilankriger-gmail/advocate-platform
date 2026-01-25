@@ -216,6 +216,11 @@ export function NPSForm({ siteName, creatorName, logoUrl, sourceData }: NPSFormP
             />
           )}
 
+          {/* Slogan */}
+          <p className="text-lg font-semibold text-surface-700 mb-4">
+            Pratique o bem. Seja premiado.
+          </p>
+
           {/* Estimativa de tempo */}
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 text-green-700 rounded-full text-sm font-medium mb-6">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

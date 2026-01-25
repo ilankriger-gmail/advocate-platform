@@ -186,6 +186,9 @@ export default function LoginForm({ siteName, subtitle, logoUrl = '/logo.png' }:
           <p className="text-gray-600">
             {subtitle}
           </p>
+          <p className="text-lg font-semibold text-gray-700 mt-2">
+            Pratique o bem. Seja premiado.
+          </p>
         </div>
 
         {/* Aviso de acesso restrito */}
