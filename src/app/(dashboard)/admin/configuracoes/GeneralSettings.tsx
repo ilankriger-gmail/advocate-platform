@@ -19,68 +19,27 @@ interface Category {
   className?: string;
 }
 
-// Categorias de configuracoes
+// Categorias de configuracoes - apenas textos do site
 const CATEGORIES: Record<string, Category> = {
   branding: {
-    title: 'Marca e Identidade',
+    title: '🏷️ Marca e Identidade',
     keys: ['site_name', 'site_description', 'creator_name', 'creator_handle'],
+    description: 'Informações básicas que aparecem no site.',
   },
   hero: {
-    title: 'Pagina Inicial (Hero)',
+    title: '🏠 Página Inicial (Hero)',
     keys: ['hero_title', 'hero_subtitle'],
+    description: 'Textos da seção principal da home.',
   },
   login: {
-    title: 'Pagina de Login',
+    title: '🔐 Página de Login',
     keys: ['login_title', 'login_subtitle'],
-  },
-  seo: {
-    title: 'SEO (Mecanismos de Busca)',
-    keys: ['meta_title', 'meta_description'],
-  },
-  apis_ai: {
-    title: 'Inteligência Artificial',
-    description: 'APIs para análise de vídeos, geração de thumbnails e análise de leads.',
-    keys: ['openai_api_key', 'gemini_api_key', 'perspective_api_key'],
-    isSecret: true,
-    className: 'border-purple-200 bg-purple-50/30',
-  },
-  apis_email: {
-    title: 'Email (Resend)',
-    description: 'Configurações para envio de emails transacionais.',
-    keys: ['resend_api_key', 'resend_from_email'],
-    isSecret: true,
-    className: 'border-blue-200 bg-blue-50/30',
-  },
-  apis_whatsapp: {
-    title: 'WhatsApp (Meta)',
-    description: 'Configurações para envio de mensagens WhatsApp.',
-    keys: ['whatsapp_phone_number_id', 'whatsapp_access_token', 'whatsapp_app_secret', 'whatsapp_webhook_verify_token'],
-    isSecret: true,
-    className: 'border-green-200 bg-green-50/30',
-  },
-  apis_youtube: {
-    title: 'YouTube',
-    description: 'Configurações para integração com YouTube.',
-    keys: ['youtube_api_key', 'youtube_channel_handle'],
-    isSecret: true,
-    className: 'border-red-200 bg-red-50/30',
-  },
-  apis_meta: {
-    title: 'Meta Pixel',
-    description: 'Configurações para rastreamento de conversões.',
-    keys: ['meta_pixel_id', 'meta_access_token'],
-    isSecret: true,
-    className: 'border-amber-200 bg-amber-50/30',
-  },
-  google_analytics: {
-    title: 'Google Analytics',
-    description: 'Rastreamento de pageviews e eventos com GA4.',
-    keys: ['google_analytics_id'],
-    className: 'border-indigo-200 bg-indigo-50/30',
+    description: 'Textos exibidos na tela de login.',
   },
   outros: {
-    title: 'Outros',
+    title: '📝 Outros Textos',
     keys: ['email_from_name', 'footer_text'],
+    description: 'Outros textos do site.',
   },
 };
 
