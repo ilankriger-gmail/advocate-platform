@@ -26,12 +26,21 @@ export default function EditarPerfilPage() {
   });
 
   useEffect(() => {
+    // Timeout de segurança - não deixar a página travada
+    const timeout = setTimeout(() => {
+      if (loading) {
+        console.warn('[EditarPerfil] Timeout - forçando carregamento');
+        setLoading(false);
+      }
+    }, 5000);
+
     // Esperar o AuthContext carregar
     if (authLoading) return;
 
     // Se não tem usuário, não precisa carregar
     if (!user) {
       setLoading(false);
+      clearTimeout(timeout);
       return;
     }
 
