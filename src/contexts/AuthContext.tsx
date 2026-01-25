@@ -193,6 +193,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (error.message.includes('already registered')) {
         return { error: 'Este email já está cadastrado' };
       }
+      if (error.message.includes('weak') || error.message.includes('easy to guess')) {
+        return { error: 'Senha muito fraca. Use uma senha mais forte com letras, números e símbolos.' };
+      }
+      if (error.message.includes('at least')) {
+        return { error: 'A senha deve ter pelo menos 6 caracteres' };
+      }
       return { error: error.message };
     }
 
