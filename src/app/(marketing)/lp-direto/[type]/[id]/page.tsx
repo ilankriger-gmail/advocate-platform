@@ -294,6 +294,42 @@ function Disclaimer() {
   );
 }
 
+// Badge do criador com foto e nome
+function CreatorBadge({ avatarUrl, name }: { avatarUrl?: string; name?: string }) {
+  const displayName = name || 'O Moço do Te Amo';
+  
+  return (
+    <div className="flex items-center justify-center gap-3 py-4 mb-4">
+      <div className="relative">
+        <div className="w-14 h-14 rounded-full overflow-hidden border-3 border-pink-400 shadow-lg">
+          {avatarUrl ? (
+            <Image
+              src={avatarUrl}
+              alt={displayName}
+              width={56}
+              height={56}
+              className="object-cover w-full h-full"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center">
+              <Heart className="w-6 h-6 text-white fill-current" />
+            </div>
+          )}
+        </div>
+        <div className="absolute -bottom-1 -right-1 bg-blue-500 rounded-full p-1">
+          <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+          </svg>
+        </div>
+      </div>
+      <div className="text-left">
+        <p className="text-sm text-gray-500 leading-tight">Desafio de</p>
+        <p className="text-lg font-bold text-gray-900 leading-tight">{displayName}</p>
+      </div>
+    </div>
+  );
+}
+
 // Gerar headline impactante baseado no tipo
 function getHeadline(data: LandingPageData): { headline: string; subheadline: string } {
   if (data.type === 'challenge') {
@@ -416,6 +452,12 @@ export default async function LandingPageDireto({ params }: PageProps) {
 
       {/* Conteúdo principal */}
       <main className="max-w-2xl mx-auto px-4 py-8">
+        {/* Badge do criador */}
+        <CreatorBadge 
+          avatarUrl={settings.creator_avatar_url} 
+          name={settings.creator_name || 'O Moço do Te Amo'} 
+        />
+
         {/* Headline impactante acima da dobra */}
         <div className="text-center mb-8">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
