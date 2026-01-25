@@ -327,7 +327,7 @@ function CreatorBadge({ avatarUrl, name }: { avatarUrl?: string; name?: string }
         </div>
       </div>
       <div className="text-left">
-        <p className="text-sm text-gray-500 leading-tight">Desafio de</p>
+        <p className="text-sm text-gray-500 leading-tight">Desafio do</p>
         <p className="text-lg font-bold text-gray-900 leading-tight">{displayName}</p>
       </div>
     </div>
