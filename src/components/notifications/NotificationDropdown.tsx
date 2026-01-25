@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { createClient } from '@/lib/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   getNotifications,
   getUnreadNotificationsCount,
@@ -20,6 +22,7 @@ interface NotificationDropdownProps {
 }
 
 export function NotificationDropdown({ className }: NotificationDropdownProps) {
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<UserNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -35,11 +38,67 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
       setUnreadCount(count);
     };
     fetchCount();
-
-    // Polling a cada 30 segundos
-    const interval = setInterval(fetchCount, 30000);
-    return () => clearInterval(interval);
   }, []);
+
+  // Supabase Realtime para notificações instantâneas
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const supabase = createClient();
+
+    const channel = supabase
+      .channel(`notifications-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'user_notifications',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          // Nova notificação recebida em tempo real
+          const newNotification = payload.new as UserNotification;
+          setNotifications(prev => [newNotification, ...prev]);
+          setUnreadCount(prev => prev + 1);
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'user_notifications',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          // Notificação atualizada (ex: marcada como lida)
+          const updatedNotification = payload.new as UserNotification;
+          setNotifications(prev =>
+            prev.map(n => n.id === updatedNotification.id ? updatedNotification : n)
+          );
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'user_notifications',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          // Notificação deletada
+          const deletedId = (payload.old as { id: string }).id;
+          setNotifications(prev => prev.filter(n => n.id !== deletedId));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
 
   // Buscar notificações quando abrir o dropdown
   const fetchNotifications = useCallback(async (cursor?: string) => {

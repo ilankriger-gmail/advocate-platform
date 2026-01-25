@@ -386,6 +386,7 @@ export interface ChallengeParticipant {
   status: ParticipationStatus;
   approved_by: string | null;
   approved_at: string | null;
+  rejection_reason: string | null;
   coins_earned: number;
   created_at: string;
   // Campos de análise de IA (YouTube)
@@ -470,6 +471,8 @@ export type GoalType = 'repetitions' | 'time';
 export interface ParticipationWithChallenge extends ChallengeParticipant {
   challenges: {
     title: string;
+    slug: string | null;
+    type: ChallengeType;
     goal_type: GoalType | null;
     goal_value: number | null;
     coins_reward: number;

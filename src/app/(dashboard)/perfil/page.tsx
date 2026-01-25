@@ -5,6 +5,7 @@ import { getUserStats, getPosts } from '@/lib/supabase/queries';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, Avatar, Badge } from '@/components/ui';
 import { PostCard } from '@/components/posts/PostCard';
+import { MeusDesafios } from '@/components/challenges/MeusDesafios';
 import { formatDate } from '@/lib/utils';
 
 export default async function PerfilPage() {
@@ -192,6 +193,9 @@ export default async function PerfilPage() {
                 </div>
               </div>
             </Card>
+
+            {/* Meus Desafios */}
+            <MeusDesafios userId={user.id} />
 
             {/* Info */}
             <Card className="p-3 sm:p-4">

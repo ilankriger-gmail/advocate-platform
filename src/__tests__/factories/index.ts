@@ -163,6 +163,7 @@ export const createMockParticipation = (
     status: 'pending',
     approved_by: null,
     approved_at: null,
+    rejection_reason: null,
     coins_earned: 0,
     created_at: now,
     ai_is_valid: null,
