@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
@@ -59,6 +59,11 @@ function getBgColor(name: string): string {
 
 export function Avatar({ src, alt, name = '', size = 'md', className = '' }: AvatarProps) {
   const [hasError, setHasError] = useState(false);
+
+  // Resetar erro quando src mudar (ex: profile carregou depois)
+  useEffect(() => {
+    setHasError(false);
+  }, [src]);
 
   const showImage = src && !hasError;
   const initials = name ? getInitials(name) : '?';
