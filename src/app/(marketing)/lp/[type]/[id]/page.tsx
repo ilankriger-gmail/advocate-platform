@@ -8,10 +8,11 @@ import { getSiteSettings } from '@/lib/config/site';
 import { Button } from '@/components/ui';
 import { CountdownTimer, ScarcityIndicator, FadeInSection } from '@/components/landing';
 
-// Função para sanitizar HTML (sem dependência de JSDOM para funcionar no Vercel)
+// Função para sanitizar HTML e converter texto em parágrafos
 // Remove tags perigosas mantendo formatação básica
 
 export const dynamic = 'force-dynamic';
+
 function sanitizeHtml(html: string): string {
   // Lista de tags permitidas
   const allowedTags = ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'ol', 'li', 's', 'strike', 'span', 'h1', 'h2', 'h3'];
@@ -34,6 +35,29 @@ function sanitizeHtml(html: string): string {
   });
 
   return clean;
+}
+
+// Converte texto plano em parágrafos HTML
+function formatDescription(text: string): string {
+  if (!text) return '';
+  
+  // Se já tem tags HTML, apenas sanitiza
+  if (/<[^>]+>/.test(text)) {
+    return sanitizeHtml(text);
+  }
+  
+  // Converte quebras de linha em parágrafos
+  const paragraphs = text
+    .split(/\n\n+/) // Divide por linhas duplas (parágrafos)
+    .map(p => p.trim())
+    .filter(p => p.length > 0)
+    .map(p => {
+      // Converte quebras simples em <br>
+      const withBr = p.replace(/\n/g, '<br>');
+      return `<p>${withBr}</p>`;
+    });
+  
+  return paragraphs.join('');
 }
 
 interface PageProps {
@@ -455,8 +479,8 @@ export default async function LandingPage({ params, searchParams }: PageProps) {
         {/* Descrição */}
         {data.description && (
           <div
-            className="prose prose-lg text-gray-600 mb-6"
-            dangerouslySetInnerHTML={{ __html: sanitizeHtml(data.description) }}
+            className="prose prose-lg text-gray-600 mb-6 prose-p:mb-4 prose-p:leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: formatDescription(data.description) }}
           />
         )}
 
