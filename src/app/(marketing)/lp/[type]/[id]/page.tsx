@@ -558,13 +558,25 @@ export default async function LandingPage({ params, searchParams }: PageProps) {
           {data.title}
         </h1>
 
-        {/* Descrição */}
-        {data.description && (
+        {/* Descrição - para prêmios de dinheiro, mostra texto explicativo padrão */}
+        {data.type === 'reward' && data.rewardType === 'money' ? (
+          <div className="prose prose-lg text-gray-600 mb-6 prose-p:mb-4 prose-p:leading-relaxed">
+            <p>
+              Este prêmio em dinheiro está disponível para membros da comunidade que 
+              acumularem <strong>{data.coinsRequired?.toLocaleString() || 0} corações</strong>.
+            </p>
+            <p>
+              Para participar, você precisa se cadastrar na comunidade e completar 
+              desafios para ganhar corações. Quando tiver corações suficientes, 
+              poderá solicitar o resgate.
+            </p>
+          </div>
+        ) : data.description ? (
           <div
             className="prose prose-lg text-gray-600 mb-6 prose-p:mb-4 prose-p:leading-relaxed"
             dangerouslySetInnerHTML={{ __html: formatDescription(data.description) }}
           />
-        )}
+        ) : null}
 
         {/* CTA Button - Meio */}
         <div className="my-6">
