@@ -7,16 +7,16 @@ export const dynamic = 'force-dynamic';
 export default async function AdminLandingPagesPage() {
   const supabase = await createClient();
 
-  // Buscar desafios
+  // Buscar desafios (incluindo slug)
   const { data: challenges } = await supabase
     .from('challenges')
-    .select('id, title, icon, type, is_active, thumbnail_url')
+    .select('id, title, icon, type, is_active, thumbnail_url, slug')
     .order('created_at', { ascending: false });
 
-  // Buscar premios
+  // Buscar premios (incluindo slug)
   const { data: rewards } = await supabase
     .from('rewards')
-    .select('id, name, type, is_active, image_url')
+    .select('id, name, type, is_active, image_url, slug')
     .order('created_at', { ascending: false });
 
   // Buscar contagem de leads por source
@@ -34,32 +34,40 @@ export default async function AdminLandingPagesPage() {
     }
   });
 
-  // Processar desafios
-  const challengeItems = (challenges || []).map((c) => ({
-    id: c.id,
-    title: c.title,
-    icon: c.icon,
-    type: c.type,
-    is_active: c.is_active,
-    thumbnail_url: c.thumbnail_url,
-    leadsCount: leadsMap.get(c.id) || 0,
-    lpType: 'desafio' as const,
-    lpUrl: `/lp/desafio/${c.id}`,
-    lpUrlDireto: `/lp-direto/desafio/${c.id}`,
-  }));
+  // Processar desafios - usar slug quando disponível, senão usa ID
+  const challengeItems = (challenges || []).map((c) => {
+    const identifier = c.slug || c.id;
+    return {
+      id: c.id,
+      title: c.title,
+      icon: c.icon,
+      type: c.type,
+      is_active: c.is_active,
+      thumbnail_url: c.thumbnail_url,
+      slug: c.slug,
+      leadsCount: leadsMap.get(c.id) || 0,
+      lpType: 'desafio' as const,
+      lpUrl: `/lp/desafio/${identifier}`,
+      lpUrlDireto: `/lp-direto/desafio/${identifier}`,
+    };
+  });
 
-  // Processar premios
-  const rewardItems = (rewards || []).map((r) => ({
-    id: r.id,
-    name: r.name,
-    type: r.type,
-    is_active: r.is_active,
-    image_url: r.image_url,
-    leadsCount: leadsMap.get(r.id) || 0,
-    lpType: 'premio' as const,
-    lpUrl: `/lp/premio/${r.id}`,
-    lpUrlDireto: `/lp-direto/premio/${r.id}`,
-  }));
+  // Processar premios - usar slug quando disponível, senão usa ID
+  const rewardItems = (rewards || []).map((r) => {
+    const identifier = r.slug || r.id;
+    return {
+      id: r.id,
+      name: r.name,
+      type: r.type,
+      is_active: r.is_active,
+      image_url: r.image_url,
+      slug: r.slug,
+      leadsCount: leadsMap.get(r.id) || 0,
+      lpType: 'premio' as const,
+      lpUrl: `/lp/premio/${identifier}`,
+      lpUrlDireto: `/lp-direto/premio/${identifier}`,
+    };
+  });
 
   // Calcular totais
   const totalLPs = challengeItems.length + rewardItems.length;
