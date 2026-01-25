@@ -119,6 +119,7 @@ export function CommentsSection({
 }: CommentsSectionProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
   const [comments, setComments] = useState<Comment[]>(initialComments);
+  const [localCommentsCount, setLocalCommentsCount] = useState(commentsCount);
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<{ id: string; name: string } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -126,14 +127,16 @@ export function CommentsSection({
 
   // Carregar comentários quando expandido
   useEffect(() => {
-    if (isExpanded && comments.length === 0 && commentsCount > 0) {
+    if (isExpanded && comments.length === 0 && localCommentsCount > 0) {
       setIsLoading(true);
       getPostComments(postId).then((data) => {
         setComments(data as Comment[]);
+        // Sincronizar contador com dados reais do servidor
+        setLocalCommentsCount(data.length);
         setIsLoading(false);
       });
     }
-  }, [postId, commentsCount, comments.length, isExpanded]);
+  }, [postId, localCommentsCount, comments.length, isExpanded]);
 
   const toggleComments = () => {
     setIsExpanded(!isExpanded);
@@ -215,6 +218,8 @@ export function CommentsSection({
         // Recarregar comentários
         const data = await getPostComments(postId);
         setComments(data as Comment[]);
+        // Atualizar contador local com total real
+        setLocalCommentsCount(data.length);
       }
     });
   };
@@ -249,7 +254,7 @@ export function CommentsSection({
             d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
           />
         </svg>
-        {isExpanded ? 'Ocultar comentários' : `Ver comentários (${commentsCount})`}
+        {isExpanded ? 'Ocultar comentários' : `Ver comentários (${localCommentsCount})`}
         <svg
           className={`w-4 h-4 ml-auto transition-transform ${isExpanded ? 'rotate-180' : ''}`}
           fill="none"
