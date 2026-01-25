@@ -295,8 +295,9 @@ function Disclaimer() {
 }
 
 // Badge do criador com foto e nome
-function CreatorBadge({ avatarUrl, name }: { avatarUrl?: string; name?: string }) {
+function CreatorBadge({ avatarUrl, name, type }: { avatarUrl?: string; name?: string; type?: 'challenge' | 'reward' }) {
   const displayName = name || 'O Moço do Te Amo';
+  const label = type === 'reward' ? 'Comunidade do' : 'Desafio do';
   
   return (
     <div className="flex items-center justify-center gap-3 py-4 mb-4">
@@ -323,7 +324,7 @@ function CreatorBadge({ avatarUrl, name }: { avatarUrl?: string; name?: string }
         </div>
       </div>
       <div className="text-left">
-        <p className="text-sm text-gray-500 leading-tight">Desafio do</p>
+        <p className="text-sm text-gray-500 leading-tight">{label}</p>
         <p className="text-lg font-bold text-gray-900 leading-tight">{displayName}</p>
       </div>
     </div>
@@ -354,10 +355,10 @@ function getHeadline(data: LandingPageData): { headline: string; subheadline: st
     return headlines[data.challengeType || 'engajamento'];
   }
 
-  // Para prêmios
+  // Para prêmios - deixar claro que precisa acumular corações primeiro
   return {
-    headline: 'Resgate seu prêmio exclusivo!',
-    subheadline: `Use seus corações acumulados para resgatar`,
+    headline: 'Prêmio disponível para resgate!',
+    subheadline: `Acumule ${data.coinsRequired || 0} corações completando desafios para resgatar`,
   };
 }
 
@@ -385,17 +386,17 @@ function getCTAText(data: LandingPageData): { primary: string; secondary: string
     return ctas[data.challengeType || 'engajamento'];
   }
 
-  // Para prêmios
+  // Para prêmios - deixar claro que precisa acumular corações
   if (data.quantityAvailable && data.quantityAvailable <= 5) {
     return {
-      primary: 'Cadastrar e Resgatar',
-      secondary: `Corra! Apenas ${data.quantityAvailable} ${data.quantityAvailable === 1 ? 'unidade disponível' : 'unidades disponíveis'}`,
+      primary: 'Cadastrar e Ver Como Participar',
+      secondary: `Apenas ${data.quantityAvailable} ${data.quantityAvailable === 1 ? 'unidade disponível' : 'unidades disponíveis'} • Requer ${data.coinsRequired || 0} corações`,
     };
   }
 
   return {
-    primary: 'Cadastrar e Resgatar',
-    secondary: `Use ${data.coinsRequired || 0} corações para resgatar`,
+    primary: 'Cadastrar e Ver Como Participar',
+    secondary: `Complete desafios, acumule ${data.coinsRequired || 0} corações e resgate`,
   };
 }
 
@@ -455,7 +456,8 @@ export default async function LandingPageDireto({ params }: PageProps) {
         {/* Badge do criador */}
         <CreatorBadge 
           avatarUrl={settings.creator_avatar_url} 
-          name={settings.creator_name || 'O Moço do Te Amo'} 
+          name={settings.creator_name || 'O Moço do Te Amo'}
+          type={data.type}
         />
 
         {/* Headline impactante acima da dobra */}
