@@ -49,7 +49,7 @@ export function AdCampaignsList({ campaigns }: AdCampaignsListProps) {
         <p className="text-4xl mb-4">📭</p>
         <p className="text-gray-500">Nenhuma campanha cadastrada</p>
         <p className="text-sm text-gray-400 mt-1">
-          Clique em "Nova Campanha" para começar
+          Clique em &quot;Nova Campanha&quot; para começar
         </p>
       </Card>
     );
