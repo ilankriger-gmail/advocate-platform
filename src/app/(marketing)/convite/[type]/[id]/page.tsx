@@ -438,30 +438,6 @@ export default async function LandingPageDireto({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-100 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            {settings.logo_url ? (
-              <Image
-                src={settings.logo_url}
-                alt={settings.site_name}
-                width={120}
-                height={40}
-                className="h-8 w-auto"
-              />
-            ) : (
-              <span className="text-xl font-bold text-primary-600">{settings.site_name}</span>
-            )}
-          </Link>
-          {/* Badge de cadastro rápido */}
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
-            <Zap className="w-3 h-3" />
-            Cadastro Rápido
-          </span>
-        </div>
-      </header>
-
       {/* Conteúdo principal */}
       <main className="max-w-2xl mx-auto px-4 py-8">
         {/* Badge do criador */}

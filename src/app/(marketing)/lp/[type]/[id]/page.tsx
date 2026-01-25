@@ -453,25 +453,6 @@ export default async function LandingPage({ params, searchParams }: PageProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-100 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            {settings.logo_url ? (
-              <Image
-                src={settings.logo_url}
-                alt={settings.site_name}
-                width={120}
-                height={40}
-                className="h-8 w-auto"
-              />
-            ) : (
-              <span className="text-xl font-bold text-primary-600">{settings.site_name}</span>
-            )}
-          </Link>
-        </div>
-      </header>
-
       {/* Conteúdo principal */}
       <main className="max-w-2xl mx-auto px-4 py-8">
         {/* Badge do criador */}
