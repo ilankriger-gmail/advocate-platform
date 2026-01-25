@@ -21,7 +21,7 @@ export interface LandingPageData {
   participantsCount?: number;
   // Específicos de reward
   coinsRequired?: number;
-  rewardType?: 'digital' | 'physical';
+  rewardType?: 'digital' | 'physical' | 'money';
   quantityAvailable?: number | null;
   redemptionsCount?: number;
 }
@@ -112,7 +112,7 @@ export async function getLandingPageReward(id: string): Promise<ActionResponse<L
         description: reward.description,
         imageUrl: reward.image_url,
         coinsRequired: reward.coins_required,
-        rewardType: reward.type as 'digital' | 'physical',
+        rewardType: reward.type as 'digital' | 'physical' | 'money',
         quantityAvailable: reward.quantity_available,
         redemptionsCount,
       },
@@ -233,7 +233,7 @@ export async function getLandingPageRewardBySlug(slug: string): Promise<ActionRe
         description: reward.description,
         imageUrl: reward.image_url,
         coinsRequired: reward.coins_required,
-        rewardType: reward.type as 'digital' | 'physical',
+        rewardType: reward.type as 'digital' | 'physical' | 'money',
         quantityAvailable: reward.quantity_available,
         redemptionsCount: redemptionsCount || 0,
       },
