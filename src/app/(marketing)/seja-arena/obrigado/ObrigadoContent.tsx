@@ -32,7 +32,7 @@ export function ObrigadoContent({ siteName, footerText }: ObrigadoContentProps) 
   useEffect(() => {
     if (!leadId || state !== 'processing') return;
 
-    let timeoutId: NodeJS.Timeout;
+    let timeoutId: ReturnType<typeof setTimeout>;
 
     const checkStatus = async () => {
       // Evitar chamadas duplicadas
