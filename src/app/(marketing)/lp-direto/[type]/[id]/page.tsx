@@ -88,11 +88,25 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const data = result.data;
   const settings = await getSiteSettings(['site_name']);
 
+  // Sanitizar título para SEO - remover palavras sensíveis para plataformas
+  const sensitiveTerms = ['pix', 'dinheiro', 'reais', 'r$', 'money'];
+  const titleLower = data.title.toLowerCase();
+  const hasSensitiveTerm = sensitiveTerms.some(term => titleLower.includes(term));
+
+  // Se contém termo sensível, usar título genérico e não indexar
+  const safeTitle = hasSensitiveTerm 
+    ? `Desafio Exclusivo | ${settings.site_name}`
+    : `${data.title} | ${settings.site_name}`;
+
+  const safeOgTitle = hasSensitiveTerm ? 'Desafio Exclusivo' : data.title;
+
   return {
-    title: `${data.title} | ${settings.site_name}`,
+    title: safeTitle,
     description: data.description || `Participe deste ${type === 'desafio' ? 'desafio' : 'prêmio'} exclusivo!`,
+    // Não indexar páginas com termos sensíveis
+    robots: hasSensitiveTerm ? { index: false, follow: false } : undefined,
     openGraph: {
-      title: data.title,
+      title: safeOgTitle,
       description: data.description || undefined,
       images: data.imageUrl ? [{ url: data.imageUrl }] : undefined,
     },
@@ -242,8 +256,8 @@ function CashPrizeFomo() {
           <Banknote className="w-5 h-5 text-white" />
         </div>
         <div>
-          <h3 className="font-bold text-green-800 text-sm">Ganhe corações!</h3>
-          <p className="text-xs text-green-600">Troque por produtos, experiências e dinheiro</p>
+          <h3 className="font-bold text-green-800 text-sm">Acumule corações!</h3>
+          <p className="text-xs text-green-600">Complete tarefas e troque por recompensas</p>
         </div>
       </div>
       <div className="grid grid-cols-3 gap-2 text-center">
@@ -261,7 +275,20 @@ function CashPrizeFomo() {
         </div>
       </div>
       <p className="text-xs text-center text-green-700 mt-3 font-medium">
-        Quanto mais corações, mais chances de ganhar!
+        Quanto mais tarefas completar, mais corações você acumula!
+      </p>
+    </div>
+  );
+}
+
+// Disclaimer legal
+function Disclaimer() {
+  return (
+    <div className="mt-6 p-3 bg-gray-50 rounded-lg border border-gray-200">
+      <p className="text-xs text-gray-500 text-center leading-relaxed">
+        <strong>Importante:</strong> Os prêmios e recompensas estão sujeitos à conclusão das tarefas e desafios propostos.
+        A quantidade de corações acumulados depende do seu desempenho e participação.
+        Prêmios em dinheiro ou produtos físicos estão sujeitos à disponibilidade e regulamento da campanha.
       </p>
     </div>
   );
@@ -272,20 +299,20 @@ function getHeadline(data: LandingPageData): { headline: string; subheadline: st
   if (data.type === 'challenge') {
     const headlines: Record<string, { headline: string; subheadline: string }> = {
       fisico: {
-        headline: `Ganhe ${data.coinsReward || 0} corações com este desafio!`,
-        subheadline: 'Troque por produtos, experiências e dinheiro!',
+        headline: `Complete o desafio e acumule até ${data.coinsReward || 0} corações!`,
+        subheadline: 'Troque seus corações por produtos, experiências e dinheiro',
       },
       engajamento: {
-        headline: `Complete o desafio e ganhe ${data.coinsReward || 0} corações!`,
-        subheadline: 'Troque por produtos, experiências e dinheiro!',
+        headline: `Participe e acumule até ${data.coinsReward || 0} corações!`,
+        subheadline: 'Complete as tarefas e troque por prêmios incríveis',
       },
       participe: {
-        headline: 'Participe e concorra a prêmios incríveis!',
-        subheadline: 'Ganhe corações e troque por produtos, experiências e dinheiro!',
+        headline: 'Participe do desafio e concorra a prêmios!',
+        subheadline: 'Complete as tarefas para ganhar corações e trocar por recompensas',
       },
       atos_amor: {
         headline: 'Faça a diferença com um ato de amor!',
-        subheadline: `Ganhe ${data.coinsReward || 0} corações e troque por prêmios!`,
+        subheadline: `Complete a tarefa para acumular até ${data.coinsReward || 0} corações`,
       },
     };
     return headlines[data.challengeType || 'engajamento'];
@@ -294,7 +321,7 @@ function getHeadline(data: LandingPageData): { headline: string; subheadline: st
   // Para prêmios
   return {
     headline: 'Resgate seu prêmio exclusivo!',
-    subheadline: `Use seus corações e garanta o seu`,
+    subheadline: `Use seus corações acumulados para resgatar`,
   };
 }
 
@@ -531,6 +558,11 @@ export default async function LandingPageDireto({ params }: PageProps) {
               <span>Cadastro seguro, rápido e gratuito</span>
             </div>
           </div>
+        </FadeInSection>
+
+        {/* Disclaimer legal */}
+        <FadeInSection delay={350}>
+          <Disclaimer />
         </FadeInSection>
       </main>
 
