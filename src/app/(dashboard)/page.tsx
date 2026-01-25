@@ -5,6 +5,7 @@ import { getSiteSettings } from '@/lib/config/site';
 import { getInitialFeedPosts } from '@/actions/feed';
 import { getCommunityStats } from '@/actions/stats';
 import { HeroSection, FeedTabs, LeaderboardWidget } from '@/components/home';
+import { LinkDoBemSection } from '@/components/home/LinkDoBemSection';
 // TEMPORARIAMENTE DESABILITADO - Stories
 // import { StoriesBar, StoriesBarSkeleton } from '@/components/stories';
 import { SuggestedUsers } from '@/components/social';
@@ -88,6 +89,9 @@ export default async function HomePage() {
         <StoriesBar />
       </Suspense>
       */}
+
+      {/* Campanhas do Link do Bem */}
+      <LinkDoBemSection />
 
       {/* Main Content - Feed + Sidebar */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
