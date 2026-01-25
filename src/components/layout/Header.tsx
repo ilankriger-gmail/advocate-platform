@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSidebar } from '@/contexts/SidebarContext';
 import { Avatar } from '@/components/ui';
 import { NotificationDropdown } from '@/components/notifications';
 
@@ -22,6 +23,7 @@ const COMECE_DOMAIN = 'comece.omocodoteamo.com.br';
 
 export function Header({ className = '', siteName = 'Arena Te Amo', logoUrl = '/logo.png' }: HeaderProps) {
   const { user, profile, signOut, isLoading } = useAuth();
+  const { toggle: toggleSidebar, isOpen: sidebarOpen } = useSidebar();
   const pathname = usePathname();
   const [isComeceDomain, setIsComeceDomain] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -66,19 +68,24 @@ export function Header({ className = '', siteName = 'Arena Te Amo', logoUrl = '/
     <header className={`bg-white border-b border-gray-200 sticky top-0 z-30 ${className}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14">
-          {/* Lado esquerdo: Botão criar post (mobile) + Logo */}
+          {/* Lado esquerdo: Hamburger (mobile) + Logo */}
           <div className="flex items-center gap-3">
-            {user && (
-              <Link
-                href="/perfil/novo-post"
-                className="md:hidden flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-sm hover:shadow-md transition-shadow"
-                title="Criar post"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+            {/* Botão Hamburger - apenas mobile */}
+            <button
+              onClick={toggleSidebar}
+              className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg hover:bg-gray-100 transition-colors"
+              aria-label={sidebarOpen ? 'Fechar menu' : 'Abrir menu'}
+            >
+              {sidebarOpen ? (
+                <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
-              </Link>
-            )}
+              ) : (
+                <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </button>
             <Link href="/" className="flex items-center gap-2">
               {logoUrl.startsWith('/') ? (
                 <Image
