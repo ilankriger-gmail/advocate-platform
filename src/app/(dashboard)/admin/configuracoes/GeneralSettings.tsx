@@ -36,6 +36,12 @@ const CATEGORIES: Record<string, Category> = {
     keys: ['login_title', 'login_subtitle'],
     description: 'Textos exibidos na tela de login.',
   },
+  analytics: {
+    title: '📊 Google Analytics',
+    keys: ['google_analytics_id'],
+    description: 'Cole seu ID de medição (ex: G-XXXXXXXXXX). Acesse analytics.google.com para obter.',
+    className: 'border-blue-200 bg-blue-50/30',
+  },
   outros: {
     title: '📝 Outros Textos',
     keys: ['email_from_name', 'footer_text'],
