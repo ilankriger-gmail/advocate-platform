@@ -4,6 +4,7 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { OnboardingWrapper } from '@/components/onboarding';
 import { useSidebar } from '@/contexts/SidebarContext';
+import { ReportBugButton, AppComingSoonBanner } from '@/components/ui';
 
 export default function DashboardLayout({
   children,
@@ -15,6 +16,9 @@ export default function DashboardLayout({
   return (
     <OnboardingWrapper>
       <div className="min-h-screen dashboard-bg">
+        {/* Banner App em breve */}
+        <AppComingSoonBanner />
+
         {/* Sidebar - visível apenas em desktop */}
         <Sidebar isOpen={isOpen} onClose={close} />
 
@@ -28,6 +32,9 @@ export default function DashboardLayout({
 
         {/* Bottom navigation - visível apenas em mobile */}
         <BottomNav />
+
+        {/* Botão de reportar bug */}
+        <ReportBugButton />
       </div>
     </OnboardingWrapper>
   );

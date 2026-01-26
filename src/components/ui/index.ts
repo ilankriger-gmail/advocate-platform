@@ -17,6 +17,8 @@ export { HeartSpinner, HeartLoadingOverlay } from './HeartSpinner';
 export { EmptyState, EmptyStateIcon } from './EmptyState';
 export { ToastProvider, useToast, useToastHelpers } from './Toast';
 export { DateRangePicker } from './DateRangePicker';
+export { ReportBugButton } from './ReportBugButton';
+export { AppComingSoonBanner } from './AppComingSoonBanner';
 
 // Types
 export type { SelectOption } from './Select';
