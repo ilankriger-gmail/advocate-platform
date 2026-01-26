@@ -141,12 +141,21 @@ export function ReferralCard() {
             </div>
             <button
               onClick={handleCopy}
-              className="p-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl transition-colors"
+              className={`p-3 rounded-xl transition-all min-w-[52px] flex items-center justify-center ${
+                copied 
+                  ? 'bg-green-500 text-white' 
+                  : 'bg-amber-500 hover:bg-amber-600 text-white'
+              }`}
               title="Copiar link"
             >
               {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
             </button>
           </div>
+          {copied && (
+            <p className="text-center text-green-600 text-sm font-medium animate-in fade-in duration-200">
+              ✅ Link copiado!
+            </p>
+          )}
         </div>
 
         {/* Botão de compartilhar */}
