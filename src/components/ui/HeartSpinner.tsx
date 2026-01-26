@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Componente de spinner com coração animado
  * Usado para indicar carregamento com a identidade visual da Arena Te Amo
