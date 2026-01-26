@@ -40,6 +40,7 @@ export function ChallengeParticipationModal({
     resultValue: '',
     proofUrl: '',
     instagramUrl: '',
+    isVideoPublic: false,
   });
 
   // Animação dos passos de análise
@@ -65,7 +66,7 @@ export function ChallengeParticipationModal({
     setStage('form');
     setError(null);
     setResult(null);
-    setFormData({ resultValue: '', proofUrl: '', instagramUrl: '' });
+    setFormData({ resultValue: '', proofUrl: '', instagramUrl: '', isVideoPublic: false });
     onClose();
     router.refresh();
   };
@@ -89,6 +90,12 @@ export function ChallengeParticipationModal({
     // Validar que é YouTube
     if (!formData.proofUrl || !isYouTubeUrl(formData.proofUrl)) {
       setError('Apenas links do YouTube são aceitos. O vídeo deve ser público.');
+      return;
+    }
+
+    // Validar checkbox de vídeo público
+    if (!formData.isVideoPublic) {
+      setError('Você precisa confirmar que o vídeo é público para ganhar corações.');
       return;
     }
 
@@ -505,6 +512,26 @@ export function ChallengeParticipationModal({
           </div>
         </div>
       )}
+
+      {/* Checkbox de vídeo público */}
+      <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={formData.isVideoPublic}
+            onChange={(e) => setFormData({ ...formData, isVideoPublic: e.target.checked })}
+            className="mt-1 w-5 h-5 text-green-600 rounded border-green-300 focus:ring-green-500"
+          />
+          <div>
+            <span className="font-semibold text-green-800">
+              ✅ Confirmo que meu vídeo é PÚBLICO
+            </span>
+            <p className="text-xs text-green-700 mt-1">
+              Vídeos privados ou não listados não valem corações. O vídeo precisa estar visível para todos no YouTube.
+            </p>
+          </div>
+        </label>
+      </div>
 
       {/* Erro */}
       {error && (
