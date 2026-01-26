@@ -104,6 +104,7 @@ export const CREATOR_NAV = [
   { href: '/admin/analytics', label: 'Analytics', icon: 'Chart' },
   { href: '/admin/notificacoes', label: 'Notificações', icon: 'Bell' },
   { href: '/admin/emails', label: 'Emails', icon: 'Mail' },
+  { href: '/admin/bugs', label: 'Bugs', icon: 'Bug' },
   { href: '/admin/configuracoes', label: 'Configurações', icon: 'Settings' },
 ] as const;
 
