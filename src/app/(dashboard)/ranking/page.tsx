@@ -3,9 +3,10 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getSiteSettings } from '@/lib/config/site';
 import { PageHeader } from '@/components/layout/PageHeader';
-
+import { RankingList } from '@/components/ranking/RankingList';
 
 export const dynamic = 'force-dynamic';
+
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings([
     'seo_ranking_title',
@@ -18,6 +19,52 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+// Buscar todos os usuários com coins e suas posições
+async function getRankingData(currentUserId: string) {
+  const supabase = await createClient();
+
+  // Buscar todos os usuários com coins, ordenados por balance
+  const { data: allCoins, error } = await supabase
+    .from('user_coins')
+    .select('user_id, balance')
+    .order('balance', { ascending: false });
+
+  if (error || !allCoins) {
+    console.error('Error fetching coins:', error);
+    return { ranking: [], userPosition: null, userBalance: 0 };
+  }
+
+  // Encontrar a posição do usuário atual
+  const userIndex = allCoins.findIndex(c => c.user_id === currentUserId);
+  const userPosition = userIndex >= 0 ? userIndex + 1 : null;
+  const userBalance = userIndex >= 0 ? allCoins[userIndex].balance : 0;
+
+  // Buscar informações de todos os usuários
+  const userIds = allCoins.map(c => c.user_id);
+  const { data: users } = await supabase
+    .from('users')
+    .select('id, full_name, avatar_url, username')
+    .in('id', userIds);
+
+  const usersMap = new Map(users?.map(u => [u.id, u]) || []);
+
+  // Montar o ranking completo
+  const ranking = allCoins.map((coin, index) => {
+    const user = usersMap.get(coin.user_id);
+    return {
+      position: index + 1,
+      userId: coin.user_id,
+      fullName: user?.full_name || 'Usuário',
+      username: user?.username || null,
+      avatarUrl: user?.avatar_url || null,
+      balance: coin.balance || 0,
+      isCurrentUser: coin.user_id === currentUserId,
+    };
+  }).filter(entry => entry.balance > 0);
+
+  return { ranking, userPosition, userBalance };
+}
+
 export default async function RankingPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -26,6 +73,8 @@ export default async function RankingPage() {
     redirect('/login');
   }
 
+  const { ranking, userPosition, userBalance } = await getRankingData(user.id);
+
   return (
     <div className="space-y-6 sm:space-y-8">
       <PageHeader
@@ -33,56 +82,36 @@ export default async function RankingPage() {
         description="Veja sua posição na comunidade"
       />
 
-      {/* Em breve */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-yellow-400 via-amber-500 to-orange-500 p-1">
-        <div className="relative bg-white rounded-xl p-8 sm:p-12">
-          {/* Elementos decorativos */}
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-yellow-100 to-amber-100 rounded-full blur-3xl opacity-50 -translate-y-1/2 translate-x-1/2" />
-          <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-br from-orange-100 to-amber-100 rounded-full blur-2xl opacity-50 translate-y-1/2 -translate-x-1/2" />
-
-          <div className="relative text-center">
-            {/* Ícone animado */}
-            <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-yellow-100 to-amber-100 mb-6">
-              <span className="text-4xl sm:text-5xl animate-bounce">🏆</span>
-            </div>
-
-            {/* Badge "Em Breve" */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-yellow-500 to-amber-500 text-white text-sm font-medium mb-4">
-              <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
-              Em Breve
-            </div>
-
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
-              Sistema de Ranking Chegando!
-            </h2>
-
-            <p className="text-gray-600 mb-6 max-w-md mx-auto">
-              Estamos preparando um sistema de ranking incrível para você competir
-              com outros membros da comunidade e ganhar recompensas exclusivas!
-            </p>
-
-            {/* Features do ranking */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-lg mx-auto">
-              <div className="flex flex-col items-center p-4 rounded-xl bg-gray-50">
-                <span className="text-2xl mb-2">🥇</span>
-                <span className="text-sm text-gray-600 font-medium">Top 10 Semanal</span>
+      {/* Card com sua posição */}
+      {userPosition && (
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-500 via-pink-500 to-rose-500 p-1">
+          <div className="relative bg-white rounded-xl p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500 mb-1">Sua posição</p>
+                <div className="flex items-center gap-3">
+                  <span className="text-4xl font-bold text-gray-900">#{userPosition}</span>
+                  <span className="text-gray-400">de {ranking.length}</span>
+                </div>
               </div>
-              <div className="flex flex-col items-center p-4 rounded-xl bg-gray-50">
-                <span className="text-2xl mb-2">💎</span>
-                <span className="text-sm text-gray-600 font-medium">Níveis de Tier</span>
-              </div>
-              <div className="flex flex-col items-center p-4 rounded-xl bg-gray-50">
-                <span className="text-2xl mb-2">🎁</span>
-                <span className="text-sm text-gray-600 font-medium">Prêmios Especiais</span>
+              <div className="text-right">
+                <p className="text-sm text-gray-500 mb-1">Seus corações</p>
+                <div className="flex items-center gap-2 text-2xl font-bold text-pink-600">
+                  <span>❤️</span>
+                  <span>{userBalance}</span>
+                </div>
               </div>
             </div>
-
-            <p className="text-sm text-gray-400 mt-6">
-              Continue completando desafios! Seus pontos já estão sendo contabilizados.
-            </p>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Lista de ranking */}
+      <RankingList 
+        ranking={ranking} 
+        userPosition={userPosition}
+        totalUsers={ranking.length}
+      />
     </div>
   );
 }
