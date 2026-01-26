@@ -12,7 +12,7 @@ import { verifyAdminOrCreator } from './utils';
 import { calculateSimilarity } from '@/lib/similarity';
 import { notifyPostApproved, notifyPostRejected, notifyNewLike, notifyNewComment } from '@/actions/notifications';
 import { giveHearts } from '@/lib/hearts';
-import { autoResponderComentario } from '@/actions/autoresponder';
+import { autoResponderComentario, agendarAutoComentarioPost } from '@/actions/autoresponder';
 
 // Logger contextualizado para o módulo de posts
 const postsLogger = logger.withContext('[Posts]');
@@ -190,6 +190,11 @@ export async function createPost(data: CreatePostData): Promise<CreatePostRespon
         referenceType: 'post',
         description: 'criou um post'
       });
+
+      // 🤖 Auto-comentário do Moço no post (67% de chance)
+      const textoPost = `${data.title || ''} ${finalContent || ''}`.trim();
+      agendarAutoComentarioPost(post.id, textoPost, user.id)
+        .catch(err => postsLogger.error('Erro ao agendar auto-comentário', { error: sanitizeError(err) }));
     }
 
     revalidatePath('/');
