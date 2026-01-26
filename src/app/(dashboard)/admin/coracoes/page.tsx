@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { Card, Badge } from '@/components/ui';
-import { HEARTS_CONFIG } from '@/lib/hearts';
+import { HEARTS_CONFIG } from '@/lib/hearts-config';
 import { Heart, Gift, Users, Calendar, MessageCircle, Share2, Bookmark, UserPlus, Star } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
