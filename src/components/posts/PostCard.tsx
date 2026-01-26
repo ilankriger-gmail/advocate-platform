@@ -390,13 +390,13 @@ export const PostCard = memo(function PostCard({
                 className="prose prose-sm max-w-none text-surface-700 whitespace-pre-line [&_a]:text-primary-600 [&_a]:underline [&_a:hover]:text-primary-800"
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(displayContent) }}
               />
-              {wasTruncated && !isContentExpanded && (
-                <Link
-                  href={`/post/${post.id}`}
-                  className="block mt-3 text-sm font-semibold text-primary-600 hover:text-primary-800 transition-colors"
+              {wasTruncated && (
+                <button
+                  onClick={() => setIsContentExpanded(!isContentExpanded)}
+                  className="block mt-2 text-sm font-semibold text-primary-600 hover:text-primary-800 transition-colors"
                 >
-                  Ver mais →
-                </Link>
+                  {isContentExpanded ? 'Ver menos ↑' : 'Ver mais →'}
+                </button>
               )}
             </>
           );
