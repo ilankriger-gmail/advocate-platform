@@ -7,6 +7,7 @@ import { verifyAdminOrCreator, getAuthenticatedUser } from './utils';
 import { logger, maskId, sanitizeError } from '@/lib';
 import { generateChallengeThumbnail } from '@/lib/ai/generate-thumbnail';
 import { notifyChallengeApproved, notifyChallengeRejected, notifyChallengeWinner } from '@/actions/notifications';
+import { sendChallengeApprovedEmail } from '@/lib/email';
 
 // Logger contextualizado para o módulo de desafios admin
 const challengesAdminLogger = logger.withContext('[ChallengesAdmin]');
@@ -114,6 +115,30 @@ export async function approveParticipation(
       await notifyChallengeApproved(participation.user_id, challengeTitle, coinsReward);
     } catch (notifyError) {
       challengesAdminLogger.error('Erro ao enviar notificação de aprovação', { error: sanitizeError(notifyError) });
+    }
+
+    // Enviar email de aprovação
+    try {
+      const { data: userEmail } = await supabase
+        .from('users')
+        .select('email')
+        .eq('id', participation.user_id)
+        .single();
+
+      if (userEmail?.email) {
+        await sendChallengeApprovedEmail({
+          to: userEmail.email,
+          userName: userData?.full_name || 'Participante',
+          challengeTitle,
+          coinsReward,
+        });
+        challengesAdminLogger.info('Email de aprovação enviado', { 
+          participationId, 
+          email: userEmail.email.replace(/(.{2}).*@/, '$1***@') 
+        });
+      }
+    } catch (emailError) {
+      challengesAdminLogger.error('Erro ao enviar email de aprovação', { error: sanitizeError(emailError) });
     }
 
     // Criar post de celebração no feed

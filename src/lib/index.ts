@@ -38,3 +38,12 @@ export type {
   SanitizeOptions,
   SanitizedError,
 } from './sanitize';
+
+// ============================================================================
+// EMAIL - Envio de emails com Resend
+// ============================================================================
+
+export {
+  sendEmail,
+  sendChallengeApprovedEmail,
+} from './email';
