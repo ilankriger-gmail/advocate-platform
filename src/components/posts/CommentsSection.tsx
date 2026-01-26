@@ -118,6 +118,11 @@ export function CommentsSection({
   defaultExpanded = false,
 }: CommentsSectionProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+  
+  // Sincronizar com prop externa
+  useEffect(() => {
+    setIsExpanded(defaultExpanded);
+  }, [defaultExpanded]);
   const [comments, setComments] = useState<Comment[]>(initialComments);
   const [localCommentsCount, setLocalCommentsCount] = useState(commentsCount);
   const [newComment, setNewComment] = useState('');

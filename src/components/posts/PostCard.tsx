@@ -15,6 +15,70 @@ import { TeAmoButton, ExplodingHeart } from './TeAmoButton';
 import { CommentsSection } from './CommentsSection';
 import type { PostWithAuthor } from '@/types/post';
 
+// Componente que integra ações e comentários
+function PostActionsWithComments({ 
+  post, 
+  userVote 
+}: { 
+  post: PostWithAuthor; 
+  userVote?: number | null;
+}) {
+  const [commentsExpanded, setCommentsExpanded] = useState(false);
+
+  return (
+    <>
+      <div className="px-4 py-3 border-t border-surface-100 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <TeAmoButton
+            postId={post.id}
+            initialCount={post.likes_count || 0}
+            initialLiked={typeof userVote === 'number' && userVote > 0}
+          />
+          
+          {/* Contador de comentários clicável */}
+          <button
+            onClick={() => setCommentsExpanded(!commentsExpanded)}
+            className="flex items-center gap-1.5 text-gray-500 hover:text-primary-600 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+              />
+            </svg>
+            <span className="text-sm font-medium">
+              {post.comments_count || 0} {(post.comments_count || 0) === 1 ? 'comentário' : 'comentários'}
+            </span>
+          </button>
+        </div>
+
+        {/* Ícones de ação (bookmark, share) */}
+        <div className="flex items-center gap-2">
+          <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+            </svg>
+          </button>
+          <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* Comments Section - controlado pelo estado */}
+      <CommentsSection
+        postId={post.id}
+        commentsCount={post.comments_count || 0}
+        defaultExpanded={commentsExpanded}
+      />
+    </>
+  );
+}
+
 interface PostCardProps {
   post: PostWithAuthor;
   userVote?: number | null;
@@ -372,21 +436,10 @@ export const PostCard = memo(function PostCard({
 
       {/* Actions */}
       {post.status === 'approved' && (
-        <>
-          <div className="px-4 py-3 border-t border-surface-100 flex items-center gap-4">
-            <TeAmoButton
-              postId={post.id}
-              initialCount={post.likes_count || 0}
-              initialLiked={userVote !== null && userVote > 0}
-            />
-          </div>
-
-          {/* Comments Section */}
-          <CommentsSection
-            postId={post.id}
-            commentsCount={post.comments_count || 0}
-          />
-        </>
+        <PostActionsWithComments
+          post={post}
+          userVote={userVote}
+        />
       )}
 
       {/* Approval Actions (admin only, pending posts) */}
