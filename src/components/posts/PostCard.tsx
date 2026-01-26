@@ -188,7 +188,7 @@ export const PostCard = memo(function PostCard({
   const { approve, reject, delete: deletePost, isPending } = usePosts();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
-  const [isContentExpanded, setIsContentExpanded] = useState(false);
+  // Content expansion agora vai para página de detalhe
 
   const statusConfig = POST_STATUS[post.status];
   const voteAverage = (post as unknown as Record<string, unknown>).vote_average as number || 0;
@@ -382,21 +382,22 @@ export const PostCard = memo(function PostCard({
         </Link>
         {post.content && (() => {
           const { truncated, wasTruncated } = truncateHtml(post.content, CONTENT_TRUNCATE_LIMIT);
-          const displayContent = isContentExpanded ? post.content : truncated;
 
           return (
             <>
-              <div
-                className="prose prose-sm max-w-none text-surface-700 whitespace-pre-line [&_a]:text-primary-600 [&_a]:underline [&_a:hover]:text-primary-800"
-                dangerouslySetInnerHTML={{ __html: sanitizeHtml(displayContent) }}
-              />
+              <Link href={`/post/${post.id}`} className="block cursor-pointer">
+                <div
+                  className="prose prose-sm max-w-none text-surface-700 whitespace-pre-line [&_a]:text-primary-600 [&_a]:underline [&_a:hover]:text-primary-800"
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(truncated) }}
+                />
+              </Link>
               {wasTruncated && (
-                <button
-                  onClick={() => setIsContentExpanded(!isContentExpanded)}
+                <Link
+                  href={`/post/${post.id}`}
                   className="block mt-2 text-sm font-semibold text-primary-600 hover:text-primary-800 transition-colors"
                 >
-                  {isContentExpanded ? 'Ver menos ↑' : 'Ver mais →'}
-                </button>
+                  Ver mais →
+                </Link>
               )}
             </>
           );
