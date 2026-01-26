@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import type { PostWithAuthor, PaginatedFeedResponse } from '@/types/post';
 import { logger, sanitizeError } from '@/lib';
+import { filterSimilarPosts } from '@/lib/similarity';
 
 // Logger contextualizado para o módulo de feed
 const feedLogger = logger.withContext('[Feed]');
@@ -299,6 +300,19 @@ export async function getFeedPosts({
       }))
       .sort((a, b) => (b._hotScore || 0) - (a._hotScore || 0))
       .map(({ _hotScore, ...post }) => post as PostWithAuthor);
+  }
+
+  // Filtrar posts muito similares (60% de similaridade = duplicata)
+  // Mantém o mais antigo e remove os parecidos
+  const originalLength = posts.length;
+  posts = filterSimilarPosts(posts, 0.6);
+  
+  if (posts.length < originalLength) {
+    feedLogger.debug('Posts similares filtrados', { 
+      original: originalLength, 
+      filtered: posts.length,
+      removed: originalLength - posts.length 
+    });
   }
 
   const hasMore = posts.length === limit;
