@@ -138,6 +138,9 @@ export const RATE_LIMITS = {
   // Comentarios: 20 por minuto
   comment: { limit: 20, windowSeconds: 60 },
 
+  // Likes (posts e comentários): 60 por minuto
+  like: { limit: 60, windowSeconds: 60 },
+
   // Leads/NPS: 5 por minuto
   lead: { limit: 5, windowSeconds: 60 },
 } as const;

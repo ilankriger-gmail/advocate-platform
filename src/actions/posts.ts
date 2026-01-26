@@ -794,6 +794,13 @@ export async function likeComment(commentId: string): Promise<ActionResponse<{ l
       return { error: 'Usuário não autenticado' };
     }
 
+    // ANTI-SPAM: Rate limit para likes em comentários
+    const rateLimitResult = await checkRateLimit(`like-comment:${user.id}`, RATE_LIMITS.like);
+    if (!rateLimitResult.success) {
+      const retryAfter = Math.ceil((rateLimitResult.reset - Date.now()) / 1000);
+      return { error: `Muitas curtidas. Aguarde ${retryAfter} segundos.` };
+    }
+
     // Verificar se já curtiu
     const { data: existing } = await supabase
       .from('comment_likes')
