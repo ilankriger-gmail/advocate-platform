@@ -152,27 +152,28 @@ export default async function PublicProfilePage({ params }: PageProps) {
 
         {/* Posts */}
         <div className="lg:col-span-2 space-y-6">
-          <Card className="p-6">
+          <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Posts ({posts.length})
             </h3>
 
             {posts.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <p>Este usuário ainda não tem posts aprovados.</p>
-              </div>
+              <Card className="p-6">
+                <div className="text-center py-8 text-gray-500">
+                  <p>Este usuário ainda não tem posts aprovados.</p>
+                </div>
+              </Card>
             ) : (
               <div className="space-y-4">
                 {posts.map((post) => (
                   <PostCard
                     key={post.id}
                     post={post}
-                    compact
                   />
                 ))}
               </div>
             )}
-          </Card>
+          </div>
         </div>
       </div>
     </div>
