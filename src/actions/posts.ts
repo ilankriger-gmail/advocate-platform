@@ -11,6 +11,7 @@ import { logger, maskId, sanitizeError } from '@/lib';
 import { verifyAdminOrCreator } from './utils';
 import { notifyPostApproved, notifyPostRejected, notifyNewLike, notifyNewComment } from '@/actions/notifications';
 import { giveHearts } from '@/lib/hearts';
+import { autoResponderComentario } from '@/actions/autoresponder';
 
 // Logger contextualizado para o módulo de posts
 const postsLogger = logger.withContext('[Posts]');
@@ -927,6 +928,12 @@ export async function commentPost(postId: string, content: string, parentId?: st
       referenceType: 'comment',
       description: parentId ? 'respondeu um comentário' : 'comentou em um post'
     });
+
+    // 🤖 Auto-responder do Moço (67% de chance, apenas comentários raiz)
+    if (!parentId) {
+      autoResponderComentario(postId, comment.id, sanitizedContent, user.id)
+        .catch(err => postsLogger.error('Erro no autoresponder', { error: sanitizeError(err) }));
+    }
 
     revalidatePath('/feed');
     return { success: true, data: comment };
