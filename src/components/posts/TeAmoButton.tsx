@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, useTransition } from 'react';
 import { cn } from '@/lib/utils';
 import { likePost } from '@/actions/posts';
+import { useHeartsToast } from '@/components/ui/HeartsToast';
 
 interface TeAmoButtonProps {
   postId: string;
@@ -36,6 +37,9 @@ export function TeAmoButton({
   
   const particleIdRef = useRef(0);
   const lastTapRef = useRef(0);
+  
+  // Toast de corações
+  const { showHearts } = useHeartsToast();
 
   // Criar partículas de explosão
   const createParticles = useCallback(() => {
@@ -84,6 +88,9 @@ export function TeAmoButton({
       if (!result.success) {
         setLiked(!newLiked);
         setCount(prev => newLiked ? prev - 1 : prev + 1);
+      } else if (newLiked && result.hearts) {
+        // Mostrar toast de corações ganhos
+        showHearts(result.hearts, 'Te Amo!');
       }
     });
   }, [liked, postId, createParticles]);

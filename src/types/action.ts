@@ -37,6 +37,9 @@ export type ActionResponse<T = void> = {
 
   /** Mensagem informativa (ex: moderação pendente) */
   message?: string;
+
+  /** Corações ganhos pela ação (gamificação) */
+  hearts?: number;
 };
 
 /**

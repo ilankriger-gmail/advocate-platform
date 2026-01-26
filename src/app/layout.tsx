@@ -5,6 +5,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { SidebarProvider } from '@/contexts/SidebarContext';
 import { QueryProvider } from '@/providers/QueryProvider';
 import { ToastProvider } from '@/components/ui/Toast';
+import { HeartsToastProvider } from '@/components/ui/HeartsToast';
 import { Header } from '@/components/layout/Header';
 import { getSiteSettings } from '@/lib/config/site';
 import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics';
@@ -111,12 +112,14 @@ export default async function RootLayout({
         <QueryProvider>
           <AuthProvider>
             <ToastProvider>
-              <SidebarProvider>
-                <Header logoUrl={logoUrl} siteName={siteName} />
-                <main>
-                  {children}
-                </main>
-              </SidebarProvider>
+              <HeartsToastProvider>
+                <SidebarProvider>
+                  <Header logoUrl={logoUrl} siteName={siteName} />
+                  <main>
+                    {children}
+                  </main>
+                </SidebarProvider>
+              </HeartsToastProvider>
             </ToastProvider>
           </AuthProvider>
         </QueryProvider>

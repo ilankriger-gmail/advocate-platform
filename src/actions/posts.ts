@@ -645,15 +645,18 @@ export async function likePost(postId: string): Promise<ActionResponse> {
       }
 
       // ❤️ Dar coração por curtir
-      await giveHearts(user.id, 'LIKE_POST', {
+      const heartsResult = await giveHearts(user.id, 'LIKE_POST', {
         referenceId: postId,
         referenceType: 'post_like',
         description: 'curtiu um post'
       });
+
+      revalidatePath('/feed');
+      return { success: true, hearts: heartsResult.hearts };
     }
 
     revalidatePath('/feed');
-    return { success: true };
+    return { success: true, hearts: 0 };
   } catch {
     return { error: 'Erro interno do servidor' };
   }
