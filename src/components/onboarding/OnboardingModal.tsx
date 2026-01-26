@@ -25,8 +25,8 @@ const steps: OnboardingStep[] = [
       </div>
     ),
     title: 'Bem-vindo à Arena Te Amo!',
-    description: 'Aqui cada interação te dá corações ❤️ para trocar por prêmios!',
-    highlight: 'Engaje, ganhe corações, resgate prêmios!',
+    description: 'Aqui você ganha corações ❤️ só de participar da comunidade!',
+    highlight: 'Quanto mais você engaja, mais corações acumula!',
   },
   {
     icon: (
@@ -34,9 +34,19 @@ const steps: OnboardingStep[] = [
         <span className="text-4xl">💬</span>
       </div>
     ),
-    title: 'Cada ação = 1 coração ❤️',
-    description: 'Curtir, comentar, criar post, seguir alguém, participar de desafios...',
-    highlight: 'Tudo conta! Simples assim.',
+    title: 'Todo engajamento vale!',
+    description: 'Curtiu um post? +1❤️\nComentou? +1❤️\nSeguiu alguém? +1❤️\nCompartilhou? +1❤️',
+    highlight: 'Cada ação = 1 coração. Simples assim!',
+  },
+  {
+    icon: (
+      <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg shadow-purple-500/30">
+        <span className="text-4xl">👥</span>
+      </div>
+    ),
+    title: 'Indique amigos, ganhe mais!',
+    description: 'Convide amigos para a Arena. Quando eles entrarem, vocês dois ganham 100 corações!',
+    highlight: 'Seu link de indicação está em Desafios!',
   },
   {
     icon: (
@@ -44,8 +54,8 @@ const steps: OnboardingStep[] = [
         <span className="text-4xl">🎁</span>
       </div>
     ),
-    title: 'Troque corações por prêmios',
-    description: 'Use seus corações acumulados para resgatar recompensas incríveis.',
+    title: 'Troque por prêmios!',
+    description: 'Acumule corações e resgate prêmios exclusivos na aba Prêmios.',
     highlight: 'Quanto mais você participa, mais você ganha!',
   },
   {
@@ -55,7 +65,7 @@ const steps: OnboardingStep[] = [
       </div>
     ),
     title: 'Bora começar!',
-    description: 'Explore a comunidade e comece a ganhar seus primeiros corações!',
+    description: 'Explore a comunidade, curta posts, comente, e veja seus corações crescendo!',
     highlight: 'Seu primeiro ❤️ te espera!',
   },
 ];
