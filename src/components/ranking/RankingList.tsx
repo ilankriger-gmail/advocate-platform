@@ -12,6 +12,7 @@ interface RankingEntry {
   avatarUrl: string | null;
   balance: number;
   isCurrentUser: boolean;
+  previousPosition?: number | null;
 }
 
 interface RankingListProps {
@@ -79,6 +80,31 @@ export function RankingList({ ranking, userPosition, totalUsers }: RankingListPr
     );
   };
 
+  // Indicador de movimento (subindo/descendo)
+  const MovementIndicator = ({ current, previous }: { current: number; previous?: number | null }) => {
+    if (!previous || previous === current) {
+      return <span className="text-gray-300 text-xs">—</span>;
+    }
+    
+    const diff = previous - current; // Positivo = subiu, negativo = desceu
+    
+    if (diff > 0) {
+      return (
+        <span className="flex items-center gap-0.5 text-green-500 text-xs font-medium">
+          <span>▲</span>
+          <span>{diff}</span>
+        </span>
+      );
+    }
+    
+    return (
+      <span className="flex items-center gap-0.5 text-red-500 text-xs font-medium">
+        <span>▼</span>
+        <span>{Math.abs(diff)}</span>
+      </span>
+    );
+  };
+
   return (
     <div className="space-y-4">
       {/* Toggle de visualização */}
@@ -132,9 +158,10 @@ export function RankingList({ ranking, userPosition, totalUsers }: RankingListPr
                 : 'hover:bg-gray-50'
             }`}
           >
-            {/* Posição */}
-            <div className="w-12 flex justify-center">
+            {/* Posição + Movimento */}
+            <div className="w-16 flex items-center gap-1 justify-center">
               <PositionBadge position={entry.position} />
+              <MovementIndicator current={entry.position} previous={entry.previousPosition} />
             </div>
 
             {/* Avatar e nome */}
