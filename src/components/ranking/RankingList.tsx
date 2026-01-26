@@ -27,6 +27,15 @@ export function RankingList({ ranking, userPosition, totalUsers }: RankingListPr
   const [visibleRange, setVisibleRange] = useState({ start: 0, end: 20 });
   const userRowRef = useRef<HTMLDivElement>(null);
 
+  // Scroll para a posição do usuário quando mudar para modo completo
+  useEffect(() => {
+    if (viewMode === 'full' && userRowRef.current) {
+      setTimeout(() => {
+        userRowRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    }
+  }, [viewMode]);
+
   // Se não tem ranking, não renderiza nada
   if (!ranking || ranking.length === 0) {
     return null;
@@ -46,15 +55,6 @@ export function RankingList({ ranking, userPosition, totalUsers }: RankingListPr
   const displayEntries = viewMode === 'relative' 
     ? ranking.slice(relativeRange.start, relativeRange.end)
     : ranking.slice(visibleRange.start, visibleRange.end);
-
-  // Scroll para a posição do usuário quando mudar para modo completo
-  useEffect(() => {
-    if (viewMode === 'full' && userRowRef.current) {
-      setTimeout(() => {
-        userRowRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 100);
-    }
-  }, [viewMode]);
 
   // Carregar mais ao rolar
   const loadMore = () => {
