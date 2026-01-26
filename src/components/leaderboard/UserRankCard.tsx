@@ -169,7 +169,7 @@ function NotRankedState() {
           Você ainda não está ranqueado
         </h3>
         <p className="text-sm text-surface-500 max-w-md mx-auto">
-          Complete desafios, participe de eventos e ganhe moedas para aparecer no ranking!
+          Complete desafios, participe de eventos e ganhe corações para aparecer no ranking!
         </p>
       </div>
     </Card>

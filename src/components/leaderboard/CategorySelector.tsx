@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 
 /**
  * Interface de seleção de categoria do leaderboard
- * Permite alternar entre moedas, desafios e ranking geral
+ * Permite alternar entre corações, desafios e ranking geral
  */
 
 interface CategorySelectorProps {
@@ -20,7 +20,7 @@ interface CategorySelectorProps {
 function getCategoryLabel(category: LeaderboardCategory): string {
   switch (category) {
     case 'coins':
-      return 'Moedas';
+      return 'Corações';
     case 'challenges':
       return 'Desafios';
     case 'combined':
@@ -36,7 +36,7 @@ function getCategoryLabel(category: LeaderboardCategory): string {
 function getCategoryDescription(category: LeaderboardCategory): string {
   switch (category) {
     case 'coins':
-      return 'Ranking por moedas ganhas';
+      return 'Ranking por corações ganhas';
     case 'challenges':
       return 'Ranking por desafios completados';
     case 'combined':

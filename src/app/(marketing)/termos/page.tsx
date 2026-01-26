@@ -47,7 +47,7 @@ export default function TermosPage() {
             </p>
             <ul className="list-disc pl-6 text-surface-600 space-y-2">
               <li>Participação em desafios e competições</li>
-              <li>Sistema de recompensas e moedas virtuais</li>
+              <li>Sistema de recompensas e corações virtuais</li>
               <li>Interação com outros membros da comunidade</li>
               <li>Acesso a conteúdos exclusivos</li>
               <li>Participação em eventos</li>
@@ -99,11 +99,11 @@ export default function TermosPage() {
           <section className="mb-8">
             <h2 className="text-xl font-semibold text-surface-900 mb-4">6. Sistema de Recompensas</h2>
             <p className="text-surface-600 mb-4">
-              A Plataforma oferece um sistema de moedas virtuais e recompensas:
+              A Plataforma oferece um sistema de corações virtuais e recompensas:
             </p>
             <ul className="list-disc pl-6 text-surface-600 space-y-2">
-              <li>Moedas são obtidas através de participação em atividades</li>
-              <li>Moedas não possuem valor monetário e não podem ser convertidas em dinheiro</li>
+              <li>Corações são obtidas através de participação em atividades</li>
+              <li>Corações não possuem valor monetário e não podem ser convertidas em dinheiro</li>
               <li>Recompensas estão sujeitas a disponibilidade</li>
               <li>A Arena reserva-se o direito de modificar o sistema de recompensas</li>
             </ul>

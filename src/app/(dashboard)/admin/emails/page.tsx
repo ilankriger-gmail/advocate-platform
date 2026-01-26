@@ -155,7 +155,7 @@ const FIELD_LABELS: Record<string, { label: string; description: string; placeho
   email_onboarding1_benefits: {
     label: 'Lista de Benefícios',
     description: 'Separe os itens por vírgula',
-    placeholder: 'Participar de desafios,Ganhar moedas,Trocar por prêmios',
+    placeholder: 'Participar de desafios,Ganhar corações,Trocar por prêmios',
   },
   email_onboarding1_cta: {
     label: 'Texto do Botão',
@@ -196,13 +196,13 @@ const FIELD_LABELS: Record<string, { label: string; description: string; placeho
   email_onboarding2_footer: {
     label: 'Texto do Rodapé',
     description: 'Mensagem de encerramento do email',
-    placeholder: 'Quanto mais você participa, mais moedas acumula!',
+    placeholder: 'Quanto mais você participa, mais corações acumula!',
   },
   // Onboarding 3 - Reengajamento
   email_onboarding3_subject: {
     label: 'Assunto do Email',
     description: 'Use {{name}} para inserir o nome da pessoa',
-    placeholder: '{{name}}, suas moedas estão esperando!',
+    placeholder: '{{name}}, suas corações estão esperando!',
   },
   email_onboarding3_greeting: {
     label: 'Saudação',
@@ -212,7 +212,7 @@ const FIELD_LABELS: Record<string, { label: string; description: string; placeho
   email_onboarding3_message: {
     label: 'Mensagem Principal',
     description: 'Incentivo para resgatar prêmios',
-    placeholder: 'Você sabia que pode trocar suas moedas por prêmios?',
+    placeholder: 'Você sabia que pode trocar suas corações por prêmios?',
   },
   email_onboarding3_benefits: {
     label: 'Lista de Benefícios',

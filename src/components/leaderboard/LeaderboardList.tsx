@@ -66,7 +66,7 @@ function EmptyState() {
       </h3>
       <p className="text-sm text-surface-500 max-w-sm">
         Seja o primeiro a participar e aparecer no ranking! Complete desafios
-        e ganhe moedas para subir no leaderboard.
+        e ganhe corações para subir no leaderboard.
       </p>
     </div>
   );
