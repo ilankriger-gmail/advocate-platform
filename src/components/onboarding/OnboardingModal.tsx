@@ -21,22 +21,22 @@ const steps: OnboardingStep[] = [
   {
     icon: (
       <div className="w-20 h-20 bg-gradient-to-br from-pink-500 to-rose-500 rounded-full flex items-center justify-center shadow-lg shadow-pink-500/30">
-        <span className="text-4xl">🎉</span>
+        <span className="text-4xl">❤️</span>
       </div>
     ),
     title: 'Bem-vindo à Arena Te Amo!',
-    description: 'Aqui você pratica o bem e é premiado por cada ato de amor.',
-    highlight: 'Faça o bem, ganhe recompensas!',
+    description: 'Aqui cada interação te dá corações ❤️ para trocar por prêmios!',
+    highlight: 'Engaje, ganhe corações, resgate prêmios!',
   },
   {
     icon: (
       <div className="w-20 h-20 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg shadow-amber-500/30">
-        <span className="text-4xl">🏆</span>
+        <span className="text-4xl">💬</span>
       </div>
     ),
-    title: 'Complete desafios para ganhar corações',
-    description: 'Escolha desafios diários e semanais para acumular pontos.',
-    highlight: 'Cada desafio completo = mais corações ❤️',
+    title: 'Cada ação = 1 coração ❤️',
+    description: 'Curtir, comentar, criar post, seguir alguém, participar de desafios...',
+    highlight: 'Tudo conta! Simples assim.',
   },
   {
     icon: (
@@ -44,9 +44,9 @@ const steps: OnboardingStep[] = [
         <span className="text-4xl">🎁</span>
       </div>
     ),
-    title: 'Troque seus corações por prêmios',
+    title: 'Troque corações por prêmios',
     description: 'Use seus corações acumulados para resgatar recompensas incríveis.',
-    highlight: 'Quanto mais você pratica, mais você ganha!',
+    highlight: 'Quanto mais você participa, mais você ganha!',
   },
   {
     icon: (
@@ -54,9 +54,9 @@ const steps: OnboardingStep[] = [
         <span className="text-4xl">🚀</span>
       </div>
     ),
-    title: 'Vamos começar!',
-    description: 'Escolha seu primeiro desafio e comece sua jornada de amor.',
-    highlight: 'Sua primeira missão te espera!',
+    title: 'Bora começar!',
+    description: 'Explore a comunidade e comece a ganhar seus primeiros corações!',
+    highlight: 'Seu primeiro ❤️ te espera!',
   },
 ];
 

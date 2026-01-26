@@ -3,21 +3,21 @@
 import { useState, useEffect } from 'react';
 
 const FUNNY_WORDS = [
-  'Analisando suas respostas...',
-  'Consultando os oraculos...',
-  'Perguntando pro ChatGPT...',
-  'Calculando o impossivel...',
-  'Lendo sua mente...',
-  'Fazendo magica...',
-  'Contando ate infinito...',
-  'Decifrando hieroglifos...',
-  'Invocando os algoritmos...',
-  'Processando a 300km/h...',
-  'Conectando com o universo...',
-  'Conferindo os astros...',
-  'Aquecendo os servidores...',
-  'Organizando os bits...',
-  'Alinhando os chakras digitais...',
+  'Preparando seus corações ❤️...',
+  'Contando quanto amor você merece...',
+  'Consultando o Moço do Te Amo...',
+  'Calculando corações infinitos...',
+  'Espalhando amor pelo servidor...',
+  'Fazendo mágica com ❤️...',
+  'Aquecendo os corações...',
+  'Conectando com a comunidade...',
+  'Carregando muito amor...',
+  'Processando a 300 corações/s...',
+  'Invocando os algoritmos do amor...',
+  'Organizando seus ❤️...',
+  'Alinhando os chakras do te amo...',
+  'Perguntando pro universo...',
+  'Desbloqueando conquistas ❤️...',
 ];
 
 export function ProcessingAnimation() {
