@@ -953,6 +953,36 @@ export async function commentPost(postId: string, content: string, parentId?: st
       return { error: 'Comentário não pode ser vazio' };
     }
 
+    // ANTI-SPAM: Mínimo de 2 caracteres (bloqueia "." spam)
+    if (sanitizedContent.trim().length < 2) {
+      return { error: 'Comentário muito curto (mínimo 2 caracteres)' };
+    }
+
+    // ANTI-SPAM: Rate limit - máximo 20 comentários por minuto
+    const rateLimitResult = await checkRateLimit(`comment:${user.id}`, RATE_LIMITS.comment);
+    if (!rateLimitResult.success) {
+      const retryAfter = Math.ceil((rateLimitResult.reset - Date.now()) / 1000);
+      return { error: `Muitos comentários. Aguarde ${retryAfter} segundos.` };
+    }
+
+    // ANTI-SPAM: Bloquear comentário idêntico ao último (em 5 minutos)
+    const { data: recentComments } = await supabase
+      .from('post_comments')
+      .select('content')
+      .eq('user_id', user.id)
+      .gte('created_at', new Date(Date.now() - 5 * 60 * 1000).toISOString())
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    if (recentComments && recentComments.length > 0) {
+      const isDuplicate = recentComments.some(
+        comment => comment.content.trim().toLowerCase() === sanitizedContent.trim().toLowerCase()
+      );
+      if (isDuplicate) {
+        return { error: 'Você já fez esse comentário recentemente' };
+      }
+    }
+
     // MODERAÇÃO: Verificar toxicidade do comentário
     try {
       const moderationResult = await moderateText(sanitizedContent);
