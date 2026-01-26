@@ -71,14 +71,27 @@ export async function createPost(data: CreatePostData): Promise<CreatePostRespon
       const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
       const { data: recentPosts } = await supabase
         .from('posts')
-        .select('id, title, content')
+        .select('id, title, content, media_url')
         .eq('user_id', user.id)
         .gte('created_at', oneHourAgo)
         .limit(5);
 
       if (recentPosts && recentPosts.length > 0) {
         const newPostText = `${data.title || ''} ${data.content || ''}`;
+        const newMediaUrls = Array.isArray(data.media_url) ? data.media_url : data.media_url ? [data.media_url] : [];
+        
         for (const recent of recentPosts) {
+          // Verificar imagens duplicadas
+          if (newMediaUrls.length > 0 && recent.media_url && recent.media_url.length > 0) {
+            const recentUrls = new Set(recent.media_url);
+            const hasMatchingImage = newMediaUrls.some(url => recentUrls.has(url));
+            if (hasMatchingImage) {
+              postsLogger.warn('Post com imagem duplicada bloqueado', { userId: maskId(user.id) });
+              return { error: 'Você já postou essa imagem recentemente. Tente com uma imagem diferente!' };
+            }
+          }
+          
+          // Verificar texto similar
           const recentText = `${recent.title || ''} ${recent.content || ''}`;
           const similarity = calculateSimilarity(newPostText, recentText);
           if (similarity >= 0.5) {
