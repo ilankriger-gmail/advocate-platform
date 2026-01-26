@@ -302,10 +302,10 @@ export async function getFeedPosts({
       .map(({ _hotScore, ...post }) => post as PostWithAuthor);
   }
 
-  // Filtrar posts muito similares (60% de similaridade = duplicata)
-  // Mantém o mais antigo e remove os parecidos
+  // Filtrar posts duplicados do MESMO usuário (texto similar ou mesma imagem)
+  // Só remove no feed, no perfil da pessoa mostra todos
   const originalLength = posts.length;
-  posts = filterSimilarPosts(posts, 0.6);
+  posts = filterSimilarPosts(posts, 0.5);
   
   if (posts.length < originalLength) {
     feedLogger.debug('Posts similares filtrados', { 

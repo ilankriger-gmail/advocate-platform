@@ -96,12 +96,32 @@ export function arePostsSimilar(
 }
 
 /**
+ * Verifica se dois posts têm imagens em comum
+ */
+function hasMatchingMedia(
+  media1: string[] | null | undefined,
+  media2: string[] | null | undefined
+): boolean {
+  if (!media1 || !media2 || media1.length === 0 || media2.length === 0) return false;
+  const set2 = new Set(media2);
+  return media1.some(url => set2.has(url));
+}
+
+/**
  * Filtra posts duplicados/similares de uma lista
+ * Só filtra duplicatas do MESMO USUÁRIO (texto similar OU mesma imagem)
  * Mantém o mais antigo (primeiro a aparecer) e remove os similares
  */
-export function filterSimilarPosts<T extends { id: string; title?: string | null; content?: string | null; created_at?: string | null }>(
+export function filterSimilarPosts<T extends { 
+  id: string; 
+  title?: string | null; 
+  content?: string | null; 
+  created_at?: string | null;
+  user_id?: string | null;
+  media_url?: string[] | null;
+}>(
   posts: T[],
-  threshold: number = 0.6
+  threshold: number = 0.5
 ): T[] {
   if (posts.length <= 1) return posts;
 
@@ -113,17 +133,29 @@ export function filterSimilarPosts<T extends { id: string; title?: string | null
   });
 
   const filtered: T[] = [];
-  const seenTexts: Array<{ title?: string | null; content?: string | null }> = [];
+  // Agrupar posts aceitos por usuário para comparação eficiente
+  const seenByUser = new Map<string, Array<{ title?: string | null; content?: string | null; media_url?: string[] | null }>>();
 
   for (const post of sorted) {
-    // Verificar se é similar a algum post já aceito
-    const isSimilar = seenTexts.some(seen => 
-      arePostsSimilar(post, seen, threshold)
-    );
+    const userId = post.user_id || 'unknown';
+    const userSeen = seenByUser.get(userId) || [];
+    
+    // Verificar se é similar a algum post do MESMO usuário já aceito
+    const isDuplicate = userSeen.some(seen => {
+      // Mesma imagem?
+      if (hasMatchingMedia(post.media_url, seen.media_url)) return true;
+      // Texto similar?
+      return arePostsSimilar(post, seen, threshold);
+    });
 
-    if (!isSimilar) {
+    if (!isDuplicate) {
       filtered.push(post);
-      seenTexts.push({ title: post.title ?? null, content: post.content ?? null });
+      userSeen.push({ 
+        title: post.title ?? null, 
+        content: post.content ?? null,
+        media_url: post.media_url ?? null
+      });
+      seenByUser.set(userId, userSeen);
     }
   }
 
