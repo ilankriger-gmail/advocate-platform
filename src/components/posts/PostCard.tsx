@@ -11,6 +11,7 @@ import ImageCarousel from './ImageCarousel';
 import YouTubeEmbed from './YouTubeEmbed';
 import InstagramEmbed from './InstagramEmbed';
 import { SentimentThermometer } from './SentimentThermometer';
+import { TeAmoButton, ExplodingHeart } from './TeAmoButton';
 import { CommentsSection } from './CommentsSection';
 import type { PostWithAuthor } from '@/types/post';
 
@@ -373,11 +374,10 @@ export const PostCard = memo(function PostCard({
       {post.status === 'approved' && (
         <>
           <div className="px-4 py-3 border-t border-surface-100 flex items-center gap-4">
-            <SentimentThermometer
+            <TeAmoButton
               postId={post.id}
-              averageScore={voteAverage}
-              totalVotes={voteCount}
-              userVote={userVote}
+              initialCount={post.likes_count || 0}
+              initialLiked={userVote !== null && userVote > 0}
             />
           </div>
 

@@ -5,6 +5,7 @@ export { CommentsSection } from './CommentsSection';
 export { SaveButton } from './SaveButton';
 export { ShareButton } from './ShareButton';
 export { SentimentThermometer } from './SentimentThermometer';
+export { TeAmoButton, ExplodingHeart } from './TeAmoButton';
 
 // Default exports re-exported as named
 export { default as MediaUploader } from './MediaUploader';
