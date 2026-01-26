@@ -410,6 +410,20 @@ export const PostCard = memo(function PostCard({
         </div>
       )}
 
+      {/* Media - Vídeo nativo */}
+      {post.media_url && post.media_url.length > 0 && mediaType === 'video' && (
+        <div className="px-4 pb-4">
+          <video
+            src={post.media_url[0]}
+            controls
+            className="w-full rounded-xl max-h-[500px] object-contain bg-black"
+            preload="metadata"
+          >
+            Seu navegador não suporta vídeos.
+          </video>
+        </div>
+      )}
+
       {/* Media - YouTube Embed */}
       {youtubeUrl && mediaType === 'youtube' && (
         <div className="px-4 pb-4">

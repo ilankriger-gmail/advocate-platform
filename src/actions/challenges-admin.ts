@@ -138,6 +138,10 @@ Parabéns pela conquista! 👏❤️`;
         .single();
 
       if (creatorProfile) {
+        // Se tem vídeo, usar como media
+        const mediaUrls = videoUrl ? [videoUrl] : null;
+        const mediaType = videoUrl ? 'video' : 'none';
+        
         await supabase.from('posts').insert({
           user_id: creatorProfile.id,
           title: '🏆 Desafio Completado!',
@@ -145,6 +149,8 @@ Parabéns pela conquista! 👏❤️`;
           type: 'community',
           status: 'approved', // Já aprovado automaticamente
           content_category: 'normal',
+          media_url: mediaUrls,
+          media_type: mediaType,
         });
         
         challengesAdminLogger.info('Post de celebração criado', { 
