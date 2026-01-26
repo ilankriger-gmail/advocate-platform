@@ -1199,7 +1199,7 @@ export async function getPostWithDetails(postId: string) {
       .from('posts')
       .select(`
         *,
-        author:users!posts_user_id_fkey(id, full_name, avatar_url, is_creator)
+        author:users!posts_user_id_fkey(id, full_name, avatar_url, is_creator, member_number)
       `)
       .eq('id', postId)
       .eq('status', 'approved')

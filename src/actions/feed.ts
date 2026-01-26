@@ -174,7 +174,8 @@ export async function getFeedPosts({
         id,
         full_name,
         avatar_url,
-        is_creator
+        is_creator,
+        member_number
       )
     `)
     .eq('status', 'approved');

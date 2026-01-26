@@ -3,7 +3,7 @@
 import { useState, memo } from 'react';
 import Link from 'next/link';
 import DOMPurify from 'isomorphic-dompurify';
-import { Card, Avatar, Badge, Button, ConfirmModal, PromptModal } from '@/components/ui';
+import { Card, Avatar, Badge, Button, ConfirmModal, PromptModal, MemberBadge } from '@/components/ui';
 import { formatRelativeTime } from '@/lib/utils';
 import { POST_STATUS } from '@/lib/constants';
 import { usePosts } from '@/hooks';
@@ -215,7 +215,7 @@ export const PostCard = memo(function PostCard({
     setIsDeleteModalOpen(false);
   };
 
-  const author = post.author || { id: post.user_id, full_name: 'Usuário', avatar_url: null };
+  const author = post.author || { id: post.user_id, full_name: 'Usuário', avatar_url: null, is_creator: false, member_number: null };
 
   // Determinar tipo de mídia do post
   const mediaType = (post as unknown as Record<string, unknown>).media_type as string || 'none';
@@ -237,12 +237,15 @@ export const PostCard = memo(function PostCard({
             />
           </Link>
           <div className="flex-1 min-w-0">
-            <Link
-              href={`/profile/${author.id}`}
-              className="font-medium text-surface-900 hover:text-primary-600 transition-colors"
-            >
-              {author.full_name || 'Usuário'}
-            </Link>
+            <span className="flex items-center gap-1.5">
+              <Link
+                href={`/profile/${author.id}`}
+                className="font-medium text-surface-900 hover:text-primary-600 transition-colors"
+              >
+                {author.full_name || 'Usuário'}
+              </Link>
+              <MemberBadge memberNumber={author.member_number} />
+            </span>
             <h4 className="font-medium text-surface-900 truncate">{post.title}</h4>
             <p className="text-sm text-surface-500 truncate">{textContent}</p>
             <div className="flex items-center gap-3 mt-1 text-xs text-surface-400">
@@ -315,12 +318,15 @@ export const PostCard = memo(function PostCard({
             />
           </Link>
           <div>
-            <Link
-              href={`/profile/${author.id}`}
-              className="font-medium text-surface-900 hover:text-primary-600 transition-colors"
-            >
-              {author.full_name || 'Usuário'}
-            </Link>
+            <span className="flex items-center gap-1.5">
+              <Link
+                href={`/profile/${author.id}`}
+                className="font-medium text-surface-900 hover:text-primary-600 transition-colors"
+              >
+                {author.full_name || 'Usuário'}
+              </Link>
+              <MemberBadge memberNumber={author.member_number} />
+            </span>
             <div className="flex items-center gap-2 text-sm text-surface-500">
               <span>{formatRelativeTime(post.created_at)}</span>
               {post.status !== 'approved' && (

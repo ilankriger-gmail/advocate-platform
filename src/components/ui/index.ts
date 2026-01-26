@@ -29,3 +29,4 @@ export type { PromptModalProps } from './PromptModal';
 export type { TabsProps } from './Tabs';
 export type { Toast } from './Toast';
 export type { DateRangePickerProps } from './DateRangePicker';
+export { MemberBadge } from './MemberBadge';

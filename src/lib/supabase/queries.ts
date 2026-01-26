@@ -64,7 +64,8 @@ export async function getCreatorPosts(limit = 5): Promise<PostWithAuthor[]> {
         id,
         full_name,
         avatar_url,
-        is_creator
+        is_creator,
+        member_number
       )
     `)
     .eq('type', 'creator')
@@ -92,7 +93,8 @@ export async function getFeaturedCreatorPosts(limit = 3): Promise<PostWithAuthor
         id,
         full_name,
         avatar_url,
-        is_creator
+        is_creator,
+        member_number
       )
     `)
     .eq('status', 'approved')
@@ -126,7 +128,8 @@ export async function getCommunityPosts(limit = 20, offset = 0): Promise<PostWit
         id,
         full_name,
         avatar_url,
-        is_creator
+        is_creator,
+        member_number
       )
     `)
     .eq('status', 'approved')
@@ -156,7 +159,8 @@ export async function getFeed(limit = 20, offset = 0): Promise<PostWithAuthor[]>
         id,
         full_name,
         avatar_url,
-        is_creator
+        is_creator,
+        member_number
       )
     `)
     .eq('status', 'approved')
@@ -190,7 +194,8 @@ export async function getPosts(filters?: PostFilters): Promise<PostWithAuthor[]>
         id,
         full_name,
         avatar_url,
-        is_creator
+        is_creator,
+        member_number
       )
     `)
     .order('created_at', { ascending: false });
@@ -228,7 +233,8 @@ export async function getPostById(id: string): Promise<PostWithAuthor | null> {
         id,
         full_name,
         avatar_url,
-        is_creator
+        is_creator,
+        member_number
       )
     `)
     .eq('id', id)
@@ -301,7 +307,8 @@ export async function getUserPosts(userId: string, limit = 10): Promise<PostWith
         id,
         full_name,
         avatar_url,
-        is_creator
+        is_creator,
+        member_number
       )
     `)
     .eq('user_id', userId)
