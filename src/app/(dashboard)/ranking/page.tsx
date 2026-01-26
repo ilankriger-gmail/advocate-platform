@@ -34,6 +34,18 @@ async function getRankingData(currentUserId: string) {
     return { ranking: [], userPosition: null, userBalance: 0 };
   }
 
+  // Buscar posições anteriores (de ontem)
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = yesterday.toISOString().split('T')[0];
+  
+  const { data: previousPositions } = await supabase
+    .from('ranking_history')
+    .select('user_id, position')
+    .eq('recorded_at', yesterdayStr);
+  
+  const previousMap = new Map(previousPositions?.map(p => [p.user_id, p.position]) || []);
+
   // Encontrar a posição do usuário atual
   const userIndex = allCoins.findIndex(c => c.user_id === currentUserId);
   const userPosition = userIndex >= 0 ? userIndex + 1 : null;
@@ -72,6 +84,7 @@ async function getRankingData(currentUserId: string) {
       avatarUrl: profile?.avatar_url || user?.avatar_url || null,
       balance: coin.balance || 0,
       isCurrentUser: coin.user_id === currentUserId,
+      previousPosition: previousMap.get(coin.user_id) || null,
     };
   }).filter(entry => entry.balance > 0);
 
