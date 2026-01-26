@@ -62,11 +62,9 @@ export function Header({ className = '', siteName = 'Arena Te Amo', logoUrl = '/
 
   // Garantir que sempre tenha um nome para o avatar (usado nas iniciais)
   const userName = profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuário';
-  // Avatar URL com fallback
-  const userAvatar = profile?.avatar_url || user?.user_metadata?.avatar_url || null;
+  // Avatar URL com fallback - tentar user_metadata também (vem do Google OAuth)
+  const userAvatar = profile?.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture || null;
   const showAdminLink = profile?.role === 'admin' || profile?.is_creator === true;
-  // Mostrar loading enquanto profile ainda não carregou (mas user já existe)
-  const isProfileLoading = !!user && !profile && !isLoading;
 
   return (
     <header className={`bg-white border-b border-gray-200 sticky top-0 z-30 ${className}`}>
@@ -108,7 +106,7 @@ export function Header({ className = '', siteName = 'Arena Te Amo', logoUrl = '/
 
           {/* Lado direito: Notificações + Menu do usuário */}
           <div className="flex items-center gap-2">
-            {isLoading || isProfileLoading ? (
+            {isLoading ? (
               <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
             ) : user ? (
               <>
