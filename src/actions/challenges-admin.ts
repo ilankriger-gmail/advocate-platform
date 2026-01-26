@@ -187,6 +187,157 @@ export async function rejectParticipation(
 }
 
 /**
+ * Reverter aprovação - remove corações e volta para pendente
+ */
+export async function revertApproval(
+  participationId: string
+): Promise<ActionResponse> {
+  try {
+    const userCheck = await getAuthenticatedUser();
+    if (userCheck.error) return userCheck;
+    
+    const authCheck = await verifyAdminOrCreator(userCheck.data!.id);
+    if (authCheck.error) return authCheck;
+
+    const supabase = await createClient();
+
+    // Buscar participação para saber quantos corações remover
+    const { data: participation } = await supabase
+      .from('challenge_participants')
+      .select('user_id, coins_earned, status')
+      .eq('id', participationId)
+      .single();
+
+    if (!participation) {
+      return { error: 'Participação não encontrada' };
+    }
+
+    if (participation.status !== 'approved') {
+      return { error: 'Participação não está aprovada' };
+    }
+
+    const coinsToRemove = participation.coins_earned || 0;
+
+    // Remover corações do usuário
+    if (coinsToRemove > 0) {
+      await supabase.rpc('add_user_coins', {
+        p_user_id: participation.user_id,
+        p_amount: -coinsToRemove, // Negativo para remover
+      });
+
+      // Registrar transação de remoção
+      await supabase.from('coin_transactions').insert({
+        user_id: participation.user_id,
+        amount: -coinsToRemove,
+        type: 'refund',
+        description: 'Aprovação revertida pelo admin',
+      });
+    }
+
+    // Voltar status para pending
+    const { error } = await supabase
+      .from('challenge_participants')
+      .update({
+        status: 'pending',
+        coins_earned: 0,
+      })
+      .eq('id', participationId);
+
+    if (error) {
+      return { error: `Erro ao reverter: ${error.message}` };
+    }
+
+    challengesAdminLogger.info('Aprovação revertida', { participationId, coinsRemoved: coinsToRemove });
+    
+    revalidatePath('/desafios');
+    revalidatePath('/admin/desafios');
+    return { success: true };
+  } catch {
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+/**
+ * Aprovar todas as participações pendentes de um desafio
+ */
+export async function approveAllPending(
+  challengeId: string
+): Promise<ActionResponse & { approved?: number }> {
+  try {
+    const userCheck = await getAuthenticatedUser();
+    if (userCheck.error) return userCheck;
+    
+    const authCheck = await verifyAdminOrCreator(userCheck.data!.id);
+    if (authCheck.error) return authCheck;
+
+    const supabase = await createClient();
+
+    // Buscar desafio para saber recompensa
+    const { data: challenge } = await supabase
+      .from('challenges')
+      .select('coins_reward, title')
+      .eq('id', challengeId)
+      .single();
+
+    if (!challenge) {
+      return { error: 'Desafio não encontrado' };
+    }
+
+    const coinsReward = challenge.coins_reward || 0;
+
+    // Buscar todas as participações pendentes
+    const { data: pendingParticipations } = await supabase
+      .from('challenge_participants')
+      .select('id, user_id')
+      .eq('challenge_id', challengeId)
+      .eq('status', 'pending');
+
+    if (!pendingParticipations || pendingParticipations.length === 0) {
+      return { error: 'Nenhuma participação pendente' };
+    }
+
+    let approved = 0;
+
+    // Aprovar cada uma
+    for (const p of pendingParticipations) {
+      // Atualizar status
+      await supabase
+        .from('challenge_participants')
+        .update({
+          status: 'approved',
+          coins_earned: coinsReward,
+        })
+        .eq('id', p.id);
+
+      // Dar corações
+      if (coinsReward > 0) {
+        await supabase.rpc('add_user_coins', {
+          p_user_id: p.user_id,
+          p_amount: coinsReward,
+        });
+
+        await supabase.from('coin_transactions').insert({
+          user_id: p.user_id,
+          amount: coinsReward,
+          type: 'earned',
+          description: `Desafio: ${challenge.title}`,
+        });
+      }
+
+      approved++;
+    }
+
+    challengesAdminLogger.info('Todas participações aprovadas', { challengeId, approved });
+    
+    revalidatePath('/desafios');
+    revalidatePath('/admin/desafios');
+    return { success: true, approved };
+  } catch {
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+/**
  * Ativar/Desativar desafio (admin)
  */
 export async function toggleChallengeActive(

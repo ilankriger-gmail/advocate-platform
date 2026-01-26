@@ -2,8 +2,10 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Card, Avatar, Button } from '@/components/ui';
-import { X, ExternalLink, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { X, ExternalLink, CheckCircle, XCircle, Clock, RotateCcw } from 'lucide-react';
+import { revertApproval } from '@/actions/challenges-admin';
 
 interface Participation {
   id: string;
@@ -41,6 +43,29 @@ type FilterStatus = 'all' | 'pending' | 'approved' | 'rejected';
 
 export function AllParticipationsList({ participations, onClose }: AllParticipationsListProps) {
   const [filter, setFilter] = useState<FilterStatus>('all');
+  const [reverting, setReverting] = useState<string | null>(null);
+  const router = useRouter();
+
+  const handleRevert = async (participationId: string) => {
+    if (!confirm('Tem certeza? Isso vai REMOVER os corações do usuário e voltar para pendente.')) {
+      return;
+    }
+    setReverting(participationId);
+    try {
+      const result = await revertApproval(participationId);
+      if (result.error) {
+        alert(`Erro: ${result.error}`);
+      } else {
+        alert('Aprovação revertida! Corações removidos.');
+        router.refresh();
+        onClose();
+      }
+    } catch {
+      alert('Erro ao reverter');
+    } finally {
+      setReverting(null);
+    }
+  };
 
   const filteredParticipations = participations.filter(p => {
     if (filter === 'all') return true;
@@ -258,6 +283,17 @@ export function AllParticipationsList({ participations, onClose }: AllParticipat
                       >
                         Ver desafio →
                       </Link>
+                      {p.status === 'approved' && (
+                        <button
+                          onClick={() => handleRevert(p.id)}
+                          disabled={reverting === p.id}
+                          className="flex items-center gap-1 px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-xs font-medium hover:bg-red-200 transition-colors disabled:opacity-50"
+                          title="Reverter aprovação e remover corações"
+                        >
+                          <RotateCcw className="w-3 h-3" />
+                          {reverting === p.id ? 'Revertendo...' : 'Reverter'}
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

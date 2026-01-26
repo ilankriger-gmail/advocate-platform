@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, Button } from '@/components/ui';
-import { approveParticipation, rejectParticipation } from '@/actions/challenges-admin';
+import { approveParticipation, rejectParticipation, approveAllPending } from '@/actions/challenges-admin';
 import { X, Check, Loader2, ExternalLink, Youtube, Instagram } from 'lucide-react';
 
 interface Participation {
@@ -43,6 +43,34 @@ export function PendingParticipationsList({ participations, onClose }: PendingPa
   const [localParticipations, setLocalParticipations] = useState(participations);
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState('');
+  const [approvingAll, setApprovingAll] = useState(false);
+
+  // Agrupar por desafio para aprovar todas
+  const challengeIds = [...new Set(localParticipations.map(p => p.challenge_id))];
+
+  const handleApproveAll = async () => {
+    if (!confirm(`Aprovar TODAS as ${localParticipations.length} participações pendentes? Isso vai dar corações para todos.`)) {
+      return;
+    }
+    setApprovingAll(true);
+    try {
+      let totalApproved = 0;
+      for (const challengeId of challengeIds) {
+        const result = await approveAllPending(challengeId);
+        if (result.approved) {
+          totalApproved += result.approved;
+        }
+      }
+      alert(`${totalApproved} participações aprovadas!`);
+      setLocalParticipations([]);
+      router.refresh();
+      onClose();
+    } catch {
+      alert('Erro ao aprovar todas');
+    } finally {
+      setApprovingAll(false);
+    }
+  };
 
   const handleApprove = async (participationId: string, coinsReward: number | undefined) => {
     setLoadingId(participationId);
@@ -146,9 +174,28 @@ export function PendingParticipationsList({ participations, onClose }: PendingPa
               <p className="text-sm text-white/80">Revise e aprove as participações abaixo</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={handleApproveAll}
+              disabled={approvingAll}
+              className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium text-sm transition-colors disabled:opacity-50 flex items-center gap-2"
+            >
+              {approvingAll ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Aprovando...
+                </>
+              ) : (
+                <>
+                  <Check className="w-4 h-4" />
+                  Aprovar Todas
+                </>
+              )}
+            </button>
+            <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Lista */}
