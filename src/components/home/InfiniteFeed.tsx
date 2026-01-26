@@ -28,7 +28,7 @@ function shouldShowLinkDoBem(postIndex: number): boolean {
 interface InfiniteFeedProps {
   /** Tipo de feed: 'creator', 'community', 'all' ou 'help_request' */
   type: FeedType;
-  /** Ordenação: 'new', 'top' ou 'hot' (padrão: 'new') */
+  /** Ordenação: 'hot' ou 'new' (padrão: 'hot') */
   sort?: FeedSortType;
   /** Posts iniciais do SSR - evita skeleton no primeiro render */
   initialPosts?: PostWithAuthor[];
@@ -104,7 +104,7 @@ function PostSkeleton() {
  * // Feed de posts trending da comunidade
  * <InfiniteFeed type="community" sort="hot" />
  */
-export function InfiniteFeed({ type, sort = 'new', initialPosts }: InfiniteFeedProps) {
+export function InfiniteFeed({ type, sort = 'hot', initialPosts }: InfiniteFeedProps) {
   const {
     posts,
     hasMore,

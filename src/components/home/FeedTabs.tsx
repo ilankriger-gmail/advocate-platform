@@ -18,7 +18,7 @@ interface FeedTabsProps {
 
 export function FeedTabs({ initialCommunityPosts, initialHelpRequestPosts, isLoggedIn = false }: FeedTabsProps) {
   const [activeTab, setActiveTab] = useState<'comunidade' | 'seguindo' | 'ajuda'>('comunidade');
-  const [sort, setSort] = usePersistedState<FeedSortType>('feed-sort', 'new');
+  const [sort, setSort] = usePersistedState<FeedSortType>('feed-sort', 'hot');
   const queryClient = useQueryClient();
 
   // Realtime para novos posts
