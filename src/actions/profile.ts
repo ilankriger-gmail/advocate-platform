@@ -6,6 +6,7 @@ import { ActionResponse } from '@/types/action';
 import type { UpdateProfileData } from '@/types/profile';
 import { validateFileMagicBytes } from '@/lib/security';
 import { verifyLinkSafety } from '@/lib/ai/verify-link';
+import { checkAndCompleteProfileTasks } from '@/actions/engagement';
 
 /**
  * Atualizar perfil do usuário
@@ -35,6 +36,13 @@ export async function updateProfile(data: UpdateProfileData): Promise<ActionResp
       }
     }
 
+    // Buscar perfil anterior para comparar e dar recompensas
+    const { data: previousProfile } = await supabase
+      .from('users')
+      .select('full_name, bio, avatar_url, instagram_handle, tiktok_handle, youtube_handle, twitter_handle, website_url')
+      .eq('id', user.id)
+      .single();
+
     const { error } = await supabase
       .from('users')
       .update({
@@ -47,10 +55,13 @@ export async function updateProfile(data: UpdateProfileData): Promise<ActionResp
       return { error: 'Erro ao atualizar perfil' };
     }
 
+    // Verificar e completar tarefas de perfil (dar corações)
+    const heartsEarned = await checkAndCompleteProfileTasks(data, previousProfile || undefined);
+
     revalidatePath('/profile');
     revalidatePath('/perfil');
     revalidatePath('/dashboard');
-    return { success: true };
+    return { success: true, hearts: heartsEarned };
   } catch {
     return { error: 'Erro interno do servidor' };
   }

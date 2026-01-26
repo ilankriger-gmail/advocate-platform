@@ -1,303 +1,367 @@
-import { createClient } from '@/lib/supabase/server';
-import { Card, Badge } from '@/components/ui';
+'use client';
 
+import { useState, useEffect } from 'react';
+import { PageHeader } from '@/components/layout/PageHeader';
+import { Card, Button, Input, Badge } from '@/components/ui';
+import { getAllTasks, updateTask, createTask, getEngagementStats, type EngagementTask } from '@/actions/engagement';
+import { Heart, Plus, Check, X, Pencil, TrendingUp } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
-export default async function AdminEngajamentoPage() {
-  const supabase = await createClient();
+const CATEGORIES = [
+  { value: 'profile', label: 'Perfil', color: 'blue' },
+  { value: 'content', label: 'Conteúdo', color: 'green' },
+  { value: 'social', label: 'Social', color: 'purple' },
+  { value: 'engagement', label: 'Engajamento', color: 'orange' },
+  { value: 'special', label: 'Especial', color: 'pink' },
+];
 
-  // Buscar estatísticas de engajamento
-  const [
-    { count: totalVotes },
-    { count: totalShares },
-    { count: totalSaves },
-    { count: totalComments },
-  ] = await Promise.all([
-    supabase.from('post_votes').select('*', { count: 'exact', head: true }),
-    supabase.from('post_shares').select('*', { count: 'exact', head: true }),
-    supabase.from('post_saves').select('*', { count: 'exact', head: true }),
-    supabase.from('post_comments').select('*', { count: 'exact', head: true }).eq('is_deleted', false),
-  ]);
+export default function EngajamentoAdminPage() {
+  const [tasks, setTasks] = useState<EngagementTask[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<Partial<EngagementTask>>({});
+  const [showNewForm, setShowNewForm] = useState(false);
+  const [newTask, setNewTask] = useState({
+    slug: '',
+    name: '',
+    description: '',
+    category: 'profile',
+    hearts_reward: 1,
+    is_repeatable: false,
+    max_per_day: undefined as number | undefined,
+  });
+  const [stats, setStats] = useState({
+    totalTasks: 0,
+    activeTasks: 0,
+    totalCompletions: 0,
+    heartsDistributed: 0,
+    topTasks: [] as { name: string; completions: number }[],
+  });
 
-  // Posts mais votados
-  const { data: topVotedPosts } = await supabase
-    .from('posts')
-    .select(`
-      id,
-      content,
-      vote_score,
-      media_url,
-      author:users!posts_user_id_fkey (
-        full_name,
-        avatar_url
-      )
-    `)
-    .eq('status', 'approved')
-    .order('vote_score', { ascending: false })
-    .limit(10);
+  useEffect(() => {
+    loadData();
+  }, []);
 
-  // Posts mais compartilhados
-  const { data: topSharedPosts } = await supabase
-    .from('posts')
-    .select(`
-      id,
-      content,
-      shares_count,
-      media_url,
-      author:users!posts_user_id_fkey (
-        full_name,
-        avatar_url
-      )
-    `)
-    .eq('status', 'approved')
-    .order('shares_count', { ascending: false })
-    .limit(10);
+  async function loadData() {
+    setLoading(true);
+    const [tasksData, statsData] = await Promise.all([
+      getAllTasks(),
+      getEngagementStats(),
+    ]);
+    setTasks(tasksData);
+    setStats(statsData);
+    setLoading(false);
+  }
 
-  // Posts mais salvos
-  const { data: topSavedPosts } = await supabase
-    .from('posts')
-    .select(`
-      id,
-      content,
-      saves_count,
-      media_url,
-      author:users!posts_user_id_fkey (
-        full_name,
-        avatar_url
-      )
-    `)
-    .eq('status', 'approved')
-    .order('saves_count', { ascending: false })
-    .limit(10);
+  async function handleToggleActive(task: EngagementTask) {
+    const result = await updateTask(task.id, { is_active: !task.is_active });
+    if (result.success) {
+      loadData();
+    }
+  }
 
-  // Shares por plataforma
-  const { data: sharesByPlatform } = await supabase
-    .from('post_shares')
-    .select('platform');
+  async function handleSaveEdit() {
+    if (!editingId) return;
+    const result = await updateTask(editingId, editForm);
+    if (result.success) {
+      setEditingId(null);
+      setEditForm({});
+      loadData();
+    }
+  }
 
-  const platformCounts = (sharesByPlatform || []).reduce((acc, share) => {
-    const platform = share.platform || 'other';
-    acc[platform] = (acc[platform] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  async function handleCreateTask() {
+    const result = await createTask(newTask);
+    if (result.success) {
+      setShowNewForm(false);
+      setNewTask({
+        slug: '',
+        name: '',
+        description: '',
+        category: 'profile',
+        hearts_reward: 1,
+        is_repeatable: false,
+        max_per_day: undefined,
+      });
+      loadData();
+    } else {
+      alert(result.error);
+    }
+  }
 
-  // Engajamento por dia (últimos 7 dias)
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-  const sevenDaysAgoStr = sevenDaysAgo.toISOString();
+  function startEdit(task: EngagementTask) {
+    setEditingId(task.id);
+    setEditForm({
+      name: task.name,
+      description: task.description,
+      hearts_reward: task.hearts_reward,
+      is_repeatable: task.is_repeatable,
+      max_per_day: task.max_per_day,
+    });
+  }
 
-  const [
-    { data: recentVotes },
-    { data: recentShares },
-    { data: recentSaves },
-  ] = await Promise.all([
-    supabase.from('post_votes').select('created_at').gte('created_at', sevenDaysAgoStr),
-    supabase.from('post_shares').select('created_at').gte('created_at', sevenDaysAgoStr),
-    supabase.from('post_saves').select('created_at').gte('created_at', sevenDaysAgoStr),
-  ]);
+  const getCategoryColor = (category: string) => {
+    return CATEGORIES.find(c => c.value === category)?.color || 'gray';
+  };
+
+  const getCategoryLabel = (category: string) => {
+    return CATEGORIES.find(c => c.value === category)?.label || category;
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <PageHeader title="Engajamento" />
+        <div className="animate-pulse space-y-4">
+          <div className="h-32 bg-gray-200 rounded-lg" />
+          <div className="h-64 bg-gray-200 rounded-lg" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/25">
-            <span className="text-3xl">📊</span>
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Analytics de Engajamento</h1>
-            <p className="text-gray-500 text-sm mt-0.5">Votos, compartilhamentos e salvos</p>
-          </div>
-        </div>
-      </div>
+      <PageHeader
+        title="Tarefas de Engajamento"
+        breadcrumbs={[
+          { label: 'Admin', href: '/admin' },
+          { label: 'Engajamento' },
+        ]}
+      />
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="p-4 bg-gradient-to-br from-red-50 to-pink-50 border-red-100">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-red-500 rounded-xl flex items-center justify-center">
-              <span className="text-white text-lg">❤️</span>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-red-700">{totalVotes || 0}</p>
-              <p className="text-xs text-red-600">Total Votos</p>
-            </div>
-          </div>
+      {/* Stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="p-4">
+          <div className="text-sm text-gray-500">Tarefas Ativas</div>
+          <div className="text-2xl font-bold">{stats.activeTasks}/{stats.totalTasks}</div>
         </Card>
-        <Card className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-100">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
-              <span className="text-white text-lg">🔗</span>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-blue-700">{totalShares || 0}</p>
-              <p className="text-xs text-blue-600">Compartilhamentos</p>
-            </div>
-          </div>
+        <Card className="p-4">
+          <div className="text-sm text-gray-500">Completions</div>
+          <div className="text-2xl font-bold">{stats.totalCompletions.toLocaleString()}</div>
         </Card>
-        <Card className="p-4 bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-100">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-yellow-500 rounded-xl flex items-center justify-center">
-              <span className="text-white text-lg">🔖</span>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-yellow-700">{totalSaves || 0}</p>
-              <p className="text-xs text-yellow-600">Salvos</p>
-            </div>
+        <Card className="p-4">
+          <div className="text-sm text-gray-500 flex items-center gap-1">
+            <Heart className="w-4 h-4 text-pink-500" />
+            Distribuídos
           </div>
+          <div className="text-2xl font-bold text-pink-500">{stats.heartsDistributed.toLocaleString()}</div>
         </Card>
-        <Card className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 border-green-100">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center">
-              <span className="text-white text-lg">💬</span>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-green-700">{totalComments || 0}</p>
-              <p className="text-xs text-green-600">Comentários</p>
-            </div>
+        <Card className="p-4">
+          <div className="text-sm text-gray-500 flex items-center gap-1">
+            <TrendingUp className="w-4 h-4" />
+            Top Tarefa
+          </div>
+          <div className="text-lg font-medium truncate">
+            {stats.topTasks[0]?.name || 'N/A'}
           </div>
         </Card>
       </div>
 
-      {/* Últimos 7 dias */}
-      <Card className="p-5">
-        <h2 className="text-lg font-bold text-gray-900 mb-4">Últimos 7 Dias</h2>
-        <div className="grid grid-cols-3 gap-4 text-center">
-          <div className="p-4 bg-red-50 rounded-xl">
-            <p className="text-3xl font-bold text-red-600">{recentVotes?.length || 0}</p>
-            <p className="text-sm text-red-700">Votos</p>
-          </div>
-          <div className="p-4 bg-blue-50 rounded-xl">
-            <p className="text-3xl font-bold text-blue-600">{recentShares?.length || 0}</p>
-            <p className="text-sm text-blue-700">Compartilhamentos</p>
-          </div>
-          <div className="p-4 bg-yellow-50 rounded-xl">
-            <p className="text-3xl font-bold text-yellow-600">{recentSaves?.length || 0}</p>
-            <p className="text-sm text-yellow-700">Salvos</p>
-          </div>
-        </div>
-      </Card>
-
-      {/* Shares por Plataforma */}
-      <Card className="p-5">
-        <h2 className="text-lg font-bold text-gray-900 mb-4">Compartilhamentos por Plataforma</h2>
-        <div className="flex flex-wrap gap-2">
-          {Object.entries(platformCounts).map(([platform, count]) => (
-            <Badge key={platform} className="bg-gray-100 text-gray-700 px-3 py-1.5">
-              {platform === 'copy_link' && '🔗 Link'}
-              {platform === 'twitter' && '🐦 Twitter'}
-              {platform === 'whatsapp' && '💬 WhatsApp'}
-              {platform === 'native' && '📱 Nativo'}
-              {platform === 'other' && '📤 Outro'}
-              {!['copy_link', 'twitter', 'whatsapp', 'native', 'other'].includes(platform) && `📤 ${platform}`}
-              : <span className="font-bold ml-1">{count}</span>
-            </Badge>
-          ))}
-          {Object.keys(platformCounts).length === 0 && (
-            <p className="text-gray-500 text-sm">Nenhum compartilhamento registrado</p>
-          )}
-        </div>
-      </Card>
-
-      {/* Rankings */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Top Votados */}
-        <Card className="p-5">
-          <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <span>❤️</span> Top Votados
-          </h2>
-          <div className="space-y-3">
-            {(topVotedPosts || []).slice(0, 5).map((post, i) => (
-              <PostRankingItem key={post.id} post={post} rank={i + 1} metric={post.vote_score || 0} metricLabel="votos" />
-            ))}
-            {(!topVotedPosts || topVotedPosts.length === 0) && (
-              <p className="text-gray-500 text-sm text-center py-4">Nenhum post votado</p>
-            )}
-          </div>
-        </Card>
-
-        {/* Top Compartilhados */}
-        <Card className="p-5">
-          <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <span>🔗</span> Top Compartilhados
-          </h2>
-          <div className="space-y-3">
-            {(topSharedPosts || []).filter(p => p.shares_count > 0).slice(0, 5).map((post, i) => (
-              <PostRankingItem key={post.id} post={post} rank={i + 1} metric={post.shares_count || 0} metricLabel="shares" />
-            ))}
-            {(!topSharedPosts || topSharedPosts.filter(p => p.shares_count > 0).length === 0) && (
-              <p className="text-gray-500 text-sm text-center py-4">Nenhum post compartilhado</p>
-            )}
-          </div>
-        </Card>
-
-        {/* Top Salvos */}
-        <Card className="p-5">
-          <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <span>🔖</span> Top Salvos
-          </h2>
-          <div className="space-y-3">
-            {(topSavedPosts || []).filter(p => p.saves_count > 0).slice(0, 5).map((post, i) => (
-              <PostRankingItem key={post.id} post={post} rank={i + 1} metric={post.saves_count || 0} metricLabel="saves" />
-            ))}
-            {(!topSavedPosts || topSavedPosts.filter(p => p.saves_count > 0).length === 0) && (
-              <p className="text-gray-500 text-sm text-center py-4">Nenhum post salvo</p>
-            )}
-          </div>
-        </Card>
+      {/* Add Button */}
+      <div className="flex justify-end">
+        <Button
+          variant="primary"
+          onClick={() => setShowNewForm(true)}
+          className="flex items-center gap-2"
+        >
+          <Plus className="w-4 h-4" />
+          Nova Tarefa
+        </Button>
       </div>
-    </div>
-  );
-}
 
-interface PostRankingItemProps {
-  post: {
-    id: string;
-    content: string | null;
-    media_url: string[] | null;
-    author: { full_name: string | null; avatar_url: string | null } | { full_name: string | null; avatar_url: string | null }[] | null;
-  };
-  rank: number;
-  metric: number;
-  metricLabel: string;
-}
-
-function PostRankingItem({ post, rank, metric, metricLabel }: PostRankingItemProps) {
-  const author = Array.isArray(post.author) ? post.author[0] : post.author;
-
-  return (
-    <div className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg">
-      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-        rank === 1 ? 'bg-yellow-400 text-yellow-900' :
-        rank === 2 ? 'bg-gray-300 text-gray-700' :
-        rank === 3 ? 'bg-orange-300 text-orange-900' :
-        'bg-gray-200 text-gray-600'
-      }`}>
-        {rank}
-      </div>
-      {post.media_url && post.media_url.length > 0 ? (
-        <img
-          src={post.media_url[0]}
-          alt=""
-          className="w-10 h-10 rounded object-cover"
-        />
-      ) : (
-        <div className="w-10 h-10 rounded bg-gray-200 flex items-center justify-center">
-          <span className="text-gray-400 text-xs">📝</span>
-        </div>
+      {/* New Task Form */}
+      {showNewForm && (
+        <Card className="p-6">
+          <h3 className="text-lg font-medium mb-4">Nova Tarefa</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input
+              label="Slug (único)"
+              value={newTask.slug}
+              onChange={(e) => setNewTask(prev => ({ ...prev, slug: e.target.value }))}
+              placeholder="ex: content_share"
+            />
+            <Input
+              label="Nome"
+              value={newTask.name}
+              onChange={(e) => setNewTask(prev => ({ ...prev, name: e.target.value }))}
+              placeholder="ex: Compartilhar post"
+            />
+            <Input
+              label="Descrição"
+              value={newTask.description}
+              onChange={(e) => setNewTask(prev => ({ ...prev, description: e.target.value }))}
+              placeholder="ex: Compartilhar um post nas redes"
+            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
+              <select
+                value={newTask.category}
+                onChange={(e) => setNewTask(prev => ({ ...prev, category: e.target.value }))}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2"
+              >
+                {CATEGORIES.map(cat => (
+                  <option key={cat.value} value={cat.value}>{cat.label}</option>
+                ))}
+              </select>
+            </div>
+            <Input
+              label="Corações"
+              type="number"
+              min={1}
+              value={newTask.hearts_reward}
+              onChange={(e) => setNewTask(prev => ({ ...prev, hearts_reward: parseInt(e.target.value) || 1 }))}
+            />
+            <div className="flex items-center gap-4">
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={newTask.is_repeatable}
+                  onChange={(e) => setNewTask(prev => ({ ...prev, is_repeatable: e.target.checked }))}
+                  className="rounded"
+                />
+                <span className="text-sm">Repetível</span>
+              </label>
+              {newTask.is_repeatable && (
+                <Input
+                  label="Limite/dia"
+                  type="number"
+                  min={1}
+                  value={newTask.max_per_day || ''}
+                  onChange={(e) => setNewTask(prev => ({ 
+                    ...prev, 
+                    max_per_day: e.target.value ? parseInt(e.target.value) : undefined 
+                  }))}
+                  className="w-24"
+                />
+              )}
+            </div>
+          </div>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={() => setShowNewForm(false)}>Cancelar</Button>
+            <Button variant="primary" onClick={handleCreateTask}>Criar</Button>
+          </div>
+        </Card>
       )}
-      <div className="flex-1 min-w-0">
-        <p className="text-xs text-gray-500 truncate">
-          {author?.full_name || 'Usuário'}
-        </p>
-        <p className="text-sm text-gray-700 truncate">
-          {post.content ? `${post.content.slice(0, 40)}...` : 'Sem texto'}
-        </p>
-      </div>
-      <div className="text-right">
-        <p className="text-sm font-bold text-gray-900">{metric}</p>
-        <p className="text-[10px] text-gray-500">{metricLabel}</p>
-      </div>
+
+      {/* Tasks by Category */}
+      {CATEGORIES.map(category => {
+        const categoryTasks = tasks.filter(t => t.category === category.value);
+        if (categoryTasks.length === 0) return null;
+
+        return (
+          <Card key={category.value} className="overflow-hidden">
+            <div className={`px-4 py-2 bg-${category.color}-50 border-b`}>
+              <h3 className="font-medium text-gray-900">{category.label}</h3>
+            </div>
+            <div className="divide-y">
+              {categoryTasks.map(task => (
+                <div key={task.id} className="p-4 hover:bg-gray-50">
+                  {editingId === task.id ? (
+                    // Edit Mode
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-3">
+                        <Input
+                          label="Nome"
+                          value={editForm.name || ''}
+                          onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
+                        />
+                        <Input
+                          label="Corações"
+                          type="number"
+                          min={1}
+                          value={editForm.hearts_reward || 1}
+                          onChange={(e) => setEditForm(prev => ({ ...prev, hearts_reward: parseInt(e.target.value) || 1 }))}
+                        />
+                      </div>
+                      <Input
+                        label="Descrição"
+                        value={editForm.description || ''}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, description: e.target.value }))}
+                      />
+                      <div className="flex items-center gap-4">
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={editForm.is_repeatable || false}
+                            onChange={(e) => setEditForm(prev => ({ ...prev, is_repeatable: e.target.checked }))}
+                            className="rounded"
+                          />
+                          <span className="text-sm">Repetível</span>
+                        </label>
+                        {editForm.is_repeatable && (
+                          <Input
+                            label="Limite/dia"
+                            type="number"
+                            min={1}
+                            value={editForm.max_per_day || ''}
+                            onChange={(e) => setEditForm(prev => ({ 
+                              ...prev, 
+                              max_per_day: e.target.value ? parseInt(e.target.value) : null 
+                            }))}
+                            className="w-24"
+                          />
+                        )}
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" size="sm" onClick={() => setEditingId(null)}>
+                          <X className="w-4 h-4" />
+                        </Button>
+                        <Button variant="primary" size="sm" onClick={handleSaveEdit}>
+                          <Check className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    // View Mode
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className={`font-medium ${!task.is_active ? 'text-gray-400' : ''}`}>
+                            {task.name}
+                          </span>
+                          {task.is_repeatable && (
+                            <Badge variant="default" className="text-xs">Repetível</Badge>
+                          )}
+                          {!task.is_active && (
+                            <Badge variant="default" className="text-xs bg-gray-100">Inativo</Badge>
+                          )}
+                        </div>
+                        <div className="text-sm text-gray-500">{task.description}</div>
+                        <div className="text-xs text-gray-400 mt-1">
+                          slug: {task.slug}
+                          {task.max_per_day && ` • limite: ${task.max_per_day}/dia`}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-1 text-pink-500">
+                          <Heart className="w-4 h-4 fill-current" />
+                          <span className="font-medium">{task.hearts_reward}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => startEdit(task)}
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant={task.is_active ? 'outline' : 'primary'}
+                            size="sm"
+                            onClick={() => handleToggleActive(task)}
+                          >
+                            {task.is_active ? 'Desativar' : 'Ativar'}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </Card>
+        );
+      })}
     </div>
   );
 }

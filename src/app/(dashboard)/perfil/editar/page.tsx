@@ -21,6 +21,8 @@ export default function EditarPerfilPage() {
     bio: '',
     instagram_handle: '',
     tiktok_handle: '',
+    youtube_handle: '',
+    twitter_handle: '',
     avatar_url: '',
     website_url: '',
   });
@@ -55,6 +57,8 @@ export default function EditarPerfilPage() {
           bio: data?.bio || '',
           instagram_handle: data?.instagram_handle || '',
           tiktok_handle: data?.tiktok_handle || '',
+          youtube_handle: data?.youtube_handle || '',
+          twitter_handle: data?.twitter_handle || '',
           avatar_url: data?.avatar_url || authProfile?.avatar_url || user!.user_metadata?.avatar_url || '',
           website_url: data?.website_url || '',
         });
@@ -66,6 +70,8 @@ export default function EditarPerfilPage() {
           bio: '',
           instagram_handle: '',
           tiktok_handle: '',
+          youtube_handle: '',
+          twitter_handle: '',
           avatar_url: authProfile?.avatar_url || user!.user_metadata?.avatar_url || '',
           website_url: '',
         });
@@ -85,6 +91,8 @@ export default function EditarPerfilPage() {
       bio: formData.bio || undefined,
       instagram_handle: formData.instagram_handle || undefined,
       tiktok_handle: formData.tiktok_handle || undefined,
+      youtube_handle: formData.youtube_handle || undefined,
+      twitter_handle: formData.twitter_handle || undefined,
       avatar_url: formData.avatar_url || undefined,
       website_url: formData.website_url || undefined,
     });
@@ -189,6 +197,24 @@ export default function EditarPerfilPage() {
                 label="TikTok"
                 name="tiktok_handle"
                 value={formData.tiktok_handle}
+                onChange={handleChange}
+                placeholder="seu_usuario"
+                hint="Sem o @"
+              />
+
+              <Input
+                label="YouTube"
+                name="youtube_handle"
+                value={formData.youtube_handle}
+                onChange={handleChange}
+                placeholder="seu_canal"
+                hint="Nome do canal ou @handle"
+              />
+
+              <Input
+                label="Twitter / X"
+                name="twitter_handle"
+                value={formData.twitter_handle}
                 onChange={handleChange}
                 placeholder="seu_usuario"
                 hint="Sem o @"
