@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import type { PostWithAuthor } from '@/types/post';
 import { logger, sanitizeError } from '@/lib';
+import { giveHearts } from '@/lib/hearts';
 
 // Logger contextualizado para o módulo de saves
 const savesLogger = logger.withContext('[Saves]');
@@ -35,6 +36,13 @@ export async function savePost(postId: string) {
     savesLogger.error('Erro ao salvar post', { error: sanitizeError(error) });
     return { success: false, error: 'Erro ao salvar post' };
   }
+
+  // ❤️ Dar coração por salvar post
+  await giveHearts(user.id, 'SAVE_POST', {
+    referenceId: postId,
+    referenceType: 'post_save',
+    description: 'salvou um post'
+  });
 
   revalidatePath('/');
   return { success: true, saved: true };

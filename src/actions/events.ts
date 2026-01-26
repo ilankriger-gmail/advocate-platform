@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { ActionResponse } from '@/types/action';
 import type { Event } from '@/lib/supabase/types';
 import { logger, sanitizeError } from '@/lib';
+import { giveHearts } from '@/lib/hearts';
 
 // Logger contextualizado para o módulo de events
 const eventsLogger = logger.withContext('[Events]');
@@ -98,6 +99,13 @@ export async function registerForEvent(eventId: string): Promise<ActionResponse>
       }
     }
 
+    // ❤️ Dar coração por se inscrever em evento
+    await giveHearts(user.id, 'JOIN_EVENT', {
+      referenceId: eventId,
+      referenceType: 'event_registration',
+      description: 'se inscreveu em um evento'
+    });
+
     revalidatePath('/eventos');
     revalidatePath('/dashboard');
     return { success: true };
@@ -160,6 +168,13 @@ export async function checkInEvent(eventId: string): Promise<ActionResponse> {
     if (error) {
       return { error: 'Erro ao realizar check-in' };
     }
+
+    // ❤️ Dar coração por participar do evento
+    await giveHearts(user.id, 'ATTEND_EVENT', {
+      referenceId: eventId,
+      referenceType: 'event_attendance',
+      description: 'participou de um evento'
+    });
 
     revalidatePath('/eventos');
     return { success: true };

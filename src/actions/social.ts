@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { notifyNewFollower } from '@/actions/notifications';
+import { giveHearts } from '@/lib/hearts';
 import type {
   UserWithFollowStatus,
   PaginatedUsersResponse,
@@ -65,6 +66,20 @@ export async function followUser(userId: string): Promise<{
     // Não falhar a operação se a notificação falhar
     console.error('Erro ao enviar notificação de follow:', notifyError);
   }
+
+  // ❤️ Dar coração por seguir alguém
+  await giveHearts(user.id, 'FOLLOW', {
+    referenceId: userId,
+    referenceType: 'follow',
+    description: 'seguiu alguém'
+  });
+
+  // ❤️ Dar coração para quem foi seguido
+  await giveHearts(userId, 'BE_FOLLOWED', {
+    referenceId: user.id,
+    referenceType: 'follow',
+    description: 'ganhou um seguidor'
+  });
 
   revalidatePath(`/profile/${userId}`);
   revalidatePath('/perfil');

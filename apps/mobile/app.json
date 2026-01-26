@@ -1,33 +1,61 @@
 {
   "expo": {
-    "name": "mobile",
-    "slug": "mobile",
+    "name": "Arena Te Amo",
+    "slug": "arena-te-amo",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "scheme": "advocate",
+    "newArchEnabled": false,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#667eea"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.mocodoteamo.arena",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Permitir acesso à câmera para tirar fotos nos desafios",
+        "NSPhotoLibraryUsageDescription": "Permitir acesso às fotos para enviar nos desafios",
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#667eea"
       },
-      "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "package": "com.mocodoteamo.arena",
+      "versionCode": 1,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-secure-store"
-    ]
+      "expo-secure-store",
+      "expo-web-browser",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Permitir acesso às fotos para enviar nos desafios",
+          "cameraPermission": "Permitir acesso à câmera para tirar fotos nos desafios"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "868b0dbd-ee88-4c96-b97b-14e1717e6cbe"
+      }
+    },
+    "owner": "ilankriger"
   }
 }

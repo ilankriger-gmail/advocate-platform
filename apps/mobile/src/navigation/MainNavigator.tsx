@@ -3,10 +3,15 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { FeedScreen } from '../screens/feed/FeedScreen';
+import { PostDetailScreen } from '../screens/feed/PostDetailScreen';
+import { NewPostScreen } from '../screens/feed/NewPostScreen';
 import { ChallengesScreen } from '../screens/challenges/ChallengesScreen';
+import { ChallengeDetailScreen } from '../screens/challenges/ChallengeDetailScreen';
+import { SubmitChallengeScreen } from '../screens/challenges/SubmitChallengeScreen';
 import { EventsScreen } from '../screens/events/EventsScreen';
 import { RankingScreen } from '../screens/ranking/RankingScreen';
 import { ProfileScreen } from '../screens/profile/ProfileScreen';
+import { EditProfileScreen } from '../screens/profile/EditProfileScreen';
 import { colors } from '../utils/theme';
 import {
   MainTabParamList,
@@ -25,7 +30,12 @@ function FeedNavigator() {
   return (
     <FeedStack.Navigator screenOptions={{ headerShown: false }}>
       <FeedStack.Screen name="FeedHome" component={FeedScreen} />
-      {/* Add PostDetail and NewPost screens here */}
+      <FeedStack.Screen name="PostDetail" component={PostDetailScreen} />
+      <FeedStack.Screen 
+        name="NewPost" 
+        component={NewPostScreen}
+        options={{ presentation: 'modal' }}
+      />
     </FeedStack.Navigator>
   );
 }
@@ -35,7 +45,12 @@ function ChallengesNavigator() {
   return (
     <ChallengesStack.Navigator screenOptions={{ headerShown: false }}>
       <ChallengesStack.Screen name="ChallengesHome" component={ChallengesScreen} />
-      {/* Add ChallengeDetail and SubmitChallenge screens here */}
+      <ChallengesStack.Screen name="ChallengeDetail" component={ChallengeDetailScreen} />
+      <ChallengesStack.Screen 
+        name="SubmitChallenge" 
+        component={SubmitChallengeScreen}
+        options={{ presentation: 'modal' }}
+      />
     </ChallengesStack.Navigator>
   );
 }
@@ -45,7 +60,11 @@ function ProfileNavigator() {
   return (
     <ProfileStack.Navigator screenOptions={{ headerShown: false }}>
       <ProfileStack.Screen name="ProfileHome" component={ProfileScreen} />
-      {/* Add EditProfile, SavedPosts, MyPosts, Settings screens here */}
+      <ProfileStack.Screen 
+        name="EditProfile" 
+        component={EditProfileScreen}
+        options={{ presentation: 'modal' }}
+      />
     </ProfileStack.Navigator>
   );
 }

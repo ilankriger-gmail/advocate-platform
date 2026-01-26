@@ -10,6 +10,7 @@ import { logModerationAction, checkRateLimit, RATE_LIMITS, validateFileMagicByte
 import { logger, maskId, sanitizeError } from '@/lib';
 import { verifyAdminOrCreator } from './utils';
 import { notifyPostApproved, notifyPostRejected, notifyNewLike, notifyNewComment } from '@/actions/notifications';
+import { giveHearts } from '@/lib/hearts';
 
 // Logger contextualizado para o módulo de posts
 const postsLogger = logger.withContext('[Posts]');
@@ -177,6 +178,15 @@ export async function createPost(data: CreatePostData): Promise<CreatePostRespon
         score: moderationScore,
         flags: moderationFlags || {},
         blocked_reasons: blockedReasons,
+      });
+    }
+
+    // ❤️ Dar coração por criar post (se aprovado)
+    if (postStatus === 'approved') {
+      await giveHearts(user.id, 'CREATE_POST', {
+        referenceId: post.id,
+        referenceType: 'post',
+        description: 'criou um post'
       });
     }
 
@@ -626,6 +636,13 @@ export async function likePost(postId: string): Promise<ActionResponse> {
       } catch (notifyError) {
         postsLogger.error('Erro ao enviar notificação de like', { error: sanitizeError(notifyError) });
       }
+
+      // ❤️ Dar coração por curtir
+      await giveHearts(user.id, 'LIKE_POST', {
+        referenceId: postId,
+        referenceType: 'post_like',
+        description: 'curtiu um post'
+      });
     }
 
     revalidatePath('/feed');
@@ -903,6 +920,13 @@ export async function commentPost(postId: string, content: string, parentId?: st
         }
       }
     }
+
+    // ❤️ Dar coração por comentar (ou responder)
+    await giveHearts(user.id, parentId ? 'REPLY_COMMENT' : 'COMMENT', {
+      referenceId: comment.id,
+      referenceType: 'comment',
+      description: parentId ? 'respondeu um comentário' : 'comentou em um post'
+    });
 
     revalidatePath('/feed');
     return { success: true, data: comment };
