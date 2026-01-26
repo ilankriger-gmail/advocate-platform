@@ -163,9 +163,8 @@ Parabéns pela conquista! 👏❤️`;
         .single();
 
       if (creatorProfile) {
-        // Se tem vídeo, usar como media
-        const mediaUrls = videoUrl ? [videoUrl] : null;
-        const mediaType = videoUrl ? 'video' : 'none';
+        // Verificar se é YouTube para embedar corretamente
+        const isYouTube = videoUrl && /youtube\.com|youtu\.be/.test(videoUrl);
         
         await supabase.from('posts').insert({
           user_id: creatorProfile.id,
@@ -174,8 +173,11 @@ Parabéns pela conquista! 👏❤️`;
           type: 'community',
           status: 'approved', // Já aprovado automaticamente
           content_category: 'normal',
-          media_url: mediaUrls,
-          media_type: mediaType,
+          // Para YouTube, usar youtube_url para embed
+          youtube_url: isYouTube ? videoUrl : null,
+          media_type: isYouTube ? 'youtube' : (videoUrl ? 'video' : 'none'),
+          // Para vídeos não-YouTube, usar media_url
+          media_url: (!isYouTube && videoUrl) ? [videoUrl] : null,
         });
         
         challengesAdminLogger.info('Post de celebração criado', { 
