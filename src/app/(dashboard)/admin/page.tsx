@@ -176,6 +176,41 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
+      {/* Alerta de Pendências */}
+      {((pendingParticipations || 0) > 0 || (pendingPosts || 0) > 0 || (pendingClaims || 0) > 0) && (
+        <Card className="p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-300">
+          <h3 className="font-bold text-yellow-800 mb-3 flex items-center gap-2">
+            ⚠️ Ações Pendentes
+          </h3>
+          <div className="flex flex-wrap gap-3">
+            {(pendingParticipations || 0) > 0 && (
+              <Link 
+                href="/admin/desafios" 
+                className="flex items-center gap-2 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg font-medium transition-colors"
+              >
+                🎯 {pendingParticipations} participações
+              </Link>
+            )}
+            {(pendingPosts || 0) > 0 && (
+              <Link 
+                href="/admin/posts" 
+                className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-colors"
+              >
+                📝 {pendingPosts} posts
+              </Link>
+            )}
+            {(pendingClaims || 0) > 0 && (
+              <Link 
+                href="/admin/premios" 
+                className="flex items-center gap-2 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium transition-colors"
+              >
+                🎁 {pendingClaims} resgates
+              </Link>
+            )}
+          </div>
+        </Card>
+      )}
+
       {/* Cards de Estatisticas */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {stats.map((stat) => (
@@ -346,7 +381,9 @@ async function RecentPendingParticipations() {
       id,
       result_value,
       created_at,
+      challenge_id,
       challenges:challenge_id (
+        id,
         title,
         goal_type
       ),
@@ -356,37 +393,42 @@ async function RecentPendingParticipations() {
     `)
     .eq('status', 'pending')
     .order('created_at', { ascending: false })
-    .limit(5);
+    .limit(10);
 
   if (!participations || participations.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500">
-        Nenhuma participação pendente
+        ✅ Nenhuma participação pendente
       </div>
     );
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {participations.map((p) => {
-        const challenges = p.challenges as { title: string; goal_type: string } | { title: string; goal_type: string }[] | null;
+        const challenges = p.challenges as { id: string; title: string; goal_type: string } | { id: string; title: string; goal_type: string }[] | null;
         const challenge = Array.isArray(challenges) ? challenges[0] : challenges;
         const profiles = p.profiles as { full_name: string } | { full_name: string }[] | null;
         const profile = Array.isArray(profiles) ? profiles[0] : profiles;
         const unit = challenge?.goal_type === 'time' ? 's' : 'x';
 
         return (
-          <div key={p.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <Link 
+            key={p.id} 
+            href={`/admin/desafios/${p.challenge_id}`}
+            className="flex items-center justify-between p-3 bg-yellow-50 hover:bg-yellow-100 rounded-lg transition-colors border border-yellow-200"
+          >
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-900">{profile?.full_name || 'Usuário'}</p>
-              <p className="text-xs text-gray-500">{challenge?.title}</p>
+              <p className="text-xs text-gray-600 truncate">{challenge?.title}</p>
             </div>
-            <div className="text-right">
-              <span className="text-sm font-bold text-indigo-600">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-bold text-green-600 bg-green-100 px-2 py-1 rounded">
                 {p.result_value}{unit}
               </span>
+              <span className="text-yellow-600">→</span>
             </div>
-          </div>
+          </Link>
         );
       })}
     </div>
