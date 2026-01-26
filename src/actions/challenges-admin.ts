@@ -131,7 +131,7 @@ Parabéns pela conquista! 👏❤️`;
 
       // Criar post como "sistema" (user_id do criador/admin)
       const { data: creatorProfile } = await supabase
-        .from('profiles')
+        .from('users')
         .select('id')
         .eq('is_creator', true)
         .limit(1)
@@ -140,10 +140,10 @@ Parabéns pela conquista! 👏❤️`;
       if (creatorProfile) {
         await supabase.from('posts').insert({
           user_id: creatorProfile.id,
+          title: '🏆 Desafio Completado!',
           content: celebrationContent,
           type: 'community',
           status: 'approved', // Já aprovado automaticamente
-          media_urls: videoUrl ? [videoUrl] : [],
           content_category: 'normal',
         });
         
