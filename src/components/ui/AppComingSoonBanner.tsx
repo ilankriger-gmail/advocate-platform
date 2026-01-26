@@ -28,7 +28,7 @@ export function AppComingSoonBanner() {
       <div className="max-w-7xl mx-auto flex items-center justify-center gap-3 text-sm">
         <Smartphone className="w-5 h-5 flex-shrink-0" />
         <p className="font-medium">
-          📱 <strong>App iOS e Android em breve!</strong> Fique ligado nas novidades.
+          📱 <strong>App iOS e Android em breve!</strong>
         </p>
         <button
           onClick={handleDismiss}
