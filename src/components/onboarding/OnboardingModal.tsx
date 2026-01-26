@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
 
@@ -9,6 +10,7 @@ interface OnboardingStep {
   title: string;
   description: string;
   highlight?: string;
+  action?: 'desafios' | 'feed';
 }
 
 interface OnboardingModalProps {
@@ -61,12 +63,13 @@ const steps: OnboardingStep[] = [
   {
     icon: (
       <div className="w-20 h-20 bg-gradient-to-br from-violet-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg shadow-violet-500/30">
-        <span className="text-4xl">🚀</span>
+        <span className="text-4xl">🏆</span>
       </div>
     ),
-    title: 'Bora começar!',
-    description: 'Explore a comunidade, curta posts, comente, e veja seus corações crescendo!',
-    highlight: 'Seu primeiro ❤️ te espera!',
+    title: 'Comece com um desafio!',
+    description: 'Vá em Desafios e participe de um ato de amor. É rápido, divertido e você já ganha corações!',
+    highlight: '🎯 Primeiro desafio = primeiros corações!',
+    action: 'desafios',
   },
 ];
 
@@ -99,23 +102,27 @@ const contentVariants = {
 
 export function OnboardingModal({ isOpen, onComplete, onSkip }: OnboardingModalProps) {
   const [currentStep, setCurrentStep] = useState(0);
+  const router = useRouter();
   const isLastStep = currentStep === steps.length - 1;
+  const step = steps[currentStep];
 
   const handleNext = useCallback(() => {
     if (isLastStep) {
       onComplete();
+      // Se o último passo tem ação, redireciona
+      if (step.action === 'desafios') {
+        router.push('/desafios');
+      }
     } else {
       setCurrentStep((prev) => prev + 1);
     }
-  }, [isLastStep, onComplete]);
+  }, [isLastStep, onComplete, step.action, router]);
 
   const handleSkip = useCallback(() => {
     onSkip();
   }, [onSkip]);
 
   if (!isOpen) return null;
-
-  const step = steps[currentStep];
 
   return (
     <AnimatePresence>
@@ -212,7 +219,7 @@ export function OnboardingModal({ isOpen, onComplete, onSkip }: OnboardingModalP
                     fullWidth
                     onClick={handleNext}
                   >
-                    {isLastStep ? 'Começar agora!' : 'Próximo'}
+                    {isLastStep ? (step.action === 'desafios' ? 'Ver Desafios 🏆' : 'Começar agora!') : 'Próximo'}
                   </Button>
 
                   {!isLastStep && (
