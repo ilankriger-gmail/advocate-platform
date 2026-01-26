@@ -35,35 +35,64 @@ function isValidRedirect(path: string): boolean {
   );
 }
 
+interface SourceData {
+  type: string;
+  id: string;
+  name?: string;
+}
+
 /**
- * Obter URL de redirecionamento do cookie de cadastro direto
+ * Obter dados de origem do cookie de cadastro direto
  * Usado quando o usuário vem de landing page no modo direto (sem NPS)
  */
-async function getDirectRegistrationRedirect(): Promise<string | null> {
+async function getDirectRegistrationSource(): Promise<{ sourceData: SourceData | null; redirectUrl: string | null }> {
   try {
     const cookieStore = await cookies();
     const sourceCookie = cookieStore.get('direct_registration_source');
 
     if (!sourceCookie?.value) {
-      return null;
+      return { sourceData: null, redirectUrl: null };
     }
 
-    const sourceData = JSON.parse(decodeURIComponent(sourceCookie.value));
+    const sourceData = JSON.parse(decodeURIComponent(sourceCookie.value)) as SourceData;
 
     if (!sourceData.type || !sourceData.id) {
-      return null;
+      return { sourceData: null, redirectUrl: null };
     }
 
     // Determinar URL de redirecionamento baseado no tipo de origem
-    if (sourceData.type === 'landing_challenge') {
-      return `/desafios?highlight=${sourceData.id}`;
-    } else if (sourceData.type === 'landing_reward') {
-      return `/premios?highlight=${sourceData.id}`;
+    let redirectUrl: string | null = null;
+    if (sourceData.type === 'landing_challenge' || sourceData.type === 'landing_challenge_direto') {
+      redirectUrl = `/desafios?highlight=${sourceData.id}`;
+    } else if (sourceData.type === 'landing_reward' || sourceData.type === 'landing_reward_direto') {
+      redirectUrl = `/premios?highlight=${sourceData.id}`;
     }
 
-    return null;
+    return { sourceData, redirectUrl };
   } catch {
-    return null;
+    return { sourceData: null, redirectUrl: null };
+  }
+}
+
+/**
+ * Salvar origem do cadastro no perfil do usuário
+ * (para estatísticas de landing pages)
+ */
+async function saveUserSignupSource(userId: string, source: SourceData) {
+  try {
+    const supabase = createAdminClient();
+    
+    await supabase.rpc('set_user_signup_source', {
+      p_user_id: userId,
+      p_source: source.type,
+      p_source_id: source.id,
+      p_source_name: source.name || null,
+    });
+
+    console.log('[Auth Callback] Origem do cadastro salva:', source.type, source.id);
+  } catch (err) {
+    // Erro não deve impedir o login
+    console.error('[Auth Callback] Erro ao salvar origem:', err);
   }
 }
 
@@ -103,18 +132,36 @@ export async function GET(request: Request) {
         // Iniciar onboarding para novos usuários (em background, não bloqueia)
         triggerOnboardingIfNew(user.id, user.email || '', user.user_metadata?.full_name || user.email?.split('@')[0] || 'Usuário');
 
-        // Verificar se usuário veio de uma landing page para redirecioná-lo ao conteúdo original
+        // Verificar se usuário veio de uma landing page
+        // 1. Primeiro verificar cookie de cadastro direto (sem NPS)
+        const { sourceData, redirectUrl: directRedirect } = await getDirectRegistrationSource();
+        
+        // Salvar origem do cadastro no perfil (se tiver)
+        if (sourceData) {
+          await saveUserSignupSource(user.id, sourceData);
+          await clearDirectRegistrationCookie();
+        }
+
+        // Verificar redirecionamento
         if (next === '/') {
-          // Primeiro verificar cookie de cadastro direto (sem NPS)
-          const directRedirect = await getDirectRegistrationRedirect();
+          // Redirecionar para landing page se veio de cadastro direto
           if (directRedirect && isValidRedirect(directRedirect)) {
-            await clearDirectRegistrationCookie();
             return NextResponse.redirect(`${origin}${directRedirect}`);
           }
 
           // Depois verificar se veio do fluxo NPS (via nps_leads)
           if (user.email) {
-            const { redirectUrl } = await getLeadSource(user.email);
+            const { redirectUrl, sourceType, sourceId, sourceName } = await getLeadSource(user.email);
+            
+            // Salvar origem do NPS se ainda não salvou do cookie
+            if (!sourceData && sourceType) {
+              await saveUserSignupSource(user.id, { 
+                type: sourceType, 
+                id: sourceId || '', 
+                name: sourceName || undefined 
+              });
+            }
+            
             if (isValidRedirect(redirectUrl) && redirectUrl !== '/dashboard') {
               return NextResponse.redirect(`${origin}${redirectUrl}`);
             }

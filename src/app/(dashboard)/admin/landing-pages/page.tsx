@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server';
 import { Card } from '@/components/ui';
 import { LPTypeSection } from './LPTypeSection';
+import { SignupStats } from './SignupStats';
+import { getLandingPageStats, getSignupsByPeriod } from '@/actions/landing-stats';
 
 export const dynamic = 'force-dynamic';
 
@@ -75,6 +77,12 @@ export default async function AdminLandingPagesPage() {
   const activeChallenges = challengeItems.filter((c) => c.is_active).length;
   const activeRewards = rewardItems.filter((r) => r.is_active).length;
 
+  // Buscar estatísticas de origem dos inscritos
+  const [{ data: landingStats }, signupTotals] = await Promise.all([
+    getLandingPageStats(),
+    getSignupsByPeriod(),
+  ]);
+
   return (
     <div className="p-4 md:p-6 space-y-6">
       {/* Header */}
@@ -109,6 +117,9 @@ export default async function AdminLandingPagesPage() {
           <p className="text-sm text-amber-600">Prêmios Ativos</p>
         </Card>
       </div>
+
+      {/* Estatísticas de Origem */}
+      <SignupStats stats={landingStats || []} totals={signupTotals} />
 
       {/* Legenda */}
       <Card className="p-4 bg-blue-50 border-blue-200">

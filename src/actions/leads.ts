@@ -1268,6 +1268,7 @@ export async function getSequenceStats(): Promise<ActionResponse<{
 export async function getLeadSource(email: string): Promise<{
   sourceType: string | null;
   sourceId: string | null;
+  sourceName: string | null;
   redirectUrl: string;
 }> {
   try {
@@ -1275,7 +1276,7 @@ export async function getLeadSource(email: string): Promise<{
 
     const { data: lead } = await supabase
       .from('nps_leads')
-      .select('source_type, source_id')
+      .select('source_type, source_id, source_name')
       .eq('email', email.toLowerCase().trim())
       .eq('status', 'approved')
       .order('created_at', { ascending: false })
@@ -1283,7 +1284,7 @@ export async function getLeadSource(email: string): Promise<{
       .single();
 
     if (!lead || !lead.source_type || !lead.source_id) {
-      return { sourceType: null, sourceId: null, redirectUrl: '/dashboard' };
+      return { sourceType: null, sourceId: null, sourceName: null, redirectUrl: '/dashboard' };
     }
 
     // Determinar URL de redirecionamento baseado no tipo de origem
@@ -1300,10 +1301,11 @@ export async function getLeadSource(email: string): Promise<{
     return {
       sourceType: lead.source_type,
       sourceId: lead.source_id,
+      sourceName: lead.source_name || null,
       redirectUrl,
     };
   } catch {
     // Em caso de erro, redireciona para dashboard por segurança
-    return { sourceType: null, sourceId: null, redirectUrl: '/dashboard' };
+    return { sourceType: null, sourceId: null, sourceName: null, redirectUrl: '/dashboard' };
   }
 }
