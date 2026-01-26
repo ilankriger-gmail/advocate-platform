@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getSiteSettings } from '@/lib/config/site';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui';
-import { PhysicalChallengeCard } from '@/components/challenges';
+import { PhysicalChallengeCard, ReferralCard } from '@/components/challenges';
 import { MyParticipationItem } from '@/components/challenges/MyParticipationItem';
 import type { ParticipationWithChallenge, ChallengePrize } from '@/lib/supabase/types';
 
@@ -196,6 +196,11 @@ export default async function DesafiosPage() {
           </div>
         </div>
       </Card>
+
+      {/* Programa de Indicação */}
+      <div className="max-w-2xl mx-auto">
+        <ReferralCard />
+      </div>
 
       {/* Minhas Participações - Lista compacta */}
       {userParticipationsWithChallenge.length > 0 && (
