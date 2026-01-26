@@ -1,7 +1,7 @@
 'use server';
 
 import { createAdminClient } from '@/lib/supabase/admin';
-import { tentarGerarResposta, gerarResposta, deveResponder } from '@/lib/autoresponder';
+import { gerarRespostaIA, deveResponder } from '@/lib/autoresponder';
 
 // ID do usuário "Moço do Te Amo" (conta oficial)
 const MOCO_USER_ID = process.env.MOCO_USER_ID || '';
@@ -20,12 +20,14 @@ function gerarDelayAleatorio(): number {
 /**
  * Agenda uma resposta automática para um comentário
  * A resposta será enviada entre 3 minutos e 2 horas depois
+ * Usa GPT-4o mini para gerar resposta contextualizada
  */
 export async function agendarAutoResposta(
   postId: string,
   comentarioId: string,
   comentarioTexto: string,
-  autorId: string
+  autorId: string,
+  contextoPost?: string
 ): Promise<{ agendado: boolean; scheduledFor?: Date }> {
   // Não responder a si mesmo
   if (autorId === MOCO_USER_ID) {
@@ -43,8 +45,8 @@ export async function agendarAutoResposta(
     return { agendado: false };
   }
 
-  // Gerar resposta antecipadamente
-  const resposta = gerarResposta(comentarioTexto);
+  // Gerar resposta com IA (analisa o comentário e contexto do post)
+  const resposta = await gerarRespostaIA(comentarioTexto, contextoPost);
   
   // Calcular quando responder (3min a 2h no futuro)
   const delayMs = gerarDelayAleatorio();
@@ -193,9 +195,10 @@ export async function autoResponderComentario(
   postId: string,
   comentarioId: string,
   comentarioTexto: string,
-  autorId: string
+  autorId: string,
+  contextoPost?: string
 ): Promise<{ respondido: boolean; resposta?: string }> {
-  const resultado = await agendarAutoResposta(postId, comentarioId, comentarioTexto, autorId);
+  const resultado = await agendarAutoResposta(postId, comentarioId, comentarioTexto, autorId, contextoPost);
   return { respondido: resultado.agendado };
 }
 

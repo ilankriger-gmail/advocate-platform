@@ -1,156 +1,130 @@
 /**
  * Auto-responder do Moço do Te Amo
- * Responde 67% dos comentários com mensagens únicas e ❤️‍🔥
+ * Usa GPT-4o mini para gerar respostas contextualizadas
+ * Responde 67% dos comentários com ❤️‍🔥
  */
 
-// Frases base que serão combinadas e variadas
-const SAUDACOES = [
-  'Opa',
-  'Eiii',
-  'Opaaa',
-  'Fala',
-  'E aí',
-  'Oi',
-  'Oiee',
-  'Heeey',
-  'Salve',
-  'Aeee',
-];
+import OpenAI from 'openai';
 
-const ELOGIOS = [
-  'que comentário incrível',
-  'amei isso',
-  'isso aí',
-  'mandou bem',
-  'é isso mesmo',
-  'perfeito',
-  'você arrasou',
-  'top demais',
-  'sensacional',
-  'show de bola',
-  'você é demais',
-  'isso que é atitude',
-  'adoro ver isso',
-  'é assim que se faz',
-  'você entendeu tudo',
-];
+let openaiClient: OpenAI | null = null;
 
-const INCENTIVOS = [
-  'Continue assim',
-  'Bora pra cima',
-  'Vamos juntos',
-  'É nóis',
-  'Tamo junto',
-  'Segue firme',
-  'Conta comigo',
-  'Sempre com você',
-  'Bora que bora',
-  'Pra cima sempre',
-  'Não para não',
-  'Vai dar bom',
-  'Confia no processo',
-  'O amor vence',
-];
-
-const EMOJIS = ['❤️‍🔥', '❤️‍🔥❤️‍🔥', '🔥', '💪', '🙌', '✨', '💜', '🚀'];
-
-const FINALIZACOES = [
-  'Te amo!',
-  'Te amo demais!',
-  'Muito amor!',
-  'Te amo, viu?',
-  'Tmj!',
-  'Te amo sempre!',
-  'Amor!',
-  'Te amo ❤️‍🔥',
-  '❤️‍🔥',
-  'Valeu demais!',
-];
-
-// Templates de respostas completas para variedade
-const TEMPLATES = [
-  '{saudacao}! {elogio} {emoji} {incentivo}! {finalizacao}',
-  '{saudacao}, {elogio}! {emoji} {finalizacao}',
-  '{elogio}! {emoji} {incentivo}. {finalizacao}',
-  '{saudacao}! {emoji} {elogio}. {incentivo}!',
-  '{emoji} {elogio}! {incentivo}. {finalizacao}',
-  '{saudacao}! {incentivo} {emoji} {finalizacao}',
-  '{elogio} {emoji} {emoji} {finalizacao}',
-  '{saudacao}!! {elogio}. {emoji}',
-  '{emoji} {emoji} {elogio}! {finalizacao}',
-  '{incentivo}! {elogio} {emoji} {finalizacao}',
-];
-
-// Respostas especiais para contextos específicos
-const RESPOSTAS_ESPECIAIS = {
-  pergunta: [
-    'Boa pergunta! ❤️‍🔥 Vou pensar nisso!',
-    'Isso aí! ❤️‍🔥 Ótima reflexão!',
-    'Caramba, faz sentido! ❤️‍🔥',
-    'Interessante demais! ❤️‍🔥 Valeu por compartilhar!',
-  ],
-  agradecimento: [
-    'Eu que agradeço! ❤️‍🔥 Te amo!',
-    'Obrigado VOCÊ por estar aqui! ❤️‍🔥',
-    'Nós que agradecemos! ❤️‍🔥❤️‍🔥',
-    'Valeu demais! ❤️‍🔥 Tamo junto!',
-  ],
-  emocional: [
-    'Força! ❤️‍🔥 Tamo junto sempre!',
-    'Conte comigo! ❤️‍🔥 Te amo!',
-    'Você não tá sozinho! ❤️‍🔥❤️‍🔥',
-    'Muito amor pra você! ❤️‍🔥 Vai ficar tudo bem!',
-  ],
-  humor: [
-    'KKKKK ❤️‍🔥 Adorei!',
-    'Rachei! ❤️‍🔥❤️‍🔥',
-    'HAHAHA isso aí! ❤️‍🔥',
-    'Sensacional KKKK ❤️‍🔥',
-  ],
-};
-
-/**
- * Escolhe item aleatório de um array
- */
-function escolher<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
+function getOpenAIClient(): OpenAI | null {
+  if (openaiClient) return openaiClient;
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    console.error('[AutoResponder] OPENAI_API_KEY não configurada');
+    return null;
+  }
+  openaiClient = new OpenAI({ apiKey });
+  return openaiClient;
 }
 
+const SYSTEM_PROMPT = `Você é o Moço do Te Amo, um criador de conteúdo brasileiro carismático, amoroso e motivador.
+Você está respondendo comentários na sua comunidade "Arena Te Amo".
+
+REGRAS:
+1. Responda SEMPRE em português brasileiro informal e carinhoso
+2. Use no MÁXIMO 2-3 frases curtas
+3. SEMPRE inclua pelo menos um ❤️‍🔥 na resposta
+4. Seja genuíno, empático e motivador
+5. Se a pessoa fez uma pergunta, responda de forma útil mas breve
+6. Se a pessoa está triste ou passando dificuldade, seja acolhedor
+7. Se a pessoa fez um elogio, agradeça com carinho
+8. Se a pessoa fez uma piada ou algo engraçado, ria junto (use kkkk)
+9. NUNCA seja formal, robótico ou use linguagem corporativa
+10. Finalize com algo como "Te amo!", "Tamo junto!", "❤️‍🔥" ou similar
+
+EXEMPLOS DE RESPOSTAS:
+- "Opa! Que comentário incrível ❤️‍🔥 Tamo junto sempre!"
+- "Caramba, isso aí! ❤️‍🔥 Continue assim, te amo!"
+- "Força! Você não tá sozinho ❤️‍🔥❤️‍🔥 Conte comigo!"
+- "KKKK rachei! ❤️‍🔥 Você é demais!"`;
+
 /**
- * Detecta o tipo/contexto do comentário
+ * Gera uma resposta usando GPT-4o mini
  */
-function detectarContexto(comentario: string): keyof typeof RESPOSTAS_ESPECIAIS | null {
+export async function gerarRespostaIA(
+  comentario: string,
+  contextoPost?: string
+): Promise<string> {
+  const openai = getOpenAIClient();
+  
+  if (!openai) {
+    // Fallback para resposta simples se OpenAI não configurada
+    return gerarRespostaFallback(comentario);
+  }
+
+  try {
+    const userMessage = contextoPost 
+      ? `Post: "${contextoPost}"\n\nComentário para responder: "${comentario}"`
+      : `Comentário para responder: "${comentario}"`;
+
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user', content: userMessage }
+      ],
+      max_tokens: 150,
+      temperature: 0.9, // Mais criativo
+    });
+
+    const resposta = response.choices[0]?.message?.content?.trim();
+    
+    if (!resposta) {
+      return gerarRespostaFallback(comentario);
+    }
+
+    // Garantir que tem ❤️‍🔥 na resposta
+    if (!resposta.includes('❤️‍🔥') && !resposta.includes('❤️')) {
+      return resposta + ' ❤️‍🔥';
+    }
+
+    return resposta;
+  } catch (error) {
+    console.error('[AutoResponder] Erro ao gerar resposta com IA:', error);
+    return gerarRespostaFallback(comentario);
+  }
+}
+
+// Respostas de fallback caso a IA não funcione
+const FALLBACK_RESPOSTAS = [
+  'Opa! Amei isso ❤️‍🔥 Tamo junto!',
+  'Que demais! ❤️‍🔥 Continue assim!',
+  'Isso aí! ❤️‍🔥❤️‍🔥 Te amo!',
+  'Show de bola! ❤️‍🔥 Valeu!',
+  'Sensacional! ❤️‍🔥 Bora pra cima!',
+  'Adorei! ❤️‍🔥 Tamo junto sempre!',
+  'Você é demais! ❤️‍🔥',
+  'Caramba! ❤️‍🔥 Muito bom!',
+];
+
+function gerarRespostaFallback(comentario: string): string {
+  // Detectar contexto simples
   const lower = comentario.toLowerCase();
   
-  if (lower.includes('?')) return 'pergunta';
-  if (lower.includes('obrigad') || lower.includes('valeu') || lower.includes('thanks')) return 'agradecimento';
-  if (lower.includes('triste') || lower.includes('difícil') || lower.includes('força') || lower.includes('chorando')) return 'emocional';
-  if (lower.includes('kk') || lower.includes('haha') || lower.includes('kkk') || lower.includes('😂')) return 'humor';
+  if (lower.includes('?')) {
+    return 'Boa pergunta! ❤️‍🔥 Vou pensar nisso!';
+  }
+  if (lower.includes('obrigad') || lower.includes('valeu')) {
+    return 'Eu que agradeço! ❤️‍🔥 Te amo!';
+  }
+  if (lower.includes('triste') || lower.includes('difícil') || lower.includes('força')) {
+    return 'Força! ❤️‍🔥 Tamo junto, você não tá sozinho!';
+  }
+  if (lower.includes('kk') || lower.includes('haha') || lower.includes('😂')) {
+    return 'KKKK ❤️‍🔥 Adorei!';
+  }
   
-  return null;
+  return FALLBACK_RESPOSTAS[Math.floor(Math.random() * FALLBACK_RESPOSTAS.length)];
 }
 
 /**
- * Gera uma resposta única e personalizada
+ * Gera uma resposta (wrapper para compatibilidade)
  */
 export function gerarResposta(comentario?: string): string {
-  // Se tiver comentário, tentar detectar contexto
-  if (comentario) {
-    const contexto = detectarContexto(comentario);
-    if (contexto && Math.random() > 0.5) {
-      return escolher(RESPOSTAS_ESPECIAIS[contexto]);
-    }
-  }
-  
-  // Gerar resposta usando template
-  const template = escolher(TEMPLATES);
-  
-  return template
-    .replace('{saudacao}', escolher(SAUDACOES))
-    .replace('{elogio}', escolher(ELOGIOS))
-    .replace('{incentivo}', escolher(INCENTIVOS))
-    .replace('{finalizacao}', escolher(FINALIZACOES))
-    .replace(/{emoji}/g, escolher(EMOJIS));
+  // Versão síncrona usa fallback
+  return gerarRespostaFallback(comentario || '');
 }
 
 /**

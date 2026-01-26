@@ -863,7 +863,7 @@ export async function commentPost(postId: string, content: string, parentId?: st
     // Incrementar contador de comentários
     const { data: post } = await supabase
       .from('posts')
-      .select('comments_count, user_id')
+      .select('comments_count, user_id, title, content')
       .eq('id', postId)
       .single();
 
@@ -930,8 +930,9 @@ export async function commentPost(postId: string, content: string, parentId?: st
     });
 
     // 🤖 Auto-responder do Moço (67% de chance, apenas comentários raiz)
-    if (!parentId) {
-      autoResponderComentario(postId, comment.id, sanitizedContent, user.id)
+    if (!parentId && post) {
+      const contextoPost = `${post.title || ''} ${post.content?.substring(0, 200) || ''}`.trim();
+      autoResponderComentario(postId, comment.id, sanitizedContent, user.id, contextoPost)
         .catch(err => postsLogger.error('Erro no autoresponder', { error: sanitizeError(err) }));
     }
 
