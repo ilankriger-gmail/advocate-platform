@@ -13,6 +13,7 @@ import { calculateSimilarity } from '@/lib/similarity';
 import { notifyPostApproved, notifyPostRejected, notifyNewLike, notifyNewComment } from '@/actions/notifications';
 import { giveHearts } from '@/lib/hearts';
 import { autoResponderComentario, agendarAutoComentarioPost } from '@/actions/autoresponder';
+import { checkBanOrError, recordSpamViolation } from '@/lib/spam-protection';
 
 // Logger contextualizado para o módulo de posts
 const postsLogger = logger.withContext('[Posts]');
@@ -794,11 +795,19 @@ export async function likeComment(commentId: string): Promise<ActionResponse<{ l
       return { error: 'Usuário não autenticado' };
     }
 
+    // ANTI-SPAM: Verificar se usuário está banido de curtir
+    const banCheck = await checkBanOrError(user.id, 'like');
+    if (banCheck) {
+      return banCheck;
+    }
+
     // ANTI-SPAM: Rate limit para likes em comentários
     const rateLimitResult = await checkRateLimit(`like-comment:${user.id}`, RATE_LIMITS.like);
     if (!rateLimitResult.success) {
+      // Registrar violação e banir progressivamente
+      await recordSpamViolation(user.id, 'like_spam', { reason: 'rate_limit', target: 'comment', commentId });
       const retryAfter = Math.ceil((rateLimitResult.reset - Date.now()) / 1000);
-      return { error: `Muitas curtidas. Aguarde ${retryAfter} segundos.` };
+      return { error: `Muitas curtidas. Você foi bloqueado temporariamente. Aguarde ${retryAfter} segundos.` };
     }
 
     // Verificar se já curtiu
@@ -953,6 +962,12 @@ export async function commentPost(postId: string, content: string, parentId?: st
       return { error: 'Usuario nao autenticado' };
     }
 
+    // ANTI-SPAM: Verificar se usuário está banido de comentar
+    const banCheck = await checkBanOrError(user.id, 'comment');
+    if (banCheck) {
+      return banCheck;
+    }
+
     // SEGURANCA: Sanitizar conteudo do comentario para prevenir XSS
     const sanitizedContent = sanitizeText(content, 2000);
 
@@ -962,14 +977,18 @@ export async function commentPost(postId: string, content: string, parentId?: st
 
     // ANTI-SPAM: Mínimo de 2 caracteres (bloqueia "." spam)
     if (sanitizedContent.trim().length < 2) {
-      return { error: 'Comentário muito curto (mínimo 2 caracteres)' };
+      // Registrar violação e banir progressivamente
+      await recordSpamViolation(user.id, 'comment_spam', { reason: 'too_short', content: sanitizedContent });
+      return { error: 'Comentário muito curto. Você foi temporariamente bloqueado por spam.' };
     }
 
     // ANTI-SPAM: Rate limit - máximo 20 comentários por minuto
     const rateLimitResult = await checkRateLimit(`comment:${user.id}`, RATE_LIMITS.comment);
     if (!rateLimitResult.success) {
+      // Registrar violação e banir progressivamente
+      await recordSpamViolation(user.id, 'comment_spam', { reason: 'rate_limit' });
       const retryAfter = Math.ceil((rateLimitResult.reset - Date.now()) / 1000);
-      return { error: `Muitos comentários. Aguarde ${retryAfter} segundos.` };
+      return { error: `Muitos comentários. Você foi bloqueado temporariamente. Aguarde ${retryAfter} segundos.` };
     }
 
     // ANTI-SPAM: Bloquear comentário idêntico ao último (em 5 minutos)
@@ -986,7 +1005,9 @@ export async function commentPost(postId: string, content: string, parentId?: st
         comment => comment.content.trim().toLowerCase() === sanitizedContent.trim().toLowerCase()
       );
       if (isDuplicate) {
-        return { error: 'Você já fez esse comentário recentemente' };
+        // Registrar violação e banir progressivamente
+        await recordSpamViolation(user.id, 'comment_duplicate', { reason: 'duplicate', content: sanitizedContent });
+        return { error: 'Comentário duplicado. Você foi temporariamente bloqueado por spam.' };
       }
     }
 
