@@ -163,6 +163,16 @@ export function AllParticipationsList({ participations, onClose }: AllParticipat
                         <span className="font-medium text-gray-900">
                           {p.profiles?.full_name || 'Usuário'}
                         </span>
+                        {p.profiles?.instagram_handle && (
+                          <a 
+                            href={`https://instagram.com/${p.profiles.instagram_handle}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-pink-500 hover:text-pink-700"
+                          >
+                            @{p.profiles.instagram_handle}
+                          </a>
+                        )}
                         {getStatusBadge(p.status)}
                         {p.coins_earned && p.coins_earned > 0 && (
                           <span className="text-xs bg-pink-100 text-pink-700 px-2 py-0.5 rounded-full">
@@ -173,37 +183,78 @@ export function AllParticipationsList({ participations, onClose }: AllParticipat
                       <p className="text-sm text-gray-600 mt-1">
                         {p.challenges?.icon} {p.challenges?.title}
                       </p>
-                      <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
-                        {p.result_value && (
-                          <span className="font-medium text-purple-600">
-                            Resultado: {p.result_value}
+                      
+                      {/* Detalhes expandidos */}
+                      <div className="mt-3 p-3 bg-white/50 rounded-lg space-y-2 text-sm">
+                        <div className="flex items-center gap-4 flex-wrap">
+                          {p.result_value !== null && (
+                            <span className="font-medium text-purple-600">
+                              📊 Resultado: <strong>{p.result_value}</strong>
+                            </span>
+                          )}
+                          <span className="text-gray-500">
+                            📅 {new Date(p.created_at).toLocaleDateString('pt-BR', {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
                           </span>
-                        )}
-                        <span>
-                          {new Date(p.created_at).toLocaleDateString('pt-BR', {
-                            day: '2-digit',
-                            month: '2-digit',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                        </span>
+                          {p.ai_confidence !== null && (
+                            <span className="text-gray-500">
+                              🤖 IA: {Math.round((p.ai_confidence || 0) * 100)}%
+                            </span>
+                          )}
+                        </div>
+                        
+                        {/* Links de prova */}
+                        <div className="flex flex-wrap gap-2 pt-2">
+                          {p.video_proof_url && (
+                            <a
+                              href={p.video_proof_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg text-xs font-medium hover:bg-blue-200 transition-colors"
+                            >
+                              🎬 Vídeo
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+                          )}
+                          {p.social_media_url && (
+                            <a
+                              href={p.social_media_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 px-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg text-xs font-medium hover:bg-purple-200 transition-colors"
+                            >
+                              📱 Post Social
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+                          )}
+                          {p.instagram_proof_url && (
+                            <a
+                              href={p.instagram_proof_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 px-3 py-1.5 bg-pink-100 text-pink-700 rounded-lg text-xs font-medium hover:bg-pink-200 transition-colors"
+                            >
+                              📸 Instagram
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+                          )}
+                          {!p.video_proof_url && !p.social_media_url && !p.instagram_proof_url && (
+                            <span className="text-xs text-gray-400 italic">
+                              Nenhum link de prova enviado
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {(p.video_proof_url || p.social_media_url || p.instagram_proof_url) && (
-                        <a
-                          href={p.video_proof_url || p.social_media_url || p.instagram_proof_url || '#'}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                          title="Ver prova"
-                        >
-                          <ExternalLink className="w-4 h-4" />
-                        </a>
-                      )}
+                    <div className="flex flex-col items-end gap-2">
                       <Link
                         href={`/admin/desafios/${p.challenge_id}`}
-                        className="text-xs text-purple-600 hover:text-purple-800 font-medium"
+                        className="px-3 py-1.5 bg-purple-600 text-white rounded-lg text-xs font-medium hover:bg-purple-700 transition-colors"
                       >
                         Ver desafio →
                       </Link>
