@@ -10,7 +10,7 @@ import { usePosts } from '@/hooks';
 import ImageCarousel from './ImageCarousel';
 import YouTubeEmbed from './YouTubeEmbed';
 import InstagramEmbed from './InstagramEmbed';
-import { SentimentThermometer } from './SentimentThermometer';
+// SentimentThermometer removido - usando apenas TeAmoButton
 import { TeAmoButton, ExplodingHeart } from './TeAmoButton';
 import { CommentsSection } from './CommentsSection';
 import type { PostWithAuthor } from '@/types/post';
@@ -191,8 +191,7 @@ export const PostCard = memo(function PostCard({
   // Content expansion agora vai para página de detalhe
 
   const statusConfig = POST_STATUS[post.status];
-  const voteAverage = (post as unknown as Record<string, unknown>).vote_average as number || 0;
-  const voteCount = (post as unknown as Record<string, unknown>).vote_count as number || 0;
+  // voteAverage e voteCount removidos - usando apenas likes
 
   const handleApprove = async () => {
     await approve(post.id);
@@ -253,13 +252,6 @@ export const PostCard = memo(function PostCard({
                   {statusConfig.label}
                 </Badge>
               )}
-              <SentimentThermometer
-                postId={post.id}
-                averageScore={voteAverage}
-                totalVotes={voteCount}
-                userVote={userVote}
-                compact
-              />
               {isOwner && (
                 <>
                   <Link
