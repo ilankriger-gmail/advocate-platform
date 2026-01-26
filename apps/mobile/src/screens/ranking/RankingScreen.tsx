@@ -116,7 +116,7 @@ export function RankingScreen() {
           <Text style={styles.podiumName} numberOfLines={1}>
             {top3[1].full_name || 'Usuário'}
           </Text>
-          <Text style={styles.podiumCoins}>{top3[1].total_coins} 🪙</Text>
+          <Text style={styles.podiumCoins}>{top3[1].total_coins} ❤️</Text>
         </View>
 
         {/* 1st Place */}
@@ -131,7 +131,7 @@ export function RankingScreen() {
           <Text style={styles.podiumName} numberOfLines={1}>
             {top3[0].full_name || 'Usuário'}
           </Text>
-          <Text style={styles.podiumCoins}>{top3[0].total_coins} 🪙</Text>
+          <Text style={styles.podiumCoins}>{top3[0].total_coins} ❤️</Text>
         </View>
 
         {/* 3rd Place */}
@@ -143,7 +143,7 @@ export function RankingScreen() {
           <Text style={styles.podiumName} numberOfLines={1}>
             {top3[2].full_name || 'Usuário'}
           </Text>
-          <Text style={styles.podiumCoins}>{top3[2].total_coins} 🪙</Text>
+          <Text style={styles.podiumCoins}>{top3[2].total_coins} ❤️</Text>
         </View>
       </View>
     );
@@ -171,7 +171,7 @@ export function RankingScreen() {
         </View>
         <View style={styles.rankStats}>
           <Text style={styles.coinsText}>{item.total_coins}</Text>
-          <Text style={styles.coinsLabel}>moedas</Text>
+          <Text style={styles.coinsLabel}>corações</Text>
         </View>
       </Card>
     );

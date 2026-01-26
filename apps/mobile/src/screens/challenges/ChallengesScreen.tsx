@@ -132,7 +132,7 @@ export function ChallengesScreen({ navigation }: ChallengesScreenProps) {
             {challenge.coin_reward > 0 && (
               <View style={styles.rewardBadge}>
                 <Ionicons name="star" size={16} color={colors.warning.main} />
-                <Text style={styles.rewardText}>{challenge.coin_reward} moedas</Text>
+                <Text style={styles.rewardText}>{challenge.coin_reward} ❤️</Text>
               </View>
             )}
             {challenge.reward_description && (

@@ -156,7 +156,7 @@ export function ChallengeDetailScreen({ route, navigation }: Props) {
             {challenge.coin_reward > 0 && (
               <View style={styles.rewardItem}>
                 <Ionicons name="star" size={24} color={colors.warning.main} />
-                <Text style={styles.rewardText}>{challenge.coin_reward} moedas</Text>
+                <Text style={styles.rewardText}>{challenge.coin_reward} ❤️</Text>
               </View>
             )}
             
