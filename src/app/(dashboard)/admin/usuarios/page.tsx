@@ -120,7 +120,13 @@ export default async function AdminUsuáriosPage({ searchParams }: PageProps) {
                 {/* Detalhes extras */}
                 <div className="mt-3 pt-3 border-t flex flex-wrap gap-4 text-xs text-gray-500">
                   <span>
-                    Membro desde: {new Date(user.created_at).toLocaleDateString('pt-BR')}
+                    Membro desde: {new Date(user.created_at).toLocaleString('pt-BR', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
                   </span>
                   {user.phone && <span>Tel: {user.phone}</span>}
                   {user.advocate_level && (

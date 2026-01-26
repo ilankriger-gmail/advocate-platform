@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getSiteSettings } from '@/lib/config/site';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui';
-import { PhysicalChallengeCard, ReferralCard } from '@/components/challenges';
+import { PhysicalChallengeCard, ReferralCard, EngagementBanner } from '@/components/challenges';
 import { MyParticipationItem } from '@/components/challenges/MyParticipationItem';
 import type { ParticipationWithChallenge, ChallengePrize } from '@/lib/supabase/types';
 
@@ -174,6 +174,16 @@ export default async function DesafiosPage() {
         description="Participe dos desafios e ganhe corações"
       />
 
+      {/* Banner de Engajamento - FIXO NO TOPO */}
+      <div className="max-w-2xl mx-auto">
+        <EngagementBanner />
+      </div>
+
+      {/* Programa de Indicação - Logo abaixo do banner */}
+      <div className="max-w-2xl mx-auto">
+        <ReferralCard />
+      </div>
+
       {/* Saldo - Card Premium (responsivo para mobile) */}
       <Card className="relative overflow-hidden bg-gradient-to-br from-pink-500 via-rose-500 to-red-500 text-white shadow-xl">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMzLjMxNCAwIDYgMi42ODYgNiA2cy0yLjY4NiA2LTYgNi02LTIuNjg2LTYtNiAyLjY4Ni02IDYtNiIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMSkiIHN0cm9rZS13aWR0aD0iMiIvPjwvZz48L3N2Zz4=')] opacity-30" />
@@ -196,11 +206,6 @@ export default async function DesafiosPage() {
           </div>
         </div>
       </Card>
-
-      {/* Programa de Indicação */}
-      <div className="max-w-2xl mx-auto">
-        <ReferralCard />
-      </div>
 
       {/* Minhas Participações - Lista compacta */}
       {userParticipationsWithChallenge.length > 0 && (

@@ -3,6 +3,7 @@ export { PhysicalChallengeCard } from './PhysicalChallengeCard';
 export { ChallengeRanking, ChallengeRankingFromData } from './ChallengeRanking';
 export { MyParticipationCard } from './MyParticipationCard';
 export { ReferralCard } from './ReferralCard';
+export { EngagementBanner } from './EngagementBanner';
 
 // Skeleton exports
 export { SkeletonBalanceCard, SkeletonChallengeCard } from './skeletons';
