@@ -550,7 +550,102 @@ export default async function DesafiosPage() {
         </section>
       )}
 
-      {/* Atos de Amor - Só se tiver desafios */}
+      {/* ============================================= */}
+      {/* RECEBA DOAÇÕES - Linkdobem */}
+      {/* ============================================= */}
+      <section className="max-w-2xl mx-auto">
+        <Card className="relative overflow-hidden border-2 border-emerald-400 shadow-xl shadow-emerald-200/50">
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-400 via-teal-400 to-cyan-400 opacity-10" />
+          <div className="relative p-5 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-2xl">💝</span>
+              </div>
+              <div>
+                <h3 className="font-bold text-lg text-gray-900">Receba Doações</h3>
+                <p className="text-sm text-emerald-700">Crie sua vaquinha e realize seu sonho</p>
+              </div>
+            </div>
+            
+            <div className="bg-white/70 backdrop-blur rounded-xl p-4 space-y-2">
+              <p className="text-sm text-gray-700">
+                Tem um sonho ou precisa de ajuda? Crie sua campanha no <strong>Linkdobem</strong> e compartilhe com a comunidade!
+              </p>
+              <div className="flex items-center gap-2 text-sm text-emerald-700">
+                <span>✅</span> Sem taxas abusivas
+              </div>
+              <div className="flex items-center gap-2 text-sm text-emerald-700">
+                <span>✅</span> Receba direto no PIX
+              </div>
+              <div className="flex items-center gap-2 text-sm text-emerald-700">
+                <span>✅</span> Comunidade que apoia
+              </div>
+            </div>
+
+            <a
+              href="https://linkdobem.com.br"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold text-lg rounded-xl text-center shadow-lg shadow-emerald-500/30 transition-all"
+            >
+              🎁 Criar Minha Campanha
+            </a>
+          </div>
+        </Card>
+      </section>
+
+      {/* ============================================= */}
+      {/* PARCEIROS E PATROCINADORES */}
+      {/* ============================================= */}
+      <section className="max-w-2xl mx-auto">
+        <Card className="relative overflow-hidden border-2 border-violet-400 shadow-xl shadow-violet-200/50">
+          <div className="absolute inset-0 bg-gradient-to-br from-violet-400 via-purple-400 to-fuchsia-400 opacity-10" />
+          <div className="absolute top-0 right-0 bg-violet-500 text-white px-3 py-1 text-xs font-bold rounded-bl-xl">
+            PARCEIROS
+          </div>
+          <div className="relative p-5 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-violet-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-2xl">⭐</span>
+              </div>
+              <div>
+                <h3 className="font-bold text-lg text-gray-900">Prêmios dos Parceiros</h3>
+                <p className="text-sm text-violet-700">Ofertas exclusivas para a comunidade</p>
+              </div>
+            </div>
+            
+            {/* Grid de parceiros - será configurável via admin */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-white/70 backdrop-blur rounded-xl p-4 text-center border border-violet-200 hover:border-violet-400 transition-colors">
+                <span className="text-3xl block mb-2">🎧</span>
+                <p className="font-semibold text-sm text-gray-900">Em breve</p>
+                <p className="text-xs text-gray-500">Parceiro 1</p>
+              </div>
+              <div className="bg-white/70 backdrop-blur rounded-xl p-4 text-center border border-violet-200 hover:border-violet-400 transition-colors">
+                <span className="text-3xl block mb-2">👕</span>
+                <p className="font-semibold text-sm text-gray-900">Em breve</p>
+                <p className="text-xs text-gray-500">Parceiro 2</p>
+              </div>
+              <div className="bg-white/70 backdrop-blur rounded-xl p-4 text-center border border-violet-200 hover:border-violet-400 transition-colors">
+                <span className="text-3xl block mb-2">🎮</span>
+                <p className="font-semibold text-sm text-gray-900">Em breve</p>
+                <p className="text-xs text-gray-500">Parceiro 3</p>
+              </div>
+              <div className="bg-white/70 backdrop-blur rounded-xl p-4 text-center border border-violet-200 hover:border-violet-400 transition-colors">
+                <span className="text-3xl block mb-2">📱</span>
+                <p className="font-semibold text-sm text-gray-900">Em breve</p>
+                <p className="text-xs text-gray-500">Parceiro 4</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-center text-violet-600">
+              🤝 Quer ser parceiro? Entre em contato!
+            </p>
+          </div>
+        </Card>
+      </section>
+
+      {/* Atos de Amor - Dividido em 3 grupos */}
       {atosAmorChallenges.length > 0 && (
         <section className="space-y-4 sm:space-y-6">
           {/* Header da Seção - Centralizado */}
@@ -564,15 +659,65 @@ export default async function DesafiosPage() {
             </div>
           </div>
 
-          <div className="max-w-2xl mx-auto space-y-3 sm:space-y-4">
-            {atosAmorChallenges.map((challenge) => (
-              <PhysicalChallengeCard
-                key={challenge.id}
-                challenge={challenge}
-                participation={participationMap.get(challenge.id)}
-              />
-            ))}
-          </div>
+          {/* Grupo 1: Primeiros desafios */}
+          {atosAmorChallenges.length > 0 && (
+            <div className="max-w-2xl mx-auto space-y-3">
+              <div className="flex items-center gap-2 px-1">
+                <span className="text-lg">🌱</span>
+                <h3 className="font-semibold text-gray-700">Começar</h3>
+                <div className="flex-1 h-px bg-gradient-to-r from-rose-200 to-transparent" />
+              </div>
+              <div className="space-y-3">
+                {atosAmorChallenges.slice(0, Math.ceil(atosAmorChallenges.length / 3)).map((challenge) => (
+                  <PhysicalChallengeCard
+                    key={challenge.id}
+                    challenge={challenge}
+                    participation={participationMap.get(challenge.id)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Grupo 2: Desafios intermediários */}
+          {atosAmorChallenges.length > 1 && (
+            <div className="max-w-2xl mx-auto space-y-3">
+              <div className="flex items-center gap-2 px-1">
+                <span className="text-lg">💪</span>
+                <h3 className="font-semibold text-gray-700">Crescer</h3>
+                <div className="flex-1 h-px bg-gradient-to-r from-rose-200 to-transparent" />
+              </div>
+              <div className="space-y-3">
+                {atosAmorChallenges.slice(Math.ceil(atosAmorChallenges.length / 3), Math.ceil(atosAmorChallenges.length * 2 / 3)).map((challenge) => (
+                  <PhysicalChallengeCard
+                    key={challenge.id}
+                    challenge={challenge}
+                    participation={participationMap.get(challenge.id)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Grupo 3: Desafios avançados */}
+          {atosAmorChallenges.length > 2 && (
+            <div className="max-w-2xl mx-auto space-y-3">
+              <div className="flex items-center gap-2 px-1">
+                <span className="text-lg">🏆</span>
+                <h3 className="font-semibold text-gray-700">Inspirar</h3>
+                <div className="flex-1 h-px bg-gradient-to-r from-rose-200 to-transparent" />
+              </div>
+              <div className="space-y-3">
+                {atosAmorChallenges.slice(Math.ceil(atosAmorChallenges.length * 2 / 3)).map((challenge) => (
+                  <PhysicalChallengeCard
+                    key={challenge.id}
+                    challenge={challenge}
+                    participation={participationMap.get(challenge.id)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </section>
       )}
 
