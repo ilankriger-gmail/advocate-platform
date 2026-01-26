@@ -107,11 +107,23 @@ export default async function RankingPage() {
       )}
 
       {/* Lista de ranking */}
-      <RankingList 
-        ranking={ranking} 
-        userPosition={userPosition}
-        totalUsers={ranking.length}
-      />
+      {ranking.length > 0 ? (
+        <RankingList 
+          ranking={ranking} 
+          userPosition={userPosition}
+          totalUsers={ranking.length}
+        />
+      ) : (
+        <div className="bg-white rounded-xl p-8 text-center border border-gray-200">
+          <div className="text-5xl mb-4">🏆</div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            Ranking em construção
+          </h3>
+          <p className="text-gray-500">
+            Complete desafios para aparecer no ranking!
+          </p>
+        </div>
+      )}
     </div>
   );
 }

@@ -23,13 +23,18 @@ interface RankingListProps {
 type ViewMode = 'relative' | 'full';
 
 export function RankingList({ ranking, userPosition, totalUsers }: RankingListProps) {
-  const [viewMode, setViewMode] = useState<ViewMode>('relative');
+  const [viewMode, setViewMode] = useState<ViewMode>(userPosition ? 'relative' : 'full');
   const [visibleRange, setVisibleRange] = useState({ start: 0, end: 20 });
   const userRowRef = useRef<HTMLDivElement>(null);
 
+  // Se não tem ranking, não renderiza nada
+  if (!ranking || ranking.length === 0) {
+    return null;
+  }
+
   // Calcular o range relativo (5 acima e 5 abaixo do usuário)
   const getRelativeRange = () => {
-    if (!userPosition) return { start: 0, end: 10 };
+    if (!userPosition || userPosition < 1) return { start: 0, end: Math.min(10, ranking.length) };
     const start = Math.max(0, userPosition - 6); // 5 acima
     const end = Math.min(ranking.length, userPosition + 5); // 5 abaixo
     return { start, end };
