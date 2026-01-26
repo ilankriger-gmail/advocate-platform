@@ -9,6 +9,7 @@ import { moderatePost, moderateText, getBlockedMessage, getPendingReviewMessage 
 import { logModerationAction, checkRateLimit, RATE_LIMITS, validateFileMagicBytes, sanitizeText } from '@/lib/security';
 import { logger, maskId, sanitizeError } from '@/lib';
 import { verifyAdminOrCreator } from './utils';
+import { calculateSimilarity } from '@/lib/similarity';
 import { notifyPostApproved, notifyPostRejected, notifyNewLike, notifyNewComment } from '@/actions/notifications';
 import { giveHearts } from '@/lib/hearts';
 import { autoResponderComentario } from '@/actions/autoresponder';
@@ -64,6 +65,32 @@ export async function createPost(data: CreatePostData): Promise<CreatePostRespon
     }
 
     const isCreator = userData?.is_creator ?? false;
+
+    // Verificar se usuário postou algo muito similar recentemente (anti-duplicata)
+    if (!isCreator) {
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      const { data: recentPosts } = await supabase
+        .from('posts')
+        .select('id, title, content')
+        .eq('user_id', user.id)
+        .gte('created_at', oneHourAgo)
+        .limit(5);
+
+      if (recentPosts && recentPosts.length > 0) {
+        const newPostText = `${data.title || ''} ${data.content || ''}`;
+        for (const recent of recentPosts) {
+          const recentText = `${recent.title || ''} ${recent.content || ''}`;
+          const similarity = calculateSimilarity(newPostText, recentText);
+          if (similarity >= 0.5) {
+            postsLogger.warn('Post duplicado bloqueado', { 
+              userId: maskId(user.id), 
+              similarity: `${(similarity * 100).toFixed(0)}%` 
+            });
+            return { error: 'Você já postou algo muito similar recentemente. Tente escrever algo diferente!' };
+          }
+        }
+      }
+    }
 
     // Só criadores podem usar YouTube e Instagram embeds
     if (!isCreator && (data.youtube_url || data.instagram_url)) {
