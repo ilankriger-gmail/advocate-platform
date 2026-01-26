@@ -74,19 +74,19 @@ export const CREATOR_ROUTES = ['/admin', '/moderation'] as const;
 export const MAIN_NAV = [
   { href: '/', label: 'Início', icon: 'Home' },
   { href: '/desafios', label: 'Desafios', icon: 'Target' },
+  { href: '/ranking', label: 'Ranking', icon: 'Trophy' },
   { href: '/premios', label: 'Prêmios', icon: 'Gift' },
   { href: '/descobrir', label: 'Descobrir', icon: 'Search' },
   { href: '/eventos', label: 'Eventos', icon: 'Calendar' },
   { href: '/perfil', label: 'Perfil', icon: 'User' },
 ] as const;
 
-// Navegação bottom bar mobile (mesmos itens do sidebar)
+// Navegação bottom bar mobile (itens principais - máximo 5 para caber)
 export const BOTTOM_NAV_ITEMS = [
   { href: '/', label: 'Início', icon: 'Home' },
   { href: '/desafios', label: 'Desafios', icon: 'Target' },
+  { href: '/ranking', label: 'Ranking', icon: 'Trophy' },
   { href: '/premios', label: 'Prêmios', icon: 'Gift' },
-  { href: '/descobrir', label: 'Descobrir', icon: 'Search' },
-  { href: '/eventos', label: 'Eventos', icon: 'Calendar' },
   { href: '/perfil', label: 'Perfil', icon: 'User' },
 ] as const;
 
