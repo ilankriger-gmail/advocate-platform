@@ -6,7 +6,7 @@ import { Heart, Trophy, Target, Clock, Repeat, Gift, Package, Users, Sparkles, B
 import { getLandingPageData, LandingPageData } from '@/actions/landing-pages';
 import { getSiteSettings } from '@/lib/config/site';
 import { Button } from '@/components/ui';
-import { CountdownTimer, ScarcityIndicator, FadeInSection } from '@/components/landing';
+import { CountdownTimer, ScarcityIndicator, FadeInSection, ProductImageZoom } from '@/components/landing';
 
 // Função para sanitizar HTML e converter texto em parágrafos
 // Remove tags perigosas mantendo formatação básica
@@ -455,19 +455,13 @@ export default async function LandingPageDireto({ params }: PageProps) {
           <p className="text-lg text-gray-600">{subheadline}</p>
         </div>
 
-        {/* Hero Image */}
+        {/* Hero Image with Zoom */}
         {data.imageUrl ? (
-          <div className="relative aspect-[21/9] rounded-2xl overflow-hidden shadow-lg mb-6">
-            <Image
-              src={data.imageUrl}
-              alt={data.title}
-              fill
-              sizes="(max-width: 768px) 100vw, 672px"
-              className="object-cover"
-              priority
-              quality={85}
-            />
-          </div>
+          <ProductImageZoom 
+            src={data.imageUrl} 
+            alt={data.title} 
+            className="mb-6"
+          />
         ) : data.type === 'challenge' && data.icon ? (
           <div className="aspect-[21/9] rounded-2xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center mb-6 shadow-lg">
             <span className="text-7xl">{data.icon}</span>
