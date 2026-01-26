@@ -66,6 +66,7 @@ export default async function AdminDesafiosPage({
       ai_confidence,
       challenge_id,
       user_id,
+      coins_earned,
       challenges (id, title, type, icon, coins_reward),
       profiles:user_id (
         id,
@@ -76,6 +77,32 @@ export default async function AdminDesafiosPage({
     `)
     .eq('status', 'pending')
     .order('created_at', { ascending: false });
+
+  // Buscar TODAS as participações (para o modal de "Ver todas")
+  const { data: allParticipations } = await supabase
+    .from('challenge_participants')
+    .select(`
+      id,
+      status,
+      created_at,
+      video_proof_url,
+      social_media_url,
+      instagram_proof_url,
+      result_value,
+      ai_confidence,
+      challenge_id,
+      user_id,
+      coins_earned,
+      challenges (id, title, type, icon, coins_reward),
+      profiles:user_id (
+        id,
+        full_name,
+        avatar_url,
+        instagram_handle
+      )
+    `)
+    .order('created_at', { ascending: false })
+    .limit(100);
 
   return (
     <div className="space-y-8">
@@ -107,6 +134,7 @@ export default async function AdminDesafiosPage({
         totalParticipants={totalParticipants}
         totalPending={totalPending}
         pendingParticipations={(pendingParticipations || []) as any}
+        allParticipations={(allParticipations || []) as any}
       />
 
       {/* Visualização em Cards */}

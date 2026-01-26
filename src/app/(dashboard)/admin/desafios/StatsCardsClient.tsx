@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Card } from '@/components/ui';
 import { PendingParticipationsList } from './PendingParticipationsList';
+import { AllParticipationsList } from './AllParticipationsList';
 
 interface Participation {
   id: string;
@@ -15,6 +16,7 @@ interface Participation {
   ai_confidence: number | null;
   challenge_id: string;
   user_id: string;
+  coins_earned?: number | null;
   challenges: {
     id: string;
     title: string;
@@ -36,6 +38,7 @@ interface StatsCardsClientProps {
   totalParticipants: number;
   totalPending: number;
   pendingParticipations: Participation[];
+  allParticipations?: Participation[];
 }
 
 export function StatsCardsClient({
@@ -44,8 +47,10 @@ export function StatsCardsClient({
   totalParticipants,
   totalPending,
   pendingParticipations,
+  allParticipations = [],
 }: StatsCardsClientProps) {
   const [showPendingList, setShowPendingList] = useState(false);
+  const [showAllList, setShowAllList] = useState(false);
 
   return (
     <>
@@ -75,17 +80,22 @@ export function StatsCardsClient({
           </div>
         </Card>
 
-        <Card className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 border-purple-100">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-purple-500 rounded-xl flex items-center justify-center">
-              <span className="text-white text-lg">👥</span>
+        <button
+          onClick={() => setShowAllList(true)}
+          className="text-left w-full"
+        >
+          <Card className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 border-purple-100 hover:shadow-lg hover:scale-[1.02] cursor-pointer transition-all duration-200">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-purple-500 rounded-xl flex items-center justify-center">
+                <span className="text-white text-lg">👥</span>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-purple-700">{totalParticipants}</p>
+                <p className="text-xs text-purple-600">Participações (clique)</p>
+              </div>
             </div>
-            <div>
-              <p className="text-2xl font-bold text-purple-700">{totalParticipants}</p>
-              <p className="text-xs text-purple-600">Participações</p>
-            </div>
-          </div>
-        </Card>
+          </Card>
+        </button>
 
         {/* Card Pendentes - Clicavel */}
         <button
@@ -119,6 +129,14 @@ export function StatsCardsClient({
         <PendingParticipationsList
           participations={pendingParticipations}
           onClose={() => setShowPendingList(false)}
+        />
+      )}
+
+      {/* Lista de Todas as Participações (quando aberta) */}
+      {showAllList && (
+        <AllParticipationsList
+          participations={allParticipations}
+          onClose={() => setShowAllList(false)}
         />
       )}
     </>
