@@ -93,7 +93,8 @@ export async function searchAll(
                 id,
                 full_name,
                 avatar_url,
-                is_creator
+                is_creator,
+                member_number
               )
             `)
             .eq('status', 'approved')
@@ -202,7 +203,8 @@ export async function getDiscoverContent() {
             id,
             full_name,
             avatar_url,
-            is_creator
+            is_creator,
+                member_number
           )
         `)
         .eq('status', 'approved')
@@ -246,7 +248,8 @@ export async function getDiscoverContent() {
             id,
             full_name,
             avatar_url,
-            is_creator
+            is_creator,
+                member_number
           )
         `)
         .order('balance', { ascending: false })

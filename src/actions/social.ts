@@ -470,7 +470,8 @@ export async function getFollowingFeed(cursor?: string, limit: number = 10) {
         id,
         full_name,
         avatar_url,
-        is_creator
+        is_creator,
+        member_number
       )
     `)
     .eq('status', 'approved')

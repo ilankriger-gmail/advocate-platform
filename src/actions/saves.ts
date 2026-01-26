@@ -157,7 +157,8 @@ export async function getSavedPosts(limit = 20, cursor?: string): Promise<{
           id,
           full_name,
           avatar_url,
-          is_creator
+          is_creator,
+          member_number
         )
       )
     `)
