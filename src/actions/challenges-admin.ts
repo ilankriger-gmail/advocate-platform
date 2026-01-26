@@ -34,10 +34,14 @@ export async function approveParticipation(
 
     const supabase = await createClient();
 
-    // Buscar participação e desafio
+    // Buscar participação, desafio e usuário
     const { data: participation } = await supabase
       .from('challenge_participants')
-      .select('*, challenges:challenge_id(coins_reward, title)')
+      .select(`
+        *,
+        challenges:challenge_id(id, coins_reward, title, icon),
+        profiles:user_id(id, full_name, avatar_url)
+      `)
       .eq('id', participationId)
       .single();
 
@@ -45,8 +49,9 @@ export async function approveParticipation(
       return { error: 'Participacao nao encontrada' };
     }
 
-    // Extrair dados do desafio relacionado
-    const challengeData = participation.challenges as { coins_reward: number; title: string } | null;
+    // Extrair dados do desafio e usuário
+    const challengeData = participation.challenges as { id: string; coins_reward: number; title: string; icon: string } | null;
+    const userData = participation.profiles as { id: string; full_name: string; avatar_url: string } | null;
     const coinsReward = customCoins !== undefined ? customCoins : (challengeData?.coins_reward || 0);
     const challengeTitle = challengeData?.title || 'Desafio';
 
@@ -111,8 +116,51 @@ export async function approveParticipation(
       challengesAdminLogger.error('Erro ao enviar notificação de aprovação', { error: sanitizeError(notifyError) });
     }
 
+    // Criar post de celebração no feed
+    try {
+      const userName = userData?.full_name || 'Um membro';
+      const challengeIcon = challengeData?.icon || '🏆';
+      const videoUrl = participation.video_proof_url || participation.social_media_url || participation.instagram_proof_url;
+      
+      // Conteúdo do post de celebração
+      const celebrationContent = `🎉 <strong>${userName}</strong> completou o desafio "${challengeTitle}" e ganhou <strong>${coinsReward} corações</strong>! ${challengeIcon}
+
+${participation.result_value ? `📊 Resultado: ${participation.result_value}` : ''}
+
+Parabéns pela conquista! 👏❤️`;
+
+      // Criar post como "sistema" (user_id do criador/admin)
+      const { data: creatorProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('is_creator', true)
+        .limit(1)
+        .single();
+
+      if (creatorProfile) {
+        await supabase.from('posts').insert({
+          user_id: creatorProfile.id,
+          content: celebrationContent,
+          type: 'community',
+          status: 'approved', // Já aprovado automaticamente
+          media_urls: videoUrl ? [videoUrl] : [],
+          content_category: 'normal',
+        });
+        
+        challengesAdminLogger.info('Post de celebração criado', { 
+          participationId, 
+          userName,
+          coinsReward 
+        });
+      }
+    } catch (postError) {
+      // Não falhar a aprovação se o post não for criado
+      challengesAdminLogger.error('Erro ao criar post de celebração', { error: sanitizeError(postError) });
+    }
+
     revalidatePath('/desafios');
     revalidatePath('/admin/desafios');
+    revalidatePath('/'); // Revalidar feed
     return { success: true };
   } catch {
     return { error: 'Erro interno do servidor' };
