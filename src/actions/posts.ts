@@ -663,6 +663,126 @@ export async function likePost(postId: string): Promise<ActionResponse> {
 }
 
 /**
+ * Curtir post com nível de amor específico
+ * Níveis maiores custam corações do usuário mas dão mais para o autor
+ */
+export async function likePostWithLevel(postId: string, levelId: number): Promise<ActionResponse> {
+  try {
+    const supabase = await createClient();
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return { error: 'Usuário não autenticado' };
+    }
+
+    // Buscar configuração do nível
+    const { getLoveLevel } = await import('@/lib/love-levels');
+    const level = getLoveLevel(levelId);
+    if (!level) {
+      return { error: 'Nível de amor inválido' };
+    }
+
+    // Verificar saldo do usuário (se nível tem custo)
+    if (level.cost > 0) {
+      const { data: userCoins } = await supabase
+        .from('user_coins')
+        .select('balance')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!userCoins || userCoins.balance < level.cost) {
+        return { error: 'Corações insuficientes' };
+      }
+
+      // Descontar corações do usuário
+      await supabase
+        .from('user_coins')
+        .update({ balance: userCoins.balance - level.cost })
+        .eq('user_id', user.id);
+
+      // Registrar transação de gasto
+      await supabase
+        .from('coin_transactions')
+        .insert({
+          user_id: user.id,
+          amount: -level.cost,
+          type: 'spent',
+          description: `💝 ${level.name} em post`,
+          reference_id: postId,
+          reference_type: 'post_love_level',
+        });
+    }
+
+    // Verificar se já curtiu
+    const { data: existing } = await supabase
+      .from('post_likes')
+      .select('id, love_level')
+      .eq('post_id', postId)
+      .eq('user_id', user.id)
+      .single();
+
+    if (existing) {
+      // Atualizar nível do like existente
+      await supabase
+        .from('post_likes')
+        .update({ love_level: levelId })
+        .eq('id', existing.id);
+    } else {
+      // Adicionar like com nível
+      await supabase
+        .from('post_likes')
+        .insert({
+          post_id: postId,
+          user_id: user.id,
+          love_level: levelId,
+        });
+
+      // Incrementar contador
+      await supabase.rpc('increment_likes', { post_id: postId });
+    }
+
+    // Buscar autor do post para dar corações
+    const { data: post } = await supabase
+      .from('posts')
+      .select('user_id')
+      .eq('id', postId)
+      .single();
+
+    if (post && post.user_id !== user.id) {
+      // Dar corações ao autor baseado no nível
+      const heartsResult = await giveHearts(post.user_id, 'LIKE_POST', {
+        referenceId: postId,
+        referenceType: 'post_love_level',
+        description: `recebeu ${level.name}`
+      });
+
+      // Dar corações extras ao autor (reward - 1 porque giveHearts já deu 1)
+      if (level.reward > 1) {
+        await supabase.rpc('add_user_coins', {
+          p_user_id: post.user_id,
+          p_amount: level.reward - 1,
+          p_type: 'bonus',
+          p_description: `🎁 Bônus ${level.name}`
+        });
+      }
+    }
+
+    // Dar coração ao usuário que curtiu (1 coração por engajamento)
+    const userHeartsResult = await giveHearts(user.id, 'LIKE_POST', {
+      referenceId: postId,
+      referenceType: 'post_like',
+      description: `deu ${level.name}`
+    });
+
+    revalidatePath('/feed');
+    return { success: true, hearts: userHeartsResult.hearts };
+  } catch (error) {
+    postsLogger.error('Erro ao dar like com nível', { error });
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+/**
  * Curtir comentário
  */
 export async function likeComment(commentId: string): Promise<ActionResponse<{ liked: boolean; likesCount: number }>> {
