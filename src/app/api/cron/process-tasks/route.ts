@@ -23,6 +23,7 @@ import {
 } from '@/lib/notifications';
 import { getSiteSettings } from '@/lib/config/site';
 import { checkLeadConversion, updateLeadSequenceStep } from '@/actions/leads';
+import { processarRespostasAgendadas } from '@/actions/autoresponder';
 import type { ScheduledTask, TaskProcessingResult } from '@/types/notification';
 
 // Limite de tarefas por execucao
@@ -468,6 +469,16 @@ export async function GET(request: NextRequest) {
 
   try {
     console.log('[CRON] Iniciando processamento de tarefas...');
+
+    // Processar auto-respostas do Moço (respostas agendadas de 3min a 2h)
+    try {
+      const autoRespostas = await processarRespostasAgendadas();
+      if (autoRespostas.enviadas > 0) {
+        console.log(`[CRON] Auto-respostas: ${autoRespostas.enviadas}/${autoRespostas.processadas} enviadas`);
+      }
+    } catch (autoErr) {
+      console.error('[CRON] Erro ao processar auto-respostas:', autoErr);
+    }
 
     // Buscar tarefas pendentes
     const { tasks, error } = await getNextPendingTasks(TASKS_PER_RUN);
