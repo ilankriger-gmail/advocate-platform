@@ -154,21 +154,17 @@ ${participation.result_value ? `📊 Resultado: ${participation.result_value}` :
 
 Parabéns pela conquista! 👏❤️`;
 
-      // Criar post como "sistema" (user_id do criador/admin)
-      const { data: creatorProfile } = await supabase
-        .from('users')
-        .select('id')
-        .eq('is_creator', true)
-        .limit(1)
-        .single();
+      // Criar post de celebração no perfil do USUÁRIO que completou o desafio
+      // Assim aparece no perfil dele
+      const participantUserId = participation.user_id;
 
-      if (creatorProfile) {
+      if (participantUserId) {
         // Verificar se é YouTube para embedar corretamente
         const isYouTube = videoUrl && /youtube\.com|youtu\.be/.test(videoUrl);
         
         await supabase.from('posts').insert({
-          user_id: creatorProfile.id,
-          title: '🏆 Desafio Completado!',
+          user_id: participantUserId, // Post do próprio usuário!
+          title: '🏆 Completei um Desafio!',
           content: celebrationContent,
           type: 'community',
           status: 'approved', // Já aprovado automaticamente

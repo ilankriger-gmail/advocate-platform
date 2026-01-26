@@ -96,9 +96,10 @@ export async function LeaderboardWidget() {
 
       <div className="space-y-3">
         {topUsers.map((user, index) => (
-          <div
+          <Link
             key={user.id}
-            className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
+            href={`/profile/${user.id}`}
+            className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
           >
             <RankBadge rank={index + 1} />
             <Avatar
@@ -117,7 +118,7 @@ export async function LeaderboardWidget() {
               </svg>
               {user.score}
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </Card>
