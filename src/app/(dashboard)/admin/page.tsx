@@ -50,6 +50,8 @@ export default async function AdminDashboardPage() {
     { count: analyzedLeads },
     // { count: totalStories }, // TEMPORARIAMENTE DESABILITADO - Stories
     { count: totalComments },
+    { data: coinsData },
+    { count: usersWithCoins },
   ] = await Promise.all([
     supabase.from('posts').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
     supabase.from('challenges').select('*', { count: 'exact', head: true }).eq('is_active', true),
@@ -64,7 +66,21 @@ export default async function AdminDashboardPage() {
     supabase.from('nps_leads').select('*', { count: 'exact', head: true }).not('ai_score', 'is', null),
     // supabase.from('stories').select('*', { count: 'exact', head: true }), // TEMPORARIAMENTE DESABILITADO - Stories
     supabase.from('post_comments').select('*', { count: 'exact', head: true }).eq('is_deleted', false),
+    // Estatísticas de economia
+    supabase.from('user_coins').select('balance'),
+    supabase.from('user_coins').select('*', { count: 'exact', head: true }).gt('balance', 0),
   ]);
+
+  // Calcular métricas de economia
+  const allBalances = (coinsData || []).map((c: { balance: number }) => c.balance || 0);
+  const totalCoinsCirculating = allBalances.reduce((a: number, b: number) => a + b, 0);
+  const avgCoinsPerUser = usersWithCoins && usersWithCoins > 0 
+    ? Math.round(totalCoinsCirculating / usersWithCoins) 
+    : 0;
+  
+  // Projeção 30 dias (baseada na média diária dos últimos 7 dias - simplificado)
+  const dailyGrowthRate = totalUsers ? (totalCoinsCirculating / (totalUsers || 1)) * 0.1 : 0; // 10% crescimento estimado
+  const projectedCoins30Days = Math.round(totalCoinsCirculating + (dailyGrowthRate * 30));
 
   const stats = [
     {
@@ -210,6 +226,39 @@ export default async function AdminDashboardPage() {
           </div>
         </Card>
       )}
+
+      {/* Card de Economia de Corações */}
+      <Card className="p-4 sm:p-6 bg-gradient-to-r from-pink-50 via-white to-purple-50 border-pink-200">
+        <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+          ❤️ Economia de Corações
+        </h3>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="text-center p-3 bg-white rounded-xl shadow-sm">
+            <p className="text-2xl sm:text-3xl font-bold text-pink-600">{totalCoinsCirculating.toLocaleString()}</p>
+            <p className="text-xs sm:text-sm text-gray-500 mt-1">Total em circulação</p>
+          </div>
+          <div className="text-center p-3 bg-white rounded-xl shadow-sm">
+            <p className="text-2xl sm:text-3xl font-bold text-purple-600">{usersWithCoins || 0}</p>
+            <p className="text-xs sm:text-sm text-gray-500 mt-1">Usuários com corações</p>
+          </div>
+          <div className="text-center p-3 bg-white rounded-xl shadow-sm">
+            <p className="text-2xl sm:text-3xl font-bold text-indigo-600">{avgCoinsPerUser}</p>
+            <p className="text-xs sm:text-sm text-gray-500 mt-1">Média por usuário</p>
+          </div>
+          <div className="text-center p-3 bg-white rounded-xl shadow-sm">
+            <p className="text-2xl sm:text-3xl font-bold text-cyan-600">{projectedCoins30Days.toLocaleString()}</p>
+            <p className="text-xs sm:text-sm text-gray-500 mt-1">Projeção 30 dias</p>
+          </div>
+        </div>
+        <div className="mt-4 flex justify-end">
+          <Link 
+            href="/admin/engajamento" 
+            className="text-pink-600 hover:text-pink-700 text-sm font-medium"
+          >
+            Ver tarefas de engajamento →
+          </Link>
+        </div>
+      </Card>
 
       {/* Cards de Estatisticas */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
