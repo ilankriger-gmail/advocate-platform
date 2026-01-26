@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Card, Avatar } from '../../components/ui';
+import { LikeButton } from '../../components/LikeButton';
 import { supabase } from '../../services/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { colors, spacing, fontSize, fontWeight, shadows } from '../../utils/theme';
@@ -171,17 +172,14 @@ export function FeedScreen({ navigation }: FeedScreenProps) {
 
       {/* Actions */}
       <View style={styles.postActions}>
-        <TouchableOpacity
-          style={styles.actionButton}
-          onPress={() => handleLike(post.id, post.is_liked || false)}
-        >
-          <Ionicons
-            name={post.is_liked ? 'heart' : 'heart-outline'}
-            size={24}
-            color={post.is_liked ? colors.error.main : colors.gray[600]}
-          />
-          <Text style={styles.actionText}>{post.likes_count}</Text>
-        </TouchableOpacity>
+        <LikeButton
+          initialLiked={post.is_liked || false}
+          initialCount={post.likes_count}
+          onLike={async (newLiked) => {
+            await handleLike(post.id, !newLiked);
+          }}
+          compact
+        />
 
         <TouchableOpacity
           style={styles.actionButton}

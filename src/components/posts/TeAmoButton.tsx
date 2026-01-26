@@ -9,14 +9,15 @@ interface TeAmoButtonProps {
   initialCount: number;
   initialLiked: boolean;
   compact?: boolean;
-  onDoubleTap?: () => void; // Para animação de coração na imagem
+  onDoubleTap?: () => void;
 }
 
-// Corações flutuantes para a chuva de amor
-interface FloatingHeart {
+interface Particle {
   id: number;
   x: number;
-  delay: number;
+  y: number;
+  scale: number;
+  rotation: number;
 }
 
 export function TeAmoButton({
@@ -29,51 +30,63 @@ export function TeAmoButton({
   const [liked, setLiked] = useState(initialLiked);
   const [count, setCount] = useState(initialCount);
   const [isPending, startTransition] = useTransition();
-  const [floatingHearts, setFloatingHearts] = useState<FloatingHeart[]>([]);
-  const [isHolding, setIsHolding] = useState(false);
-  const [holdCount, setHoldCount] = useState(0);
+  const [particles, setParticles] = useState<Particle[]>([]);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [showRipple, setShowRipple] = useState(false);
   
-  const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const holdIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const heartIdRef = useRef(0);
+  const particleIdRef = useRef(0);
   const lastTapRef = useRef(0);
 
-  // Adicionar coração flutuante
-  const addFloatingHeart = useCallback(() => {
-    const newHeart: FloatingHeart = {
-      id: heartIdRef.current++,
-      x: Math.random() * 60 - 30, // -30 a +30px do centro
-      delay: Math.random() * 0.2,
-    };
-    setFloatingHearts(prev => [...prev, newHeart]);
+  // Criar partículas de explosão
+  const createParticles = useCallback(() => {
+    const newParticles: Particle[] = [];
+    const numParticles = 8;
     
-    // Remover após animação
+    for (let i = 0; i < numParticles; i++) {
+      const angle = (i / numParticles) * 360;
+      const distance = 40 + Math.random() * 30;
+      const radian = (angle * Math.PI) / 180;
+      
+      newParticles.push({
+        id: particleIdRef.current++,
+        x: Math.cos(radian) * distance,
+        y: Math.sin(radian) * distance,
+        scale: 0.5 + Math.random() * 0.5,
+        rotation: Math.random() * 360,
+      });
+    }
+    
+    setParticles(newParticles);
+    setShowRipple(true);
+    setIsAnimating(true);
+    
+    // Limpar após animação
     setTimeout(() => {
-      setFloatingHearts(prev => prev.filter(h => h.id !== newHeart.id));
-    }, 1500);
+      setParticles([]);
+      setShowRipple(false);
+      setIsAnimating(false);
+    }, 800);
   }, []);
 
-  // Toggle like simples
+  // Toggle like
   const handleLike = useCallback(() => {
     const newLiked = !liked;
     
-    // Optimistic update
     setLiked(newLiked);
     setCount(prev => newLiked ? prev + 1 : prev - 1);
     
     if (newLiked) {
-      addFloatingHeart();
+      createParticles();
     }
 
     startTransition(async () => {
       const result = await likePost(postId);
       if (!result.success) {
-        // Rollback
         setLiked(!newLiked);
         setCount(prev => newLiked ? prev - 1 : prev + 1);
       }
     });
-  }, [liked, postId, addFloatingHeart]);
+  }, [liked, postId, createParticles]);
 
   // Double tap detection
   const handleTap = useCallback(() => {
@@ -81,84 +94,47 @@ export function TeAmoButton({
     const timeSinceLastTap = now - lastTapRef.current;
     
     if (timeSinceLastTap < 300) {
-      // Double tap!
       if (!liked) {
         handleLike();
       } else {
-        addFloatingHeart();
+        createParticles();
       }
       onDoubleTap?.();
       lastTapRef.current = 0;
     } else {
       lastTapRef.current = now;
-      // Single tap após delay
       setTimeout(() => {
         if (lastTapRef.current === now) {
           handleLike();
         }
       }, 300);
     }
-  }, [liked, handleLike, addFloatingHeart, onDoubleTap]);
-
-  // Iniciar chuva de amor (hold)
-  const startHold = useCallback(() => {
-    if (!liked) {
-      handleLike();
-    }
-    
-    setIsHolding(true);
-    setHoldCount(1);
-    addFloatingHeart();
-
-    // Após 500ms, começar a adicionar corações extras
-    holdTimerRef.current = setTimeout(() => {
-      holdIntervalRef.current = setInterval(() => {
-        setHoldCount(prev => {
-          if (prev >= 10) {
-            // Máximo de 10 corações
-            stopHold();
-            return prev;
-          }
-          addFloatingHeart();
-          return prev + 1;
-        });
-      }, 150); // Um coração a cada 150ms
-    }, 500);
-  }, [liked, handleLike, addFloatingHeart]);
-
-  // Parar chuva de amor
-  const stopHold = useCallback(() => {
-    setIsHolding(false);
-    
-    if (holdTimerRef.current) {
-      clearTimeout(holdTimerRef.current);
-      holdTimerRef.current = null;
-    }
-    if (holdIntervalRef.current) {
-      clearInterval(holdIntervalRef.current);
-      holdIntervalRef.current = null;
-    }
-
-    // Enviar corações extras para o servidor (se holdCount > 1)
-    // Por enquanto, só a animação - implementar depois
-    setHoldCount(0);
-  }, []);
+  }, [liked, handleLike, createParticles, onDoubleTap]);
 
   return (
     <div className="relative inline-flex items-center gap-2">
-      {/* Corações flutuantes */}
-      <div className="absolute inset-0 pointer-events-none overflow-visible">
-        {floatingHearts.map(heart => (
+      {/* Ripple/Glow effect */}
+      {showRipple && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="absolute w-16 h-16 rounded-full bg-pink-500/30 animate-ripple" />
+          <div className="absolute w-16 h-16 rounded-full bg-red-500/20 animate-ripple-delayed" />
+        </div>
+      )}
+
+      {/* Partículas explosivas */}
+      <div className="absolute inset-0 pointer-events-none overflow-visible flex items-center justify-center">
+        {particles.map(particle => (
           <span
-            key={heart.id}
-            className="absolute text-2xl animate-float-up"
+            key={particle.id}
+            className="absolute text-lg animate-particle"
             style={{
-              left: `calc(50% + ${heart.x}px)`,
-              bottom: '100%',
-              animationDelay: `${heart.delay}s`,
-            }}
+              '--tx': `${particle.x}px`,
+              '--ty': `${particle.y}px`,
+              '--scale': particle.scale,
+              '--rotation': `${particle.rotation}deg`,
+            } as React.CSSProperties}
           >
-            ❤️‍🔥
+            ❤️
           </span>
         ))}
       </div>
@@ -166,27 +142,20 @@ export function TeAmoButton({
       {/* Botão Te Amo */}
       <button
         onClick={handleTap}
-        onMouseDown={startHold}
-        onMouseUp={stopHold}
-        onMouseLeave={stopHold}
-        onTouchStart={startHold}
-        onTouchEnd={stopHold}
         disabled={isPending}
         className={cn(
           'relative flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200',
-          'select-none touch-manipulation',
+          'select-none touch-manipulation active:scale-95',
           liked
             ? 'bg-gradient-to-r from-pink-500 to-red-500 text-white shadow-lg shadow-pink-500/30'
             : 'bg-gray-100 hover:bg-gray-200 text-gray-700',
-          isHolding && 'scale-110',
           isPending && 'opacity-70'
         )}
       >
         <span 
           className={cn(
-            'text-xl transition-transform duration-200',
-            liked && 'animate-heartbeat',
-            isHolding && 'scale-125'
+            'text-xl transition-transform',
+            isAnimating && liked && 'animate-heart-pop'
           )}
         >
           {liked ? '❤️‍🔥' : '🤍'}
@@ -199,10 +168,11 @@ export function TeAmoButton({
         )}
       </button>
 
-      {/* Contador */}
+      {/* Contador com animação */}
       <span className={cn(
-        'text-sm font-medium',
-        liked ? 'text-pink-600' : 'text-gray-500'
+        'text-sm font-medium transition-all duration-300',
+        liked ? 'text-pink-600' : 'text-gray-500',
+        isAnimating && 'animate-count-pop'
       )}>
         {count > 0 && (
           <>
@@ -211,36 +181,62 @@ export function TeAmoButton({
         )}
       </span>
 
-      {/* Indicador de chuva de amor */}
-      {isHolding && holdCount > 1 && (
-        <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black/80 text-white text-xs px-2 py-1 rounded-full whitespace-nowrap">
-          +{holdCount} ❤️‍🔥
-        </span>
-      )}
-
       {/* Estilos de animação */}
       <style jsx>{`
-        @keyframes float-up {
+        @keyframes heart-pop {
+          0% { transform: scale(1); }
+          15% { transform: scale(1.4); }
+          30% { transform: scale(0.9); }
+          45% { transform: scale(1.2); }
+          60% { transform: scale(0.95); }
+          75% { transform: scale(1.05); }
+          100% { transform: scale(1); }
+        }
+        .animate-heart-pop {
+          animation: heart-pop 0.6s cubic-bezier(0.17, 0.89, 0.32, 1.49);
+        }
+        
+        @keyframes particle {
           0% {
             opacity: 1;
-            transform: translateY(0) scale(1);
+            transform: translate(0, 0) scale(0) rotate(0deg);
+          }
+          20% {
+            opacity: 1;
+            transform: translate(calc(var(--tx) * 0.3), calc(var(--ty) * 0.3)) scale(var(--scale)) rotate(calc(var(--rotation) * 0.3));
           }
           100% {
             opacity: 0;
-            transform: translateY(-100px) scale(1.5);
+            transform: translate(var(--tx), var(--ty)) scale(0) rotate(var(--rotation));
           }
         }
-        .animate-float-up {
-          animation: float-up 1.2s ease-out forwards;
+        .animate-particle {
+          animation: particle 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
         }
-        @keyframes heartbeat {
+        
+        @keyframes ripple {
+          0% {
+            transform: scale(0);
+            opacity: 1;
+          }
+          100% {
+            transform: scale(3);
+            opacity: 0;
+          }
+        }
+        .animate-ripple {
+          animation: ripple 0.6s ease-out forwards;
+        }
+        .animate-ripple-delayed {
+          animation: ripple 0.6s ease-out 0.1s forwards;
+        }
+        
+        @keyframes count-pop {
           0%, 100% { transform: scale(1); }
-          25% { transform: scale(1.2); }
-          50% { transform: scale(1); }
-          75% { transform: scale(1.1); }
+          50% { transform: scale(1.2); }
         }
-        .animate-heartbeat {
-          animation: heartbeat 0.6s ease-in-out;
+        .animate-count-pop {
+          animation: count-pop 0.3s ease-out;
         }
       `}</style>
     </div>
@@ -255,31 +251,94 @@ export function ExplodingHeart({ show }: { show: boolean }) {
 
   return (
     <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-      <span className="text-8xl animate-explode-heart">❤️‍🔥</span>
+      {/* Coração central */}
+      <span className="text-8xl animate-explode-heart drop-shadow-2xl">❤️‍🔥</span>
+      
+      {/* Mini corações ao redor */}
+      {[...Array(6)].map((_, i) => {
+        const angle = (i / 6) * 360;
+        const radian = (angle * Math.PI) / 180;
+        const distance = 80;
+        return (
+          <span
+            key={i}
+            className="absolute text-2xl animate-mini-heart"
+            style={{
+              '--tx': `${Math.cos(radian) * distance}px`,
+              '--ty': `${Math.sin(radian) * distance}px`,
+              animationDelay: `${i * 0.05}s`,
+            } as React.CSSProperties}
+          >
+            ❤️
+          </span>
+        );
+      })}
+      
+      {/* Brilho */}
+      <div className="absolute w-32 h-32 rounded-full bg-pink-500/40 animate-glow-pulse" />
+      
       <style jsx>{`
         @keyframes explode-heart {
           0% {
             opacity: 0;
-            transform: scale(0);
+            transform: scale(0) rotate(-15deg);
           }
-          15% {
+          20% {
             opacity: 1;
-            transform: scale(1.4);
+            transform: scale(1.3) rotate(5deg);
           }
-          30% {
-            transform: scale(1.2);
+          35% {
+            transform: scale(0.95) rotate(-3deg);
           }
-          80% {
+          50% {
+            transform: scale(1.1) rotate(2deg);
+          }
+          65% {
             opacity: 1;
-            transform: scale(1.2);
+            transform: scale(1) rotate(0deg);
           }
           100% {
             opacity: 0;
-            transform: scale(1.5);
+            transform: scale(1.2) rotate(0deg);
           }
         }
         .animate-explode-heart {
-          animation: explode-heart 1s ease-out forwards;
+          animation: explode-heart 1s cubic-bezier(0.17, 0.89, 0.32, 1.28) forwards;
+        }
+        
+        @keyframes mini-heart {
+          0% {
+            opacity: 0;
+            transform: translate(0, 0) scale(0);
+          }
+          30% {
+            opacity: 1;
+            transform: translate(calc(var(--tx) * 0.5), calc(var(--ty) * 0.5)) scale(1.2);
+          }
+          100% {
+            opacity: 0;
+            transform: translate(var(--tx), var(--ty)) scale(0);
+          }
+        }
+        .animate-mini-heart {
+          animation: mini-heart 0.8s ease-out forwards;
+        }
+        
+        @keyframes glow-pulse {
+          0% {
+            transform: scale(0);
+            opacity: 0.8;
+          }
+          50% {
+            opacity: 0.4;
+          }
+          100% {
+            transform: scale(3);
+            opacity: 0;
+          }
+        }
+        .animate-glow-pulse {
+          animation: glow-pulse 0.8s ease-out forwards;
         }
       `}</style>
     </div>
