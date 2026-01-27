@@ -55,10 +55,21 @@ export function InstagramCard({ post }: InstagramCardProps) {
           </p>
         </div>
         {post.author?.is_creator && (
-          <span className="text-xs bg-purple-100 text-purple-600 px-2 py-1 rounded-full font-medium">
+          <span className="text-xs bg-purple-100 text-purple-600 px-2 py-1 rounded-full font-medium mr-1">
             Criador
           </span>
         )}
+        <Link
+          href={`/post/${post.id}`}
+          className="p-2 -mr-1 rounded-full hover:bg-gray-100 transition-colors"
+          aria-label="Ver post completo"
+        >
+          <svg className="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="5" r="1.5" />
+            <circle cx="12" cy="12" r="1.5" />
+            <circle cx="12" cy="19" r="1.5" />
+          </svg>
+        </Link>
       </div>
 
       {/* Badge de Pedido de Ajuda */}
@@ -122,9 +133,9 @@ export function InstagramCard({ post }: InstagramCardProps) {
 
       {/* Conteúdo - Só mostra se tiver título ou conteúdo */}
       {(post.title || post.content) && (
-        <div className="px-3 pb-3">
+        <Link href={`/post/${post.id}`} className="block px-3 pb-3 group">
           {post.title && (
-            <h3 className="font-semibold text-gray-900">{post.title}</h3>
+            <h3 className="font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">{post.title}</h3>
           )}
           {post.content && post.content !== '<p></p>' && (
             <div
@@ -132,7 +143,7 @@ export function InstagramCard({ post }: InstagramCardProps) {
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content) }}
             />
           )}
-        </div>
+        </Link>
       )}
 
       {/* Comentários inline */}
