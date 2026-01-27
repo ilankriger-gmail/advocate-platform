@@ -97,13 +97,33 @@ function RankBadge({ rank }: { rank: number }) {
 }
 
 export async function LeaderboardWidget() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  const { topUsers, userPosition, userScore, nearbyUsers } = await getLeaderboardData(user?.id);
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    const { topUsers, userPosition, userScore, nearbyUsers } = await getLeaderboardData(user?.id);
 
   if (topUsers.length === 0) {
-    return null;
+    // Mostrar widget mesmo vazio para debug
+    return (
+      <Card className="p-4">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+            <span className="text-xl">🏆</span>
+            Top Embaixadores
+          </h3>
+          <Link
+            href="/ranking"
+            className="text-sm text-purple-600 hover:text-purple-800 font-medium"
+          >
+            Ver ranking
+          </Link>
+        </div>
+        <p className="text-sm text-gray-500 text-center py-4">
+          Nenhum embaixador ainda. Seja o primeiro! 💪
+        </p>
+      </Card>
+    );
   }
 
   const isInTop3 = userPosition && userPosition <= 3;
@@ -215,4 +235,26 @@ export async function LeaderboardWidget() {
       )}
     </Card>
   );
+  } catch (error) {
+    console.error('LeaderboardWidget error:', error);
+    return (
+      <Card className="p-4">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+            <span className="text-xl">🏆</span>
+            Top Embaixadores
+          </h3>
+          <Link
+            href="/ranking"
+            className="text-sm text-purple-600 hover:text-purple-800 font-medium"
+          >
+            Ver ranking
+          </Link>
+        </div>
+        <p className="text-sm text-gray-500 text-center py-4">
+          Carregando ranking... 
+        </p>
+      </Card>
+    );
+  }
 }
