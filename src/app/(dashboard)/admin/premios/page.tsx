@@ -123,10 +123,24 @@ export default async function AdminPrêmiosPage() {
                           })}
                         </p>
 
-                        {/* Dados de entrega */}
-                        {claim.delivery_info && (
-                          <div className="mt-2 p-2 bg-white rounded text-xs text-gray-600">
-                            <strong>Entrega:</strong> {JSON.stringify(claim.delivery_info)}
+                        {/* Dados de entrega/PIX */}
+                        {claim.delivery_address && (
+                          <div className="mt-2 p-2 bg-white rounded text-sm text-gray-700 space-y-1">
+                            {claim.delivery_address.pix_key && (
+                              <>
+                                <p><strong>🔑 PIX:</strong> {claim.delivery_address.pix_key}</p>
+                                <p><strong>Tipo:</strong> {claim.delivery_address.pix_key_type?.toUpperCase()}</p>
+                                <p><strong>Nome:</strong> {claim.delivery_address.recipient_name}</p>
+                              </>
+                            )}
+                            {claim.delivery_address.street && (
+                              <>
+                                <p><strong>📦 Endereço:</strong></p>
+                                <p>{claim.delivery_address.street}, {claim.delivery_address.number}</p>
+                                <p>{claim.delivery_address.neighborhood} - {claim.delivery_address.city}/{claim.delivery_address.state}</p>
+                                <p>CEP: {claim.delivery_address.zip_code}</p>
+                              </>
+                            )}
                           </div>
                         )}
                       </div>
