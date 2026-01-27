@@ -47,10 +47,10 @@ const icons: Record<string, React.FC<{ className?: string }>> = {
 
 export function BottomNav() {
   const pathname = usePathname();
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
 
-  // Só mostra quando o usuário está logado
-  if (!user) {
+  // Só esconde quando sabemos que NÃO está logado (loading = false e user = null)
+  if (!isLoading && !user) {
     return null;
   }
 

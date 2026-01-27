@@ -125,6 +125,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
       } catch (error) {
         console.error('[Auth] Erro ao obter sessão inicial:', error);
+        // Fallback: tentar getSession() se getUser() falhou (ex: AbortError)
+        try {
+          const { data: { session: fallbackSession } } = await supabase.auth.getSession();
+          if (fallbackSession?.user) {
+            console.log('[Auth] Fallback session encontrada:', fallbackSession.user.email);
+            setSession(fallbackSession);
+            setUser(fallbackSession.user);
+            await fetchProfile(fallbackSession.user.id);
+          }
+        } catch (fallbackError) {
+          console.error('[Auth] Fallback também falhou:', fallbackError);
+        }
       } finally {
         setIsLoading(false);
       }
