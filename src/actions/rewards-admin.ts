@@ -6,6 +6,7 @@ import type { ActionResponse } from './types';
 import { verifyAdminOrCreator, getAuthenticatedUser } from './utils';
 import { logger, maskId, sanitizeError } from '@/lib';
 import { generateRewardThumbnail } from '@/lib/ai/generate-reward-thumbnail';
+import { sendRewardClaimedEmail } from '@/lib/email';
 import OpenAI from 'openai';
 
 // Logger contextualizado para o módulo de recompensas admin
@@ -138,20 +139,26 @@ export async function approveClaim(claimId: string, createCelebrationPost = fals
 
     const supabase = await createClient();
 
-    // Buscar dados do claim para o post
+    // Buscar dados do claim para o post e email
     const { data: claim } = await supabase
       .from('reward_claims')
       .select(`
         *,
-        rewards:reward_id (name, type)
+        rewards:reward_id (name, type, image_url)
       `)
       .eq('id', claimId)
       .single();
 
-    // Buscar nome do usuário
+    // Buscar nome e email do usuário
     const { data: profile } = await supabase
       .from('profiles')
       .select('full_name')
+      .eq('id', claim?.user_id)
+      .single();
+
+    const { data: userRecord } = await supabase
+      .from('users')
+      .select('email')
       .eq('id', claim?.user_id)
       .single();
 
@@ -164,13 +171,36 @@ export async function approveClaim(claimId: string, createCelebrationPost = fals
       return { error: 'Erro ao aprovar resgate' };
     }
 
-    // Criar post de celebração se solicitado
+    const reward = claim?.rewards as { name: string; type: string; image_url?: string } | null;
+    const userName = profile?.full_name || 'Um membro';
+    const rewardName = reward?.name || 'um prêmio';
+    const receiptUrl = claim?.delivery_address?.payment_receipt_url as string | undefined;
+
+    // Sempre enviar email de parabéns ao ganhador (se tiver email)
+    if (createCelebrationPost && userRecord?.email && claim) {
+      try {
+        await sendRewardClaimedEmail({
+          to: userRecord.email,
+          userName,
+          rewardName,
+          rewardType: reward?.type,
+          receiptUrl,
+        });
+        rewardsAdminLogger.info('Email de parabéns enviado', {
+          claimId: maskId(claimId),
+          to: userRecord.email,
+        });
+      } catch (emailErr) {
+        rewardsAdminLogger.error('Erro ao enviar email de parabéns', {
+          error: sanitizeError(emailErr),
+        });
+        // Não falha a aprovação se o email falhar
+      }
+    }
+
+    // Criar post de celebração na comunidade
     if (createCelebrationPost && claim) {
-      const reward = claim.rewards as { name: string; type: string } | null;
-      const userName = profile?.full_name || 'Um membro';
-      const rewardName = reward?.name || 'um prêmio';
-      
-      const postContent = `🎉 **${userName}** acabou de resgatar **${rewardName}**!\n\nParabéns pela conquista! 👏❤️\n\n#ArenaTeAmo #Resgate #Conquista`;
+      const postContent = `🎉 Parabéns ${userName}!\n\nAcabou de resgatar "${rewardName}" na Arena Te Amo! Isso é o que acontece quando você se dedica de verdade. 👏\n\nContinue participando, completando desafios e acumulando corações — o próximo prêmio pode ser seu! ❤️🏆\n\n#ArenaTeAmo #Resgate #Conquista`;
 
       await supabase.from('posts').insert({
         user_id: user.id, // Post criado pelo admin/creator
