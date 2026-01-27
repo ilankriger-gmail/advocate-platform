@@ -1,7 +1,9 @@
 // Named exports
 export { PostCard } from './PostCard';
-export { VoteButtons } from './VoteButtons';
+export { LikeButton } from './LikeButton';
+export { InlineComments } from './InlineComments';
 export { CommentsSection } from './CommentsSection';
+export { VoteButtons } from './VoteButtons';
 export { SaveButton } from './SaveButton';
 export { ShareButton } from './ShareButton';
 export { SentimentThermometer } from './SentimentThermometer';
