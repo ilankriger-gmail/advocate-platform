@@ -307,6 +307,7 @@ export interface PostWithAuthor extends Post {
     full_name: string | null;
     avatar_url: string | null;
     is_creator: boolean;
+    member_number?: number | null;
   } | null;
 }
 

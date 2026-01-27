@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Card, Avatar } from '@/components/ui';
+import { Card, Avatar, MemberBadge } from '@/components/ui';
 import { formatRelativeTime } from '@/lib/utils';
 import type { PostWithAuthor } from '@/lib/supabase/types';
 
@@ -77,9 +77,12 @@ function CommunityPostCard({ post }: { post: PostWithAuthor }) {
             size="sm"
           />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900 truncate">
-              {author?.full_name || 'Usuário'}
-            </p>
+            <div className="flex items-center gap-1">
+              <p className="text-sm font-medium text-gray-900 truncate">
+                {author?.full_name || 'Usuário'}
+              </p>
+              <MemberBadge memberNumber={author?.member_number} />
+            </div>
             <p className="text-xs text-gray-500">{formatRelativeTime(post.created_at)}</p>
           </div>
         </div>

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import DOMPurify from 'isomorphic-dompurify';
-import { Card, Avatar } from '@/components/ui';
+import { Card, Avatar, MemberBadge } from '@/components/ui';
 import {
   ImageCarousel,
   YouTubeEmbed,
@@ -45,11 +45,14 @@ export function InstagramCard({ post }: InstagramCardProps) {
           />
         </Link>
         <div className="ml-3 flex-1 min-w-0">
-          <Link href={`/profile/${post.author?.id}`} className="hover:underline">
-            <p className="font-semibold text-sm text-gray-900 truncate">
-              {post.author?.full_name || 'Usuário'}
-            </p>
-          </Link>
+          <div className="flex items-center gap-1">
+            <Link href={`/profile/${post.author?.id}`} className="hover:underline">
+              <p className="font-semibold text-sm text-gray-900 truncate">
+                {post.author?.full_name || 'Usuário'}
+              </p>
+            </Link>
+            <MemberBadge memberNumber={post.author?.member_number} />
+          </div>
           <p className="text-xs text-gray-500">
             {formatRelativeTime(post.created_at)}
           </p>
