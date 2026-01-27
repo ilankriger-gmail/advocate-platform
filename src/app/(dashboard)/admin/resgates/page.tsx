@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { createAdminClient } from '@/lib/supabase/server';
 import { Card, Badge, Avatar } from '@/components/ui';
 import { ClaimActions } from '../premios/RewardAdminComponents';
@@ -95,7 +96,12 @@ export default async function AdminResgatesPage() {
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <Avatar name={displayName} src={avatarUrl} size="md" />
-                        <p className="font-bold text-gray-900 text-lg">{displayName}</p>
+                        <div>
+                          <p className="font-bold text-gray-900 text-lg">{displayName}</p>
+                          <Link href={`/admin/usuarios/${claim.user_id}`} className="text-xs text-purple-600 hover:underline">
+                            📜 Ver histórico de corações
+                          </Link>
+                        </div>
                         <Badge className="bg-yellow-500 text-white">Pendente</Badge>
                         {reward?.type === 'money' && <Badge className="bg-green-600 text-white">💵 PIX</Badge>}
                       </div>
