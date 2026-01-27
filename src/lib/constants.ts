@@ -97,6 +97,7 @@ export const CREATOR_NAV = [
   { href: '/admin/desafios', label: 'Desafios', icon: 'Target' },
   { href: '/admin/eventos', label: 'Eventos', icon: 'Calendar' },
   { href: '/admin/premios', label: 'Prêmios', icon: 'Gift' },
+  { href: '/admin/resgates', label: 'Resgates', icon: 'DollarSign' },
   { href: '/admin/engajamento', label: 'Engajamento', icon: 'Heart' },
   { href: '/admin/anuncios', label: 'Anúncios', icon: 'Chart' },
   { href: '/admin/usuarios', label: 'Usuários', icon: 'Users' },
