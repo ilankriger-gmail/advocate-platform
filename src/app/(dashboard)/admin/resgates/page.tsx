@@ -1,11 +1,11 @@
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/server';
 import { Card, Badge } from '@/components/ui';
 import { ClaimActions } from '../premios/RewardAdminComponents';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminResgatesPage() {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   // Buscar todos os resgates
   const { data: allClaims } = await supabase
