@@ -57,6 +57,39 @@ export default async function AdminResgatesPage() {
     claimCountMap.set(c.user_id, (claimCountMap.get(c.user_id) || 0) + 1);
   });
 
+  // Buscar desafios completados por cada usuário (com vídeos)
+  const { data: userChallenges } = await supabase
+    .from('challenge_participants')
+    .select(`
+      id, user_id, status, video_proof_url, social_media_url, instagram_proof_url,
+      coins_earned, created_at, ai_is_valid, ai_reason,
+      challenges:challenge_id (title, type, icon)
+    `)
+    .in('user_id', userIds)
+    .order('created_at', { ascending: false });
+
+  // Buscar posts recentes de cada usuário
+  const { data: userPosts } = await supabase
+    .from('posts')
+    .select('id, user_id, title, content, media_url, media_type, status, created_at')
+    .in('user_id', userIds)
+    .order('created_at', { ascending: false })
+    .limit(50);
+
+  const challengesMap = new Map<string, typeof userChallenges>();
+  userChallenges?.forEach(c => {
+    const list = challengesMap.get(c.user_id) || [];
+    list.push(c);
+    challengesMap.set(c.user_id, list);
+  });
+
+  const postsMap = new Map<string, typeof userPosts>();
+  userPosts?.forEach(p => {
+    const list = postsMap.get(p.user_id) || [];
+    list.push(p);
+    postsMap.set(p.user_id, list);
+  });
+
   const claimsByStatus = {
     pending: (allClaims || []).filter((c) => c.status === 'pending'),
     approved: (allClaims || []).filter((c) => c.status === 'approved'),
@@ -111,6 +144,8 @@ export default async function AdminResgatesPage() {
               const userEmail = user?.email || '—';
               const userBalance = coinsMap.get(claim.user_id) ?? 0;
               const userTotalClaims = claimCountMap.get(claim.user_id) ?? 0;
+              const userChallengesList = challengesMap.get(claim.user_id) || [];
+              const userPostsList = (postsMap.get(claim.user_id) || []).slice(0, 5);
 
               return (
                 <div key={claim.id} className="p-5 bg-white rounded-xl border border-yellow-200 shadow-sm">
@@ -248,6 +283,102 @@ export default async function AdminResgatesPage() {
                           <p className="text-sm text-blue-900 mt-1">{claim.notes}</p>
                         </div>
                       )}
+
+                      {/* Atividade do usuário */}
+                      <div className="mt-4 space-y-3">
+                        {/* Desafios completados */}
+                        {userChallengesList.length > 0 && (
+                          <div className="p-4 bg-indigo-50 rounded-lg border border-indigo-200">
+                            <p className="text-sm font-semibold text-indigo-700 mb-3">
+                              🏆 Desafios ({userChallengesList.length})
+                            </p>
+                            <div className="space-y-2 max-h-60 overflow-y-auto">
+                              {userChallengesList.slice(0, 10).map((ch: any) => {
+                                const challenge = ch.challenges as { title: string; type: string; icon: string } | null;
+                                return (
+                                  <div key={ch.id} className="flex items-start gap-2 p-2 bg-white rounded-lg text-sm">
+                                    <span>{challenge?.icon || '🎯'}</span>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="font-medium text-gray-900 truncate">{challenge?.title || 'Desafio'}</p>
+                                      <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                        <Badge className={ch.status === 'approved' ? 'bg-green-100 text-green-700' : ch.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600'}>
+                                          {ch.status}
+                                        </Badge>
+                                        {ch.coins_earned > 0 && (
+                                          <span className="text-xs text-gray-500">+{ch.coins_earned} ❤️</span>
+                                        )}
+                                        {ch.ai_is_valid !== null && (
+                                          <span className={`text-xs ${ch.ai_is_valid ? 'text-green-600' : 'text-red-600'}`}>
+                                            IA: {ch.ai_is_valid ? '✅' : '❌'} {ch.ai_reason ? `(${ch.ai_reason.slice(0, 40)}...)` : ''}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <div className="flex gap-2 mt-1">
+                                        {ch.video_proof_url && (
+                                          <a href={ch.video_proof_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline font-medium">
+                                            🎥 Ver vídeo
+                                          </a>
+                                        )}
+                                        {ch.instagram_proof_url && (
+                                          <a href={ch.instagram_proof_url} target="_blank" rel="noopener noreferrer" className="text-xs text-pink-600 hover:underline font-medium">
+                                            📸 Instagram
+                                          </a>
+                                        )}
+                                        {ch.social_media_url && (
+                                          <a href={ch.social_media_url} target="_blank" rel="noopener noreferrer" className="text-xs text-purple-600 hover:underline font-medium">
+                                            🔗 Rede social
+                                          </a>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Posts recentes */}
+                        {userPostsList.length > 0 && (
+                          <div className="p-4 bg-pink-50 rounded-lg border border-pink-200">
+                            <p className="text-sm font-semibold text-pink-700 mb-3">
+                              📝 Posts recentes ({userPostsList.length})
+                            </p>
+                            <div className="space-y-2 max-h-48 overflow-y-auto">
+                              {userPostsList.map((p: any) => (
+                                <div key={p.id} className="flex items-start gap-2 p-2 bg-white rounded-lg text-sm">
+                                  <div className="flex-1 min-w-0">
+                                    <Link href={`/post/${p.id}`} className="font-medium text-gray-900 hover:text-purple-600 truncate block">
+                                      {p.title || '(sem título)'}
+                                    </Link>
+                                    <div className="flex items-center gap-2 mt-1">
+                                      <Badge className={p.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}>
+                                        {p.status}
+                                      </Badge>
+                                      {p.media_type && p.media_type !== 'none' && (
+                                        <span className="text-xs text-gray-500">
+                                          {p.media_type === 'video' ? '🎥' : p.media_type === 'image' ? '🖼️' : '📎'} {p.media_type}
+                                        </span>
+                                      )}
+                                      {p.media_url && p.media_url.length > 0 && p.media_type === 'video' && (
+                                        <a href={p.media_url[0]} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">
+                                          Ver vídeo
+                                        </a>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {userChallengesList.length === 0 && userPostsList.length === 0 && (
+                          <div className="p-3 bg-gray-50 rounded-lg border text-sm text-gray-500 text-center">
+                            ⚠️ Nenhum desafio ou post encontrado para este usuário
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     <ClaimActions claim={claim} rewardType={reward?.type} />
