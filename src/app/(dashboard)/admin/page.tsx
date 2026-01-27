@@ -48,7 +48,6 @@ export default async function AdminDashboardPage() {
     { count: pendingLeads },
     { count: totalLeads },
     { count: analyzedLeads },
-    // { count: totalStories }, // TEMPORARIAMENTE DESABILITADO - Stories
     { count: totalComments },
     { data: coinsData },
     { count: usersWithCoins },
@@ -64,7 +63,6 @@ export default async function AdminDashboardPage() {
     supabase.from('nps_leads').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
     supabase.from('nps_leads').select('*', { count: 'exact', head: true }),
     supabase.from('nps_leads').select('*', { count: 'exact', head: true }).not('ai_score', 'is', null),
-    // supabase.from('stories').select('*', { count: 'exact', head: true }), // TEMPORARIAMENTE DESABILITADO - Stories
     supabase.from('post_comments').select('*', { count: 'exact', head: true }).eq('is_deleted', false),
     // Estatísticas de economia
     supabase.from('user_coins').select('balance'),
@@ -91,15 +89,6 @@ export default async function AdminDashboardPage() {
       color: 'border-l-yellow-500',
       description: 'Aguardando moderação',
     },
-    // TEMPORARIAMENTE DESABILITADO - Stories
-    // {
-    //   title: 'Stories',
-    //   value: totalStories || 0,
-    //   icon: '📱',
-    //   href: '/admin/stories',
-    //   color: 'border-l-pink-500',
-    //   description: 'Stories dos criadores',
-    // },
     {
       title: 'Comentários',
       value: totalComments || 0,
@@ -308,15 +297,6 @@ export default async function AdminDashboardPage() {
             <span className="text-xl sm:text-2xl">✅</span>
             <span className="text-xs sm:text-sm text-yellow-700 font-medium text-center">Moderar Posts</span>
           </Link>
-          {/* TEMPORARIAMENTE DESABILITADO - Stories
-          <Link
-            href="/admin/stories"
-            className="flex flex-col items-center justify-center gap-1.5 sm:gap-2 p-3 sm:p-4 min-h-[80px] bg-pink-50 rounded-lg hover:bg-pink-100 transition-colors"
-          >
-            <span className="text-xl sm:text-2xl">📱</span>
-            <span className="text-xs sm:text-sm text-pink-700 font-medium text-center">Ver Stories</span>
-          </Link>
-          */}
           <Link
             href="/admin/comentarios"
             className="flex flex-col items-center justify-center gap-1.5 sm:gap-2 p-3 sm:p-4 min-h-[80px] bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"

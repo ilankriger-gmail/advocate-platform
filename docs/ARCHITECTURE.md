@@ -1,430 +1,297 @@
-# Arquitetura da Plataforma de Advocate Marketing
+# Arquitetura - Arena Te Amo (advocate-platform)
+
+> Última atualização: 2025-07-20
 
 ## Visão Geral
 
-Esta plataforma foi desenvolvida para gerenciar e engajar advocates de marca, permitindo que eles participem de desafios, eventos, criem posts, e sejam recompensados por suas contribuições. A arquitetura foi projetada para ser moderna, escalável e segura, utilizando as melhores práticas de desenvolvimento com Next.js e Supabase.
+Plataforma de comunidade gamificada para fãs do criador "Moço do Te Amo". Combina feed social, desafios com validação por IA, sistema de corações (moeda virtual), ranking, prêmios, eventos e um painel admin completo.
 
-## Stack Tecnológica
+**URL Produção:** https://comunidade.omocodoteamo.com.br  
+**Landing Page:** https://comece.omocodoteamo.com.br (rewrite para /seja-arena)
 
-### Frontend
-- **Next.js 14** - Framework React com App Router
-  - Server Components por padrão para melhor performance
-  - Client Components quando necessário para interatividade
-  - Renderização híbrida (SSR, SSG, ISR)
-- **React 18** - Biblioteca para construção de interfaces
-- **TypeScript 5** - Tipagem estática para maior segurança no código
-- **Tailwind CSS 3** - Framework de estilização utilitária
+---
 
-### Backend & Database
-- **Supabase** - Backend as a Service
-  - PostgreSQL como banco de dados
-  - Autenticação integrada (OAuth com Google)
-  - Row Level Security (RLS) para segurança granular
-  - Storage para arquivos
-  - Real-time subscriptions (quando necessário)
+## Stack Tecnológico
 
-### Ferramentas e Bibliotecas
-- **@supabase/ssr** - Integração do Supabase com Next.js App Router
-- **clsx** e **tailwind-merge** - Utilitários para classes CSS
-- **ESLint** - Linting e qualidade de código
+| Camada | Tecnologia |
+|--------|-----------|
+| Framework | Next.js 15.5 (App Router) |
+| UI | React 19 + TailwindCSS 3.4 |
+| Rich Text | TipTap 3 |
+| Charts | Recharts 3.6 |
+| Animações | Framer Motion 12 |
+| Auth/DB/Storage | Supabase (PostgreSQL + Auth + Storage) |
+| IA - Vídeo | Google Gemini (análise de vídeo YouTube) |
+| IA - Texto | OpenAI GPT-4o mini (autoresponder, descrições, análise leads) |
+| IA - Moderação | Perspective API (toxicidade) + Sightengine (imagens) |
+| Email | Resend |
+| WhatsApp | Meta Cloud API (via Twilio fallback) |
+| Rate Limiting | Upstash Redis |
+| Deploy | Vercel |
+| Testes | Jest + Playwright |
 
-## Princípios Arquiteturais
-
-### 1. Server-First Architecture
-Por padrão, todos os componentes são **Server Components**, que:
-- Executam no servidor
-- Não incluem JavaScript no bundle do cliente
-- Têm acesso direto ao banco de dados
-- Melhoram performance e SEO
-
-**Client Components** são usados apenas quando necessário para:
-- Interatividade do usuário (formulários complexos)
-- Hooks do React (useState, useEffect, etc.)
-- Eventos do navegador (onClick, onChange, etc.)
-- APIs do navegador (localStorage, etc.)
-
-### 2. Server Actions
-Toda a lógica de negócios e manipulação de dados é implementada em **Server Actions**:
-- Funções assíncronas marcadas com `'use server'`
-- Executam no servidor de forma segura
-- Validação de dados no servidor
-- Integração direta com Supabase
-- Tratamento de erros consistente
-
-### 3. Segurança em Camadas
-- **Row Level Security (RLS)** obrigatório em todas as tabelas
-- Políticas de acesso granulares por role (admin, advocate)
-- Autenticação via Supabase Auth
-- Validação de dados no servidor
-- Não exposição de chaves ou dados sensíveis no cliente
-
-### 4. Separação de Responsabilidades
-- **Componentes**: Apenas UI e composição
-- **Server Actions**: Lógica de negócios e dados
-- **Types**: Contratos de dados entre camadas
-- **Hooks**: Lógica reutilizável do cliente
-- **Contexts**: Estado global quando necessário
+---
 
 ## Estrutura de Diretórios
 
 ```
 advocate-platform/
 ├── src/
-│   ├── app/                        # Estrutura de rotas (App Router)
-│   │   ├── (auth)/                 # Grupo de rotas de autenticação
-│   │   │   ├── registro/           # Página de registro
-│   │   │   └── layout.tsx          # Layout para rotas de auth
-│   │   ├── (dashboard)/            # Grupo de rotas protegidas
-│   │   │   ├── desafios/           # Listagem e detalhes de desafios
-│   │   │   ├── perfil/             # Perfil do usuário
-│   │   │   └── admin/              # Área administrativa
-│   │   │       ├── desafios/       # Gestão de desafios
-│   │   │       ├── posts/          # Moderação de posts
-│   │   │       ├── usuarios/       # Gestão de usuários
-│   │   │       ├── premios/        # Gestão de recompensas
-│   │   │       └── eventos/        # Gestão de eventos
-│   │   ├── auth/                   # Callbacks de autenticação
-│   │   ├── admin/                  # Login administrativo
-│   │   ├── login/                  # Login de advocates
-│   │   └── layout.tsx              # Layout root da aplicação
-│   │
-│   ├── components/                 # Componentes React reutilizáveis
-│   │   ├── ui/                     # Componentes de UI base
-│   │   ├── home/                   # Componentes da home page
-│   │   ├── posts/                  # Componentes relacionados a posts
-│   │   ├── auth/                   # Componentes de autenticação
-│   │   ├── layout/                 # Componentes de layout (Header, etc.)
-│   │   ├── challenges/             # Componentes de desafios
-│   │   └── events/                 # Componentes de eventos
-│   │
-│   ├── actions/                    # Server Actions (lógica de negócios)
-│   │   ├── admin.ts                # Ações administrativas
-│   │   ├── auth.ts                 # Ações de autenticação
-│   │   ├── challenges.ts           # Lógica de desafios
-│   │   ├── events.ts               # Lógica de eventos
-│   │   ├── posts.ts                # Lógica de posts
-│   │   ├── profile.ts              # Lógica de perfil
-│   │   ├── rewards.ts              # Lógica de recompensas
-│   │   ├── migrations.ts           # Migrações de dados
-│   │   └── index.ts                # Exportações centralizadas
-│   │
-│   ├── lib/                        # Bibliotecas e utilitários
-│   │   ├── supabase/               # Configurações do Supabase
-│   │   │   ├── client.ts           # Cliente Supabase para Client Components
-│   │   │   ├── server.ts           # Cliente Supabase para Server Components
-│   │   │   └── ...                 # Outros utilitários Supabase
-│   │   ├── constants.ts            # Constantes da aplicação
-│   │   ├── gemini.ts               # Integração com Gemini AI
-│   │   └── utils.ts                # Funções utilitárias gerais
-│   │
-│   ├── types/                      # Definições de tipos TypeScript
-│   │   ├── index.ts                # Tipos gerais e exportações
-│   │   ├── post.ts                 # Tipos relacionados a posts
-│   │   └── profile.ts              # Tipos relacionados a perfis
-│   │
-│   ├── contexts/                   # React Contexts
-│   │   └── AuthContext.tsx         # Contexto de autenticação
-│   │
-│   ├── hooks/                      # Custom React Hooks
-│   │
-│   └── middleware.ts               # Middleware do Next.js (proteção de rotas)
-│
-├── docs/                           # Documentação da arquitetura
-│   ├── ARCHITECTURE.md             # Este arquivo (visão geral)
-│   ├── flows/                      # Diagramas de fluxo de dados
-│   ├── COMPONENTS.md               # Padrões de componentes
-│   ├── SERVER_ACTIONS.md           # Documentação de Server Actions
-│   ├── SECURITY_RLS.md             # Políticas de segurança RLS
-│   ├── DATABASE.md                 # Modelo de dados e ERD
-│   └── README.md                   # Índice da documentação
-│
-├── migrations/                     # Scripts SQL de migração
-├── public/                         # Arquivos estáticos
-├── .env.local                      # Variáveis de ambiente (não versionado)
-└── package.json                    # Dependências do projeto
+│   ├── app/                    # App Router (páginas e rotas)
+│   │   ├── (auth)/             # Grupo: registro
+│   │   ├── (dashboard)/        # Grupo: área logada
+│   │   │   ├── admin/          # Painel admin (21 seções)
+│   │   │   ├── dashboard/      # Dashboard do usuário
+│   │   │   ├── desafios/       # Lista de desafios
+│   │   │   ├── descobrir/      # Descobrir usuários
+│   │   │   ├── eventos/        # Eventos
+│   │   │   ├── feed/           # Feed + criar post
+│   │   │   ├── perfil/         # Perfil do usuário
+│   │   │   ├── post/[id]/      # Post individual
+│   │   │   ├── premios/        # Loja de prêmios
+│   │   │   ├── profile/        # Perfil público
+│   │   │   ├── ranking/        # Leaderboard
+│   │   │   └── debug/          # Debug (dev)
+│   │   ├── (marketing)/        # Grupo: páginas públicas
+│   │   │   ├── convite/        # Convite por referral
+│   │   │   ├── lp/             # Landing pages dinâmicas
+│   │   │   ├── privacidade/    # Política de privacidade
+│   │   │   ├── seja-arena/     # NPS + cadastro
+│   │   │   └── termos/         # Termos de uso
+│   │   ├── api/
+│   │   │   ├── admin/          # APIs admin (integrations, scrape-url)
+│   │   │   ├── cron/           # Cron jobs (process-tasks, ranking-snapshot)
+│   │   │   ├── linkdobem/      # Integração LinkDoBem
+│   │   │   └── webhooks/       # Webhooks (WhatsApp, Resend)
+│   │   ├── auth/               # Auth callbacks + reset password
+│   │   ├── esqueci-senha/      # Esqueci senha
+│   │   ├── login/              # Login
+│   │   └── suporte/            # Página de suporte
+│   ├── actions/                # Server Actions (43 arquivos)
+│   ├── components/             # Componentes React
+│   │   ├── admin/              # Componentes admin
+│   │   ├── ads/                # Banners de anúncio
+│   │   ├── analytics/          # Google Analytics
+│   │   ├── auth/               # Login/Registro
+│   │   ├── challenges/         # Desafios
+│   │   ├── editor/             # Rich Text Editor
+│   │   ├── events/             # Eventos
+│   │   ├── home/               # Feed/Home
+│   │   ├── landing/            # Landing pages
+│   │   ├── layout/             # Header/Sidebar/BottomNav
+│   │   ├── leaderboard/        # Ranking
+│   │   ├── notifications/      # Notificações
+│   │   ├── onboarding/         # Onboarding modal
+│   │   ├── posts/              # Cards de post
+│   │   ├── profile/            # Avatar uploader
+│   │   ├── ranking/            # Lista ranking
+│   │   ├── seo/                # JSON-LD
+│   │   ├── social/             # Follow button, sugestões
+│   │   ├── stories/            # Stories (parcialmente desabilitado)
+│   │   ├── ui/                 # Design system (25 componentes)
+│   │   └── youtube/            # YouTube video picker
+│   ├── contexts/               # React Contexts
+│   ├── lib/                    # Bibliotecas/Utils
+│   │   ├── ai/                 # IA (analyze-lead, generate-description, thumbnails, verify-link)
+│   │   ├── analytics/          # Queries e utils de analytics
+│   │   ├── config/             # Site config
+│   │   ├── linkdobem/          # Integração LinkDoBem
+│   │   ├── moderation/         # Engine de moderação (imagem + texto + help detection)
+│   │   ├── notifications/      # Email + WhatsApp + Scheduler
+│   │   ├── security/           # Audit log, CSRF, file validation, rate limit, retry
+│   │   ├── supabase/           # Clientes Supabase (server, client, admin, middleware)
+│   │   └── validation/         # Validações (NPS, etc.)
+│   └── types/                  # TypeScript types
+├── apps/mobile/                # App Expo (planejado)
+├── public/                     # Assets estáticos
+├── docs/                       # Documentação
+└── supabase/                   # Migrations/config
 ```
-
-## Módulos Principais
-
-### 1. Autenticação (Auth)
-- Login via OAuth (Google)
-- Gestão de sessões com Supabase Auth
-- Middleware para proteção de rotas
-- Diferenciação entre roles: `admin` e `advocate`
-
-**Documentação detalhada:** [flows/DATA_FLOW_AUTH.md](./flows/DATA_FLOW_AUTH.md)
-
-### 2. Posts e Feed
-- Criação de posts por advocates
-- Moderação de posts por admins
-- Sistema de likes e comentários
-- Feed personalizado
-
-**Documentação detalhada:** [flows/DATA_FLOW_POSTS.md](./flows/DATA_FLOW_POSTS.md)
-
-### 3. Desafios (Challenges)
-- Criação e gestão de desafios por admins
-- Participação de advocates
-- Submissão de evidências
-- Seleção de vencedores
-- Sistema de recompensas
-
-**Documentação detalhada:** [flows/DATA_FLOW_CHALLENGES.md](./flows/DATA_FLOW_CHALLENGES.md)
-
-### 4. Eventos (Events)
-- Criação e gestão de eventos por admins
-- Registro de participação
-- Verificação de nível de advocate
-- Histórico de participações
-
-**Documentação detalhada:** [flows/DATA_FLOW_EVENTS.md](./flows/DATA_FLOW_EVENTS.md)
-
-### 5. Perfil e Recompensas
-- Gestão de perfil do usuário
-- Sistema de níveis de advocate
-- Resgate de recompensas
-- Histórico de participações e conquistas
-
-**Documentação detalhada:** [flows/DATA_FLOW_PROFILE_REWARDS.md](./flows/DATA_FLOW_PROFILE_REWARDS.md)
-
-### 6. Administração
-- Dashboard administrativo
-- Gestão de usuários
-- Moderação de conteúdo
-- Gestão de desafios, eventos e recompensas
-- Análise de métricas
-
-## Visão Geral da Arquitetura
-
-### Diagrama de Alto Nível
-
-```mermaid
-graph LR
-    Browser[🌐 Cliente<br/>Browser]
-
-    subgraph Next.js
-        SC[⚛️ Server Components<br/>Renderização SSR]
-        CC[⚛️ Client Components<br/>Interatividade]
-        SA[🔧 Server Actions<br/>Lógica de Negócio]
-    end
-
-    subgraph Supabase
-        Auth[🔐 Supabase Auth<br/>Autenticação OAuth]
-        DB[(💾 PostgreSQL<br/>Database)]
-        RLS[🛡️ Row Level Security<br/>Políticas de Acesso]
-    end
-
-    Browser --> SC
-    Browser --> CC
-    SC --> SA
-    CC --> SA
-    SA --> Auth
-    SA --> DB
-    DB -.aplica políticas.- RLS
-    Auth -.valida sessão.- RLS
-
-    style Browser fill:#e0e7ff,stroke:#4f46e5,stroke-width:2px
-    style SC fill:#dbeafe,stroke:#2563eb,stroke-width:2px
-    style CC fill:#fed7aa,stroke:#ea580c,stroke-width:2px
-    style SA fill:#bbf7d0,stroke:#16a34a,stroke-width:2px
-    style Auth fill:#fce7f3,stroke:#db2777,stroke-width:2px
-    style DB fill:#e0e7ff,stroke:#6366f1,stroke-width:2px
-    style RLS fill:#fecaca,stroke:#dc2626,stroke-width:2px
-```
-
-### Fluxo de Dados Detalhado
-
-```mermaid
-sequenceDiagram
-    participant B as 🌐 Browser
-    participant SC as ⚛️ Server Component
-    participant CC as ⚛️ Client Component
-    participant SA as 🔧 Server Action
-    participant Auth as 🔐 Supabase Auth
-    participant DB as 💾 Database + RLS
-
-    Note over B,DB: Exemplo: Usuário criando um post
-
-    B->>SC: 1. Acessa página /perfil
-    SC->>Auth: 2. Verifica sessão
-    Auth-->>SC: 3. Retorna dados do usuário
-    SC->>DB: 4. Busca posts (com RLS)
-    DB-->>SC: 5. Retorna posts filtrados
-    SC-->>B: 6. Renderiza página HTML
-
-    B->>CC: 7. Interage com formulário
-    CC->>SA: 8. Chama createPost()
-    SA->>Auth: 9. Valida autenticação
-    Auth-->>SA: 10. Confirma usuário
-    SA->>DB: 11. Insere post (RLS valida)
-    DB-->>SA: 12. Post criado
-    SA-->>CC: 13. Retorna sucesso
-    CC-->>B: 14. Atualiza UI
-```
-
-### Camadas da Arquitetura
-
-```mermaid
-graph TD
-    subgraph "🎨 Camada de Apresentação"
-        UI[Componentes React<br/>Server + Client]
-    end
-
-    subgraph "🔧 Camada de Lógica"
-        Actions[Server Actions<br/>Validação + Negócio]
-    end
-
-    subgraph "🔐 Camada de Autenticação"
-        AuthLayer[Supabase Auth<br/>OAuth + Sessões]
-    end
-
-    subgraph "💾 Camada de Dados"
-        Database[PostgreSQL<br/>Row Level Security]
-    end
-
-    UI --> Actions
-    Actions --> AuthLayer
-    Actions --> Database
-    AuthLayer -.controla acesso.- Database
-
-    style UI fill:#dbeafe,stroke:#2563eb,stroke-width:2px
-    style Actions fill:#bbf7d0,stroke:#16a34a,stroke-width:2px
-    style AuthLayer fill:#fce7f3,stroke:#db2777,stroke-width:2px
-    style Database fill:#e0e7ff,stroke:#6366f1,stroke-width:2px
-```
-
-### Legenda:
-- 🌐 **Browser** - Cliente web (navegador do usuário)
-- ⚛️ **Server Components** - Componentes renderizados no servidor (SSR)
-- ⚛️ **Client Components** - Componentes interativos no cliente (CSR)
-- 🔧 **Server Actions** - Funções de lógica de negócio executadas no servidor
-- 🔐 **Supabase Auth** - Sistema de autenticação (OAuth Google)
-- 💾 **PostgreSQL** - Banco de dados relacional
-- 🛡️ **Row Level Security (RLS)** - Políticas de segurança a nível de linha
-
-### Princípios do Fluxo:
-1. **Cliente inicia requisição** - Usuário acessa uma página ou interage com UI
-2. **Next.js processa** - Server Components renderizam HTML, Client Components adicionam interatividade
-3. **Server Actions executam lógica** - Validam, processam e manipulam dados
-4. **Supabase gerencia dados** - Auth valida identidade, Database armazena dados, RLS garante segurança
-
-## Padrões de Desenvolvimento
-
-### Nomenclatura
-- **Componentes**: PascalCase (`UserProfile`, `PostCard`)
-- **Funções**: camelCase (`getUserProfile`, `createPost`)
-- **Arquivos**: kebab-case para páginas, PascalCase para componentes
-- **Tipos**: PascalCase com interfaces (`User`, `Post`, `Challenge`)
-
-### Comentários e Documentação
-- **Comentários em português** para descrever lógica de negócio
-- **Nomes de variáveis e funções em inglês** (padrão da indústria)
-- **Documentação inline** para decisões arquiteturais importantes
-- **JSDoc** para funções públicas e APIs
-
-### TypeScript
-- Tipagem estrita (`strict: true`)
-- Evitar `any`, preferir `unknown` quando necessário
-- Interfaces para objetos, Types para uniões e composições
-- Tipos compartilhados na pasta `src/types`
-
-## Segurança
-
-### Row Level Security (RLS)
-Todas as tabelas do Supabase possuem políticas RLS ativas:
-- **Leitura**: Baseada em role e ownership
-- **Escrita**: Validação de permissões por role
-- **Atualização**: Apenas owner ou admin
-- **Deleção**: Apenas owner ou admin
-
-**Documentação detalhada:** [SECURITY_RLS.md](./SECURITY_RLS.md)
-
-### Autenticação e Autorização
-- Autenticação via Supabase Auth (OAuth Google)
-- Middleware verifica sessão em rotas protegidas
-- Server Actions validam permissões antes de executar
-- Não há exposição de lógica sensível no cliente
-
-**Documentação detalhada:** [flows/DATA_FLOW_AUTH.md](./flows/DATA_FLOW_AUTH.md) e [AUTHORIZATION.md](./AUTHORIZATION.md)
-
-## Banco de Dados
-
-O banco de dados utiliza PostgreSQL através do Supabase com as seguintes tabelas principais:
-- `profiles` - Perfis de usuários (advocates e admins)
-- `posts` - Posts criados por advocates
-- `challenges` - Desafios criados por admins
-- `challenge_participations` - Participações em desafios
-- `events` - Eventos criados por admins
-- `event_participations` - Participações em eventos
-- `rewards` - Recompensas disponíveis
-- `reward_claims` - Resgates de recompensas
-
-**Documentação detalhada:** [DATABASE.md](./DATABASE.md)
-
-## Performance
-
-### Otimizações Implementadas
-- **Server Components** por padrão (menos JavaScript no cliente)
-- **Lazy Loading** de Client Components quando apropriado
-- **Caching** de dados no servidor via React Cache
-- **Streaming** de UI com Suspense
-- **Imagens otimizadas** com next/image
-
-### Monitoramento
-- Logs de erros em Server Actions
-- Métricas de performance do Next.js
-- Monitoramento do Supabase Dashboard
-
-## Testes
-
-### Estratégia de Testes
-- **Testes unitários** para funções utilitárias
-- **Testes de integração** para Server Actions
-- **Testes E2E** para fluxos críticos (em planejamento)
-
-## Deploy
-
-### Ambiente de Produção
-- **Frontend**: Vercel (recomendado para Next.js)
-- **Backend/Database**: Supabase Cloud
-- **CI/CD**: GitHub Actions (a ser configurado)
-
-### Variáveis de Ambiente
-```env
-NEXT_PUBLIC_SUPABASE_URL=sua_url_supabase
-NEXT_PUBLIC_SUPABASE_ANON_KEY=sua_chave_anonima
-SUPABASE_SERVICE_ROLE_KEY=sua_chave_servico (apenas servidor)
-```
-
-## Recursos Adicionais
-
-### Documentação Complementar
-- [Padrões de Componentes](./COMPONENTS.md)
-- [Server Actions](./SERVER_ACTIONS.md)
-- [Segurança e RLS](./SECURITY_RLS.md)
-- [Modelo de Dados](./DATABASE.md)
-- [Dependências entre Módulos](./MODULE_DEPENDENCIES.md)
-- [Índice Completo](./README.md)
-
-### Recursos Externos
-- [Documentação Next.js 14](https://nextjs.org/docs)
-- [Documentação Supabase](https://supabase.com/docs)
-- [Documentação React Server Components](https://react.dev/blog/2023/03/22/react-labs-what-we-have-been-working-on-march-2023#react-server-components)
-- [Tailwind CSS](https://tailwindcss.com/docs)
-
-## Contribuindo
-
-Para contribuir com o projeto:
-1. Leia esta documentação de arquitetura
-2. Familiarize-se com [CLAUDE.md](../CLAUDE.md) para padrões de código
-3. Siga os princípios arquiteturais estabelecidos
-4. Mantenha a documentação atualizada ao fazer mudanças significativas
-5. Adicione testes para novas funcionalidades
-
-## Changelog da Documentação
-
-- **2026-01-07**: Criação da documentação inicial de arquitetura
 
 ---
 
-**Manutenção**: Este documento deve ser atualizado sempre que houver mudanças arquiteturais significativas no projeto.
+## Fluxo de Autenticação
+
+1. **Login:** `/login` → Supabase Auth (email/password)
+2. **Registro:** `/registro` (ou via NPS `/seja-arena`)
+3. **Middleware:** `src/middleware.ts` → `updateSession()` (refresh tokens em todas as rotas)
+4. **Auth Helpers:**
+   - `requireAuth()` → Verifica autenticação
+   - `requireAdmin()` → Verifica se é admin
+   - `requireAdminOrCreator()` → Verifica admin OU creator
+5. **Admin Guard:** `AdminAuthCheck` component no layout do admin
+
+---
+
+## Rotas e Páginas
+
+### Públicas
+| Rota | Descrição |
+|------|-----------|
+| `/login` | Login |
+| `/registro` | Registro |
+| `/esqueci-senha` | Reset de senha |
+| `/auth/reset-password` | Formulário de nova senha |
+| `/auth/callback` | Callback OAuth |
+| `/seja-arena` | Landing NPS (formulário de cadastro) |
+| `/seja-arena/obrigado` | Pós-cadastro NPS |
+| `/lp/[type]/[id]` | Landing pages dinâmicas (challenge/reward) |
+| `/convite/[type]/[id]` | Convite por referral |
+| `/privacidade` | Política de privacidade |
+| `/termos` | Termos de uso |
+| `/suporte` | Página de suporte |
+
+### Dashboard (autenticado)
+| Rota | Descrição |
+|------|-----------|
+| `/` (root) | Home/Feed |
+| `/dashboard` | Dashboard do usuário |
+| `/feed` | Feed + criar post |
+| `/feed/edit` | Editar post |
+| `/post/[id]` | Post individual |
+| `/desafios` | Lista de desafios |
+| `/eventos` | Lista de eventos |
+| `/eventos/[id]` | Detalhe do evento |
+| `/premios` | Loja de prêmios |
+| `/ranking` | Leaderboard |
+| `/perfil` | Meu perfil |
+| `/perfil/editar` | Editar perfil |
+| `/perfil/salvos` | Posts salvos |
+| `/perfil/novo-post` | Criar post |
+| `/perfil/posts/[id]/editar` | Editar post |
+| `/profile/[id]` | Perfil público |
+| `/profile/edit` | Editar perfil (alt) |
+| `/descobrir` | Descobrir usuários |
+| `/debug` | Debug (dev) |
+
+### Admin (21 seções)
+| Rota | Descrição |
+|------|-----------|
+| `/admin` | Dashboard admin (stats) |
+| `/admin/posts` | Moderação de posts |
+| `/admin/comentarios` | Moderação de comentários |
+| `/admin/desafios` | Gestão de desafios |
+| `/admin/desafios/novo` | Criar desafio |
+| `/admin/desafios/[id]` | Detalhe do desafio |
+| `/admin/desafios/[id]/editar` | Editar desafio |
+| `/admin/eventos` | Gestão de eventos |
+| `/admin/eventos/novo` | Criar evento |
+| `/admin/eventos/[id]/editar` | Editar evento |
+| `/admin/premios` | Gestão de prêmios |
+| `/admin/premios/[id]/editar` | Editar prêmio |
+| `/admin/resgates` | Gestão de resgates |
+| `/admin/usuarios` | Gestão de usuários |
+| `/admin/usuarios/[id]` | Detalhe do usuário |
+| `/admin/coracoes` | Economia de corações |
+| `/admin/leads` | Gestão de leads NPS |
+| `/admin/emails` | Email templates |
+| `/admin/broadcast` | Envio de broadcast |
+| `/admin/notificacoes` | Sistema de notificações |
+| `/admin/landing-pages` | Landing pages |
+| `/admin/engajamento` | Métricas de engajamento |
+| `/admin/seguidores` | Seguidores |
+| `/admin/analytics` | Analytics avançado |
+| `/admin/anuncios` | Anúncios (LinkDoBem) |
+| `/admin/bugs` | Relatórios de bugs |
+| `/admin/configuracoes` | Configurações do site |
+| `/admin/_stories` | Stories (desabilitado) |
+
+---
+
+## Server Actions (43 arquivos)
+
+| Arquivo | Responsabilidade |
+|---------|-----------------|
+| `feed.ts` | Feed com paginação cursor, sorts (new/top/hot/comments), filtro similaridade |
+| `posts.ts` | CRUD posts, aprovação, rejeição, feature, moderação |
+| `comments-admin.ts` | Moderação de comentários |
+| `challenges.ts` | Participação em desafios, validação IA (Gemini) |
+| `challenges-admin.ts` | CRUD desafios, gerenciar participações, winners |
+| `events.ts` | Listagem e registro em eventos |
+| `events-admin.ts` | CRUD eventos |
+| `rewards.ts` | Listagem e resgate de prêmios |
+| `rewards-admin.ts` | CRUD prêmios |
+| `leaderboard.ts` | Ranking por categoria/período |
+| `social.ts` | Follow/unfollow, perfis, sugestões |
+| `referrals.ts` | Sistema de indicação em cascata (6 gerações) |
+| `notifications.ts` | Notificações in-app |
+| `broadcast.ts` | Envio de email em massa |
+| `broadcast-admin.ts` | Admin de broadcast |
+| `autoresponder.ts` | Auto-resposta IA do "Moço" |
+| `leads.ts` | Gestão de leads NPS |
+| `landing-pages.ts` | Dados para landing pages |
+| `landing-stats.ts` | Estatísticas de landing pages |
+| `analytics.ts` | Analytics avançado |
+| `engagement.ts` | Métricas de engajamento |
+| `love.ts` | Sistema de níveis de amor (5 níveis de like) |
+| `saves.ts` | Salvar posts |
+| `search.ts` | Busca |
+| `auth.ts` | Ações de autenticação |
+| `profile.ts` | Perfil do usuário |
+| `onboarding.ts` | Progresso do onboarding |
+| `settings.ts` | Configurações do site |
+| `stats.ts` | Estatísticas gerais |
+| `feedback.ts` | Feedback/bug reports |
+| `slugs.ts` | Geração de slugs |
+| `stories.ts` | CRUD stories |
+| `stories-admin.ts` | Admin stories |
+| `shop-import.ts` | Importar prêmios de loja externa |
+| `export-users.ts` | Exportar usuários |
+| `youtube.ts` | Busca vídeos YouTube |
+| `ai.ts` | Geração IA (descrições, thumbnails) |
+
+---
+
+## APIs e Cron Jobs
+
+### API Routes
+| Rota | Método | Descrição |
+|------|--------|-----------|
+| `/api/admin/integrations` | GET | Verificar status das integrações |
+| `/api/admin/scrape-url` | POST | Scrape URL para importar dados |
+| `/api/cron/process-tasks` | GET | Processar tarefas agendadas (cada 15min) |
+| `/api/cron/ranking-snapshot` | GET | Snapshot diário do ranking |
+| `/api/linkdobem/campaigns` | GET | Listar campanhas LinkDoBem |
+| `/api/linkdobem/sync` | POST | Sincronizar dados LinkDoBem |
+| `/api/webhooks/whatsapp` | POST | Webhook Meta WhatsApp |
+| `/api/webhooks/resend` | POST | Webhook Resend (email tracking) |
+
+### Cron Jobs (Vercel)
+| Job | Schedule | Descrição |
+|-----|----------|-----------|
+| `process-tasks` | `*/15 * * * *` | Processa notificações, autoresponder, email sequences |
+| `ranking-snapshot` | `0 0 * * *` | Snapshot diário do leaderboard |
+
+---
+
+## Integrações Externas
+
+| Serviço | Uso | Config |
+|---------|-----|--------|
+| **Supabase** | Auth, PostgreSQL, Storage, Realtime | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` |
+| **Google Gemini** | Análise de vídeos YouTube (desafios) | `gemini_api_key` (site_settings) |
+| **OpenAI GPT-4o mini** | Autoresponder, descrições, análise de leads | `openai_api_key` (site_settings) + `OPENAI_API_KEY` |
+| **Resend** | Email transacional e broadcast | `RESEND_API_KEY`, `RESEND_FROM_EMAIL` |
+| **Meta Cloud API** | WhatsApp notifications | `whatsapp_*` (site_settings) |
+| **Perspective API** | Análise de toxicidade | `perspective_api_key` (site_settings) |
+| **YouTube Data API** | Busca vídeos | `youtube_api_key` (site_settings) |
+| **Upstash Redis** | Rate limiting | `@upstash/redis` |
+| **Google Analytics** | Tracking | `NEXT_PUBLIC_GA_MEASUREMENT_ID` |
+| **LinkDoBem** | Anúncios solidários | API dedicada |
+
+---
+
+## Segurança
+
+- **Auth:** Supabase Auth com session refresh via middleware
+- **RLS:** Policies no PostgreSQL (nível de tabela)
+- **CSP:** Content Security Policy restritiva
+- **HSTS:** Strict Transport Security
+- **CSRF:** Proteção CSRF
+- **Rate Limiting:** Upstash Redis + limites por ação
+- **Anti-Spam:** Bans progressivos (24h → 1 mês)
+- **Moderação:** IA automática (Perspective API + Sightengine)
+- **Sanitização:** DOMPurify para HTML
+- **File Validation:** Validação de tipo/tamanho de arquivo
+- **Audit Log:** Log de ações administrativas
+- **Headers:** X-Frame-Options, X-Content-Type-Options, Referrer-Policy
