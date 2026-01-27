@@ -95,6 +95,7 @@ export const CREATOR_NAV = [
   { href: '/admin', label: 'Painel Admin', icon: 'Shield' },
   { href: '/admin/analytics', label: 'Analytics', icon: 'Chart' },
   { href: '/admin/anuncios', label: 'Anúncios', icon: 'Chart' },
+  { href: '/admin/broadcast', label: 'Broadcast', icon: 'Mail' },
   { href: '/admin/bugs', label: 'Bugs', icon: 'Bug' },
   { href: '/admin/configuracoes', label: 'Configurações', icon: 'Settings' },
   { href: '/admin/desafios', label: 'Desafios', icon: 'Target' },
