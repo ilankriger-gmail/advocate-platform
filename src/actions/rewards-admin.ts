@@ -162,9 +162,13 @@ export async function approveClaim(claimId: string, createCelebrationPost = fals
       .eq('id', claim?.user_id)
       .single();
 
+    // Se vai publicar (com comprovante), já marca como "shipped" (enviado)
+    // Se só aprovar, fica como "approved"
+    const newStatus = createCelebrationPost ? 'shipped' : 'approved';
+
     const { error } = await supabase
       .from('reward_claims')
-      .update({ status: 'approved' })
+      .update({ status: newStatus })
       .eq('id', claimId);
 
     if (error) {
