@@ -146,7 +146,15 @@ export default async function AdminDashboardPage() {
       icon: '🎁',
       href: '/admin/premios',
       color: 'border-l-purple-500',
-      description: `${pendingClaims || 0} resgates pendentes`,
+      description: 'Gerenciar prêmios',
+    },
+    {
+      title: 'Resgates',
+      value: pendingClaims || 0,
+      icon: '💰',
+      href: '/admin/resgates',
+      color: 'border-l-green-500',
+      description: 'Pendentes de pagamento',
     },
     {
       title: 'Usuários',
@@ -217,7 +225,7 @@ export default async function AdminDashboardPage() {
             )}
             {(pendingClaims || 0) > 0 && (
               <Link 
-                href="/admin/premios" 
+                href="/admin/resgates" 
                 className="flex items-center gap-2 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium transition-colors"
               >
                 🎁 {pendingClaims} resgates
