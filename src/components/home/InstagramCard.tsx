@@ -4,13 +4,13 @@ import Link from 'next/link';
 import DOMPurify from 'isomorphic-dompurify';
 import { Card, Avatar } from '@/components/ui';
 import {
-  SentimentThermometer,
-  CommentsSection,
   ImageCarousel,
   YouTubeEmbed,
   InstagramEmbed,
   SaveButton,
   ShareButton,
+  LikeButton,
+  InlineComments,
 } from '@/components/posts';
 import { formatRelativeTime } from '@/lib/utils';
 import type { PostWithAuthor } from '@/lib/supabase/types';
@@ -32,10 +32,6 @@ export function InstagramCard({ post }: InstagramCardProps) {
   const hasYoutube = !!post.youtube_url;
   const hasInstagram = !!post.instagram_url;
   const hasMedia = hasImages || hasYoutube || hasInstagram;
-
-  // Extrair campos de votação
-  const voteAverage = (post as unknown as Record<string, unknown>).vote_average as number || 0;
-  const voteCount = (post as unknown as Record<string, unknown>).vote_count as number || 0;
 
   return (
     <Card className="overflow-hidden">
@@ -98,20 +94,30 @@ export function InstagramCard({ post }: InstagramCardProps) {
         <InstagramEmbed url={post.instagram_url!} />
       )}
 
-      {/* Ações - Votos, Save, Share */}
-      <div className="p-3 flex items-center gap-2">
-        <SentimentThermometer
-          postId={post.id}
-          averageScore={voteAverage}
-          totalVotes={voteCount}
-          userVote={null}
-          compact
-        />
-        <span className="text-sm text-gray-500 flex-1">
-          {post.comments_count || 0} comentários
-        </span>
-        <SaveButton postId={post.id} />
-        <ShareButton postId={post.id} postTitle={post.title} />
+      {/* Ações - Like, Comment count, Save, Share */}
+      <div className="px-3 py-2.5 flex items-center justify-between">
+        <div className="flex items-center gap-5">
+          <LikeButton
+            postId={post.id}
+            initialCount={post.likes_count || 0}
+            initialLiked={false}
+          />
+          <Link
+            href={`/post/${post.id}`}
+            className="flex items-center gap-1.5 text-gray-500 hover:text-primary-600 transition-colors"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+            {(post.comments_count || 0) > 0 && (
+              <span className="text-sm font-semibold tabular-nums">{post.comments_count}</span>
+            )}
+          </Link>
+        </div>
+        <div className="flex items-center gap-2">
+          <SaveButton postId={post.id} />
+          <ShareButton postId={post.id} postTitle={post.title} />
+        </div>
       </div>
 
       {/* Conteúdo - Só mostra se tiver título ou conteúdo */}
@@ -129,9 +135,9 @@ export function InstagramCard({ post }: InstagramCardProps) {
         </div>
       )}
 
-      {/* Comentários */}
+      {/* Comentários inline */}
       <div className="border-t border-gray-100">
-        <CommentsSection postId={post.id} commentsCount={post.comments_count || 0} />
+        <InlineComments postId={post.id} commentsCount={post.comments_count || 0} />
       </div>
     </Card>
   );
