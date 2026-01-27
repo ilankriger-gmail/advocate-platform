@@ -59,24 +59,8 @@ export function ReferralCard() {
   };
 
   const handleShare = async () => {
-    if (!stats?.link) return;
-    
-    const shareText = `🎁 Entra na comunidade Arena Te Amo e ganha 100 corações! Use meu link:`;
-    
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: 'Arena Te Amo - Convite',
-          text: shareText,
-          url: stats.link,
-        });
-      } catch {
-        // Usuário cancelou ou erro
-      }
-    } else {
-      // Fallback: copiar
-      handleCopy();
-    }
+    // Copiar direto ao clicar em Compartilhar Link
+    handleCopy();
   };
 
   if (loading) {
