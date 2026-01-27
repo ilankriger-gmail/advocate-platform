@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Card, Avatar } from '@/components/ui';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
 
 interface LeaderboardEntry {
   id: string;
@@ -17,7 +17,8 @@ async function getLeaderboardData(currentUserId?: string): Promise<{
   userScore: number;
   nearbyUsers: LeaderboardEntry[];
 }> {
-  const supabase = await createClient();
+  // Usar admin client para bypassar RLS
+  const supabase = createAdminClient();
 
   // Buscar todos os usuários ordenados por balance
   const { data: allCoins } = await supabase

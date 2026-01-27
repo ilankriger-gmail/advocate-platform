@@ -1,5 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/server';
-import { Card, Badge } from '@/components/ui';
+import { Card, Badge, Avatar } from '@/components/ui';
 import { ClaimActions } from '../premios/RewardAdminComponents';
 
 export const dynamic = 'force-dynamic';
@@ -21,14 +21,21 @@ export default async function AdminResgatesPage() {
     `)
     .order('created_at', { ascending: false });
 
-  // Buscar nomes dos usuários
+  // Buscar nomes e avatares dos usuários
   const userIds = [...new Set(allClaims?.map(c => c.user_id) || [])];
   const { data: users } = await supabase
     .from('users')
-    .select('id, full_name, email')
+    .select('id, full_name, email, avatar_url')
+    .in('id', userIds);
+
+  // Também buscar de profiles para pegar avatar
+  const { data: profiles } = await supabase
+    .from('profiles')
+    .select('id, full_name, avatar_url')
     .in('id', userIds);
 
   const usersMap = new Map(users?.map(u => [u.id, u]) || []);
+  const profilesMap = new Map(profiles?.map(p => [p.id, p]) || []);
 
   const claimsByStatus = {
     pending: (allClaims || []).filter((c) => c.status === 'pending'),
@@ -78,13 +85,17 @@ export default async function AdminResgatesPage() {
             {claimsByStatus.pending.map((claim) => {
               const reward = claim.rewards as { id: string; name: string; coins_required: number; type: string } | null;
               const user = usersMap.get(claim.user_id);
+              const profile = profilesMap.get(claim.user_id);
+              const displayName = profile?.full_name || user?.full_name || user?.email?.split('@')[0] || 'Usuário';
+              const avatarUrl = profile?.avatar_url || user?.avatar_url;
 
               return (
                 <div key={claim.id} className="p-4 bg-white rounded-lg border border-yellow-200 shadow-sm">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <p className="font-bold text-gray-900 text-lg">{user?.full_name || user?.email || 'Usuário'}</p>
+                      <div className="flex items-center gap-3 mb-2">
+                        <Avatar name={displayName} src={avatarUrl} size="md" />
+                        <p className="font-bold text-gray-900 text-lg">{displayName}</p>
                         <Badge className="bg-yellow-500 text-white">Pendente</Badge>
                         {reward?.type === 'money' && <Badge className="bg-green-600 text-white">💵 PIX</Badge>}
                       </div>
@@ -150,13 +161,19 @@ export default async function AdminResgatesPage() {
               {claims.slice(0, 10).map((claim) => {
                 const reward = claim.rewards as { id: string; name: string; coins_required: number; type: string } | null;
                 const user = usersMap.get(claim.user_id);
+                const profile = profilesMap.get(claim.user_id);
+                const displayName = profile?.full_name || user?.full_name || user?.email?.split('@')[0] || 'Usuário';
+                const avatarUrl = profile?.avatar_url || user?.avatar_url;
 
                 return (
                   <div key={claim.id} className={`p-3 rounded-lg border ${config.bgColor}`}>
                     <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium text-gray-900">{user?.full_name || user?.email || 'Usuário'}</p>
-                        <p className="text-sm text-gray-600">{reward?.name} • {claim.coins_spent} ❤️</p>
+                      <div className="flex items-center gap-2">
+                        <Avatar name={displayName} src={avatarUrl} size="sm" />
+                        <div>
+                          <p className="font-medium text-gray-900">{displayName}</p>
+                          <p className="text-sm text-gray-600">{reward?.name} • {claim.coins_spent} ❤️</p>
+                        </div>
                       </div>
                       <div className="text-right">
                         <p className="text-xs text-gray-500">
