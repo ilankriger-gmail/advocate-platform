@@ -253,11 +253,11 @@ export const PostCard = memo(function PostCard({
           </div>
         )}
 
-        {/* ── Action Bar (likes, comments, share) ── */}
+        {/* ── Action Bar (Instagram-style) ── */}
         {post.status === 'approved' && (
-          <div className="px-4 py-2.5 border-t border-surface-100">
+          <div className="px-3 pt-2 pb-1">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-5">
+              <div className="flex items-center gap-4">
                 <LikeButton
                   postId={post.id}
                   initialCount={post.likes_count || 0}
@@ -266,7 +266,7 @@ export const PostCard = memo(function PostCard({
 
                 <Link
                   href={`/post/${post.id}`}
-                  className="flex items-center gap-1.5 text-gray-500 hover:text-primary-600 transition-colors"
+                  className="flex items-center gap-1.5 text-gray-800 hover:text-gray-500 transition-colors"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -275,26 +275,42 @@ export const PostCard = memo(function PostCard({
                     <span className="text-sm font-semibold tabular-nums">{post.comments_count}</span>
                   )}
                 </Link>
+
+                <button
+                  onClick={() => {
+                    const url = `${window.location.origin}/post/${post.id}`;
+                    if (navigator.share) {
+                      navigator.share({ title: post.title, url });
+                    } else {
+                      navigator.clipboard.writeText(url);
+                    }
+                  }}
+                  className="text-gray-800 hover:text-gray-500 transition-colors"
+                  aria-label="Compartilhar"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M22 3L9.218 10.083M22 3l-6.782 18-4.44-10.917M22 3L9.218 10.083 2 13l7.218-2.917" />
+                  </svg>
+                </button>
               </div>
 
-              {/* Share */}
+              {/* Bookmark */}
               <button
-                onClick={() => {
-                  const url = `${window.location.origin}/post/${post.id}`;
-                  if (navigator.share) {
-                    navigator.share({ title: post.title, url });
-                  } else {
-                    navigator.clipboard.writeText(url);
-                  }
-                }}
-                className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
-                aria-label="Compartilhar"
+                className="text-gray-800 hover:text-gray-500 transition-colors"
+                aria-label="Salvar"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13" />
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
                 </svg>
               </button>
             </div>
+
+            {/* Likes count (Instagram-style) */}
+            {(post.likes_count || 0) > 0 && (
+              <p className="text-sm font-semibold text-surface-900 mt-2">
+                {post.likes_count} curtida{(post.likes_count || 0) !== 1 ? 's' : ''}
+              </p>
+            )}
           </div>
         )}
 
