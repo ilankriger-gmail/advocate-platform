@@ -93,21 +93,21 @@ export const BOTTOM_NAV_ITEMS = [
 // Navegação do criador/admin (adicional)
 export const CREATOR_NAV = [
   { href: '/admin', label: 'Painel Admin', icon: 'Shield' },
-  { href: '/admin/posts', label: 'Moderação de Posts', icon: 'FileText' },
-  { href: '/admin/desafios', label: 'Desafios', icon: 'Target' },
-  { href: '/admin/eventos', label: 'Eventos', icon: 'Calendar' },
-  { href: '/admin/premios', label: 'Prêmios', icon: 'Gift' },
-  { href: '/admin/resgates', label: 'Resgates', icon: 'DollarSign' },
-  { href: '/admin/engajamento', label: 'Engajamento', icon: 'Heart' },
-  { href: '/admin/anuncios', label: 'Anúncios', icon: 'Chart' },
-  { href: '/admin/usuarios', label: 'Usuários', icon: 'Users' },
-  { href: '/admin/leads', label: 'Leads NPS', icon: 'Chart' },
-  { href: '/admin/landing-pages', label: 'Landing Pages', icon: 'Layout' },
   { href: '/admin/analytics', label: 'Analytics', icon: 'Chart' },
-  { href: '/admin/notificacoes', label: 'Notificações', icon: 'Bell' },
-  { href: '/admin/emails', label: 'Emails', icon: 'Mail' },
+  { href: '/admin/anuncios', label: 'Anúncios', icon: 'Chart' },
   { href: '/admin/bugs', label: 'Bugs', icon: 'Bug' },
   { href: '/admin/configuracoes', label: 'Configurações', icon: 'Settings' },
+  { href: '/admin/desafios', label: 'Desafios', icon: 'Target' },
+  { href: '/admin/emails', label: 'Emails', icon: 'Mail' },
+  { href: '/admin/engajamento', label: 'Engajamento', icon: 'Heart' },
+  { href: '/admin/eventos', label: 'Eventos', icon: 'Calendar' },
+  { href: '/admin/landing-pages', label: 'Landing Pages', icon: 'Layout' },
+  { href: '/admin/leads', label: 'Leads NPS', icon: 'Chart' },
+  { href: '/admin/posts', label: 'Moderação de Posts', icon: 'FileText' },
+  { href: '/admin/notificacoes', label: 'Notificações', icon: 'Bell' },
+  { href: '/admin/premios', label: 'Prêmios', icon: 'Gift' },
+  { href: '/admin/resgates', label: 'Resgates', icon: 'DollarSign' },
+  { href: '/admin/usuarios', label: 'Usuários', icon: 'Users' },
 ] as const;
 
 // Links de redes sociais
