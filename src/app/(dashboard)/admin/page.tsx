@@ -196,6 +196,14 @@ export default async function AdminDashboardPage() {
       color: 'border-l-indigo-500',
       description: 'Personalizar emails',
     },
+    {
+      title: 'Broadcast',
+      value: totalUsers || 0,
+      icon: '📢',
+      href: '/admin/broadcast',
+      color: 'border-l-rose-500',
+      description: 'Enviar email para toda a base',
+    },
   ];
 
   return (
