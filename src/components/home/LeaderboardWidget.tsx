@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Card, Avatar } from '@/components/ui';
-import { createClient, createAdminClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 interface LeaderboardEntry {
   id: string;

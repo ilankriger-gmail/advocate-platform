@@ -81,6 +81,13 @@ export default async function HomePage() {
       {/* Hero Section - Banner (apenas para visitantes não logados) */}
       {!isLoggedIn && <HeroSection isLoggedIn={false} stats={stats} />}
 
+      {/* Ranking no mobile (aparece só no mobile, antes do feed) */}
+      <div className="lg:hidden">
+        <Suspense fallback={<Card className="p-4"><Skeleton className="h-48" /></Card>}>
+          <LeaderboardWidget />
+        </Suspense>
+      </div>
+
       {/* Main Content - Feed + Sidebar */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Feed Principal com Tabs */}
@@ -92,8 +99,8 @@ export default async function HomePage() {
           </div>
         </main>
 
-        {/* Sidebar - Leaderboard e Sugestões */}
-        <aside className="lg:col-span-4 order-2">
+        {/* Sidebar - Leaderboard e Sugestões (desktop only) */}
+        <aside className="hidden lg:block lg:col-span-4 order-2">
           <div className="lg:sticky lg:top-20 space-y-6">
             <Suspense fallback={<Card className="p-4"><Skeleton className="h-48" /></Card>}>
               <LeaderboardWidget />

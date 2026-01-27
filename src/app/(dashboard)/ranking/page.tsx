@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { createClient, createAdminClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { getSiteSettings } from '@/lib/config/site';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { RankingList } from '@/components/ranking/RankingList';
