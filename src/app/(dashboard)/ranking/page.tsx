@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { getSiteSettings } from '@/lib/config/site';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { RankingList } from '@/components/ranking/RankingList';
@@ -21,7 +21,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 // Buscar todos os usuários com coins e suas posições
 async function getRankingData(currentUserId: string) {
-  const supabase = await createClient();
+  // Usar admin client para bypasear RLS e ver dados de todos os usuários
+  const supabase = createAdminClient();
 
   // Buscar todos os usuários com coins, ordenados por balance
   const { data: allCoins, error } = await supabase
