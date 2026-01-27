@@ -30,9 +30,9 @@ export function OnboardingWrapper({ children }: OnboardingWrapperProps) {
     }
   }, [isLoading, profile]);
 
-  const handleComplete = useCallback(async () => {
-    // Salvar no banco de dados
-    const result = await completeOnboarding();
+  const handleComplete = useCallback(async (phone?: string) => {
+    // Salvar no banco de dados (com telefone opcional)
+    const result = await completeOnboarding(phone);
 
     if (result.success) {
       // Atualizar estado local

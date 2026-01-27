@@ -41,6 +41,7 @@ export interface Database {
           youtube_handle: string | null
           twitter_handle: string | null
           website_url: string | null
+          phone: string | null
           role: UserRole
           is_creator: boolean
           created_at: string
@@ -57,6 +58,7 @@ export interface Database {
           youtube_handle?: string | null
           twitter_handle?: string | null
           website_url?: string | null
+          phone?: string | null
           role?: UserRole
           is_creator?: boolean
           created_at?: string
@@ -73,10 +75,52 @@ export interface Database {
           youtube_handle?: string | null
           twitter_handle?: string | null
           website_url?: string | null
+          phone?: string | null
           role?: UserRole
           is_creator?: boolean
           created_at?: string
           updated_at?: string
+        }
+      }
+      email_broadcasts: {
+        Row: {
+          id: string
+          subject: string
+          title: string
+          message: string
+          cta_text: string | null
+          cta_url: string | null
+          audience_filter: string
+          recipients_count: number
+          sent_count: number
+          sent_by: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          subject: string
+          title: string
+          message: string
+          cta_text?: string | null
+          cta_url?: string | null
+          audience_filter?: string
+          recipients_count?: number
+          sent_count?: number
+          sent_by?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          subject?: string
+          title?: string
+          message?: string
+          cta_text?: string | null
+          cta_url?: string | null
+          audience_filter?: string
+          recipients_count?: number
+          sent_count?: number
+          sent_by?: string
+          created_at?: string
         }
       }
       posts: {

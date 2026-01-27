@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Input } from '@/components/ui';
 import { addCoinsToUser } from '@/actions/rewards-admin';
+import { exportUsersWithPhone } from '@/actions/export-users';
 
 interface UserSearchProps {
   initialSearch: string;
@@ -150,5 +151,43 @@ export function AddCoinsButton({ userId, userName }: AddCoinsButtonProps) {
         </div>
       )}
     </>
+  );
+}
+
+export function ExportUsersButton() {
+  const [exporting, setExporting] = useState(false);
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const result = await exportUsersWithPhone();
+      if (result.error) {
+        alert(result.error);
+        return;
+      }
+      if (result.csv) {
+        // Download CSV
+        const blob = new Blob([result.csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `usuarios_${new Date().toISOString().slice(0, 10)}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={handleExport}
+      disabled={exporting}
+    >
+      {exporting ? 'Exportando...' : '📥 Exportar CSV'}
+    </Button>
   );
 }

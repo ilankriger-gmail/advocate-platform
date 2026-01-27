@@ -345,6 +345,13 @@ export default async function AdminDashboardPage() {
             <span className="text-xs sm:text-sm text-indigo-700 font-medium text-center">Emails</span>
           </Link>
           <Link
+            href="/admin/broadcast"
+            className="flex flex-col items-center justify-center gap-1.5 sm:gap-2 p-3 sm:p-4 min-h-[80px] bg-rose-50 rounded-lg hover:bg-rose-100 transition-colors"
+          >
+            <span className="text-xl sm:text-2xl">📢</span>
+            <span className="text-xs sm:text-sm text-rose-700 font-medium text-center">Broadcast</span>
+          </Link>
+          <Link
             href="/admin/analytics"
             className="flex flex-col items-center justify-center gap-1.5 sm:gap-2 p-3 sm:p-4 min-h-[80px] bg-cyan-50 rounded-lg hover:bg-cyan-100 transition-colors"
           >

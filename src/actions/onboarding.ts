@@ -6,8 +6,9 @@ import { ActionResponse } from '@/types/action';
 
 /**
  * Marcar onboarding como completo para o usuário atual
+ * Opcionalmente salvar telefone
  */
-export async function completeOnboarding(): Promise<ActionResponse> {
+export async function completeOnboarding(phone?: string): Promise<ActionResponse> {
   try {
     const supabase = await createClient();
 
@@ -16,12 +17,19 @@ export async function completeOnboarding(): Promise<ActionResponse> {
       return { error: 'Usuário não autenticado' };
     }
 
+    const updateData: Record<string, unknown> = {
+      onboarding_completed: true,
+      updated_at: new Date().toISOString(),
+    };
+
+    // Salvar telefone se fornecido
+    if (phone && phone.trim()) {
+      updateData.phone = phone.trim();
+    }
+
     const { error } = await supabase
       .from('users')
-      .update({
-        onboarding_completed: true,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('id', user.id);
 
     if (error) {

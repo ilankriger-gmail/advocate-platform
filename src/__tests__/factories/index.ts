@@ -47,6 +47,7 @@ export const createMockUser = (overrides: Partial<User> = {}): User => {
     youtube_handle: null,
     twitter_handle: null,
     website_url: null,
+    phone: null,
     role: 'fan',
     is_creator: false,
     created_at: now,

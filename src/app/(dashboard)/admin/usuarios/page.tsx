@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { Card, Badge } from '@/components/ui';
-import { UserSearch, AddCoinsButton } from './UserAdminComponents';
+import { UserSearch, AddCoinsButton, ExportUsersButton } from './UserAdminComponents';
 
 
 export const dynamic = 'force-dynamic';
@@ -49,6 +49,7 @@ export default async function AdminUsuáriosPage({ searchParams }: PageProps) {
           <h1 className="text-2xl font-bold text-gray-900">Gerenciar Usuários</h1>
           <p className="text-gray-500 text-sm mt-1">Visualize e gerencie os usuários da plataforma</p>
         </div>
+        <ExportUsersButton />
       </div>
 
       {/* Estatisticas */}
@@ -98,8 +99,11 @@ export default async function AdminUsuáriosPage({ searchParams }: PageProps) {
                           <Badge className="bg-red-100 text-red-700">Admin</Badge>
                         )}
                       </div>
-                      <div className="flex items-center gap-3 text-sm text-gray-500">
+                      <div className="flex items-center gap-3 text-sm text-gray-500 flex-wrap">
                         {user.email && <span>{user.email}</span>}
+                        {user.phone && (
+                          <span className="text-emerald-600">📱 {user.phone}</span>
+                        )}
                         {user.instagram_username && (
                           <span className="text-pink-500">@{user.instagram_username}</span>
                         )}

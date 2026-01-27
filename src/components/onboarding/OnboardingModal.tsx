@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 
 interface OnboardingStep {
   icon: React.ReactNode;
@@ -11,11 +12,12 @@ interface OnboardingStep {
   description: string;
   highlight?: string;
   action?: 'desafios' | 'feed';
+  hasPhoneInput?: boolean;
 }
 
 interface OnboardingModalProps {
   isOpen: boolean;
-  onComplete: () => void;
+  onComplete: (phone?: string) => void;
   onSkip: () => void;
 }
 
@@ -53,6 +55,17 @@ const steps: OnboardingStep[] = [
   {
     icon: (
       <div className="w-20 h-20 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/30">
+        <span className="text-4xl">📱</span>
+      </div>
+    ),
+    title: 'Quer receber novidades?',
+    description: 'Deixe seu telefone para receber atualizações exclusivas da comunidade!',
+    highlight: 'Totalmente opcional. Você pode pular se preferir.',
+    hasPhoneInput: true,
+  },
+  {
+    icon: (
+      <div className="w-20 h-20 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/30">
         <span className="text-4xl">🎁</span>
       </div>
     ),
@@ -72,6 +85,14 @@ const steps: OnboardingStep[] = [
     action: 'desafios',
   },
 ];
+
+// Formatar telefone brasileiro
+function formatPhone(value: string): string {
+  const numbers = value.replace(/\D/g, '');
+  if (numbers.length <= 2) return numbers;
+  if (numbers.length <= 7) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+  return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
+}
 
 // Animações
 const backdropVariants = {
@@ -102,13 +123,21 @@ const contentVariants = {
 
 export function OnboardingModal({ isOpen, onComplete, onSkip }: OnboardingModalProps) {
   const [currentStep, setCurrentStep] = useState(0);
+  const [phone, setPhone] = useState('');
   const router = useRouter();
   const isLastStep = currentStep === steps.length - 1;
   const step = steps[currentStep];
 
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhone(e.target.value);
+    if (formatted.replace(/\D/g, '').length <= 11) {
+      setPhone(formatted);
+    }
+  };
+
   const handleNext = useCallback(() => {
     if (isLastStep) {
-      onComplete();
+      onComplete(phone || undefined);
       // Se o último passo tem ação, redireciona
       if (step.action === 'desafios') {
         router.push('/desafios');
@@ -116,7 +145,7 @@ export function OnboardingModal({ isOpen, onComplete, onSkip }: OnboardingModalP
     } else {
       setCurrentStep((prev) => prev + 1);
     }
-  }, [isLastStep, onComplete, step.action, router]);
+  }, [isLastStep, onComplete, step.action, router, phone]);
 
   const handleSkip = useCallback(() => {
     onSkip();
@@ -194,6 +223,22 @@ export function OnboardingModal({ isOpen, onComplete, onSkip }: OnboardingModalP
                     <p className="text-gray-600 mb-4 leading-relaxed">
                       {step.description}
                     </p>
+
+                    {/* Phone input (optional) */}
+                    {step.hasPhoneInput && (
+                      <div className="w-full mb-4">
+                        <label className="block text-sm font-medium text-gray-600 mb-2 text-left">
+                          Telefone (opcional)
+                        </label>
+                        <Input
+                          type="tel"
+                          value={phone}
+                          onChange={handlePhoneChange}
+                          placeholder="(XX) XXXXX-XXXX"
+                          className="text-center text-lg"
+                        />
+                      </div>
+                    )}
 
                     {/* Destaque */}
                     {step.highlight && (
