@@ -53,6 +53,7 @@ async function getRankingData(currentUserId: string) {
 
   // Buscar informações de todos os usuários
   const userIds = allCoins.map(c => c.user_id);
+  
   const { data: users } = await supabase
     .from('users')
     .select('id, email, full_name, avatar_url, username')
@@ -72,16 +73,19 @@ async function getRankingData(currentUserId: string) {
     const user = usersMap.get(coin.user_id);
     const profile = profilesMap.get(coin.user_id);
     
-    // Prioridade: profile.full_name > user.full_name > user.email (truncado)
-    const displayName = profile?.full_name || user?.full_name || 
+    // Prioridade: profile.full_name > user.full_name > user.username > user.email (truncado)
+    const displayName = profile?.full_name || user?.full_name || user?.username ||
       (user?.email ? user.email.split('@')[0] : `Membro #${index + 1}`);
+    
+    // Prioridade para avatar: profile > user
+    const avatarUrl = profile?.avatar_url || user?.avatar_url || null;
     
     return {
       position: index + 1,
       userId: coin.user_id,
       fullName: displayName,
       username: user?.username || null,
-      avatarUrl: profile?.avatar_url || user?.avatar_url || null,
+      avatarUrl,
       balance: coin.balance || 0,
       isCurrentUser: coin.user_id === currentUserId,
       previousPosition: previousMap.get(coin.user_id) || null,
@@ -105,51 +109,15 @@ export default async function RankingPage() {
     <div className="space-y-6 sm:space-y-8">
       <PageHeader
         title="Ranking"
-        description="Veja sua posição na comunidade"
+        description="Veja quem está brilhando na comunidade"
       />
 
-      {/* Card com sua posição */}
-      {userPosition && (
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-500 via-pink-500 to-rose-500 p-1">
-          <div className="relative bg-white rounded-xl p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Sua posição</p>
-                <div className="flex items-center gap-3">
-                  <span className="text-4xl font-bold text-gray-900">#{userPosition}</span>
-                  <span className="text-gray-400">de {ranking.length}</span>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="text-sm text-gray-500 mb-1">Seus corações</p>
-                <div className="flex items-center gap-2 text-2xl font-bold text-pink-600">
-                  <span>❤️</span>
-                  <span>{userBalance}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Lista de ranking */}
-      {ranking.length > 0 ? (
-        <RankingList 
-          ranking={ranking} 
-          userPosition={userPosition}
-          totalUsers={ranking.length}
-        />
-      ) : (
-        <div className="bg-white rounded-xl p-8 text-center border border-gray-200">
-          <div className="text-5xl mb-4">🏆</div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Ranking em construção
-          </h3>
-          <p className="text-gray-500">
-            Complete desafios para aparecer no ranking!
-          </p>
-        </div>
-      )}
+      <RankingList 
+        ranking={ranking} 
+        userPosition={userPosition}
+        userBalance={userBalance}
+        totalUsers={ranking.length}
+      />
     </div>
   );
 }
