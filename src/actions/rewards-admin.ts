@@ -944,3 +944,84 @@ Responda APENAS com a descrição, nada mais.`;
     return { error: 'Erro ao gerar descrição' };
   }
 }
+
+/**
+ * Upload de comprovante de pagamento para um resgate (admin)
+ * Salva a URL no campo delivery_address (JSONB) como payment_receipt_url
+ */
+export async function uploadPaymentReceipt(
+  claimId: string,
+  imageData: string // Base64 encoded image
+): Promise<ActionResponse<{ url: string }>> {
+  rewardsAdminLogger.info('Upload de comprovante de pagamento', { claimId: maskId(claimId) });
+
+  try {
+    const userCheck = await getAuthenticatedUser();
+    if (userCheck.error) return { error: userCheck.error };
+
+    const authCheck = await verifyAdminOrCreator(userCheck.data!.id);
+    if (authCheck.error) return { error: authCheck.error };
+
+    const supabase = await createClient();
+
+    // Converter base64 para buffer
+    const base64Data = imageData.replace(/^data:image\/\w+;base64,/, '');
+    const buffer = Buffer.from(base64Data, 'base64');
+
+    const mimeMatch = imageData.match(/^data:(image\/\w+);base64,/);
+    const contentType = mimeMatch ? mimeMatch[1] : 'image/png';
+    const extension = contentType.split('/')[1];
+
+    const fileName = `receipts/${claimId}-${Date.now()}.${extension}`;
+
+    // Upload para Supabase Storage
+    const { error: uploadError } = await supabase.storage
+      .from('reward-images')
+      .upload(fileName, buffer, {
+        contentType,
+        upsert: true,
+      });
+
+    if (uploadError) {
+      rewardsAdminLogger.error('Erro ao fazer upload do comprovante', { error: sanitizeError(uploadError) });
+      return { error: `Erro ao fazer upload: ${uploadError.message}` };
+    }
+
+    // Obter URL pública
+    const { data: publicUrlData } = supabase.storage
+      .from('reward-images')
+      .getPublicUrl(fileName);
+
+    const receiptUrl = publicUrlData.publicUrl;
+
+    // Buscar delivery_address atual e adicionar receipt URL
+    const { data: claim } = await supabase
+      .from('reward_claims')
+      .select('delivery_address')
+      .eq('id', claimId)
+      .single();
+
+    const updatedAddress = {
+      ...(claim?.delivery_address || {}),
+      payment_receipt_url: receiptUrl,
+    };
+
+    const { error: updateError } = await supabase
+      .from('reward_claims')
+      .update({ delivery_address: updatedAddress })
+      .eq('id', claimId);
+
+    if (updateError) {
+      rewardsAdminLogger.error('Erro ao salvar comprovante no claim', { error: sanitizeError(updateError) });
+      return { error: `Erro ao salvar: ${updateError.message}` };
+    }
+
+    rewardsAdminLogger.info('Comprovante salvo com sucesso', { claimId: maskId(claimId) });
+
+    revalidatePath('/admin/resgates');
+    return { success: true, data: { url: receiptUrl } };
+  } catch (err) {
+    rewardsAdminLogger.error('Erro ao fazer upload do comprovante', { error: sanitizeError(err) });
+    return { error: 'Erro interno do servidor' };
+  }
+}

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card, Button, Input, Textarea } from '@/components/ui';
-import { toggleRewardActive, createReward, approveClaim, markClaimShipped, markClaimDelivered, uploadRewardImageToStorage } from '@/actions/rewards-admin';
+import { toggleRewardActive, createReward, approveClaim, markClaimShipped, markClaimDelivered, uploadRewardImageToStorage, uploadPaymentReceipt } from '@/actions/rewards-admin';
 import { RewardImageUploader } from '@/components/RewardImageUploader';
 import { Pencil } from 'lucide-react';
 
@@ -69,12 +69,20 @@ interface ClaimActionsProps {
   claim: {
     id: string;
     status: string;
+    delivery_address?: {
+      pix_key?: string;
+      payment_receipt_url?: string;
+      [key: string]: unknown;
+    };
   };
+  rewardType?: string;
 }
 
-export function ClaimActions({ claim }: ClaimActionsProps) {
+export function ClaimActions({ claim, rewardType }: ClaimActionsProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [receiptUrl, setReceiptUrl] = useState(claim.delivery_address?.payment_receipt_url || '');
 
   const handleApprove = async (withPost = false) => {
     setIsLoading(true);
@@ -103,57 +111,127 @@ export function ClaimActions({ claim }: ClaimActionsProps) {
     setIsLoading(false);
   };
 
+  const handleReceiptUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = reader.result as string;
+      const result = await uploadPaymentReceipt(claim.id, base64);
+      if (result.success && result.data) {
+        setReceiptUrl(result.data.url);
+        router.refresh();
+      }
+      setIsUploading(false);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const isPix = rewardType === 'money' || claim.delivery_address?.pix_key;
+
   if (claim.status === 'pending') {
     return (
-      <div className="flex gap-2">
-        <Button
-          onClick={() => handleApprove(false)}
-          disabled={isLoading}
-          size="sm"
-          className="bg-green-600 hover:bg-green-700"
-        >
-          {isLoading ? '...' : '✅ Aprovar'}
-        </Button>
-        <Button
-          onClick={() => handleApprove(true)}
-          disabled={isLoading}
-          size="sm"
-          className="bg-purple-600 hover:bg-purple-700"
-          title="Aprovar e criar post de celebração"
-        >
-          {isLoading ? '...' : '📣 Aprovar + Publicar'}
-        </Button>
+      <div className="flex flex-col gap-2">
+        <div className="flex gap-2">
+          <Button
+            onClick={() => handleApprove(false)}
+            disabled={isLoading}
+            size="sm"
+            className="bg-green-600 hover:bg-green-700"
+          >
+            {isLoading ? '...' : '✅ Aprovar'}
+          </Button>
+          <Button
+            onClick={() => handleApprove(true)}
+            disabled={isLoading}
+            size="sm"
+            className="bg-purple-600 hover:bg-purple-700"
+            title="Aprovar e criar post de celebração"
+          >
+            {isLoading ? '...' : '📣 Aprovar + Publicar'}
+          </Button>
+        </div>
+
+        {/* Upload comprovante PIX */}
+        {isPix && (
+          <div className="mt-2">
+            {receiptUrl ? (
+              <div className="space-y-2">
+                <a href={receiptUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-green-700 bg-green-50 px-3 py-2 rounded-lg border border-green-200 hover:bg-green-100">
+                  <span>✅ Comprovante enviado</span>
+                  <span className="underline">Ver</span>
+                </a>
+                <label className="block">
+                  <span className="text-xs text-gray-500 cursor-pointer hover:text-gray-700">Trocar comprovante</span>
+                  <input type="file" accept="image/*" onChange={handleReceiptUpload} className="hidden" />
+                </label>
+              </div>
+            ) : (
+              <label className="flex items-center gap-2 px-3 py-2 bg-yellow-50 border border-yellow-300 rounded-lg cursor-pointer hover:bg-yellow-100 transition-colors">
+                <svg className="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span className="text-sm font-medium text-yellow-700">
+                  {isUploading ? 'Enviando...' : '📸 Subir comprovante PIX'}
+                </span>
+                <input type="file" accept="image/*" onChange={handleReceiptUpload} className="hidden" disabled={isUploading} />
+              </label>
+            )}
+          </div>
+        )}
       </div>
     );
   }
 
   if (claim.status === 'approved') {
     return (
-      <Button
-        onClick={handleShip}
-        disabled={isLoading}
-        size="sm"
-        className="bg-blue-600 hover:bg-blue-700"
-      >
-        {isLoading ? '...' : 'Marcar Enviado'}
-      </Button>
+      <div className="flex flex-col gap-2">
+        <Button
+          onClick={handleShip}
+          disabled={isLoading}
+          size="sm"
+          className="bg-blue-600 hover:bg-blue-700"
+        >
+          {isLoading ? '...' : 'Marcar Enviado'}
+        </Button>
+        {isPix && !receiptUrl && (
+          <label className="flex items-center gap-2 px-3 py-2 bg-yellow-50 border border-yellow-300 rounded-lg cursor-pointer hover:bg-yellow-100 transition-colors">
+            <span className="text-sm font-medium text-yellow-700">
+              {isUploading ? 'Enviando...' : '📸 Subir comprovante'}
+            </span>
+            <input type="file" accept="image/*" onChange={handleReceiptUpload} className="hidden" disabled={isUploading} />
+          </label>
+        )}
+        {receiptUrl && (
+          <a href={receiptUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-green-600 hover:underline">✅ Ver comprovante</a>
+        )}
+      </div>
     );
   }
 
   if (claim.status === 'shipped') {
     return (
-      <Button
-        onClick={handleDeliver}
-        disabled={isLoading}
-        size="sm"
-        className="bg-purple-600 hover:bg-purple-700"
-      >
-        {isLoading ? '...' : 'Confirmar Entrega'}
-      </Button>
+      <div className="flex flex-col gap-2">
+        <Button
+          onClick={handleDeliver}
+          disabled={isLoading}
+          size="sm"
+          className="bg-purple-600 hover:bg-purple-700"
+        >
+          {isLoading ? '...' : 'Confirmar Entrega'}
+        </Button>
+        {receiptUrl && (
+          <a href={receiptUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-green-600 hover:underline">✅ Ver comprovante</a>
+        )}
+      </div>
     );
   }
 
-  return null;
+  return receiptUrl ? (
+    <a href={receiptUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-green-600 hover:underline">✅ Comprovante</a>
+  ) : null;
 }
 
 export function NewRewardForm() {

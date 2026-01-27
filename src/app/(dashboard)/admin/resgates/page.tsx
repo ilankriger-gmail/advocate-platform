@@ -250,8 +250,22 @@ export default async function AdminResgatesPage() {
                       )}
                     </div>
 
-                    <ClaimActions claim={claim} />
+                    <ClaimActions claim={claim} rewardType={reward?.type} />
                   </div>
+
+                  {/* Comprovante de pagamento (se já enviado) */}
+                  {claim.delivery_address?.payment_receipt_url && (
+                    <div className="mt-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                      <p className="text-sm font-medium text-green-700 mb-2">✅ Comprovante de Pagamento</p>
+                      <a href={claim.delivery_address.payment_receipt_url} target="_blank" rel="noopener noreferrer">
+                        <img
+                          src={claim.delivery_address.payment_receipt_url}
+                          alt="Comprovante"
+                          className="max-w-xs rounded-lg border shadow-sm hover:opacity-90 transition"
+                        />
+                      </a>
+                    </div>
+                  )}
                 </div>
               );
             })}
