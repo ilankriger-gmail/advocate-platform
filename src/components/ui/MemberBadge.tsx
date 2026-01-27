@@ -35,13 +35,13 @@ export function MemberBadge({ memberNumber, className, size = 'sm' }: MemberBadg
   };
 
   const sizeClasses = size === 'sm' 
-    ? 'text-[10px] px-1.5 py-0.5' 
-    : 'text-xs px-2 py-1';
+    ? 'text-[11px] px-2 py-0.5' 
+    : 'text-xs px-2.5 py-1';
 
   return (
     <span 
       className={cn(
-        'inline-flex items-center font-bold rounded-full whitespace-nowrap',
+        'inline-flex items-center font-bold rounded-full whitespace-nowrap ml-1.5',
         getBadgeStyle(),
         sizeClasses,
         className
