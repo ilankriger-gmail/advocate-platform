@@ -96,47 +96,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
     );
 
     // Obtém a sessão inicial
+    // Usa getSession() primeiro (rápido, lê do cache/cookie)
+    // O onAuthStateChange listener acima valida o token em background
     const getInitialSession = async () => {
       try {
-        // Usar getUser() ao invés de getSession() para validar o token
-        const { data: { user: currentUser }, error } = await supabase.auth.getUser();
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
 
-        if (error) {
-          console.log('[Auth] Erro ao obter usuário:', error.message);
-          setUser(null);
-          setSession(null);
-          setProfile(null);
-          setIsLoading(false);
-          return;
-        }
-
-        if (currentUser) {
-          console.log('[Auth] Usuário encontrado:', currentUser.email);
-          // Buscar sessão completa
-          const { data: { session: currentSession } } = await supabase.auth.getSession();
+        if (currentSession?.user) {
+          console.log('[Auth] Sessão encontrada:', currentSession.user.email);
           setSession(currentSession);
-          setUser(currentUser);
-          await fetchProfile(currentUser.id);
+          setUser(currentSession.user);
+          await fetchProfile(currentSession.user.id);
         } else {
-          console.log('[Auth] Nenhum usuário autenticado');
+          console.log('[Auth] Nenhuma sessão ativa');
           setUser(null);
           setSession(null);
           setProfile(null);
         }
       } catch (error) {
         console.error('[Auth] Erro ao obter sessão inicial:', error);
-        // Fallback: tentar getSession() se getUser() falhou (ex: AbortError)
-        try {
-          const { data: { session: fallbackSession } } = await supabase.auth.getSession();
-          if (fallbackSession?.user) {
-            console.log('[Auth] Fallback session encontrada:', fallbackSession.user.email);
-            setSession(fallbackSession);
-            setUser(fallbackSession.user);
-            await fetchProfile(fallbackSession.user.id);
-          }
-        } catch (fallbackError) {
-          console.error('[Auth] Fallback também falhou:', fallbackError);
-        }
       } finally {
         setIsLoading(false);
       }
