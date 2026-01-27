@@ -125,11 +125,35 @@
 - Ranking relativo (mostra posição do usuário)
 - Widget de preview no feed
 - Snapshot diário via cron job
+- **Toggle Top 3 / Sua Posição no widget da home** (default: Sua Posição)
+
+### Widget "Top Embaixadores" (Home)
+
+O widget da home page foi refatorado em duas camadas:
+
+**Server Component** (`LeaderboardWidget.tsx`):
+- Busca dados via `supabase.rpc('get_ranking')`
+- Monta array com `position` (1-indexed) para cada entry
+- Passa dados + `userId` para o client component
+
+**Client Component** (`LeaderboardWidgetClient.tsx`):
+- Recebe `entries[]` e `userId` como props
+- **Seletor toggle** com duas views:
+  - 🏆 **Top 3** — mostra os 3 primeiros + posição do usuário abaixo (separador pontilhado)
+  - 📍 **Sua Posição** — mostra apenas os usuários ao redor (1 acima, o próprio, 1 abaixo)
+- **Default:** `'me'` (Sua Posição) quando o usuário está rankeado
+- O toggle só aparece quando o usuário está fora do top 3 (se já está no top, não precisa)
+- Cada entry é clicável e leva ao `/profile/{user_id}`
+- Entry do usuário atual tem destaque visual (gradiente roxo/rosa + badge "você")
+
+**Padrão aplicado:** Server/Client split — server faz o data fetching, client cuida da interatividade (toggle state). Segue o padrão Next.js 15 de manter server components para dados e client components só para interação.
 
 ### Arquivos
 - `actions/leaderboard.ts`
 - `lib/supabase/leaderboard.ts`
 - `components/leaderboard/`
+- `components/home/LeaderboardWidget.tsx` (server — data fetch)
+- `components/home/LeaderboardWidgetClient.tsx` (client — toggle UI)
 
 ---
 
