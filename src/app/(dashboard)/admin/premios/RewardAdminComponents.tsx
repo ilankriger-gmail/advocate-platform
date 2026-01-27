@@ -76,9 +76,9 @@ export function ClaimActions({ claim }: ClaimActionsProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleApprove = async () => {
+  const handleApprove = async (withPost = false) => {
     setIsLoading(true);
-    const result = await approveClaim(claim.id);
+    const result = await approveClaim(claim.id, withPost);
     if (result.success) {
       router.refresh();
     }
@@ -105,14 +105,25 @@ export function ClaimActions({ claim }: ClaimActionsProps) {
 
   if (claim.status === 'pending') {
     return (
-      <Button
-        onClick={handleApprove}
-        disabled={isLoading}
-        size="sm"
-        className="bg-green-600 hover:bg-green-700"
-      >
-        {isLoading ? '...' : 'Aprovar'}
-      </Button>
+      <div className="flex gap-2">
+        <Button
+          onClick={() => handleApprove(false)}
+          disabled={isLoading}
+          size="sm"
+          className="bg-green-600 hover:bg-green-700"
+        >
+          {isLoading ? '...' : '✅ Aprovar'}
+        </Button>
+        <Button
+          onClick={() => handleApprove(true)}
+          disabled={isLoading}
+          size="sm"
+          className="bg-purple-600 hover:bg-purple-700"
+          title="Aprovar e criar post de celebração"
+        >
+          {isLoading ? '...' : '📣 Aprovar + Publicar'}
+        </Button>
+      </div>
     );
   }
 

@@ -121,7 +121,7 @@ export async function toggleRewardActive(
 /**
  * Aprovar resgate (admin)
  */
-export async function approveClaim(claimId: string): Promise<ActionResponse> {
+export async function approveClaim(claimId: string, createCelebrationPost = false): Promise<ActionResponse> {
   try {
     // Verificar autenticação
     const userCheck = await getAuthenticatedUser();
@@ -138,6 +138,23 @@ export async function approveClaim(claimId: string): Promise<ActionResponse> {
 
     const supabase = await createClient();
 
+    // Buscar dados do claim para o post
+    const { data: claim } = await supabase
+      .from('reward_claims')
+      .select(`
+        *,
+        rewards:reward_id (name, type)
+      `)
+      .eq('id', claimId)
+      .single();
+
+    // Buscar nome do usuário
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('full_name')
+      .eq('id', claim?.user_id)
+      .single();
+
     const { error } = await supabase
       .from('reward_claims')
       .update({ status: 'approved' })
@@ -147,7 +164,24 @@ export async function approveClaim(claimId: string): Promise<ActionResponse> {
       return { error: 'Erro ao aprovar resgate' };
     }
 
+    // Criar post de celebração se solicitado
+    if (createCelebrationPost && claim) {
+      const reward = claim.rewards as { name: string; type: string } | null;
+      const userName = profile?.full_name || 'Um membro';
+      const rewardName = reward?.name || 'um prêmio';
+      
+      const postContent = `🎉 **${userName}** acabou de resgatar **${rewardName}**!\n\nParabéns pela conquista! 👏❤️\n\n#ArenaTeAmo #Resgate #Conquista`;
+
+      await supabase.from('posts').insert({
+        user_id: user.id, // Post criado pelo admin/creator
+        content: postContent,
+        type: 'creator',
+        status: 'approved',
+      });
+    }
+
     revalidatePath('/admin/premios');
+    revalidatePath('/admin/resgates');
     return { success: true };
   } catch {
     return { error: 'Erro interno do servidor' };
