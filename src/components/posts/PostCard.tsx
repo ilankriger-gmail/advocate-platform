@@ -204,12 +204,12 @@ export const PostCard = memo(function PostCard({
               </p>
             )}
             {contentResult.truncated && !showFullContent && (
-              <button
-                onClick={() => setShowFullContent(true)}
-                className="text-sm font-semibold text-primary-600 hover:text-primary-700 mt-1 transition-colors"
+              <Link
+                href={`/post/${post.id}`}
+                className="text-sm font-semibold text-primary-600 hover:text-primary-700 mt-1 inline-block transition-colors"
               >
                 ver mais
-              </button>
+              </Link>
             )}
           </div>
         )}
