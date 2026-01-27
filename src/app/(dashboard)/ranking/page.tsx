@@ -56,35 +56,25 @@ async function getRankingData(currentUserId: string) {
   
   const { data: users } = await supabase
     .from('users')
-    .select('id, email, full_name, avatar_url, username')
-    .in('id', userIds);
-
-  // Também buscar de profiles (alguns dados podem estar lá)
-  const { data: profiles } = await supabase
-    .from('profiles')
-    .select('id, full_name, avatar_url')
+    .select('id, email, full_name, avatar_url')
     .in('id', userIds);
 
   const usersMap = new Map(users?.map(u => [u.id, u]) || []);
-  const profilesMap = new Map(profiles?.map(p => [p.id, p]) || []);
 
   // Montar o ranking completo
   const ranking = allCoins.map((coin, index) => {
     const user = usersMap.get(coin.user_id);
-    const profile = profilesMap.get(coin.user_id);
     
-    // Prioridade: profile.full_name > user.full_name > user.username > user.email (truncado)
-    const displayName = profile?.full_name || user?.full_name || user?.username ||
+    const displayName = user?.full_name || 
       (user?.email ? user.email.split('@')[0] : `Membro #${index + 1}`);
     
-    // Prioridade para avatar: profile > user
-    const avatarUrl = profile?.avatar_url || user?.avatar_url || null;
+    const avatarUrl = user?.avatar_url || null;
     
     return {
       position: index + 1,
       userId: coin.user_id,
       fullName: displayName,
-      username: user?.username || null,
+      username: null,
       avatarUrl,
       balance: coin.balance || 0,
       isCurrentUser: coin.user_id === currentUserId,
