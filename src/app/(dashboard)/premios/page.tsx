@@ -124,7 +124,7 @@ export default async function PremiosPage({ searchParams }: PageProps) {
                     {(claim.rewards as { name: string })?.name || 'Prêmio'}
                   </p>
                   <p className="text-sm text-gray-500">
-                    {new Date(claim.created_at).toLocaleDateString('pt-BR')}
+                    {new Date(claim.created_at).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
                   </p>
                 </div>
                 <div className="text-right">

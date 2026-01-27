@@ -503,7 +503,7 @@ function ChallengeCard({ challenge }: { challenge: any }) {
           </span>
           {challenge.ends_at && (
             <span className="text-xs text-gray-400">
-              até {new Date(challenge.ends_at).toLocaleDateString('pt-BR')}
+              até {new Date(challenge.ends_at).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
             </span>
           )}
         </div>
@@ -560,7 +560,7 @@ function EventCard({ event }: { event: any }) {
       <div className="w-20 sm:w-24 shrink-0 bg-pink-500 text-white flex flex-col items-center justify-center p-2">
         <span className="text-2xl font-bold">{eventDate.getDate()}</span>
         <span className="text-xs uppercase">
-          {eventDate.toLocaleDateString('pt-BR', { month: 'short' })}
+          {eventDate.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', month: 'short' })}
         </span>
       </div>
       <div className="p-3 flex-1 min-w-0">

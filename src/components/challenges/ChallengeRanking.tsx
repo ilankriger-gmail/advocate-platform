@@ -41,7 +41,7 @@ export function ChallengeRanking({
   };
 
   const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('pt-BR', {
+    return new Date(date).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo',
       day: '2-digit',
       month: 'short',
     });

@@ -30,7 +30,7 @@ export function LeadCard({ lead }: LeadCardProps) {
   // Formatar data/hora
   const formatDateTime = (date: string | null) => {
     if (!date) return null;
-    return new Date(date).toLocaleDateString('pt-BR', {
+    return new Date(date).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo',
       day: '2-digit',
       month: '2-digit',
       hour: '2-digit',
@@ -101,7 +101,7 @@ export function LeadCard({ lead }: LeadCardProps) {
     router.refresh();
   }
 
-  const formattedDate = new Date(lead.created_at).toLocaleDateString('pt-BR', {
+  const formattedDate = new Date(lead.created_at).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo',
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',

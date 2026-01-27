@@ -40,7 +40,7 @@ export function EventCard({
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('pt-BR', {
+    return date.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo',
       weekday: 'short',
       day: '2-digit',
       month: 'short',

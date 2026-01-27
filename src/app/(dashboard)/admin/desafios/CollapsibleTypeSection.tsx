@@ -22,7 +22,7 @@ export function CollapsibleTypeSection({ type, config, challenges, defaultOpen =
 
   const formatDate = (date: string | null) => {
     if (!date) return null;
-    return new Date(date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+    return new Date(date).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit' });
   };
 
   return (

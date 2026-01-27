@@ -157,6 +157,6 @@ function getTimeAgo(date: Date): string {
   } else if (diffDays < 7) {
     return `${diffDays}d`;
   } else {
-    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+    return date.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: 'short' });
   }
 }

@@ -129,7 +129,8 @@ export default async function AdminUsuáriosPage({ searchParams }: PageProps) {
                       month: '2-digit',
                       year: 'numeric',
                       hour: '2-digit',
-                      minute: '2-digit'
+                      minute: '2-digit',
+                      timeZone: 'America/Sao_Paulo'
                     })}
                   </span>
                   {user.phone && <span>Tel: {user.phone}</span>}

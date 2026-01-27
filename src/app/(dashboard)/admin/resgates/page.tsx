@@ -198,7 +198,7 @@ export default async function AdminResgatesPage() {
                       {/* Data */}
                       <p className="text-sm text-gray-500 mb-3">
                         📅 Solicitado em{' '}
-                        {new Date(claim.created_at).toLocaleDateString('pt-BR', {
+                        {new Date(claim.created_at).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo',
                           day: '2-digit',
                           month: 'long',
                           year: 'numeric',
@@ -437,7 +437,7 @@ export default async function AdminResgatesPage() {
                       </div>
                       <div className="text-right">
                         <p className="text-xs text-gray-500">
-                          {new Date(claim.created_at).toLocaleDateString('pt-BR')}
+                          {new Date(claim.created_at).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
                         </p>
                         {status !== 'delivered' && status !== 'rejected' && <ClaimActions claim={claim} />}
                       </div>

@@ -38,7 +38,7 @@ export async function exportUsersWithPhone(): Promise<{ csv?: string; error?: st
       const email = u.email || '';
       const phone = u.phone || '';
       const instagram = u.instagram_username || '';
-      const date = u.created_at ? new Date(u.created_at).toLocaleDateString('pt-BR') : '';
+      const date = u.created_at ? new Date(u.created_at).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }) : '';
       const onboarding = u.onboarding_completed ? 'Sim' : 'Não';
       return `${name},${email},${phone},${instagram},${date},${onboarding}`;
     });

@@ -246,7 +246,7 @@ export function UnifiedPostCard({ post, author, filter }: UnifiedPostCardProps) 
 
           {/* Data de criação */}
           <p className="text-xs text-gray-400 mt-4">
-            Criado em {new Date(post.created_at).toLocaleDateString('pt-BR', {
+            Criado em {new Date(post.created_at).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo',
               day: '2-digit',
               month: 'long',
               year: 'numeric',

@@ -12,7 +12,7 @@ export function MyParticipationCard({ participation }: MyParticipationCardProps)
   // Formatar data
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR', {
+    return date.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo',
       day: '2-digit',
       month: 'short',
       year: 'numeric',

@@ -114,7 +114,7 @@ export default async function AdminPrêmiosPage() {
                           Resgatou: <strong>{reward?.name}</strong>
                         </p>
                         <p className="text-xs text-gray-500 mt-1">
-                          {new Date(claim.created_at).toLocaleDateString('pt-BR', {
+                          {new Date(claim.created_at).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo',
                             day: '2-digit',
                             month: 'short',
                             year: 'numeric',

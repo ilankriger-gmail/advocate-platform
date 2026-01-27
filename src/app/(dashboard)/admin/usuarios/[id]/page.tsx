@@ -135,7 +135,7 @@ export default async function UserHistoryPage({ params }: PageProps) {
                     <div>
                       <p className="font-medium text-gray-900">{challenge?.title}</p>
                       <p className="text-xs text-gray-500">
-                        {new Date(p.created_at).toLocaleDateString('pt-BR')}
+                        {new Date(p.created_at).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
                         {p.result && ` • Resultado: ${p.result}`}
                       </p>
                     </div>
@@ -172,7 +172,7 @@ export default async function UserHistoryPage({ params }: PageProps) {
                   <div>
                     <p className="font-medium text-gray-900">{reward?.name}</p>
                     <p className="text-xs text-gray-500">
-                      {new Date(c.created_at).toLocaleDateString('pt-BR')}
+                      {new Date(c.created_at).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -198,7 +198,7 @@ export default async function UserHistoryPage({ params }: PageProps) {
                 <div>
                   <p className="font-medium text-gray-900">{t.description || 'Transação'}</p>
                   <p className="text-xs text-gray-500">
-                    {new Date(t.created_at).toLocaleDateString('pt-BR', {
+                    {new Date(t.created_at).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo',
                       day: '2-digit',
                       month: 'short',
                       hour: '2-digit',

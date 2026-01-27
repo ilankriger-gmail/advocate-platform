@@ -51,7 +51,7 @@ function CampaignCard({ campaign }: { campaign: Campaign }) {
   // Adicionar UTM ao link
   const utmUrl = `${campaign.url}?utm_source=arena_teamo&utm_medium=banner&utm_campaign=${campaign.slug}`;
   
-  const publishedDate = new Date(campaign.published_at).toLocaleDateString('pt-BR', {
+  const publishedDate = new Date(campaign.published_at).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo',
     day: '2-digit',
     month: 'short',
   });

@@ -218,7 +218,7 @@ export function AllParticipationsList({ participations, onClose }: AllParticipat
                             </span>
                           )}
                           <span className="text-gray-500">
-                            📅 {new Date(p.created_at).toLocaleDateString('pt-BR', {
+                            📅 {new Date(p.created_at).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo',
                               day: '2-digit',
                               month: '2-digit',
                               year: 'numeric',

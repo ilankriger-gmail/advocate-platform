@@ -110,7 +110,7 @@ export default async function EventoDetalhePage({ params }: PageProps) {
 
   const formatDateTime = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('pt-BR', {
+    return date.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo',
       weekday: 'long',
       day: '2-digit',
       month: 'long',

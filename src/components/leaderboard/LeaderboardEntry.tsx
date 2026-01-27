@@ -62,7 +62,7 @@ function formatLastActivity(date: string | null): string {
     const weeks = Math.floor(diffInDays / 7);
     return `${weeks}sem atrás`;
   } else {
-    return activityDate.toLocaleDateString('pt-BR', {
+    return activityDate.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo',
       day: '2-digit',
       month: 'short',
     });

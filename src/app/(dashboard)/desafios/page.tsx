@@ -160,7 +160,7 @@ export default async function DesafiosPage() {
   const atosAmorChallenges = challengesWithPrizes.filter(c => c.type === 'atos_amor');
 
   const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('pt-BR', {
+    return new Date(date).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo',
       day: '2-digit',
       month: 'short',
       year: 'numeric'
@@ -283,7 +283,7 @@ export default async function DesafiosPage() {
                           <h3 className="text-white font-bold text-lg">{challenge.title}</h3>
                           {challenge.ends_at && (
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-yellow-400 text-yellow-900 text-xs font-bold rounded-full">
-                              ⏰ Até {new Date(challenge.ends_at).toLocaleDateString('pt-BR')}
+                              ⏰ Até {new Date(challenge.ends_at).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
                             </span>
                           )}
                         </div>
@@ -402,7 +402,7 @@ export default async function DesafiosPage() {
                           {/* Badge de data limite */}
                           {challenge.ends_at && (
                             <span className="inline-block mt-1 px-2 py-0.5 bg-yellow-400 text-yellow-900 text-xs font-bold rounded-full">
-                              ⏰ Até {new Date(challenge.ends_at).toLocaleDateString('pt-BR')}
+                              ⏰ Até {new Date(challenge.ends_at).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
                             </span>
                           )}
                         </div>
