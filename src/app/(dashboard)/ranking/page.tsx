@@ -1,7 +1,6 @@
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { createAdminClient } from '@/lib/supabase/admin';
 import { getSiteSettings } from '@/lib/config/site';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { RankingList } from '@/components/ranking/RankingList';
@@ -22,8 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 // Buscar todos os usuários com coins e suas posições
 async function getRankingData(currentUserId: string) {
-  // Usar admin client para bypasear RLS e ver dados de todos os usuários
-  const supabase = createAdminClient();
+  const supabase = await createClient();
 
   // Buscar todos os usuários com coins, ordenados por balance
   const { data: allCoins, error } = await supabase
@@ -56,10 +54,15 @@ async function getRankingData(currentUserId: string) {
   // Buscar informações de todos os usuários
   const userIds = allCoins.map(c => c.user_id);
   
-  const { data: users } = await supabase
+  const { data: users, error: usersError } = await supabase
     .from('users')
     .select('id, email, full_name, avatar_url')
     .in('id', userIds);
+
+  if (usersError) {
+    console.error('Error fetching users for ranking:', usersError);
+  }
+  console.log(`Ranking: fetched ${users?.length || 0} users for ${userIds.length} coins entries`);
 
   const usersMap = new Map(users?.map(u => [u.id, u]) || []);
 
