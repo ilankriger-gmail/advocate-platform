@@ -1161,6 +1161,51 @@ export async function deletePost(postId: string): Promise<ActionResponse> {
 }
 
 /**
+ * Deletar qualquer post (admin)
+ */
+export async function adminDeletePost(postId: string): Promise<ActionResponse> {
+  try {
+    const supabase = await createClient();
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return { error: 'Usuário não autenticado' };
+    }
+
+    // Verificar se é admin
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    if (!profile || profile.role !== 'admin') {
+      return { error: 'Apenas administradores podem remover posts' };
+    }
+
+    // Primeiro deletar comentários e likes relacionados
+    await supabase.from('comments').delete().eq('post_id', postId);
+    await supabase.from('post_likes').delete().eq('post_id', postId);
+
+    // Deletar o post
+    const { error } = await supabase
+      .from('posts')
+      .delete()
+      .eq('id', postId);
+
+    if (error) {
+      return { error: 'Erro ao deletar post: ' + error.message };
+    }
+
+    revalidatePath('/feed');
+    revalidatePath('/admin/posts');
+    return { success: true };
+  } catch {
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+/**
  * Buscar post por ID (para edição)
  */
 export async function getPostById(postId: string): Promise<ActionResponse<Post>> {

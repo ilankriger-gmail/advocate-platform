@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card, Button } from '@/components/ui';
-import { approvePost, approveBlockedPost, rejectPost } from '@/actions/posts';
+import { approvePost, approveBlockedPost, rejectPost, adminDeletePost } from '@/actions/posts';
 import type { Post } from '@/lib/supabase/types';
 
 type FilterType = 'pending' | 'blocked' | 'help_request' | 'approved' | 'rejected';
@@ -31,6 +31,7 @@ export function UnifiedPostCard({ post, author, filter }: UnifiedPostCardProps) 
   const [showDetails, setShowDetails] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const handleApprove = async () => {
     setIsLoading(true);
@@ -50,6 +51,16 @@ export function UnifiedPostCard({ post, author, filter }: UnifiedPostCardProps) 
     const result = await rejectPost(post.id, reason);
     if (result.success) {
       setShowRejectModal(false);
+      router.refresh();
+    }
+    setIsLoading(false);
+  };
+
+  const handleDelete = async () => {
+    setIsLoading(true);
+    const result = await adminDeletePost(post.id);
+    if (result.success) {
+      setShowDeleteConfirm(false);
       router.refresh();
     }
     setIsLoading(false);
@@ -256,10 +267,16 @@ export function UnifiedPostCard({ post, author, filter }: UnifiedPostCardProps) 
           </p>
 
           {/* Ações */}
-          <div className="mt-4 pt-4 border-t flex gap-3">
+          <div className="mt-4 pt-4 border-t flex flex-wrap gap-3">
+            <Link href={`/post/${post.id}`} target="_blank">
+              <Button variant="outline" size="sm">
+                👁️ Ver Post
+              </Button>
+            </Link>
+
             <Link href={`/admin/posts/${post.id}/editar`}>
               <Button variant="outline" size="sm">
-                Editar
+                ✏️ Editar
               </Button>
             </Link>
 
@@ -272,7 +289,7 @@ export function UnifiedPostCard({ post, author, filter }: UnifiedPostCardProps) 
                   size="sm"
                   className="bg-green-600 hover:bg-green-700"
                 >
-                  {isLoading ? 'Processando...' : 'Aprovar'}
+                  {isLoading ? 'Processando...' : '✅ Aprovar'}
                 </Button>
                 <Button
                   onClick={() => setShowRejectModal(true)}
@@ -281,13 +298,63 @@ export function UnifiedPostCard({ post, author, filter }: UnifiedPostCardProps) 
                   size="sm"
                   className="border-red-300 text-red-600 hover:bg-red-50"
                 >
-                  {filter === 'blocked' ? 'Manter Bloqueado' : 'Rejeitar'}
+                  {filter === 'blocked' ? '🛡️ Manter Bloqueado' : '🚫 Rejeitar'}
                 </Button>
               </>
             )}
+
+            {/* Botão de remover - disponível em todas as abas */}
+            <Button
+              onClick={() => setShowDeleteConfirm(true)}
+              disabled={isLoading}
+              variant="outline"
+              size="sm"
+              className="border-red-300 text-red-600 hover:bg-red-50 ml-auto"
+            >
+              🗑️ Remover
+            </Button>
           </div>
         </div>
       </Card>
+
+      {/* Modal de Confirmação de Exclusão */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-md w-full p-6">
+            <h3 className="text-lg font-bold text-gray-900 mb-2">
+              🗑️ Remover Post Permanentemente
+            </h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Tem certeza que deseja remover este post? Esta ação é <strong>irreversível</strong>.
+            </p>
+            {post.title && (
+              <div className="p-3 bg-gray-50 rounded-lg mb-4">
+                <p className="text-sm text-gray-700 font-medium">{post.title}</p>
+                {post.content && (
+                  <p className="text-xs text-gray-500 mt-1 line-clamp-2">{post.content.replace(/<[^>]*>/g, '').substring(0, 100)}...</p>
+                )}
+              </div>
+            )}
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={isLoading}
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleDelete}
+                disabled={isLoading}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+              >
+                {isLoading ? 'Removendo...' : '🗑️ Remover'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal de Rejeição */}
       {showRejectModal && (
