@@ -104,6 +104,11 @@ const icons: Record<string, React.ReactNode> = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
     </svg>
   ),
+  Bug: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 12v.01M8 8l-2-2m0 0l-2 2m2-2v3m12-3l2-2m0 0l2 2m-2-2v3M8 16l-2 2m0 0l-2-2m2 2v-3m12 3l2 2m0 0l2-2m-2 2v-3M12 8a4 4 0 100 8 4 4 0 000-8z" />
+    </svg>
+  ),
 };
 
 export function Sidebar({ isOpen = true, onClose }: SidebarProps) {

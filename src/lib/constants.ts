@@ -98,6 +98,7 @@ export const CREATOR_NAV = [
   { href: '/admin/broadcast', label: 'Broadcast', icon: 'Mail' },
   { href: '/admin/bugs', label: 'Bugs', icon: 'Bug' },
   { href: '/admin/configuracoes', label: 'Configurações', icon: 'Settings' },
+  { href: '/admin/coracoes', label: 'Corações', icon: 'Heart' },
   { href: '/admin/desafios', label: 'Desafios', icon: 'Target' },
   { href: '/admin/emails', label: 'Emails', icon: 'Mail' },
   { href: '/admin/engajamento', label: 'Engajamento', icon: 'Heart' },
