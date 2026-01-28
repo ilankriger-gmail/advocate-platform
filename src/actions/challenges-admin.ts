@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
 import type { ActionResponse } from './types';
 import { verifyAdminOrCreator, getAuthenticatedUser } from './utils';
@@ -617,8 +618,18 @@ export async function createChallenge(data: {
     // Nota: Thumbnail NÃO é gerada automaticamente.
     // O admin pode gerar manualmente na página de edição se desejar.
 
+    // Auto-publicar post no feed + notificar todos os usuários
+    try {
+      await announceNewChallenge(challenge);
+    } catch (announceErr) {
+      challengesAdminLogger.error('Erro ao anunciar desafio (não crítico)', {
+        error: sanitizeError(announceErr)
+      });
+    }
+
     revalidatePath('/desafios');
     revalidatePath('/admin/desafios');
+    revalidatePath('/');
     return { success: true, data: challenge };
   } catch (err) {
     challengesAdminLogger.error('Erro inesperado ao criar desafio', {
@@ -1297,5 +1308,112 @@ export async function saveChallengePrizes(
       error: sanitizeError(err)
     });
     return { error: 'Erro interno do servidor' };
+  }
+}
+
+// ============ AUTO-ANNOUNCE NEW CHALLENGE ============
+
+/**
+ * Cria post no feed + notificação broadcast quando um desafio novo é publicado
+ */
+async function announceNewChallenge(challenge: {
+  id: string;
+  title: string;
+  description?: string | null;
+  type: string;
+  icon?: string;
+  coins_reward?: number;
+  prize_amount?: number | null;
+  instagram_embed_url?: string | null;
+}) {
+  const supabase = createAdminClient();
+  const MOCO_USER_ID = process.env.MOCO_USER_ID;
+
+  if (!MOCO_USER_ID) {
+    challengesAdminLogger.warn('MOCO_USER_ID não configurado, pulando anúncio automático');
+    return;
+  }
+
+  const icon = challenge.icon || '🎯';
+  const title = challenge.title;
+  const hasInstagram = !!challenge.instagram_embed_url;
+  const coins = challenge.coins_reward || 0;
+
+  // Montar texto do post
+  let postContent = `<p><strong>${icon} Novo Desafio: ${title}</strong></p>`;
+  postContent += `<p>Um novo desafio acaba de ser publicado na Arena! 🔥</p>`;
+
+  if (challenge.description) {
+    // Pegar só as primeiras 200 chars da descrição
+    const shortDesc = challenge.description.length > 200
+      ? challenge.description.substring(0, 200) + '...'
+      : challenge.description;
+    postContent += `<p>${shortDesc}</p>`;
+  }
+
+  if (coins > 0) {
+    postContent += `<p>💰 Ganhe <strong>${coins} corações</strong> ao participar!</p>`;
+  }
+
+  if (hasInstagram) {
+    postContent += `<p>👉 Acesse os Desafios na plataforma para participar!</p>`;
+  } else {
+    postContent += `<p>👉 Vá até a seção <strong>Desafios</strong> para participar!</p>`;
+  }
+
+  // 1. Criar post no feed (como Moço)
+  const { error: postError } = await supabase
+    .from('posts')
+    .insert({
+      user_id: MOCO_USER_ID,
+      content: postContent,
+      status: 'approved',
+      is_pinned: false,
+    });
+
+  if (postError) {
+    challengesAdminLogger.error('Erro ao criar post de anúncio', {
+      error: sanitizeError(postError)
+    });
+  } else {
+    challengesAdminLogger.info('Post de anúncio criado para desafio', {
+      challengeId: maskId(challenge.id)
+    });
+  }
+
+  // 2. Notificar todos os usuários
+  const { data: users } = await supabase
+    .from('users')
+    .select('id');
+
+  if (users && users.length > 0) {
+    const notifications = users.map(u => ({
+      user_id: u.id,
+      type: 'new_challenge' as const,
+      title: `${icon} Novo Desafio: ${title}`,
+      message: coins > 0
+        ? `Participe e ganhe ${coins} corações! Confira na seção Desafios.`
+        : `Um novo desafio te espera! Confira na seção Desafios.`,
+      link: '/desafios',
+      icon,
+      is_read: false,
+    }));
+
+    // Inserir em lotes de 500
+    for (let i = 0; i < notifications.length; i += 500) {
+      const batch = notifications.slice(i, i + 500);
+      const { error: notifErr } = await supabase.from('user_notifications').insert(batch);
+      if (notifErr) {
+        challengesAdminLogger.error('Erro ao enviar notificações broadcast', {
+          batch: i,
+          error: sanitizeError(notifErr)
+        });
+      }
+    }
+
+    challengesAdminLogger.info('Notificações de novo desafio enviadas', {
+      challengeId: maskId(challenge.id),
+      totalUsers: users.length
+    });
   }
 }
