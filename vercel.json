@@ -8,6 +8,10 @@
     {
       "path": "/api/cron/ranking-snapshot",
       "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/onboarding",
+      "schedule": "*/15 * * * *"
     }
   ]
 }
