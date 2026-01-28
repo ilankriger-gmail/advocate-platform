@@ -293,7 +293,17 @@ export default async function DesafiosPage() {
 
                   {/* Conteúdo */}
                   <div className="p-4 space-y-4">
-                    <p className="text-gray-700 text-sm">{challenge.description}</p>
+                    {challenge.description && challenge.description.length > 200 ? (
+                      <details className="group">
+                        <summary className="text-gray-700 text-sm cursor-pointer list-none">
+                          <span className="line-clamp-3 whitespace-pre-line">{challenge.description}</span>
+                          <span className="text-pink-500 text-xs font-medium mt-1 inline-block group-open:hidden">ver mais →</span>
+                        </summary>
+                        <p className="text-gray-700 text-sm whitespace-pre-line mt-2">{challenge.description}</p>
+                      </details>
+                    ) : (
+                      <p className="text-gray-700 text-sm whitespace-pre-line">{challenge.description}</p>
+                    )}
 
                     {/* Info de ganhadores */}
                     {challenge.num_winners && (

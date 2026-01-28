@@ -204,7 +204,7 @@ export default async function PremiosPage({ searchParams }: PageProps) {
                     {/* Área que cresce - apenas título e descrição */}
                     <div className="flex-grow">
                       <h3 className="font-semibold text-gray-900">{reward.name}</h3>
-                      <p className="text-sm text-gray-500 mt-1 line-clamp-2">{reward.description}</p>
+                      <p className="text-sm text-gray-500 mt-1 line-clamp-3 whitespace-pre-line">{reward.description}</p>
                     </div>
 
                     {/* Área de info condicional - altura fixa para consistência */}
