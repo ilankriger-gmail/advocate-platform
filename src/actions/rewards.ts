@@ -107,6 +107,18 @@ export async function claimReward(
       return { error: 'Estoque esgotado' };
     }
 
+    // Verificar se usuário já resgatou este prêmio (limite 1 por pessoa)
+    const { count: existingClaims } = await supabase
+      .from('reward_claims')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .eq('reward_id', rewardId)
+      .neq('status', 'cancelled');
+
+    if (existingClaims && existingClaims > 0) {
+      return { error: 'Você já resgatou este prêmio. Limite de 1 por pessoa.' };
+    }
+
     // Buscar saldo do usuário
     const { data: userCoins } = await supabase
       .from('user_coins')
