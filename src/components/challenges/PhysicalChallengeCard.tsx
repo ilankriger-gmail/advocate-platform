@@ -104,15 +104,17 @@ export function PhysicalChallengeCard({
                 }`}>
                   <span className="text-xl">{challenge.icon}</span>
                 </div>
-                <div className="flex-1 text-left min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h3 className={`font-semibold truncate ${challenge.thumbnail_url ? 'text-white' : 'text-white'}`}>
+                <div className="flex-1 text-left min-w-0 overflow-hidden">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <h3 className={`font-semibold truncate flex-1 min-w-0 ${challenge.thumbnail_url ? 'text-white' : 'text-white'}`}>
                       {challenge.title}
                     </h3>
-                    {getStatusBadge()}
+                    <div className="flex-shrink-0">
+                      {getStatusBadge()}
+                    </div>
                   </div>
                   {challenge.goal_value && (
-                    <p className={`text-sm ${challenge.thumbnail_url ? 'text-white/80' : 'text-white/80'}`}>
+                    <p className={`text-sm truncate ${challenge.thumbnail_url ? 'text-white/80' : 'text-white/80'}`}>
                       Meta: {challenge.goal_value} {goalLabel}
                     </p>
                   )}
