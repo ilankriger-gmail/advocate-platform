@@ -105,6 +105,7 @@ export const CREATOR_NAV = [
   { href: '/admin/eventos', label: 'Eventos', icon: 'Calendar' },
   { href: '/admin/landing-pages', label: 'Landing Pages', icon: 'Layout' },
   { href: '/admin/leads', label: 'Leads NPS', icon: 'Chart' },
+  { href: '/admin/mocobot', label: 'MocoBot', icon: 'Bot' },
   { href: '/admin/posts', label: 'Moderação de Posts', icon: 'FileText' },
   { href: '/admin/notificacoes', label: 'Notificações', icon: 'Bell' },
   { href: '/admin/premios', label: 'Prêmios', icon: 'Gift' },
