@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎯 Command Center - Arena Te Amo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <style>
+    @keyframes pulse-glow { 0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4)} 50%{box-shadow:0 0 0 12px rgba(239,68,68,0)} }
+    @keyframes slide-in { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes count-up { from{opacity:0;transform:scale(.8)} to{opacity:1;transform:scale(1)} }
+    .pulse-alert { animation: pulse-glow 2s infinite }
+    .slide-in { animation: slide-in .4s ease-out forwards }
+    .count-up { animation: count-up .5s ease-out }
+    .gradient-header { background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #6366f1 100%) }
+    .card { @apply bg-gray-800/80 backdrop-blur rounded-2xl border border-gray-700/50 }
+    .stat-big { @apply text-4xl font-black tabular-nums }
+    .fire-border { border: 2px solid #f97316; box-shadow: 0 0 20px rgba(249,115,22,.2) }
+    ::-webkit-scrollbar { width: 6px }
+    ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px }
+    body { font-family: system-ui, -apple-system, sans-serif }
+    .engagement-low { border-left: 4px solid #ef4444 }
+    .engagement-med { border-left: 4px solid #f59e0b }
+    .engagement-high { border-left: 4px solid #10b981 }
+    .tab-active { @apply bg-white/10 text-white border-b-2 border-pink-500 }
+    .tab-inactive { @apply text-gray-400 hover:text-gray-200 }
+    .help-badge { @apply bg-red-500/20 text-red-300 text-xs px-2 py-0.5 rounded-full }
+    .growth-positive { @apply text-emerald-400 }
+    .growth-negative { @apply text-red-400 }
+  </style>
+</head>
+<body class="bg-gray-950 text-white min-h-screen">
+
+  <!-- Config Modal -->
+  <div id="config-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center hidden">
+    <div class="bg-gray-800 rounded-2xl p-8 max-w-md w-full mx-4">
+      <h2 class="text-2xl font-bold mb-4">🔑 Configurar Supabase</h2>
+      <p class="text-gray-400 mb-6">Cole suas credenciais para conectar ao banco da comunidade.</p>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm text-gray-300 mb-1">Supabase URL</label>
+          <input id="cfg-url" type="text" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-4 py-2 text-white" 
+                 placeholder="https://xxx.supabase.co">
+        </div>
+        <div>
+          <label class="block text-sm text-gray-300 mb-1">Anon Key</label>
+          <input id="cfg-key" type="password" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-4 py-2 text-white" 
+                 placeholder="eyJ...">
+        </div>
+        <button onclick="saveConfig()" class="w-full bg-pink-600 hover:bg-pink-500 rounded-lg py-3 font-bold transition-colors">
+          Conectar 🚀
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="gradient-header py-6 px-6">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-black">🎯 Command Center</h1>
+        <p class="text-pink-200/80 mt-1">Arena Te Amo — Monitoramento em tempo real</p>
+      </div>
+      <div class="flex items-center gap-4">
+        <div id="connection-status" class="flex items-center gap-2 bg-black/20 rounded-full px-4 py-2">
+          <span class="w-2 h-2 rounded-full bg-gray-500" id="status-dot"></span>
+          <span class="text-sm" id="status-text">Desconectado</span>
+        </div>
+        <button onclick="refreshAll()" class="bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors" title="Atualizar">
+          🔄
+        </button>
+        <button onclick="showConfig()" class="bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors" title="Config">
+          ⚙️
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto p-6 space-y-6">
+
+    <!-- Live Stats Row -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="card p-5 text-center slide-in" style="animation-delay:.1s">
+        <div class="text-gray-400 text-sm mb-1">👥 Membros</div>
+        <div class="stat-big text-white" id="stat-members">—</div>
+        <div class="text-xs mt-1" id="stat-members-growth"></div>
+      </div>
+      <div class="card p-5 text-center slide-in" style="animation-delay:.2s">
+        <div class="text-gray-400 text-sm mb-1">📝 Posts Hoje</div>
+        <div class="stat-big text-blue-400" id="stat-posts-today">—</div>
+        <div class="text-xs mt-1 text-gray-500" id="stat-posts-total"></div>
+      </div>
+      <div class="card p-5 text-center slide-in" style="animation-delay:.3s">
+        <div class="text-gray-400 text-sm mb-1">❤️ Corações Hoje</div>
+        <div class="stat-big text-pink-400" id="stat-hearts-today">—</div>
+        <div class="text-xs mt-1 text-gray-500" id="stat-hearts-total"></div>
+      </div>
+      <div class="card p-5 text-center slide-in" style="animation-delay:.4s">
+        <div class="text-gray-400 text-sm mb-1">💬 Comentários Hoje</div>
+        <div class="stat-big text-emerald-400" id="stat-comments-today">—</div>
+        <div class="text-xs mt-1 text-gray-500" id="stat-comments-total"></div>
+      </div>
+    </div>
+
+    <!-- Secondary Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="card p-4 text-center">
+        <div class="text-gray-400 text-xs mb-1">🏆 Desafios Ativos</div>
+        <div class="text-2xl font-bold text-amber-400" id="stat-challenges">—</div>
+      </div>
+      <div class="card p-4 text-center">
+        <div class="text-gray-400 text-xs mb-1">🎁 Resgates Pendentes</div>
+        <div class="text-2xl font-bold text-orange-400" id="stat-claims">—</div>
+      </div>
+      <div class="card p-4 text-center">
+        <div class="text-gray-400 text-xs mb-1">📊 Taxa Engajamento</div>
+        <div class="text-2xl font-bold text-cyan-400" id="stat-engagement">—</div>
+      </div>
+      <div class="card p-4 text-center">
+        <div class="text-gray-400 text-xs mb-1">⏱️ Cadastros/hora</div>
+        <div class="text-2xl font-bold text-violet-400" id="stat-signups-hour">—</div>
+      </div>
+    </div>
+
+    <!-- Two Column Layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- Left: Charts + Growth -->
+      <div class="lg:col-span-2 space-y-6">
+
+        <!-- Growth Chart -->
+        <div class="card p-6">
+          <h2 class="text-lg font-bold mb-4">📈 Crescimento de Membros (7 dias)</h2>
+          <div style="height:250px">
+            <canvas id="growth-chart"></canvas>
+          </div>
+        </div>
+
+        <!-- Tabs: Posts sem engajamento / Pedidos de ajuda / Mais ativos -->
+        <div class="card overflow-hidden">
+          <div class="flex border-b border-gray-700">
+            <button onclick="switchTab('neglected')" id="tab-neglected" class="flex-1 py-3 px-4 text-sm font-medium tab-active transition-colors">
+              🚨 Sem Engajamento
+            </button>
+            <button onclick="switchTab('help')" id="tab-help" class="flex-1 py-3 px-4 text-sm font-medium tab-inactive transition-colors">
+              🆘 Pedidos de Ajuda
+            </button>
+            <button onclick="switchTab('active')" id="tab-active" class="flex-1 py-3 px-4 text-sm font-medium tab-inactive transition-colors">
+              🌟 Mais Ativos
+            </button>
+          </div>
+
+          <!-- Neglected Posts -->
+          <div id="panel-neglected" class="p-4 max-h-96 overflow-y-auto">
+            <p class="text-gray-500 text-sm mb-3">Posts com 0 likes e 0 comentários (mais recentes primeiro)</p>
+            <div id="list-neglected" class="space-y-3">
+              <div class="text-gray-600 text-center py-8">Carregando...</div>
+            </div>
+          </div>
+
+          <!-- Help Requests -->
+          <div id="panel-help" class="p-4 max-h-96 overflow-y-auto hidden">
+            <p class="text-gray-500 text-sm mb-3">Posts que mencionam: ajuda, preciso, dinheiro, aluguel, doença, etc.</p>
+            <div id="list-help" class="space-y-3">
+              <div class="text-gray-600 text-center py-8">Carregando...</div>
+            </div>
+          </div>
+
+          <!-- Most Active Users -->
+          <div id="panel-active" class="p-4 max-h-96 overflow-y-auto hidden">
+            <p class="text-gray-500 text-sm mb-3">Membros com mais atividade nos últimos 7 dias</p>
+            <div id="list-active" class="space-y-3">
+              <div class="text-gray-600 text-center py-8">Carregando...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Live Feed + Quick Actions -->
+      <div class="space-y-6">
+
+        <!-- Quick Actions -->
+        <div class="card p-5">
+          <h2 class="text-lg font-bold mb-4">⚡ Ações Rápidas</h2>
+          <div class="space-y-2">
+            <a href="https://comunidade.omocodoteamo.com.br/admin" target="_blank" 
+               class="block w-full bg-pink-600/20 hover:bg-pink-600/30 text-pink-300 rounded-lg py-3 px-4 text-center transition-colors">
+              🛡️ Painel Admin
+            </a>
+            <a href="https://comunidade.omocodoteamo.com.br/admin/resgates" target="_blank"
+               class="block w-full bg-orange-600/20 hover:bg-orange-600/30 text-orange-300 rounded-lg py-3 px-4 text-center transition-colors">
+              🎁 Resgates Pendentes
+            </a>
+            <a href="https://comunidade.omocodoteamo.com.br/admin/broadcast" target="_blank"
+               class="block w-full bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 rounded-lg py-3 px-4 text-center transition-colors">
+              📧 Enviar Broadcast
+            </a>
+            <a href="https://supabase.com/dashboard" target="_blank"
+               class="block w-full bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 rounded-lg py-3 px-4 text-center transition-colors">
+              🗄️ Supabase
+            </a>
+          </div>
+        </div>
+
+        <!-- Live Feed -->
+        <div class="card p-5">
+          <h2 class="text-lg font-bold mb-4">📡 Feed ao Vivo</h2>
+          <div id="live-feed" class="space-y-3 max-h-[500px] overflow-y-auto">
+            <div class="text-gray-600 text-center py-8">Carregando...</div>
+          </div>
+        </div>
+
+        <!-- Engagement Heatmap -->
+        <div class="card p-5">
+          <h2 class="text-lg font-bold mb-4">🔥 Horários de Pico</h2>
+          <div id="heatmap" class="grid grid-cols-6 gap-1">
+            <!-- Generated by JS -->
+          </div>
+          <div class="flex justify-between text-xs text-gray-500 mt-2">
+            <span>00h</span><span>06h</span><span>12h</span><span>18h</span><span>23h</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center text-gray-600 text-xs py-4">
+      🎯 Command Center — Arena Te Amo · Auto-refresh a cada 60s · 
+      <span id="last-update">Nunca atualizado</span>
+    </div>
+  </main>
+
+<script>
+// ========================
+// CONFIG & SUPABASE
+// ========================
+const SUPABASE_URL = 'https://gsxanzgwstlpfvnqcmiu.supabase.co';
+const SUPABASE_KEY = localStorage.getItem('sb-anon-key') || '';
+
+let supabase = null;
+let growthChart = null;
+let refreshInterval = null;
+
+function showConfig() {
+  document.getElementById('config-modal').classList.remove('hidden');
+  document.getElementById('cfg-url').value = SUPABASE_URL;
+  document.getElementById('cfg-key').value = localStorage.getItem('sb-anon-key') || '';
+}
+
+function saveConfig() {
+  const key = document.getElementById('cfg-key').value.trim();
+  if (!key) return alert('Cole a Anon Key!');
+  localStorage.setItem('sb-anon-key', key);
+  document.getElementById('config-modal').classList.add('hidden');
+  initSupabase(key);
+}
+
+function initSupabase(key) {
+  try {
+    supabase = window.supabase.createClient(SUPABASE_URL, key);
+    setStatus('connected', 'Conectado');
+    refreshAll();
+    if (refreshInterval) clearInterval(refreshInterval);
+    refreshInterval = setInterval(refreshAll, 60000);
+  } catch(e) {
+    setStatus('error', 'Erro: ' + e.message);
+  }
+}
+
+function setStatus(state, text) {
+  const dot = document.getElementById('status-dot');
+  const txt = document.getElementById('status-text');
+  dot.className = 'w-2 h-2 rounded-full ' + ({
+    connected: 'bg-emerald-400',
+    error: 'bg-red-400',
+    loading: 'bg-yellow-400 animate-pulse'
+  }[state] || 'bg-gray-500');
+  txt.textContent = text;
+}
+
+// ========================
+// DATA FETCHING
+// ========================
+
+async function refreshAll() {
+  if (!supabase) return;
+  setStatus('loading', 'Atualizando...');
+  
+  try {
+    await Promise.all([
+      fetchMemberStats(),
+      fetchPostStats(),
+      fetchHeartStats(),
+      fetchCommentStats(),
+      fetchChallengeStats(),
+      fetchClaimStats(),
+      fetchNeglectedPosts(),
+      fetchHelpRequests(),
+      fetchActiveUsers(),
+      fetchLiveFeed(),
+      fetchGrowthData(),
+      fetchHeatmapData(),
+    ]);
+    
+    setStatus('connected', 'Conectado');
+    document.getElementById('last-update').textContent = 
+      new Date().toLocaleTimeString('pt-BR');
+  } catch(e) {
+    console.error('Refresh error:', e);
+    setStatus('error', 'Erro ao atualizar');
+  }
+}
+
+function todayStart() {
+  const d = new Date();
+  d.setHours(0,0,0,0);
+  return d.toISOString();
+}
+
+function daysAgo(n) {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  d.setHours(0,0,0,0);
+  return d.toISOString();
+}
+
+function hoursAgo(h) {
+  return new Date(Date.now() - h*3600000).toISOString();
+}
+
+async function fetchMemberStats() {
+  // Total members
+  const { count: total } = await supabase.from('users').select('*', { count: 'exact', head: true });
+  // Members today
+  const { count: today } = await supabase.from('users').select('*', { count: 'exact', head: true })
+    .gte('created_at', todayStart());
+  // Members last hour  
+  const { count: lastHour } = await supabase.from('users').select('*', { count: 'exact', head: true })
+    .gte('created_at', hoursAgo(1));
+  
+  const el = document.getElementById('stat-members');
+  el.textContent = (total || 0).toLocaleString('pt-BR');
+  el.classList.add('count-up');
+  
+  const growth = document.getElementById('stat-members-growth');
+  if (today > 0) {
+    growth.innerHTML = `<span class="growth-positive">+${today} hoje</span>`;
+  }
+  
+  document.getElementById('stat-signups-hour').textContent = lastHour || 0;
+}
+
+async function fetchPostStats() {
+  const { count: total } = await supabase.from('posts').select('*', { count: 'exact', head: true });
+  const { count: today } = await supabase.from('posts').select('*', { count: 'exact', head: true })
+    .gte('created_at', todayStart());
+  
+  document.getElementById('stat-posts-today').textContent = today || 0;
+  document.getElementById('stat-posts-total').textContent = `${(total||0).toLocaleString('pt-BR')} total`;
+}
+
+async function fetchHeartStats() {
+  const { count: total } = await supabase.from('hearts').select('*', { count: 'exact', head: true });
+  const { count: today } = await supabase.from('hearts').select('*', { count: 'exact', head: true })
+    .gte('created_at', todayStart());
+  
+  document.getElementById('stat-hearts-today').textContent = today || 0;
+  document.getElementById('stat-hearts-total').textContent = `${(total||0).toLocaleString('pt-BR')} total`;
+}
+
+async function fetchCommentStats() {
+  const { count: total } = await supabase.from('comments').select('*', { count: 'exact', head: true });
+  const { count: today } = await supabase.from('comments').select('*', { count: 'exact', head: true })
+    .gte('created_at', todayStart());
+  
+  document.getElementById('stat-comments-today').textContent = today || 0;
+  document.getElementById('stat-comments-total').textContent = `${(total||0).toLocaleString('pt-BR')} total`;
+}
+
+async function fetchChallengeStats() {
+  const { count } = await supabase.from('challenges').select('*', { count: 'exact', head: true })
+    .eq('status', 'active');
+  document.getElementById('stat-challenges').textContent = count || 0;
+}
+
+async function fetchClaimStats() {
+  const { count } = await supabase.from('reward_claims').select('*', { count: 'exact', head: true })
+    .eq('status', 'pending');
+  const el = document.getElementById('stat-claims');
+  el.textContent = count || 0;
+  if (count > 0) el.closest('.card').classList.add('fire-border');
+  else el.closest('.card').classList.remove('fire-border');
+}
+
+async function fetchNeglectedPosts() {
+  // Posts with 0 engagement in last 48h
+  const { data: posts } = await supabase.from('posts')
+    .select('id, content, created_at, user_id, like_count, comment_count')
+    .gte('created_at', daysAgo(2))
+    .order('created_at', { ascending: false })
+    .limit(50);
+  
+  if (!posts) return;
+  
+  const neglected = posts.filter(p => (p.like_count || 0) === 0 && (p.comment_count || 0) === 0);
+  
+  // Engagement rate
+  const engRate = posts.length > 0 ? ((posts.length - neglected.length) / posts.length * 100).toFixed(0) : 0;
+  document.getElementById('stat-engagement').textContent = engRate + '%';
+  
+  const list = document.getElementById('list-neglected');
+  if (neglected.length === 0) {
+    list.innerHTML = '<div class="text-emerald-400 text-center py-6">✅ Todos os posts recentes têm engajamento!</div>';
+    return;
+  }
+  
+  list.innerHTML = neglected.slice(0, 20).map(p => `
+    <div class="bg-gray-900/50 rounded-lg p-3 engagement-low hover:bg-gray-900/80 transition-colors">
+      <div class="text-sm text-gray-300 line-clamp-2">${escHtml(p.content?.substring(0, 150) || '(sem texto)')}</div>
+      <div class="flex justify-between items-center mt-2">
+        <span class="text-xs text-gray-500">${timeAgo(p.created_at)}</span>
+        <a href="https://comunidade.omocodoteamo.com.br/post/${p.id}" target="_blank"
+           class="text-xs text-pink-400 hover:text-pink-300">Ver post →</a>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function fetchHelpRequests() {
+  const helpKeywords = ['ajuda', 'preciso', 'necessidade', 'aluguel', 'doença', 'doente', 
+                        'hospital', 'desemprego', 'desempregad', 'fome', 'dívida', 'devendo',
+                        'socorro', 'urgente', 'favor', 'remedios', 'remédios', 'operação',
+                        'cirurgia', 'tratamento', 'câncer', 'cancer'];
+  
+  const { data: posts } = await supabase.from('posts')
+    .select('id, content, created_at, user_id, like_count, comment_count')
+    .order('created_at', { ascending: false })
+    .limit(200);
+  
+  if (!posts) return;
+  
+  const helpPosts = posts.filter(p => {
+    const text = (p.content || '').toLowerCase();
+    return helpKeywords.some(kw => text.includes(kw));
+  });
+  
+  const list = document.getElementById('list-help');
+  if (helpPosts.length === 0) {
+    list.innerHTML = '<div class="text-gray-500 text-center py-6">Nenhum pedido de ajuda encontrado</div>';
+    return;
+  }
+  
+  list.innerHTML = helpPosts.slice(0, 20).map(p => {
+    const matched = helpKeywords.filter(kw => (p.content||'').toLowerCase().includes(kw));
+    return `
+      <div class="bg-gray-900/50 rounded-lg p-3 engagement-low hover:bg-gray-900/80 transition-colors">
+        <div class="flex items-start gap-2">
+          <span class="help-badge mt-0.5">${matched[0]}</span>
+          <div class="text-sm text-gray-300 line-clamp-3">${escHtml(p.content?.substring(0, 200) || '')}</div>
+        </div>
+        <div class="flex justify-between items-center mt-2">
+          <span class="text-xs text-gray-500">${timeAgo(p.created_at)} · ❤️${p.like_count||0} 💬${p.comment_count||0}</span>
+          <a href="https://comunidade.omocodoteamo.com.br/post/${p.id}" target="_blank"
+             class="text-xs text-pink-400 hover:text-pink-300">Ver post →</a>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function fetchActiveUsers() {
+  // Get users with most hearts (from heart_transactions or posts)
+  const { data: topPosters } = await supabase.from('posts')
+    .select('user_id')
+    .gte('created_at', daysAgo(7));
+  
+  if (!topPosters) return;
+  
+  // Count posts per user
+  const counts = {};
+  topPosters.forEach(p => { counts[p.user_id] = (counts[p.user_id] || 0) + 1; });
+  
+  const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0, 15);
+  
+  if (sorted.length === 0) {
+    document.getElementById('list-active').innerHTML = 
+      '<div class="text-gray-500 text-center py-6">Nenhum dado ainda</div>';
+    return;
+  }
+  
+  // Fetch user names
+  const userIds = sorted.map(([id]) => id);
+  const { data: users } = await supabase.from('users')
+    .select('id, full_name, avatar_url, email')
+    .in('id', userIds);
+  
+  const userMap = {};
+  (users || []).forEach(u => { userMap[u.id] = u; });
+  
+  const list = document.getElementById('list-active');
+  list.innerHTML = sorted.map(([userId, count], i) => {
+    const u = userMap[userId] || {};
+    const name = u.full_name || u.email?.split('@')[0] || 'Membro';
+    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i+1}`;
+    const avatar = u.avatar_url 
+      ? `<img src="${u.avatar_url}" class="w-8 h-8 rounded-full object-cover" onerror="this.style.display='none'">`
+      : `<div class="w-8 h-8 rounded-full bg-pink-600/30 flex items-center justify-center text-xs">${name[0]}</div>`;
+    return `
+      <div class="flex items-center gap-3 bg-gray-900/50 rounded-lg p-3 hover:bg-gray-900/80 transition-colors">
+        <span class="text-lg w-8 text-center">${medal}</span>
+        ${avatar}
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-medium text-gray-200 truncate">${escHtml(name)}</div>
+          <div class="text-xs text-gray-500">${count} posts nos últimos 7 dias</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function fetchLiveFeed() {
+  const { data: posts } = await supabase.from('posts')
+    .select('id, content, created_at, user_id, like_count, comment_count, type')
+    .order('created_at', { ascending: false })
+    .limit(15);
+  
+  if (!posts || posts.length === 0) {
+    document.getElementById('live-feed').innerHTML = 
+      '<div class="text-gray-500 text-center py-6">Nenhum post ainda</div>';
+    return;
+  }
+  
+  const userIds = [...new Set(posts.map(p => p.user_id))];
+  const { data: users } = await supabase.from('users')
+    .select('id, full_name, email')
+    .in('id', userIds);
+  const userMap = {};
+  (users||[]).forEach(u => { userMap[u.id] = u; });
+  
+  const feed = document.getElementById('live-feed');
+  feed.innerHTML = posts.map(p => {
+    const u = userMap[p.user_id] || {};
+    const name = u.full_name || u.email?.split('@')[0] || 'Membro';
+    const engagement = (p.like_count||0) + (p.comment_count||0);
+    const engClass = engagement === 0 ? 'border-l-red-500/50' : engagement < 3 ? 'border-l-yellow-500/50' : 'border-l-emerald-500/50';
+    const typeEmoji = p.type === 'help_request' ? '🆘' : p.type === 'challenge' ? '🏆' : '📝';
+    return `
+      <div class="border-l-2 ${engClass} pl-3 py-1">
+        <div class="flex items-center gap-2">
+          <span>${typeEmoji}</span>
+          <span class="text-xs font-medium text-gray-300">${escHtml(name)}</span>
+          <span class="text-xs text-gray-600">${timeAgo(p.created_at)}</span>
+        </div>
+        <div class="text-xs text-gray-400 mt-0.5 line-clamp-2">${escHtml(p.content?.substring(0, 100) || '...')}</div>
+        <div class="text-xs text-gray-600 mt-0.5">❤️${p.like_count||0} 💬${p.comment_count||0}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function fetchGrowthData() {
+  const labels = [];
+  const data = [];
+  
+  for (let i = 6; i >= 0; i--) {
+    const dayStart = daysAgo(i);
+    const dayEnd = i === 0 ? new Date().toISOString() : daysAgo(i - 1);
+    labels.push(new Date(dayStart).toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric' }));
+    
+    const { count } = await supabase.from('users').select('*', { count: 'exact', head: true })
+      .gte('created_at', dayStart)
+      .lt('created_at', dayEnd);
+    data.push(count || 0);
+  }
+  
+  renderGrowthChart(labels, data);
+}
+
+function renderGrowthChart(labels, data) {
+  const ctx = document.getElementById('growth-chart').getContext('2d');
+  if (growthChart) growthChart.destroy();
+  
+  growthChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Novos membros',
+        data,
+        backgroundColor: data.map((v, i) => i === data.length - 1 ? 'rgba(236,72,153,.8)' : 'rgba(139,92,246,.5)'),
+        borderRadius: 8,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: { label: (ctx) => `+${ctx.raw} membros` }
+        }
+      },
+      scales: {
+        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,.05)' }, ticks: { color: '#9ca3af' } },
+        x: { grid: { display: false }, ticks: { color: '#9ca3af' } }
+      }
+    }
+  });
+}
+
+async function fetchHeatmapData() {
+  const { data: posts } = await supabase.from('posts')
+    .select('created_at')
+    .gte('created_at', daysAgo(7))
+    .limit(1000);
+  
+  // Count posts by hour
+  const hourCounts = new Array(24).fill(0);
+  (posts || []).forEach(p => {
+    const h = new Date(p.created_at).getHours();
+    hourCounts[h]++;
+  });
+  
+  const max = Math.max(...hourCounts, 1);
+  const container = document.getElementById('heatmap');
+  container.innerHTML = hourCounts.map((count, h) => {
+    const intensity = count / max;
+    const bg = intensity === 0 ? 'bg-gray-800' 
+      : intensity < 0.25 ? 'bg-pink-900/40'
+      : intensity < 0.5 ? 'bg-pink-700/50'
+      : intensity < 0.75 ? 'bg-pink-600/60'
+      : 'bg-pink-500/80';
+    return `<div class="${bg} rounded aspect-square flex items-center justify-center text-[10px] text-gray-400" 
+                 title="${h}h: ${count} posts">${h}</div>`;
+  }).join('');
+}
+
+// ========================
+// TABS
+// ========================
+function switchTab(tab) {
+  ['neglected', 'help', 'active'].forEach(t => {
+    document.getElementById(`tab-${t}`).className = 
+      `flex-1 py-3 px-4 text-sm font-medium transition-colors ${t === tab ? 'tab-active' : 'tab-inactive'}`;
+    document.getElementById(`panel-${t}`).classList.toggle('hidden', t !== tab);
+  });
+}
+
+// ========================
+// HELPERS
+// ========================
+function escHtml(str) {
+  const d = document.createElement('div');
+  d.textContent = str || '';
+  return d.innerHTML;
+}
+
+function timeAgo(iso) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'agora';
+  if (mins < 60) return `${mins}min`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d`;
+}
+
+// ========================
+// INIT
+// ========================
+window.addEventListener('load', () => {
+  const savedKey = localStorage.getItem('sb-anon-key');
+  if (savedKey) {
+    initSupabase(savedKey);
+  } else {
+    showConfig();
+  }
+});
+</script>
+
+</body>
+</html>
