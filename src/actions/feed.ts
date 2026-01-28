@@ -165,7 +165,7 @@ export async function getFeedPosts({
 }: GetFeedParams): Promise<PaginatedFeedResponse<PostWithAuthor>> {
   const supabase = await createClient();
 
-  // Construir query base
+  // Construir query base — inclui preview dos 2 últimos comentários (evita N+1)
   let query = supabase
     .from('posts')
     .select(`
@@ -176,6 +176,17 @@ export async function getFeedPosts({
         avatar_url,
         is_creator,
         member_number
+      ),
+      comment_previews:post_comments(
+        id,
+        content,
+        created_at,
+        parent_id,
+        author:users!post_comments_user_id_fkey(
+          id,
+          full_name,
+          avatar_url
+        )
       )
     `)
     .eq('status', 'approved');
@@ -290,7 +301,14 @@ export async function getFeedPosts({
     return { data: [], nextCursor: null, hasMore: false };
   }
 
-  let posts = (data || []) as PostWithAuthor[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let posts = (data || []).map((post: any) => {
+    // Process comment_previews: keep only last 2 top-level comments
+    const previews = (post.comment_previews || [])
+      .filter((c: { parent_id?: string | null }) => !c.parent_id)
+      .slice(-2);
+    return { ...post, comment_previews: previews };
+  }) as PostWithAuthor[];
 
   // Para ordenação 'hot', calcular score e reordenar no client
   if (sort === 'hot' && posts.length > 0) {

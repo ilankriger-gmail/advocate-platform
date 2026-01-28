@@ -301,6 +301,17 @@ export interface UserWithStats extends User {
   followers_count?: number;
 }
 
+export interface CommentPreview {
+  id: string;
+  content: string;
+  created_at: string;
+  author: {
+    id: string;
+    full_name: string | null;
+    avatar_url: string | null;
+  } | null;
+}
+
 export interface PostWithAuthor extends Post {
   author: {
     id: string;
@@ -309,6 +320,7 @@ export interface PostWithAuthor extends Post {
     is_creator: boolean;
     member_number?: number | null;
   } | null;
+  comment_previews?: CommentPreview[];
 }
 
 export interface CommentWithAuthor extends PostComment {

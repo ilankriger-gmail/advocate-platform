@@ -1184,7 +1184,7 @@ export async function adminDeletePost(postId: string): Promise<ActionResponse> {
     }
 
     // Primeiro deletar comentários e likes relacionados
-    await supabase.from('comments').delete().eq('post_id', postId);
+    await supabase.from('post_comments').delete().eq('post_id', postId);
     await supabase.from('post_likes').delete().eq('post_id', postId);
 
     // Deletar o post

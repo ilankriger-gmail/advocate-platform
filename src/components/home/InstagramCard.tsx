@@ -1,7 +1,7 @@
 'use client';
 
+import { useState, useTransition, useCallback } from 'react';
 import Link from 'next/link';
-import DOMPurify from 'isomorphic-dompurify';
 import { Card, Avatar, MemberBadge } from '@/components/ui';
 import {
   ImageCarousel,
@@ -10,17 +10,17 @@ import {
   SaveButton,
   ShareButton,
   LikeButton,
-  InlineComments,
 } from '@/components/posts';
 import { formatRelativeTime } from '@/lib/utils';
-import type { PostWithAuthor } from '@/lib/supabase/types';
+import { commentPost } from '@/actions/posts';
+import type { PostWithAuthor, CommentPreview } from '@/lib/supabase/types';
 
-// Sanitizar HTML para prevenir XSS
+// Sanitizar HTML simples sem DOMPurify (15KB a menos no bundle)
 function sanitizeHtml(html: string): string {
-  return DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'ol', 'li', 's', 'strike'],
-    ALLOWED_ATTR: ['href', 'target', 'rel', 'class'],
-  });
+  // Strip all tags except allowed ones
+  const allowed = ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'ol', 'li', 's', 'strike'];
+  const regex = new RegExp(`<(?!\\/?(${allowed.join('|')})\\b)[^>]*>`, 'gi');
+  return html.replace(regex, '');
 }
 
 interface InstagramCardProps {
@@ -28,6 +28,36 @@ interface InstagramCardProps {
 }
 
 export function InstagramCard({ post }: InstagramCardProps) {
+  const [comments, setComments] = useState<CommentPreview[]>(post.comment_previews || []);
+  const [localCount, setLocalCount] = useState(post.comments_count || 0);
+  const [newComment, setNewComment] = useState('');
+  const [isPending, startTransition] = useTransition();
+
+  const handleSubmitComment = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      const text = newComment.trim();
+      if (!text) return;
+      setNewComment('');
+
+      startTransition(async () => {
+        const result = await commentPost(post.id, text);
+        if (result.success && result.data) {
+          // Add optimistic comment
+          const newC: CommentPreview = {
+            id: result.data.id,
+            content: text,
+            created_at: new Date().toISOString(),
+            author: null, // Will show as "Você"
+          };
+          setComments(prev => [...prev.slice(-1), newC]);
+          setLocalCount(prev => prev + 1);
+        }
+      });
+    },
+    [newComment, post.id],
+  );
+
   const hasImages = post.media_url && post.media_url.length > 0;
   const hasYoutube = !!post.youtube_url;
   const hasInstagram = !!post.instagram_url;
@@ -144,9 +174,57 @@ export function InstagramCard({ post }: InstagramCardProps) {
         </div>
       )}
 
-      {/* Comentários inline */}
-      <div className="border-t border-gray-100">
-        <InlineComments postId={post.id} commentsCount={post.comments_count || 0} />
+      {/* Comentários inline — dados do server (zero extra requests) */}
+      <div className="border-t border-gray-100 px-4 py-3">
+        {/* Ver todos */}
+        {localCount > 2 && (
+          <Link
+            href={`/post/${post.id}`}
+            className="block text-sm text-gray-400 hover:text-gray-600 transition-colors mb-2"
+          >
+            Ver todos os {localCount} comentários
+          </Link>
+        )}
+
+        {/* Preview dos últimos 2 comentários */}
+        {comments.length > 0 && (
+          <div className="space-y-1.5 mb-2">
+            {comments.map((comment) => (
+              <div key={comment.id} className="flex items-start gap-2 text-[14px]">
+                <Link
+                  href={`/profile/${comment.author?.id || ''}`}
+                  className="font-semibold text-gray-900 hover:text-primary-600 transition-colors shrink-0"
+                >
+                  {comment.author?.full_name || 'Você'}
+                </Link>
+                <span className="text-gray-600 break-words min-w-0 line-clamp-2">
+                  {comment.content}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Input de comentário inline */}
+        <form onSubmit={handleSubmitComment} className="flex items-center gap-2 mt-1">
+          <input
+            type="text"
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            placeholder="Adicione um comentário..."
+            className="flex-1 text-sm bg-transparent border-none outline-none placeholder:text-gray-300 text-gray-700 py-1"
+            disabled={isPending}
+          />
+          {newComment.trim() && (
+            <button
+              type="submit"
+              disabled={isPending}
+              className="text-sm font-bold text-primary-600 hover:text-primary-700 disabled:opacity-50 transition-colors shrink-0"
+            >
+              {isPending ? '...' : 'Publicar'}
+            </button>
+          )}
+        </form>
       </div>
     </Card>
   );
