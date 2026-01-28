@@ -76,10 +76,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [supabase]);
 
   useEffect(() => {
-    // Listener para mudanças de autenticação (configurar primeiro)
+    let isMounted = true;
+    let initialLoadDone = false;
+
+    // Listener para mudanças de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
+        if (!isMounted) return;
+
         console.log('[Auth] Estado alterado:', event, currentSession?.user?.email);
+
+        // Ignorar evento INITIAL_SESSION - vamos usar getUser() para isso
+        if (event === 'INITIAL_SESSION') {
+          return;
+        }
 
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
@@ -95,18 +105,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     );
 
-    // Obtém a sessão inicial
-    // Usa getSession() primeiro (rápido, lê do cache/cookie)
-    // O onAuthStateChange listener acima valida o token em background
+    // Obtém a sessão inicial usando getUser() que valida o token no servidor
     const getInitialSession = async () => {
       try {
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        // getUser() valida o token com o servidor (mais confiável que getSession)
+        const { data: { user: currentUser }, error } = await supabase.auth.getUser();
 
-        if (currentSession?.user) {
-          console.log('[Auth] Sessão encontrada:', currentSession.user.email);
-          setSession(currentSession);
-          setUser(currentSession.user);
-          await fetchProfile(currentSession.user.id);
+        if (!isMounted) return;
+
+        if (error) {
+          console.log('[Auth] Erro ao validar sessão:', error.message);
+          setUser(null);
+          setSession(null);
+          setProfile(null);
+        } else if (currentUser) {
+          console.log('[Auth] Sessão válida:', currentUser.email);
+          // Também pegar a session para ter o token
+          const { data: { session } } = await supabase.auth.getSession();
+          setSession(session);
+          setUser(currentUser);
+          await fetchProfile(currentUser.id);
         } else {
           console.log('[Auth] Nenhuma sessão ativa');
           setUser(null);
@@ -115,8 +133,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
       } catch (error) {
         console.error('[Auth] Erro ao obter sessão inicial:', error);
+        if (isMounted) {
+          setUser(null);
+          setSession(null);
+          setProfile(null);
+        }
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          initialLoadDone = true;
+          setIsLoading(false);
+        }
       }
     };
 
@@ -124,6 +150,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     // Cleanup do listener
     return () => {
+      isMounted = false;
       subscription.unsubscribe();
     };
   }, [supabase.auth, fetchProfile]);
