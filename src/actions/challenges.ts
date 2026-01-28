@@ -20,6 +20,7 @@ export type ParticipationResult = {
   participation: ChallengeParticipant;
   aiVerdict: AIVerdict | null;
   instagramVerdict: InstagramVerdict | null;
+  aiRecommendation?: 'approve' | 'reject' | 'review';
   challenge: {
     title: string;
     goal_type: 'repetitions' | 'time' | null;
@@ -124,9 +125,15 @@ export async function participateInChallenge(data: {
       );
     }
 
-    // ========== LÓGICA DE APROVAÇÃO AUTOMÁTICA ==========
+    // ========== LÓGICA DE APROVAÇÃO ==========
+    // MODO TREINAMENTO: Todas as participações ficam pendentes para aprovação manual.
+    // A IA analisa e dá sua opinião, mas a decisão final é do admin.
+    // Isso ajuda a treinar a IA e garantir qualidade no início.
+    const REQUIRE_MANUAL_APPROVAL = true; // Mudar para false quando a IA estiver treinada
+
     let participationStatus: 'pending' | 'approved' | 'rejected' = 'pending';
     let coinsToEarn = 0;
+    let aiRecommendation: 'approve' | 'reject' | 'review' = 'review';
 
     // Verificar se há conteúdo suspeito
     const youtubeIsSuspicious = aiVerdict?.isSuspicious || false;
@@ -134,47 +141,46 @@ export async function participateInChallenge(data: {
     const hasSuspiciousContent = youtubeIsSuspicious || instagramIsSuspicious;
 
     if (isAtosAmor && instagramVerdict) {
-      // Para Atos de Amor: calcular confiança média entre YouTube e Instagram
       const avgConfidence = (aiVerdict.confidence + instagramVerdict.confidence) / 2;
       const bothValid = aiVerdict.isValid && instagramVerdict.isValid;
       const bothInvalid = !aiVerdict.isValid && !instagramVerdict.isValid;
 
       if (hasSuspiciousContent) {
-        // Conteúdo suspeito → sempre revisão humana
-        participationStatus = 'pending';
-        challengesLogger.info('Participação marcada para revisão por conteúdo suspeito', {
-          challengeId: maskId(data.challengeId),
-          youtubeIsSuspicious,
-          instagramIsSuspicious
-        });
+        aiRecommendation = 'review';
       } else if (avgConfidence >= 80 && bothValid) {
-        // Alta confiança e ambos válidos → aprovação automática
-        participationStatus = 'approved';
-        coinsToEarn = challenge.coins_reward || 0;
-        challengesLogger.info('Participação aprovada automaticamente pela IA', {
-          challengeId: maskId(data.challengeId),
-          avgConfidence,
-          coins: coinsToEarn
-        });
+        aiRecommendation = 'approve';
       } else if (avgConfidence < 50 && bothInvalid) {
-        // Muito baixa confiança e ambos inválidos → rejeição automática
-        participationStatus = 'rejected';
-        challengesLogger.info('Participação rejeitada automaticamente pela IA', {
-          challengeId: maskId(data.challengeId),
-          avgConfidence
-        });
+        aiRecommendation = 'reject';
       } else {
-        // Casos intermediários → revisão humana
-        participationStatus = 'pending';
+        aiRecommendation = 'review';
       }
     } else {
-      // Para desafios físicos: usar apenas YouTube
       if (aiVerdict.isSuspicious) {
-        participationStatus = 'pending';
+        aiRecommendation = 'review';
       } else if (aiVerdict.confidence >= 80 && aiVerdict.isValid) {
+        aiRecommendation = 'approve';
+      } else if (aiVerdict.confidence < 50 && !aiVerdict.isValid) {
+        aiRecommendation = 'reject';
+      } else {
+        aiRecommendation = 'review';
+      }
+    }
+
+    if (REQUIRE_MANUAL_APPROVAL) {
+      // Modo treinamento: tudo fica pendente, admin decide
+      participationStatus = 'pending';
+      coinsToEarn = 0;
+      challengesLogger.info('Participação aguardando aprovação manual (modo treinamento)', {
+        challengeId: maskId(data.challengeId),
+        aiRecommendation,
+        aiConfidence: aiVerdict?.confidence
+      });
+    } else {
+      // Modo automático (futuro): IA decide
+      if (aiRecommendation === 'approve') {
         participationStatus = 'approved';
         coinsToEarn = challenge.coins_reward || 0;
-      } else if (aiVerdict.confidence < 50 && !aiVerdict.isValid) {
+      } else if (aiRecommendation === 'reject') {
         participationStatus = 'rejected';
       } else {
         participationStatus = 'pending';
@@ -200,6 +206,7 @@ export async function participateInChallenge(data: {
         ai_observed_value: aiVerdict?.observedValue ?? null,
         ai_analyzed_at: aiVerdict ? new Date().toISOString() : null,
         ai_is_suspicious: hasSuspiciousContent,
+        ai_recommendation: aiRecommendation,
         // Campos de análise de IA (Instagram)
         ai_instagram_is_valid: instagramVerdict?.isValid ?? null,
         ai_instagram_confidence: instagramVerdict?.confidence ?? null,
@@ -261,6 +268,46 @@ export async function participateInChallenge(data: {
     revalidatePath('/desafios');
     revalidatePath('/dashboard');
 
+    // Notificar admins sobre nova participação pendente
+    if (participationStatus === 'pending') {
+      try {
+        // Buscar nome do participante
+        const { data: participant } = await supabase
+          .from('users')
+          .select('full_name')
+          .eq('id', user.id)
+          .single();
+        
+        const participantName = participant?.full_name || 'Alguém';
+        const recommendEmoji = aiRecommendation === 'approve' ? '✅' : aiRecommendation === 'reject' ? '❌' : '🤔';
+        const confidenceStr = aiVerdict?.confidence ? `${aiVerdict.confidence}%` : 'N/A';
+
+        // Criar notificação no banco para admins
+        const { data: admins } = await supabase
+          .from('users')
+          .select('id')
+          .eq('role', 'admin');
+
+        if (admins && admins.length > 0) {
+          const notifications = admins.map(admin => ({
+            user_id: admin.id,
+            type: 'challenge_pending',
+            title: `${recommendEmoji} Desafio para aprovar`,
+            message: `${participantName} participou de "${challenge.title}". IA recomenda: ${aiRecommendation} (confiança: ${confidenceStr})`,
+            link: `/admin/desafios/${data.challengeId}`,
+            read: false,
+          }));
+
+          await supabase.from('notifications').insert(notifications);
+        }
+      } catch (notifError) {
+        // Não falhar a participação se a notificação der erro
+        challengesLogger.warn('Erro ao enviar notificação de desafio pendente', { 
+          error: String(notifError) 
+        });
+      }
+    }
+
     // Retornar resultado completo com AI verdict e dados do desafio
     return {
       success: true,
@@ -268,6 +315,7 @@ export async function participateInChallenge(data: {
         participation,
         aiVerdict: aiVerdict || null,
         instagramVerdict: instagramVerdict || null,
+        aiRecommendation,
         challenge: {
           title: challenge.title,
           goal_type: challenge.goal_type,
