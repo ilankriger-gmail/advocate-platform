@@ -301,7 +301,7 @@ export async function getFeedPosts({
     return { data: [], nextCursor: null, hasMore: false };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line
   let posts = (data || []).map((post: any) => {
     // Process comment_previews: keep only last 2 top-level comments
     const previews = (post.comment_previews || [])

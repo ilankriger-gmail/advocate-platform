@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { saveMocoBotConfig, processQueueNow } from '@/actions/mocobot-config';
-import type { MocoBotConfig, BotStats, RecentAction } from '@/actions/mocobot-config';
+import type { MocoBotConfig, BotStats, RecentAction } from '@/actions/mocobot-types';
 
 interface Props {
   config: MocoBotConfig;
