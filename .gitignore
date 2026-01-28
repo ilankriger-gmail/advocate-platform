@@ -50,3 +50,4 @@ next-env.d.ts
 # Env backup
 .env.local.save
 
+apps/mobile/screenshots/

@@ -322,9 +322,25 @@ export async function getFeedPosts({
   }
 
   // Filtrar posts duplicados do MESMO usuário (texto similar ou mesma imagem)
-  // Só remove no feed, no perfil da pessoa mostra todos
+  // O próprio autor vê todos os seus posts; só esconde dos outros no feed
+  const { data: { user: currentUser } } = await supabase.auth.getUser();
+  const currentUserId = currentUser?.id;
   const originalLength = posts.length;
-  posts = filterSimilarPosts(posts, 0.5);
+
+  // Separar posts do usuário logado (nunca filtrar) dos demais (filtrar similares)
+  const myPosts = currentUserId 
+    ? posts.filter(p => p.user_id === currentUserId) 
+    : [];
+  const otherPosts = currentUserId 
+    ? posts.filter(p => p.user_id !== currentUserId) 
+    : posts;
+  
+  const otherPostsFiltered = filterSimilarPosts(otherPosts, 0.5);
+  
+  // Juntar e reordenar pela posição original
+  const orderMap = new Map(posts.map((p, i) => [p.id, i]));
+  posts = [...myPosts, ...otherPostsFiltered]
+    .sort((a, b) => (orderMap.get(a.id) ?? 0) - (orderMap.get(b.id) ?? 0));
   
   if (posts.length < originalLength) {
     feedLogger.debug('Posts similares filtrados', { 
