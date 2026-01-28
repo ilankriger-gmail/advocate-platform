@@ -63,10 +63,10 @@ export function MyParticipationCard({ participation }: MyParticipationCardProps)
       <div className="p-4">
         {/* Header */}
         <div className="flex items-start justify-between gap-3 mb-3">
-          <div className="flex items-center gap-2">
-            <span className="text-xl">{getStatusIcon()}</span>
-            <div>
-              <h3 className="font-semibold text-gray-900 text-sm">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <span className="text-xl flex-shrink-0">{getStatusIcon()}</span>
+            <div className="min-w-0 flex-1">
+              <h3 className="font-semibold text-gray-900 text-sm truncate">
                 {challenge?.title || 'Desafio'}
               </h3>
               <p className="text-xs text-gray-500">
@@ -74,7 +74,9 @@ export function MyParticipationCard({ participation }: MyParticipationCardProps)
               </p>
             </div>
           </div>
-          {getStatusBadge()}
+          <div className="flex-shrink-0">
+            {getStatusBadge()}
+          </div>
         </div>
 
         {/* Resultados */}
