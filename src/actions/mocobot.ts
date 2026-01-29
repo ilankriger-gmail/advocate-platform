@@ -251,6 +251,20 @@ async function executeComment(
   postId: string,
   text: string
 ) {
+  // Verificar se já comentou neste post (não comentar duas vezes)
+  const { data: existing } = await supabase
+    .from('comments')
+    .select('id')
+    .eq('post_id', postId)
+    .eq('user_id', MOCO_USER_ID)
+    .is('parent_id', null) // Apenas comentários diretos (não respostas)
+    .limit(1);
+
+  if (existing && existing.length > 0) {
+    console.log(`[MocoBot] Post ${postId} já comentado - pulando`);
+    return;
+  }
+
   await supabase.from('comments').insert({
     post_id: postId,
     user_id: MOCO_USER_ID,
@@ -269,6 +283,19 @@ async function executeReply(
   commentId: string,
   text: string
 ) {
+  // Verificar se já respondeu este comentário
+  const { data: existing } = await supabase
+    .from('comments')
+    .select('id')
+    .eq('parent_id', commentId)
+    .eq('user_id', MOCO_USER_ID)
+    .limit(1);
+
+  if (existing && existing.length > 0) {
+    console.log(`[MocoBot] Comentário ${commentId} já respondido - pulando`);
+    return;
+  }
+
   await supabase.from('comments').insert({
     post_id: postId,
     user_id: MOCO_USER_ID,

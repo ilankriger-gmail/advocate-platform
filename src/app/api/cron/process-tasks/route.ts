@@ -24,6 +24,7 @@ import {
 import { getSiteSettings } from '@/lib/config/site';
 import { checkLeadConversion, updateLeadSequenceStep } from '@/actions/leads';
 import { processarRespostasAgendadas } from '@/actions/autoresponder';
+import { processScheduledActions } from '@/actions/mocobot';
 import type { ScheduledTask, TaskProcessingResult } from '@/types/notification';
 
 // Limite de tarefas por execucao
@@ -478,6 +479,16 @@ export async function GET(request: NextRequest) {
       }
     } catch (autoErr) {
       console.error('[CRON] Erro ao processar auto-respostas:', autoErr);
+    }
+
+    // Processar ações agendadas do MocoBot (likes, comentários, respostas)
+    try {
+      const botResult = await processScheduledActions();
+      if (botResult.processed > 0) {
+        console.log(`[CRON] MocoBot: ${botResult.processed} ações (${botResult.likes} likes, ${botResult.comments} comentários, ${botResult.replies} respostas, ${botResult.errors} erros)`);
+      }
+    } catch (botErr) {
+      console.error('[CRON] Erro ao processar MocoBot:', botErr);
     }
 
     // Buscar tarefas pendentes
