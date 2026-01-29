@@ -651,24 +651,26 @@ export async function addCoinsToUser(
     // Buscar saldo atual
     const { data: userCoins } = await supabase
       .from('user_coins')
-      .select('balance')
+      .select('balance, engagement_balance')
       .eq('user_id', userId)
       .single();
 
     if (!userCoins) {
-      // Criar registro de saldo se nao existir
+      // Criar registro de saldo se nao existir (admin = engagement por padrão)
       await supabase
         .from('user_coins')
         .insert({
           user_id: userId,
           balance: amount,
+          engagement_balance: amount,
         });
     } else {
-      // Atualizar saldo
+      // Atualizar saldo (admin = engagement por padrão)
       await supabase
         .from('user_coins')
         .update({
           balance: userCoins.balance + amount,
+          engagement_balance: (userCoins.engagement_balance || 0) + amount,
           updated_at: new Date().toISOString(),
         })
         .eq('user_id', userId);

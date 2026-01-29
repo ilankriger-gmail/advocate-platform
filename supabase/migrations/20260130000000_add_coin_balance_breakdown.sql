@@ -35,7 +35,7 @@ WITH challenge_totals AS (
       -- Transação referencia uma participação em desafio
       EXISTS (
         SELECT 1 FROM challenge_participants cp
-        WHERE cp.id::text = ct.reference_id
+        WHERE cp.id::text = ct.reference_id::text
       )
       -- OU descrição menciona desafio
       OR ct.description ILIKE '%desafio%conclu%'
