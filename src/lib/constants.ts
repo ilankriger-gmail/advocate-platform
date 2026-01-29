@@ -74,6 +74,7 @@ export const CREATOR_ROUTES = ['/admin', '/moderation'] as const;
 export const MAIN_NAV = [
   { href: '/', label: 'Início', icon: 'Home' },
   { href: '/desafios', label: 'Desafios', icon: 'Target' },
+  { href: '/trofeus', label: 'Troféus', icon: 'Award' },
   { href: '/ranking', label: 'Ranking', icon: 'Trophy' },
   { href: '/premios', label: 'Prêmios', icon: 'Gift' },
   { href: '/descobrir', label: 'Descobrir', icon: 'Search' },

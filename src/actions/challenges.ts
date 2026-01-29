@@ -906,3 +906,49 @@ export async function deleteChallenge(challengeId: string): Promise<ActionRespon
     return { error: 'Erro interno do servidor' };
   }
 }
+/**
+ * Salvar mensagem do campeão na sala de troféus
+ */
+export async function saveTrophyMessage(
+  participationId: string,
+  message: string
+): Promise<{ success?: boolean; error?: string }> {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      return { error: 'Não autenticado' };
+    }
+
+    // Verificar que a participação pertence ao usuário
+    const { data: participation } = await supabase
+      .from('challenge_participants')
+      .select('id, user_id')
+      .eq('id', participationId)
+      .eq('user_id', user.id)
+      .eq('status', 'approved')
+      .single();
+
+    if (!participation) {
+      return { error: 'Participação não encontrada' };
+    }
+
+    // Sanitizar mensagem (max 200 chars)
+    const sanitized = message.slice(0, 200).trim();
+
+    const { error } = await supabase
+      .from('challenge_participants')
+      .update({ winner_message: sanitized })
+      .eq('id', participationId);
+
+    if (error) {
+      return { error: 'Erro ao salvar mensagem' };
+    }
+
+    revalidatePath('/trofeus');
+    return { success: true };
+  } catch {
+    return { error: 'Erro interno' };
+  }
+}
