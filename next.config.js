@@ -53,17 +53,51 @@ const nextConfig = {
       },
     ],
   },
-  // Rewrite para subdomínio comece.omocodoteamo.com.br mostrar a landing page
-  async rewrites() {
-    return {
-      beforeFiles: [
-        {
-          source: '/',
-          destination: '/seja-arena',
-          has: [{ type: 'host', value: 'comece.omocodoteamo.com.br' }],
-        },
-      ],
-    };
+  // Redirects: landing pages da comunidade → newsletter
+  async redirects() {
+    return [
+      // /seja-arena e subpáginas → newsletter
+      {
+        source: '/seja-arena',
+        destination: 'https://newsletter-landing-omega.vercel.app',
+        permanent: false,
+      },
+      {
+        source: '/seja-arena/:path*',
+        destination: 'https://newsletter-landing-omega.vercel.app',
+        permanent: false,
+      },
+      // /lp/* (landing pages diretas) → newsletter
+      {
+        source: '/lp/:path*',
+        destination: 'https://newsletter-landing-omega.vercel.app',
+        permanent: false,
+      },
+      // /convite/* → newsletter
+      {
+        source: '/convite',
+        destination: 'https://newsletter-landing-omega.vercel.app',
+        permanent: false,
+      },
+      {
+        source: '/convite/:path*',
+        destination: 'https://newsletter-landing-omega.vercel.app',
+        permanent: false,
+      },
+      // Subdomínio comece.omocodoteamo.com.br → newsletter
+      {
+        source: '/',
+        destination: 'https://newsletter-landing-omega.vercel.app',
+        has: [{ type: 'host', value: 'comece.omocodoteamo.com.br' }],
+        permanent: false,
+      },
+      {
+        source: '/:path*',
+        destination: 'https://newsletter-landing-omega.vercel.app',
+        has: [{ type: 'host', value: 'comece.omocodoteamo.com.br' }],
+        permanent: false,
+      },
+    ];
   },
   async headers() {
     // Dominios permitidos para CORS
