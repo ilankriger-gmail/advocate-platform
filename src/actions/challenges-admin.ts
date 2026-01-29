@@ -203,7 +203,7 @@ Parabéns pela conquista! 👏❤️`;
 export async function rejectParticipation(
   participationId: string,
   reason?: string,
-  refundMode: 'remove' | 'refund' = 'remove'
+  refundMode: 'remove' | 'refund' = 'refund'
 ): Promise<ActionResponse> {
   try {
     // Verificar autenticação
