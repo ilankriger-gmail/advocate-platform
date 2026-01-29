@@ -59,41 +59,41 @@ const nextConfig = {
       // /seja-arena e subpáginas → newsletter
       {
         source: '/seja-arena',
-        destination: 'https://newsletter-landing-omega.vercel.app',
+        destination: '/newsletter',
         permanent: false,
       },
       {
         source: '/seja-arena/:path*',
-        destination: 'https://newsletter-landing-omega.vercel.app',
+        destination: '/newsletter',
         permanent: false,
       },
       // /lp/* (landing pages diretas) → newsletter
       {
         source: '/lp/:path*',
-        destination: 'https://newsletter-landing-omega.vercel.app',
+        destination: '/newsletter',
         permanent: false,
       },
       // /convite/* → newsletter
       {
         source: '/convite',
-        destination: 'https://newsletter-landing-omega.vercel.app',
+        destination: '/newsletter',
         permanent: false,
       },
       {
         source: '/convite/:path*',
-        destination: 'https://newsletter-landing-omega.vercel.app',
+        destination: '/newsletter',
         permanent: false,
       },
       // Subdomínio comece.omocodoteamo.com.br → newsletter
       {
         source: '/',
-        destination: 'https://newsletter-landing-omega.vercel.app',
+        destination: '/newsletter',
         has: [{ type: 'host', value: 'comece.omocodoteamo.com.br' }],
         permanent: false,
       },
       {
         source: '/:path*',
-        destination: 'https://newsletter-landing-omega.vercel.app',
+        destination: '/newsletter',
         has: [{ type: 'host', value: 'comece.omocodoteamo.com.br' }],
         permanent: false,
       },
