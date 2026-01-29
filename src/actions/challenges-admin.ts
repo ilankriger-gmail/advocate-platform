@@ -899,6 +899,16 @@ export async function markPrizeSent(
 
     const supabase = await createClient();
 
+    // Buscar dados do ganhador antes de atualizar
+    const { data: winnerData } = await supabase
+      .from('challenge_winners')
+      .select(`
+        *,
+        challenges:challenge_id(id, title, icon, coins_reward)
+      `)
+      .eq('id', winnerId)
+      .single();
+
     const { error } = await supabase
       .from('challenge_winners')
       .update({
@@ -911,7 +921,58 @@ export async function markPrizeSent(
       return { error: 'Erro ao marcar prêmio como enviado' };
     }
 
+    // Criar post de celebração do PIX na comunidade
+    try {
+      if (winnerData) {
+        const challengeInfo = winnerData.challenges as { id: string; title: string; icon: string; coins_reward: number } | null;
+        const challengeTitle = challengeInfo?.title || 'Desafio';
+        const challengeIcon = challengeInfo?.icon || '🏆';
+        const prizeAmount = winnerData.prize_amount || 0;
+        const instagramUser = winnerData.instagram_username;
+
+        // Buscar nome do usuário se tiver user_id
+        let userName = instagramUser ? `@${instagramUser}` : 'Um membro';
+        if (winnerData.user_id) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('full_name')
+            .eq('id', winnerData.user_id)
+            .single();
+          if (profile?.full_name) {
+            userName = profile.full_name;
+          }
+        }
+
+        const pixContent = `💵🎉 <strong>${userName}</strong> ganhou <strong>R$ ${prizeAmount.toFixed(2)}</strong> no desafio "${challengeTitle}"! ${challengeIcon}
+
+O PIX já foi enviado! 🚀
+
+Participe dos desafios e você também pode ganhar! 💪❤️`;
+
+        // Post criado pelo admin (Moço) para dar mais visibilidade
+        const MOCO_USER_ID = process.env.MOCO_USER_ID;
+        const postUserId = winnerData.user_id || MOCO_USER_ID;
+
+        if (postUserId) {
+          await supabase.from('posts').insert({
+            user_id: postUserId,
+            title: `💵 PIX Enviado - ${challengeTitle}!`,
+            content: pixContent,
+            type: 'community',
+            status: 'approved',
+            content_category: 'normal',
+            media_url: proofImageUrl ? [proofImageUrl] : null,
+            media_type: proofImageUrl ? 'image' : 'none',
+          });
+          challengesAdminLogger.info('Post de PIX enviado criado', { winnerId, userName, prizeAmount });
+        }
+      }
+    } catch (postError) {
+      challengesAdminLogger.error('Erro ao criar post de PIX enviado', { error: sanitizeError(postError) });
+    }
+
     revalidatePath('/admin/desafios');
+    revalidatePath('/');
     return { success: true };
   } catch {
     return { error: 'Erro interno do servidor' };
