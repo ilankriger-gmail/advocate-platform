@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
 import { ActionResponse, CreatePostResponse } from '@/types/action';
 import type { CreatePostData, UpdatePostData } from '@/types/post';
@@ -710,23 +711,15 @@ export async function likePostWithLevel(postId: string, levelId: number): Promis
         return { error: 'Corações insuficientes' };
       }
 
-      // Descontar corações do usuário
-      await supabase
-        .from('user_coins')
-        .update({ balance: userCoins.balance - level.cost })
-        .eq('user_id', user.id);
-
-      // Registrar transação de gasto
-      await supabase
-        .from('coin_transactions')
-        .insert({
-          user_id: user.id,
-          amount: -level.cost,
-          type: 'spent',
-          description: `💝 ${level.name} em post`,
-          reference_id: postId,
-          reference_type: 'post_love_level',
-        });
+      // Descontar corações atomicamente via RPC (evita race condition)
+      const adminSupabase = createAdminClient();
+      await adminSupabase.rpc('add_user_coins', {
+        p_user_id: user.id,
+        p_amount: -level.cost,
+        p_type: 'post_love_level',
+        p_description: `💝 ${level.name} em post`,
+        p_coin_source: 'engagement',
+      });
     }
 
     // Verificar se já curtiu

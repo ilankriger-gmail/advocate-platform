@@ -172,20 +172,18 @@ export async function claimReward(
       return { error: 'Erro ao criar resgate' };
     }
 
-    // Deduzir moedas do saldo (incluindo breakdown)
-    const { error: balanceError } = await supabase
-      .from('user_coins')
-      .update({
-        balance: userCoins.balance - reward.coins_required,
-        challenge_balance: challengeBalance - challengeCoinsSpent,
-        engagement_balance: engagementBalance - engagementCoinsSpent,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('user_id', user.id);
+    // Deduzir moedas atomicamente (evita race condition com operações concorrentes)
+    const { error: balanceError } = await supabase.rpc('deduct_user_coins', {
+      p_user_id: user.id,
+      p_total: reward.coins_required,
+      p_challenge_amount: challengeCoinsSpent,
+      p_engagement_amount: engagementCoinsSpent,
+    });
 
     if (balanceError) {
       // Rollback do resgate
       await supabase.from('reward_claims').delete().eq('id', claim.id);
+      rewardsLogger.error('Erro ao deduzir saldo', { error: sanitizeError(balanceError) });
       return { error: 'Erro ao deduzir saldo' };
     }
 
@@ -277,21 +275,14 @@ export async function cancelClaim(claimId: string): Promise<ActionResponse> {
     const challengeLost = claim.challenge_coins_spent || 0;
     const totalRefund = engagementRefund; // Só devolve engajamento
 
-    const { data: userCoins } = await supabase
-      .from('user_coins')
-      .select('balance, engagement_balance')
-      .eq('user_id', user.id)
-      .single();
-
-    if (userCoins && totalRefund > 0) {
-      await supabase
-        .from('user_coins')
-        .update({
-          balance: userCoins.balance + totalRefund,
-          engagement_balance: (userCoins.engagement_balance || 0) + engagementRefund,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('user_id', user.id);
+    if (totalRefund > 0) {
+      // Estorno atômico via RPC (evita race condition)
+      await supabase.rpc('deduct_user_coins', {
+        p_user_id: user.id,
+        p_total: -totalRefund, // negativo = adicionar
+        p_challenge_amount: 0,
+        p_engagement_amount: -engagementRefund, // negativo = adicionar
+      });
 
       // Registrar transação de estorno (só engajamento)
       await supabase
@@ -303,7 +294,7 @@ export async function cancelClaim(claimId: string): Promise<ActionResponse> {
           description: `Estorno (engajamento): ${claim.rewards?.name || 'Resgate cancelado'}${challengeLost > 0 ? ` — ${challengeLost} corações de desafio cancelados` : ''}`,
           reference_id: claimId,
         });
-    } else if (userCoins && challengeLost > 0) {
+    } else if (challengeLost > 0) {
       // Sem engajamento para devolver, mas registrar que desafio foi perdido
       await supabase
         .from('coin_transactions')
