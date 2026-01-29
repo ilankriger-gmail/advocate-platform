@@ -182,7 +182,7 @@ export function Modal({
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div
           className={cn(
-            'bg-white rounded-xl shadow-xl w-full transform transition-all',
+            'bg-white rounded-xl shadow-xl w-full max-h-[90vh] flex flex-col transform transition-all',
             sizeStyles[size]
           )}
           role="dialog"
@@ -192,7 +192,7 @@ export function Modal({
         >
           {/* Header */}
           {(title || description) && (
-            <div className="px-6 pt-6 pb-4 border-b border-gray-100">
+            <div className="px-6 pt-6 pb-4 border-b border-gray-100 flex-shrink-0">
               {title && (
                 <h2
                   id="modal-title"
@@ -213,7 +213,7 @@ export function Modal({
           )}
 
           {/* Content */}
-          <div className="px-6 py-4">{children}</div>
+          <div className="px-6 py-4 overflow-y-auto flex-1 min-h-0">{children}</div>
 
           {/* Close button */}
           <button
