@@ -17,24 +17,30 @@ interface RankingEntry {
 
 interface RankingListProps {
   ranking: RankingEntry[];
+  rankingTotal?: RankingEntry[];
   userPosition: number | null;
   userBalance: number;
+  userTotalEarned?: number;
   totalUsers: number;
 }
 
-export function RankingList({ ranking, userPosition, userBalance, totalUsers }: RankingListProps) {
+export function RankingList({ ranking, rankingTotal, userPosition, userBalance, userTotalEarned, totalUsers }: RankingListProps) {
   const [visibleCount, setVisibleCount] = useState(30);
+  const [activeTab, setActiveTab] = useState<'available' | 'total'>('total');
   const userRowRef = useRef<HTMLDivElement>(null);
 
+  const currentRanking = activeTab === 'total' && rankingTotal ? rankingTotal : ranking;
+  const currentBalance = activeTab === 'total' ? (userTotalEarned || userBalance) : userBalance;
+
   // Separar top 3 e o resto
-  const top3 = ranking.slice(0, 3);
-  const restRanking = ranking.slice(3, visibleCount);
+  const top3 = currentRanking.slice(0, 3);
+  const restRanking = currentRanking.slice(3, visibleCount);
 
   const loadMore = () => {
-    setVisibleCount(prev => Math.min(prev + 30, ranking.length));
+    setVisibleCount(prev => Math.min(prev + 30, currentRanking.length));
   };
 
-  if (!ranking || ranking.length === 0) {
+  if (!currentRanking || currentRanking.length === 0) {
     return (
       <div className="bg-white rounded-xl p-8 text-center border border-gray-200">
         <div className="text-5xl mb-4">🏆</div>
@@ -50,6 +56,32 @@ export function RankingList({ ranking, userPosition, userBalance, totalUsers }: 
 
   return (
     <div className="space-y-6">
+      {/* ===== TABS: Total Acumulado / Disponível ===== */}
+      {rankingTotal && (
+        <div className="flex gap-2 bg-gray-100 rounded-xl p-1">
+          <button
+            onClick={() => setActiveTab('total')}
+            className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all ${
+              activeTab === 'total'
+                ? 'bg-white text-pink-600 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            🏆 Total Acumulado
+          </button>
+          <button
+            onClick={() => setActiveTab('available')}
+            className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all ${
+              activeTab === 'available'
+                ? 'bg-white text-pink-600 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            💰 Disponível
+          </button>
+        </div>
+      )}
+
       {/* ===== PÓDIO TOP 3 ===== */}
       {top3.length > 0 && (
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 border border-amber-200/50 p-6 sm:p-8">
@@ -97,7 +129,7 @@ export function RankingList({ ranking, userPosition, userBalance, totalUsers }: 
                 <p className="text-sm text-gray-500">Seus corações</p>
                 <div className="flex items-center gap-1.5 text-2xl font-bold text-pink-600">
                   <span>❤️</span>
-                  <span>{userBalance}</span>
+                  <span>{currentBalance}</span>
                 </div>
               </div>
             </div>
@@ -170,12 +202,12 @@ export function RankingList({ ranking, userPosition, userBalance, totalUsers }: 
           ))}
 
           {/* Carregar mais */}
-          {visibleCount < ranking.length && (
+          {visibleCount < currentRanking.length && (
             <button
               onClick={loadMore}
               className="w-full p-4 text-center text-purple-600 hover:bg-purple-50 font-medium transition"
             >
-              Ver mais ({ranking.length - visibleCount} restantes)
+              Ver mais ({currentRanking.length - visibleCount} restantes)
             </button>
           )}
         </div>
