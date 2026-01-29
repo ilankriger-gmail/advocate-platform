@@ -114,7 +114,8 @@ export async function createPost(data: CreatePostData): Promise<CreatePostRespon
       blockedReasons = moderationResult.blocked_reasons;
 
       // Capturar categoria de conteúdo (normal ou help_request)
-      contentCategory = moderationResult.content_category;
+      // Posts do criador NUNCA vão para pedidos de ajuda — sempre ficam no feed geral
+      contentCategory = isCreator ? 'normal' : moderationResult.content_category;
 
       console.log('[MODERATION DEBUG] Decision:', moderationDecision, 'Score:', moderationScore);
 
