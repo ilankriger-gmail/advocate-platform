@@ -51,6 +51,7 @@ export default function RegisterForm({ prefilledEmail }: RegisterFormProps) {
   const source = searchParams.get('source');
   const sourceId = searchParams.get('id');
   const sourceName = searchParams.get('name');
+  const referralCode = searchParams.get('ref') || '';
 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -63,7 +64,7 @@ export default function RegisterForm({ prefilledEmail }: RegisterFormProps) {
   const isDirectRegistration = !!(source && sourceId);
   const [showEmailForm, setShowEmailForm] = useState(!isDirectRegistration);
 
-  // Salvar origem em cookie para uso no callback de autenticação
+  // Salvar origem e referral em cookie para uso no callback de autenticação
   useEffect(() => {
     if (source && sourceId) {
       const sourceData = JSON.stringify({
@@ -71,10 +72,12 @@ export default function RegisterForm({ prefilledEmail }: RegisterFormProps) {
         id: sourceId,
         name: sourceName || '',
       });
-      // Cookie expira em 1 hora (tempo suficiente para completar o cadastro)
       document.cookie = `direct_registration_source=${encodeURIComponent(sourceData)}; path=/; max-age=3600; SameSite=Lax`;
     }
-  }, [source, sourceId, sourceName]);
+    if (referralCode) {
+      document.cookie = `referral_code=${encodeURIComponent(referralCode)}; path=/; max-age=3600; SameSite=Lax`;
+    }
+  }, [source, sourceId, sourceName, referralCode]);
 
   // Função para criar conta com Google
   async function handleGoogleSignUp() {
@@ -186,6 +189,9 @@ export default function RegisterForm({ prefilledEmail }: RegisterFormProps) {
       {/* Formulário de email/senha */}
       {showEmailForm && (
       <form action={handleSubmit} className="space-y-4">
+        {/* Código de indicação (hidden) */}
+        {referralCode && <input type="hidden" name="ref" value={referralCode} />}
+
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700">
             Nome completo

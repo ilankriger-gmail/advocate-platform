@@ -129,7 +129,9 @@ export async function register(formData: FormData): Promise<AuthResponse> {
     };
   }
 
-  const { error } = await supabase.auth.signUp({
+  const referralCode = (formData.get('ref') as string)?.trim() || '';
+
+  const { data: signUpData, error } = await supabase.auth.signUp({
     email: normalizedEmail,
     password,
     options: {
@@ -143,6 +145,17 @@ export async function register(formData: FormData): Promise<AuthResponse> {
   if (error) {
     // SEGURANCA: Mensagem generica para todos os erros
     return { error: 'Nao foi possivel criar a conta. Verifique seus dados.' };
+  }
+
+  // Processar código de indicação (se houver)
+  if (referralCode && signUpData?.user?.id) {
+    try {
+      const { registerReferral } = await import('@/actions/referrals');
+      await registerReferral(signUpData.user.id, referralCode);
+    } catch (refErr) {
+      // Não falhar o registro por causa de referral
+      console.error('[Auth] Erro ao registrar indicação:', refErr);
+    }
   }
 
   return { success: true };

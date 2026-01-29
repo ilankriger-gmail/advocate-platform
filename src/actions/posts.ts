@@ -196,6 +196,20 @@ export async function createPost(data: CreatePostData): Promise<CreatePostRespon
       const textoPost = `${data.title || ''} ${finalContent || ''}`.trim();
       agendarAutoComentarioPost(post.id, textoPost, user.id)
         .catch(err => postsLogger.error('Erro ao agendar auto-comentário', { error: sanitizeError(err) }));
+
+      // 🎁 Completar referral se for primeiro post do usuário
+      try {
+        const { count: postCount } = await supabase
+          .from('posts')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id);
+        if (postCount === 1) {
+          const { completeReferral } = await import('@/actions/referrals');
+          await completeReferral(user.id);
+        }
+      } catch (refErr) {
+        postsLogger.error('Erro ao completar referral', { error: sanitizeError(refErr) });
+      }
     }
 
     revalidatePath('/');
