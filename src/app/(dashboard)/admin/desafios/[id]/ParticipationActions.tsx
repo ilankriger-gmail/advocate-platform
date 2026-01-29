@@ -26,8 +26,15 @@ export function ParticipationActions({ participationId, coinsReward }: Participa
   };
 
   const handleReject = async () => {
+    const reason = prompt('Motivo da rejeição:');
+    if (reason === null) return; // Cancelled
+    
+    if (!confirm('Tem certeza que deseja rejeitar esta participação?\n\nSe já foram dados corações, eles serão removidos.')) {
+      return;
+    }
+
     setIsLoading(true);
-    const result = await rejectParticipation(participationId, 'Participacao rejeitada');
+    const result = await rejectParticipation(participationId, reason || 'Participação rejeitada');
     if (result.success) {
       router.refresh();
     }

@@ -220,17 +220,24 @@ export async function rejectParticipation(
 
     const supabase = await createClient();
 
-    // Buscar participação e desafio para notificação
+    // Buscar participação, desafio e corações ganhos
     const { data: participation } = await supabase
       .from('challenge_participants')
-      .select('user_id, challenges:challenge_id(title)')
+      .select('user_id, coins_earned, status, challenges:challenge_id(title)')
       .eq('id', participationId)
       .single();
+
+    if (!participation) {
+      return { error: 'Participação não encontrada' };
+    }
+
+    const coinsEarned = participation.coins_earned || 0;
 
     const { error } = await supabase
       .from('challenge_participants')
       .update({
         status: 'rejected',
+        coins_earned: 0,
       })
       .eq('id', participationId);
 
@@ -240,6 +247,31 @@ export async function rejectParticipation(
         error: sanitizeError(error)
       });
       return { error: `Erro ao rejeitar: ${error.message || error.code}` };
+    }
+
+    // Se já tinha ganhado corações (ex: status era 'approved'), devolver/subtrair
+    if (coinsEarned > 0 && participation.status === 'approved') {
+      const challengeData = participation.challenges as unknown as { title: string } | null;
+      const challengeTitle = challengeData?.title || 'Desafio';
+
+      await supabase.rpc('add_user_coins', {
+        p_user_id: participation.user_id,
+        p_amount: -coinsEarned,
+      });
+
+      await supabase.from('coin_transactions').insert({
+        user_id: participation.user_id,
+        amount: -coinsEarned,
+        type: 'refund',
+        description: `Desafio rejeitado: ${challengeTitle}${reason ? ` — ${reason}` : ''}`,
+        reference_id: participationId,
+      });
+
+      challengesAdminLogger.info('Corações removidos por rejeição de desafio', {
+        participationId,
+        userId: maskId(participation.user_id),
+        coinsRemoved: coinsEarned
+      });
     }
 
     // Notificar usuário da rejeição

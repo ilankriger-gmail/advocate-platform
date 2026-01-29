@@ -295,6 +295,151 @@ export async function markClaimDelivered(claimId: string): Promise<ActionRespons
 }
 
 /**
+ * Rejeitar resgate (admin) — devolve corações ao usuário
+ */
+export async function rejectClaim(claimId: string, reason?: string): Promise<ActionResponse> {
+  rewardsAdminLogger.info('Iniciando rejeição de resgate', {
+    claimId: maskId(claimId),
+    reason
+  });
+
+  try {
+    // Verificar autenticação
+    const userCheck = await getAuthenticatedUser();
+    if (userCheck.error) {
+      return userCheck;
+    }
+    const user = userCheck.data!;
+
+    // Verificar se é admin/creator
+    const authCheck = await verifyAdminOrCreator(user.id);
+    if (authCheck.error) {
+      return authCheck;
+    }
+
+    const supabase = await createClient();
+
+    // Buscar dados do claim
+    const { data: claim } = await supabase
+      .from('reward_claims')
+      .select(`
+        *,
+        rewards:reward_id (name)
+      `)
+      .eq('id', claimId)
+      .single();
+
+    if (!claim) {
+      return { error: 'Resgate não encontrado' };
+    }
+
+    if (claim.status !== 'pending') {
+      return { error: 'Apenas resgates pendentes podem ser rejeitados' };
+    }
+
+    const rewardName = (claim.rewards as { name: string } | null)?.name || 'Prêmio';
+    const coinsToRefund = claim.coins_spent || 0;
+
+    // Atualizar status para rejected
+    const { error: updateError } = await supabase
+      .from('reward_claims')
+      .update({ status: 'rejected' })
+      .eq('id', claimId);
+
+    if (updateError) {
+      rewardsAdminLogger.error('Erro ao rejeitar resgate', {
+        claimId: maskId(claimId),
+        error: sanitizeError(updateError)
+      });
+      return { error: 'Erro ao rejeitar resgate' };
+    }
+
+    // Devolver corações ao usuário
+    if (coinsToRefund > 0) {
+      const refundDescription = reason
+        ? `Resgate rejeitado: ${reason}`
+        : `Resgate de "${rewardName}" rejeitado — corações devolvidos`;
+
+      const { error: coinsError } = await supabase.rpc('add_user_coins', {
+        p_user_id: claim.user_id,
+        p_amount: coinsToRefund,
+        p_type: 'refund',
+        p_description: refundDescription,
+      });
+
+      // Fallback se a função RPC não aceitar esses parâmetros
+      if (coinsError) {
+        // Tentar RPC simples
+        const { error: simpleRpcError } = await supabase.rpc('add_user_coins', {
+          p_user_id: claim.user_id,
+          p_amount: coinsToRefund,
+        });
+
+        if (simpleRpcError) {
+          // Fallback manual
+          const { data: userCoins } = await supabase
+            .from('user_coins')
+            .select('balance')
+            .eq('user_id', claim.user_id)
+            .maybeSingle();
+
+          await supabase
+            .from('user_coins')
+            .upsert({
+              user_id: claim.user_id,
+              balance: (userCoins?.balance || 0) + coinsToRefund,
+              updated_at: new Date().toISOString(),
+            }, { onConflict: 'user_id' });
+        }
+
+        // Registrar transação manualmente
+        await supabase.from('coin_transactions').insert({
+          user_id: claim.user_id,
+          amount: coinsToRefund,
+          type: 'refund',
+          description: refundDescription,
+          reference_id: claimId,
+        });
+      }
+
+      rewardsAdminLogger.info('Corações devolvidos ao usuário', {
+        claimId: maskId(claimId),
+        userId: maskId(claim.user_id),
+        amount: coinsToRefund
+      });
+    }
+
+    // Criar notificação para o usuário
+    try {
+      const reasonText = reason ? `\n\nMotivo: ${reason}` : '';
+      await supabase.from('notifications').insert({
+        user_id: claim.user_id,
+        type: 'reward_rejected',
+        title: `❌ Resgate rejeitado`,
+        message: `Seu resgate de "${rewardName}" foi rejeitado.${coinsToRefund > 0 ? ` ${coinsToRefund} corações foram devolvidos ao seu saldo.` : ''}${reasonText}`,
+        link: '/premios',
+        read: false,
+      });
+    } catch (notifError) {
+      rewardsAdminLogger.error('Erro ao enviar notificação de rejeição', {
+        error: sanitizeError(notifError)
+      });
+    }
+
+    revalidatePath('/premios');
+    revalidatePath('/admin/resgates');
+    revalidatePath('/admin/premios');
+    return { success: true };
+  } catch (err) {
+    rewardsAdminLogger.error('Erro inesperado ao rejeitar resgate', {
+      claimId: maskId(claimId),
+      error: sanitizeError(err)
+    });
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+/**
  * Criar recompensa (admin)
  */
 export async function createReward(data: {

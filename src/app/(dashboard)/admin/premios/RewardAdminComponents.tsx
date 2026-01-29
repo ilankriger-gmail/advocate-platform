@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card, Button, Input, Textarea } from '@/components/ui';
-import { toggleRewardActive, createReward, approveClaim, markClaimShipped, markClaimDelivered, uploadRewardImageToStorage, uploadPaymentReceipt } from '@/actions/rewards-admin';
+import { toggleRewardActive, createReward, approveClaim, rejectClaim, markClaimShipped, markClaimDelivered, uploadRewardImageToStorage, uploadPaymentReceipt } from '@/actions/rewards-admin';
 import { RewardImageUploader } from '@/components/RewardImageUploader';
 import { Pencil } from 'lucide-react';
 
@@ -111,6 +111,24 @@ export function ClaimActions({ claim, rewardType }: ClaimActionsProps) {
     setIsLoading(false);
   };
 
+  const handleReject = async () => {
+    const reason = prompt('Motivo da rejeição (os corações serão devolvidos ao usuário):');
+    if (reason === null) return; // Cancelled
+    
+    if (!confirm(`Tem certeza que deseja REJEITAR este resgate?\n\nOs corações gastos serão devolvidos ao usuário.${reason ? `\n\nMotivo: ${reason}` : ''}`)) {
+      return;
+    }
+
+    setIsLoading(true);
+    const result = await rejectClaim(claim.id, reason || undefined);
+    if (result.success) {
+      router.refresh();
+    } else {
+      alert(result.error || 'Erro ao rejeitar');
+    }
+    setIsLoading(false);
+  };
+
   const handleReceiptUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -151,6 +169,16 @@ export function ClaimActions({ claim, rewardType }: ClaimActionsProps) {
             title="Aprovar e criar post de celebração"
           >
             {isLoading ? '...' : '📣 Aprovar + Publicar'}
+          </Button>
+          <Button
+            onClick={handleReject}
+            disabled={isLoading}
+            size="sm"
+            variant="outline"
+            className="border-red-300 text-red-600 hover:bg-red-50"
+            title="Rejeitar e devolver corações"
+          >
+            {isLoading ? '...' : '❌ Rejeitar'}
           </Button>
         </div>
 
