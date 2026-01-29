@@ -153,6 +153,23 @@ export function PhysicalChallengeCard({
                 </div>
               )}
 
+              {/* Aviso: apenas o dono da conta pode enviar (desafios físicos) */}
+              {!isAtosAmor && (
+                <div className="flex items-start gap-3 p-3 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200">
+                  <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <span className="text-white text-sm">⚠️</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-amber-800 font-semibold text-sm">
+                      Atenção!
+                    </p>
+                    <p className="text-xs text-amber-700">
+                      O dono da conta é quem precisa enviar o vídeo. Não serão aceitos vídeos de terceiros.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Meta (apenas para desafios físicos) */}
               {!isAtosAmor && challenge.goal_value && (
                 <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-100">

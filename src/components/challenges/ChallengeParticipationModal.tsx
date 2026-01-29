@@ -423,6 +423,15 @@ export function ChallengeParticipationModal({
         </p>
       </div>
 
+      {/* Aviso: apenas o dono da conta (desafios físicos) */}
+      {!isAtosAmor && (
+        <div className="p-3 bg-amber-50 border border-amber-300 rounded-lg">
+          <p className="text-xs text-amber-800 font-medium">
+            ⚠️ <strong>O dono da conta é quem precisa enviar o vídeo.</strong> Não serão aceitos vídeos de terceiros.
+          </p>
+        </div>
+      )}
+
       {/* Resultado (apenas para desafios físicos) */}
       {!isAtosAmor && (
         <div>
