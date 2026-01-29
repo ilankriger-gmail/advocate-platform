@@ -138,6 +138,8 @@ export const createMockUserCoins = (
     id,
     user_id: userId,
     balance: 100,
+    challenge_balance: 0,
+    engagement_balance: 0,
     updated_at: now,
     ...overrides,
   };
@@ -198,6 +200,8 @@ export const createMockRewardClaim = (
     reward_id: rewardId,
     status: 'pending',
     coins_spent: 100,
+    challenge_coins_spent: 0,
+    engagement_coins_spent: 0,
     created_at: now,
     ...overrides,
   };

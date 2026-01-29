@@ -119,10 +119,10 @@ export async function claimReward(
       return { error: 'Você já resgatou este prêmio. Limite de 1 por pessoa.' };
     }
 
-    // Buscar saldo do usuário
+    // Buscar saldo do usuário (incluindo breakdown)
     const { data: userCoins } = await supabase
       .from('user_coins')
-      .select('balance')
+      .select('balance, challenge_balance, engagement_balance')
       .eq('user_id', user.id)
       .single();
 
@@ -130,7 +130,15 @@ export async function claimReward(
       return { error: 'Saldo insuficiente' };
     }
 
-    // Criar resgate com endereço de entrega ou dados PIX
+    // Calcular breakdown: deduzir de engagement primeiro, depois challenge
+    const coinsRequired = reward.coins_required;
+    const engagementBalance = userCoins.engagement_balance || 0;
+    const challengeBalance = userCoins.challenge_balance || 0;
+
+    const engagementCoinsSpent = Math.min(engagementBalance, coinsRequired);
+    const challengeCoinsSpent = Math.min(challengeBalance, coinsRequired - engagementCoinsSpent);
+
+    // Criar resgate com endereço de entrega ou dados PIX + breakdown
     const { data: claim, error: claimError } = await supabase
       .from('reward_claims')
       .insert({
@@ -138,6 +146,8 @@ export async function claimReward(
         reward_id: rewardId,
         status: 'pending',
         coins_spent: reward.coins_required,
+        challenge_coins_spent: challengeCoinsSpent,
+        engagement_coins_spent: engagementCoinsSpent,
         delivery_address: deliveryAddress || pixData || null,
       })
       .select()
@@ -148,11 +158,13 @@ export async function claimReward(
       return { error: 'Erro ao criar resgate' };
     }
 
-    // Deduzir moedas do saldo
+    // Deduzir moedas do saldo (incluindo breakdown)
     const { error: balanceError } = await supabase
       .from('user_coins')
       .update({
         balance: userCoins.balance - reward.coins_required,
+        challenge_balance: challengeBalance - challengeCoinsSpent,
+        engagement_balance: engagementBalance - engagementCoinsSpent,
         updated_at: new Date().toISOString(),
       })
       .eq('user_id', user.id);
@@ -246,30 +258,46 @@ export async function cancelClaim(claimId: string): Promise<ActionResponse> {
       return { error: 'Erro ao cancelar resgate' };
     }
 
-    // Devolver moedas
+    // Devolver apenas moedas de engajamento (moedas de desafio são canceladas)
+    const engagementRefund = claim.engagement_coins_spent || 0;
+    const challengeLost = claim.challenge_coins_spent || 0;
+    const totalRefund = engagementRefund; // Só devolve engajamento
+
     const { data: userCoins } = await supabase
       .from('user_coins')
-      .select('balance')
+      .select('balance, engagement_balance')
       .eq('user_id', user.id)
       .single();
 
-    if (userCoins) {
+    if (userCoins && totalRefund > 0) {
       await supabase
         .from('user_coins')
         .update({
-          balance: userCoins.balance + claim.coins_spent,
+          balance: userCoins.balance + totalRefund,
+          engagement_balance: (userCoins.engagement_balance || 0) + engagementRefund,
           updated_at: new Date().toISOString(),
         })
         .eq('user_id', user.id);
 
-      // Registrar transacao de estorno
+      // Registrar transação de estorno (só engajamento)
       await supabase
         .from('coin_transactions')
         .insert({
           user_id: user.id,
-          amount: claim.coins_spent,
-          type: 'earned',
-          description: `Estorno: ${claim.rewards?.name || 'Resgate cancelado'}`,
+          amount: totalRefund,
+          type: 'refund',
+          description: `Estorno (engajamento): ${claim.rewards?.name || 'Resgate cancelado'}${challengeLost > 0 ? ` — ${challengeLost} corações de desafio cancelados` : ''}`,
+          reference_id: claimId,
+        });
+    } else if (userCoins && challengeLost > 0) {
+      // Sem engajamento para devolver, mas registrar que desafio foi perdido
+      await supabase
+        .from('coin_transactions')
+        .insert({
+          user_id: user.id,
+          amount: 0,
+          type: 'refund',
+          description: `Cancelamento: ${challengeLost} corações de desafio cancelados (não devolvidos)`,
           reference_id: claimId,
         });
     }

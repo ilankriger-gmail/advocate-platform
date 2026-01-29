@@ -245,19 +245,20 @@ export async function participateInChallenge(data: {
       return { error: 'Erro ao registrar participacao' };
     }
 
-    // Se foi aprovado automaticamente, creditar moedas ao usuário
+    // Se foi aprovado automaticamente, creditar moedas ao usuário (origem: challenge)
     if (participationStatus === 'approved' && coinsToEarn > 0) {
-      // Tentar usar RPC primeiro
+      // Tentar usar RPC primeiro com coin_source = 'challenge'
       const { error: coinsError } = await supabase.rpc('add_user_coins', {
         p_user_id: user.id,
         p_amount: coinsToEarn,
+        p_coin_source: 'challenge',
       });
 
       // Fallback se a função RPC não existir
       if (coinsError) {
         const { data: userCoins } = await supabase
           .from('user_coins')
-          .select('balance')
+          .select('balance, challenge_balance')
           .eq('user_id', user.id)
           .single();
 
@@ -265,6 +266,7 @@ export async function participateInChallenge(data: {
           .from('user_coins')
           .update({
             balance: (userCoins?.balance || 0) + coinsToEarn,
+            challenge_balance: (userCoins?.challenge_balance || 0) + coinsToEarn,
             updated_at: new Date().toISOString(),
           })
           .eq('user_id', user.id);
@@ -463,19 +465,20 @@ export async function approveParticipation(participationId: string, customCoins?
       return { error: 'Erro ao aprovar participacao' };
     }
 
-    // Adicionar moedas ao usuário
+    // Adicionar moedas ao usuário (origem: challenge)
     if (coinsReward > 0) {
-      // Atualizar saldo
+      // Atualizar saldo com coin_source = 'challenge'
       const { error: coinsError } = await supabase.rpc('add_user_coins', {
         p_user_id: participation.user_id,
         p_amount: coinsReward,
+        p_coin_source: 'challenge',
       });
 
       // Fallback se a função RPC não existir
       if (coinsError) {
         const { data: userCoins } = await supabase
           .from('user_coins')
-          .select('balance')
+          .select('balance, challenge_balance')
           .eq('user_id', participation.user_id)
           .single();
 
@@ -483,6 +486,7 @@ export async function approveParticipation(participationId: string, customCoins?
           .from('user_coins')
           .update({
             balance: (userCoins?.balance || 0) + coinsReward,
+            challenge_balance: (userCoins?.challenge_balance || 0) + coinsReward,
             updated_at: new Date().toISOString(),
           })
           .eq('user_id', participation.user_id);

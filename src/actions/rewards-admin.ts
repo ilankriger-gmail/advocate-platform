@@ -162,9 +162,9 @@ export async function approveClaim(claimId: string, createCelebrationPost = fals
       .eq('id', claim?.user_id)
       .single();
 
-    // Se vai publicar (com comprovante), já marca como "shipped" (enviado)
+    // Se vai publicar (com comprovante), já marca como "delivered" (entregue)
     // Se só aprovar, fica como "approved"
-    const newStatus = createCelebrationPost ? 'shipped' : 'approved';
+    const newStatus = createCelebrationPost ? 'delivered' : 'approved';
 
     const { error } = await supabase
       .from('reward_claims')
@@ -172,6 +172,10 @@ export async function approveClaim(claimId: string, createCelebrationPost = fals
       .eq('id', claimId);
 
     if (error) {
+      rewardsAdminLogger.error('Erro ao aprovar resgate', {
+        claimId: maskId(claimId),
+        error: sanitizeError(error),
+      });
       return { error: 'Erro ao aprovar resgate' };
     }
 
@@ -206,12 +210,22 @@ export async function approveClaim(claimId: string, createCelebrationPost = fals
     if (createCelebrationPost && claim) {
       const postContent = `🎉 Parabéns ${userName}!\n\nAcabou de resgatar "${rewardName}" na Arena Te Amo! Isso é o que acontece quando você se dedica de verdade. 👏\n\nContinue participando, completando desafios e acumulando corações — o próximo prêmio pode ser seu! ❤️🏆\n\n#ArenaTeAmo #Resgate #Conquista`;
 
-      await supabase.from('posts').insert({
+      const { error: postError } = await supabase.from('posts').insert({
         user_id: user.id, // Post criado pelo admin/creator
+        title: `🎉 ${userName} resgatou "${rewardName}"!`,
         content: postContent,
         type: 'creator',
         status: 'approved',
       });
+
+      if (postError) {
+        rewardsAdminLogger.error('Erro ao criar post de celebração', {
+          claimId: maskId(claimId),
+          error: sanitizeError(postError),
+        });
+      } else {
+        rewardsAdminLogger.info('Post de celebração criado', { claimId: maskId(claimId) });
+      }
     }
 
     revalidatePath('/admin/premios');
@@ -338,7 +352,9 @@ export async function rejectClaim(claimId: string, reason?: string): Promise<Act
     }
 
     const rewardName = (claim.rewards as { name: string } | null)?.name || 'Prêmio';
-    const coinsToRefund = claim.coins_spent || 0;
+    const engagementRefund = claim.engagement_coins_spent || 0;
+    const challengeLost = claim.challenge_coins_spent || 0;
+    const totalRefund = engagementRefund; // Só devolve engajamento
 
     // Atualizar status para rejected
     const { error: updateError } = await supabase
@@ -354,69 +370,74 @@ export async function rejectClaim(claimId: string, reason?: string): Promise<Act
       return { error: 'Erro ao rejeitar resgate' };
     }
 
-    // Devolver corações ao usuário
-    if (coinsToRefund > 0) {
+    // Devolver apenas corações de ENGAJAMENTO ao usuário
+    // Corações de DESAFIO são cancelados (não voltam)
+    if (totalRefund > 0) {
       const refundDescription = reason
-        ? `Resgate rejeitado: ${reason}`
-        : `Resgate de "${rewardName}" rejeitado — corações devolvidos`;
+        ? `Resgate rejeitado: ${reason} — ${engagementRefund} corações de engajamento devolvidos${challengeLost > 0 ? `, ${challengeLost} de desafio cancelados` : ''}`
+        : `Resgate de "${rewardName}" rejeitado — ${engagementRefund} corações de engajamento devolvidos${challengeLost > 0 ? `, ${challengeLost} de desafio cancelados` : ''}`;
 
-      const { error: coinsError } = await supabase.rpc('add_user_coins', {
-        p_user_id: claim.user_id,
-        p_amount: coinsToRefund,
-        p_type: 'refund',
-        p_description: refundDescription,
+      // Devolver apenas engagement_balance (não challenge_balance)
+      const { data: userCoins } = await supabase
+        .from('user_coins')
+        .select('balance, engagement_balance')
+        .eq('user_id', claim.user_id)
+        .maybeSingle();
+
+      await supabase
+        .from('user_coins')
+        .upsert({
+          user_id: claim.user_id,
+          balance: (userCoins?.balance || 0) + totalRefund,
+          engagement_balance: (userCoins?.engagement_balance || 0) + engagementRefund,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id' });
+
+      // Registrar transação de estorno
+      await supabase.from('coin_transactions').insert({
+        user_id: claim.user_id,
+        amount: totalRefund,
+        type: 'refund',
+        description: refundDescription,
+        reference_id: claimId,
       });
 
-      // Fallback se a função RPC não aceitar esses parâmetros
-      if (coinsError) {
-        // Tentar RPC simples
-        const { error: simpleRpcError } = await supabase.rpc('add_user_coins', {
-          p_user_id: claim.user_id,
-          p_amount: coinsToRefund,
-        });
-
-        if (simpleRpcError) {
-          // Fallback manual
-          const { data: userCoins } = await supabase
-            .from('user_coins')
-            .select('balance')
-            .eq('user_id', claim.user_id)
-            .maybeSingle();
-
-          await supabase
-            .from('user_coins')
-            .upsert({
-              user_id: claim.user_id,
-              balance: (userCoins?.balance || 0) + coinsToRefund,
-              updated_at: new Date().toISOString(),
-            }, { onConflict: 'user_id' });
-        }
-
-        // Registrar transação manualmente
-        await supabase.from('coin_transactions').insert({
-          user_id: claim.user_id,
-          amount: coinsToRefund,
-          type: 'refund',
-          description: refundDescription,
-          reference_id: claimId,
-        });
-      }
-
-      rewardsAdminLogger.info('Corações devolvidos ao usuário', {
+      rewardsAdminLogger.info('Corações de engajamento devolvidos ao usuário', {
         claimId: maskId(claimId),
         userId: maskId(claim.user_id),
-        amount: coinsToRefund
+        engagementRefund,
+        challengeLost
+      });
+    } else if (challengeLost > 0) {
+      // Só tinha moedas de desafio — registrar que foram canceladas
+      await supabase.from('coin_transactions').insert({
+        user_id: claim.user_id,
+        amount: 0,
+        type: 'refund',
+        description: `Resgate de "${rewardName}" rejeitado — ${challengeLost} corações de desafio cancelados (não devolvidos)`,
+        reference_id: claimId,
+      });
+
+      rewardsAdminLogger.info('Corações de desafio cancelados (não devolvidos)', {
+        claimId: maskId(claimId),
+        userId: maskId(claim.user_id),
+        challengeLost
       });
     }
 
     // Criar notificação para o usuário
     try {
       const reasonText = reason ? `\n\nMotivo: ${reason}` : '';
+      const refundMsg = totalRefund > 0
+        ? ` ${engagementRefund} corações de engajamento foram devolvidos ao seu saldo.${challengeLost > 0 ? ` ${challengeLost} corações de desafio foram cancelados.` : ''}`
+        : challengeLost > 0
+          ? ` ${challengeLost} corações de desafio foram cancelados (não devolvidos).`
+          : '';
       await supabase.from('notifications').insert({
         user_id: claim.user_id,
         type: 'reward_rejected',
         title: `❌ Resgate rejeitado`,
-        message: `Seu resgate de "${rewardName}" foi rejeitado.${coinsToRefund > 0 ? ` ${coinsToRefund} corações foram devolvidos ao seu saldo.` : ''}${reasonText}`,
+        message: `Seu resgate de "${rewardName}" foi rejeitado.${refundMsg}${reasonText}`,
         link: '/premios',
         read: false,
       });

@@ -74,29 +74,31 @@ export async function approveParticipation(
       return { error: `Erro ao aprovar: ${updateError.message || updateError.code}` };
     }
 
-    // Adicionar moedas ao usuário
+    // Adicionar moedas ao usuário (origem: challenge)
     if (coinsReward > 0) {
-      // Atualizar saldo
+      // Atualizar saldo com coin_source = 'challenge'
       const { error: coinsError } = await supabase.rpc('add_user_coins', {
         p_user_id: participation.user_id,
         p_amount: coinsReward,
+        p_coin_source: 'challenge',
       });
 
-      // Fallback se a função RPC não existir
+      // Fallback se a função RPC não existir ou não aceitar p_coin_source
       if (coinsError) {
         // Usar maybeSingle para não falhar se não existir
         const { data: userCoins } = await supabase
           .from('user_coins')
-          .select('balance')
+          .select('balance, challenge_balance')
           .eq('user_id', participation.user_id)
           .maybeSingle();
 
-        // Usar upsert para criar ou atualizar
+        // Usar upsert para criar ou atualizar (incluindo challenge_balance)
         await supabase
           .from('user_coins')
           .upsert({
             user_id: participation.user_id,
             balance: (userCoins?.balance || 0) + coinsReward,
+            challenge_balance: (userCoins?.challenge_balance || 0) + coinsReward,
             updated_at: new Date().toISOString(),
           }, { onConflict: 'user_id' });
       }
@@ -449,11 +451,12 @@ export async function approveAllPending(
         })
         .eq('id', p.id);
 
-      // Dar corações
+      // Dar corações (origem: challenge)
       if (coinsReward > 0) {
         await supabase.rpc('add_user_coins', {
           p_user_id: p.user_id,
           p_amount: coinsReward,
+          p_coin_source: 'challenge',
         });
 
         await supabase.from('coin_transactions').insert({

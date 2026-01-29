@@ -585,6 +585,8 @@ export interface UserCoins {
   id: string;
   user_id: string;
   balance: number;
+  challenge_balance: number;
+  engagement_balance: number;
   updated_at: string;
 }
 
@@ -604,6 +606,8 @@ export interface RewardClaim {
   reward_id: string;
   status: RewardClaimStatus;
   coins_spent: number;
+  challenge_coins_spent: number;
+  engagement_coins_spent: number;
   created_at: string;
 }
 
