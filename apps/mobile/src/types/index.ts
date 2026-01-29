@@ -20,7 +20,7 @@ export type ContentCategory = 'normal' | 'help_request';
 export type MediaType = 'none' | 'image' | 'carousel' | 'youtube' | 'instagram';
 
 // Challenge types
-export type ChallengeType = 'content' | 'engagement' | 'purchase' | 'referral' | 'social' | 'quiz';
+export type ChallengeType = 'content' | 'engagement' | 'purchase' | 'referral' | 'social' | 'quiz' | 'participe' | 'engajamento' | 'fisico' | 'atos_amor';
 export type ChallengeStatus = 'draft' | 'active' | 'completed' | 'cancelled';
 export type ParticipationStatus = 'pending' | 'approved' | 'rejected' | 'winner';
 
