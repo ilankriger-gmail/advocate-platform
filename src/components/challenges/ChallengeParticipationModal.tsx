@@ -415,13 +415,26 @@ export function ChallengeParticipationModal({
         <h3 className="font-bold text-blue-900">{challenge.title}</h3>
         {challenge.goal_value && (
           <p className="text-sm text-blue-700 mt-1">
-            Meta: {challenge.goal_value} {goalLabel}
+            Meta mínima: {challenge.goal_value + 1} {goalLabel}
           </p>
         )}
         <p className="text-sm text-blue-600 mt-1">
           Recompensa: {challenge.coins_reward} corações
         </p>
       </div>
+
+      {/* Regras de meta (desafios físicos) */}
+      {!isAtosAmor && challenge.goal_value && (
+        <div className="p-3 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg space-y-2">
+          <p className="text-xs text-blue-800 font-medium">
+            📋 <strong>Regras:</strong>
+          </p>
+          <ul className="text-xs text-blue-700 space-y-1 list-disc list-inside">
+            <li>Você precisa bater a meta de <strong>{challenge.goal_value}</strong> e fazer <strong>no mínimo +1</strong></li>
+            <li>Quanto mais fizer, melhor! Quem fizer mais será reconhecido como <strong>recordista</strong> 👑</li>
+          </ul>
+        </div>
+      )}
 
       {/* Aviso: apenas o dono da conta (desafios físicos) */}
       {!isAtosAmor && (

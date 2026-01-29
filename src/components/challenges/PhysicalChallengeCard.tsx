@@ -170,21 +170,42 @@ export function PhysicalChallengeCard({
                 </div>
               )}
 
-              {/* Meta (apenas para desafios físicos) */}
+              {/* Meta + Regras (apenas para desafios físicos) */}
               {!isAtosAmor && challenge.goal_value && (
-                <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-100">
-                  <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <span className="text-white text-sm">🎯</span>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-blue-800 font-semibold text-sm">
-                      Meta: {challenge.goal_value} {goalLabel}
-                    </p>
-                    {participation?.result_value && (
-                      <p className="text-xs text-blue-600">
-                        Seu resultado: {participation.result_value} {goalLabel}
+                <div className="space-y-3">
+                  {/* Meta */}
+                  <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-100">
+                    <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <span className="text-white text-sm">🎯</span>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-blue-800 font-semibold text-sm">
+                        Meta mínima: {challenge.goal_value + 1} {goalLabel}
                       </p>
-                    )}
+                      <p className="text-xs text-blue-600">
+                        Você precisa bater a meta de {challenge.goal_value} e fazer no mínimo +1
+                      </p>
+                      {participation?.result_value && (
+                        <p className="text-xs text-blue-700 font-medium mt-1">
+                          Seu resultado: {participation.result_value} {goalLabel}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Incentivo de Recorde */}
+                  <div className="flex items-start gap-3 p-3 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-200">
+                    <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <span className="text-white text-sm">👑</span>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-purple-800 font-semibold text-sm">
+                        Bata o recorde!
+                      </p>
+                      <p className="text-xs text-purple-600">
+                        Quanto mais você fizer além da meta, melhor! Quem fizer mais será reconhecido como recordista do desafio. 🏅
+                      </p>
+                    </div>
                   </div>
                 </div>
               )}
