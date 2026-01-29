@@ -126,8 +126,22 @@ export async function claimReward(
       .eq('user_id', user.id)
       .single();
 
-    if (!userCoins || userCoins.balance < reward.coins_required) {
+    if (!userCoins) {
       return { error: 'Saldo insuficiente' };
+    }
+
+    // Calcular moedas já travadas em resgates pendentes (não aprovados/rejeitados ainda)
+    const { data: pendingClaims } = await supabase
+      .from('reward_claims')
+      .select('coins_spent')
+      .eq('user_id', user.id)
+      .eq('status', 'pending');
+
+    const lockedCoins = (pendingClaims || []).reduce((sum, c) => sum + (c.coins_spent || 0), 0);
+    const availableBalance = userCoins.balance - lockedCoins;
+
+    if (availableBalance < reward.coins_required) {
+      return { error: `Saldo disponível insuficiente. Você tem ${userCoins.balance} ❤️ mas ${lockedCoins} estão reservados em resgates pendentes. Disponível: ${availableBalance} ❤️` };
     }
 
     // Calcular breakdown: deduzir de engagement primeiro, depois challenge
