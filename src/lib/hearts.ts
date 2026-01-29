@@ -99,58 +99,19 @@ export async function giveHearts(
     // Descrição da transação
     const description = metadata?.description || `${action.replace(/_/g, ' ').toLowerCase()}`;
     
-    // Tentar usar RPC primeiro
+    // RPC atômico: atualiza balance + registra transação numa única chamada
     const { error: rpcError } = await supabase.rpc('add_user_coins', {
       p_user_id: userId,
       p_amount: hearts,
-      p_type: 'earned',
+      p_type: metadata?.referenceType || action.toLowerCase(),
       p_description: `❤️ ${description}`
     });
 
     if (rpcError) {
-      // Fallback: atualizar manualmente
-      heartsLogger.warn('RPC falhou, usando fallback', { error: rpcError.message });
-      
-      // Verificar se usuário tem registro de coins
-      const { data: userCoins } = await supabase
-        .from('user_coins')
-        .select('balance')
-        .eq('user_id', userId)
-        .single();
-
-      if (userCoins) {
-        // Atualizar saldo existente (atomicamente via SQL)
-        await supabase.rpc('increment_user_coins', {
-          p_user_id: userId,
-          p_amount: hearts
-        }).then(({ error: incErr }) => {
-          if (incErr) {
-            // Fallback final: update direto (não atômico)
-            heartsLogger.warn('increment_user_coins falhou, usando update direto', { error: incErr.message });
-            return supabase
-              .from('user_coins')
-              .update({ balance: userCoins.balance + hearts })
-              .eq('user_id', userId);
-          }
-        });
-      } else {
-        // Criar novo registro
-        await supabase
-          .from('user_coins')
-          .insert({ user_id: userId, balance: hearts });
-      }
-
-      // Registrar transação
-      await supabase
-        .from('coin_transactions')
-        .insert({
-          user_id: userId,
-          amount: hearts,
-          type: 'earned',
-          description: `❤️ ${description}`,
-          reference_id: metadata?.referenceId || null,
-          reference_type: metadata?.referenceType || action.toLowerCase(),
-        });
+      heartsLogger.error('RPC add_user_coins falhou', { 
+        userId, action, hearts, error: rpcError.message 
+      });
+      return { success: false, hearts: 0, error: 'Erro ao processar corações' };
     }
 
     heartsLogger.debug('Corações dados', { userId, action, hearts });
