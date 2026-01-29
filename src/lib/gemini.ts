@@ -43,7 +43,7 @@ interface GeminiAnalysisResult {
 /**
  * Extrai o ID do vídeo do YouTube de várias formas de URL
  */
-function extractYouTubeId(url: string): string | null {
+export function extractYouTubeId(url: string): string | null {
   const patterns = [
     /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/v\/)([^&\n?#]+)/,
     /youtube\.com\/shorts\/([^&\n?#]+)/,

@@ -7,6 +7,7 @@ import {
   analyzeAtosAmorChallenge,
   analyzeInstagramLink,
   isValidYouTubeUrl,
+  extractYouTubeId,
   isValidInstagramUrl,
   type AIVerdict,
   type InstagramVerdict
@@ -87,6 +88,27 @@ export async function participateInChallenge(data: {
 
     if (!isValidYouTubeUrl(data.vídeoProofUrl)) {
       return { error: 'Apenas links do YouTube são aceitos. O vídeo deve ser público.' };
+    }
+
+    // Verificar se o mesmo vídeo já foi usado em outro desafio
+    const videoId = extractYouTubeId(data.vídeoProofUrl);
+    if (videoId) {
+      const { data: existingVideo } = await supabase
+        .from('challenge_participants')
+        .select('id, challenge_id, user_id')
+        .or(`video_proof_url.ilike.%${videoId}%`)
+        .neq('status', 'rejected')
+        .limit(1)
+        .single();
+
+      if (existingVideo) {
+        challengesLogger.warn('Vídeo duplicado detectado', {
+          videoId,
+          userId: user.id,
+          existingParticipation: existingVideo.id,
+        });
+        return { error: 'Este vídeo já foi enviado em outro desafio. Cada desafio precisa de um vídeo novo e único.' };
+      }
     }
 
     // Instagram é opcional, mas se preenchido deve ser válido
