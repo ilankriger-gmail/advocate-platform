@@ -202,7 +202,8 @@ Parabéns pela conquista! 👏❤️`;
  */
 export async function rejectParticipation(
   participationId: string,
-  reason?: string
+  reason?: string,
+  refundMode: 'remove' | 'refund' = 'remove'
 ): Promise<ActionResponse> {
   try {
     // Verificar autenticação
@@ -249,29 +250,58 @@ export async function rejectParticipation(
       return { error: `Erro ao rejeitar: ${error.message || error.code}` };
     }
 
-    // Se já tinha ganhado corações (ex: status era 'approved'), devolver/subtrair
+    // Tratar corações conforme o modo:
+    // 'remove' = perder pra sempre (desafio rejeitado — pontos somem)
+    // 'refund' = devolver (engajamento — pontos voltam pro usuário)
     if (coinsEarned > 0 && participation.status === 'approved') {
       const challengeData = participation.challenges as unknown as { title: string } | null;
       const challengeTitle = challengeData?.title || 'Desafio';
 
-      await supabase.rpc('add_user_coins', {
-        p_user_id: participation.user_id,
-        p_amount: -coinsEarned,
-      });
+      if (refundMode === 'remove') {
+        // REMOVE: pontos de desafio perdidos pra sempre
+        await supabase.rpc('add_user_coins', {
+          p_user_id: participation.user_id,
+          p_amount: -coinsEarned,
+        });
 
-      await supabase.from('coin_transactions').insert({
-        user_id: participation.user_id,
-        amount: -coinsEarned,
-        type: 'refund',
-        description: `Desafio rejeitado: ${challengeTitle}${reason ? ` — ${reason}` : ''}`,
-        reference_id: participationId,
-      });
+        await supabase.from('coin_transactions').insert({
+          user_id: participation.user_id,
+          amount: -coinsEarned,
+          type: 'spent',
+          description: `❌ Desafio rejeitado (pontos removidos): ${challengeTitle}${reason ? ` — ${reason}` : ''}`,
+          reference_id: participationId,
+          reference_type: 'challenge_rejected',
+        });
 
-      challengesAdminLogger.info('Corações removidos por rejeição de desafio', {
-        participationId,
-        userId: maskId(participation.user_id),
-        coinsRemoved: coinsEarned
-      });
+        challengesAdminLogger.info('Corações REMOVIDOS permanentemente por rejeição', {
+          participationId,
+          userId: maskId(participation.user_id),
+          coinsRemoved: coinsEarned
+        });
+      } else {
+        // REFUND: pontos de engajamento devolvidos
+        // Não subtrai — os pontos ficam com o usuário
+        await supabase.from('coin_transactions').insert({
+          user_id: participation.user_id,
+          amount: 0,
+          type: 'refund',
+          description: `🔄 Desafio rejeitado (pontos mantidos): ${challengeTitle}${reason ? ` — ${reason}` : ''}`,
+          reference_id: participationId,
+          reference_type: 'challenge_refunded',
+        });
+
+        // Não zera coins_earned pra manter histórico, mas atualizar status
+        await supabase
+          .from('challenge_participants')
+          .update({ coins_earned: coinsEarned }) // mantém o valor
+          .eq('id', participationId);
+
+        challengesAdminLogger.info('Corações DEVOLVIDOS por rejeição de engajamento', {
+          participationId,
+          userId: maskId(participation.user_id),
+          coinsKept: coinsEarned
+        });
+      }
     }
 
     // Notificar usuário da rejeição

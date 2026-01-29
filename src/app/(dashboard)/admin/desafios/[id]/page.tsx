@@ -484,7 +484,12 @@ function ParticipationCard({ participation, goalType, coinsReward, challengeType
         )}
       </div>
 
-      <ParticipationActions participationId={participation.id} coinsReward={coinsReward} />
+      <ParticipationActions
+        participationId={participation.id}
+        coinsReward={coinsReward}
+        currentStatus={(participation as any).status}
+        coinsEarned={(participation as any).coins_earned || 0}
+      />
     </div>
   );
 }
