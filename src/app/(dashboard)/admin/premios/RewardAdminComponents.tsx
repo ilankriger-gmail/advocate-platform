@@ -86,9 +86,16 @@ export function ClaimActions({ claim, rewardType }: ClaimActionsProps) {
 
   const handleApprove = async (withPost = false) => {
     setIsLoading(true);
-    const result = await approveClaim(claim.id, withPost);
-    if (result.success) {
-      router.refresh();
+    try {
+      const result = await approveClaim(claim.id, withPost);
+      if (result.success) {
+        alert('✅ Resgate aprovado com sucesso!');
+        router.refresh();
+      } else {
+        alert(`❌ Erro ao aprovar: ${result.error || 'Erro desconhecido'}`);
+      }
+    } catch (err) {
+      alert(`❌ Erro inesperado: ${err instanceof Error ? err.message : 'Erro desconhecido'}`);
     }
     setIsLoading(false);
   };
