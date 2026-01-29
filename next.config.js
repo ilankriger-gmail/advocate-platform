@@ -158,7 +158,7 @@ const nextConfig = {
               // 'self': Scripts da mesma origem
               // 'unsafe-inline': Permite scripts inline (necessário para Next.js)
               // 'unsafe-eval': Permite eval() (necessário para Next.js)
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com",
               // style-src: Controla de onde estilos podem ser carregados
               // 'self': Estilos da mesma origem
               // 'unsafe-inline': Permite estilos inline (necessário para Tailwind CSS e styled-components)
@@ -175,7 +175,7 @@ const nextConfig = {
               // https://*.supabase.co: Permite conexões com API do Supabase
               // wss://*.supabase.co: Permite WebSocket connections do Supabase Realtime
               // Em desenvolvimento: permite localhost em qualquer porta
-              `connect-src 'self' https://*.supabase.co wss://*.supabase.co${process.env.NODE_ENV === 'development' ? ' http://localhost:* ws://localhost:*' : ''}`,
+              `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://www.googletagmanager.com https://analytics.google.com${process.env.NODE_ENV === 'development' ? ' http://localhost:* ws://localhost:*' : ''}`,
               // font-src: Controla de onde fontes podem ser carregadas
               // 'self': Fontes da mesma origem
               // data:: Permite fontes em data URIs
