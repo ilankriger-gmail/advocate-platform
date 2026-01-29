@@ -5,26 +5,16 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { giveHearts } from '@/lib/hearts';
 import { revalidatePath } from 'next/cache';
 
-// Recompensas por geração
+// Recompensas — apenas primeira geração (indicador + indicado)
 const REWARDS = {
   DIRECT_REFERRER: 100,  // Quem indicou
   DIRECT_REFERRED: 100,  // Quem foi indicado
-  GENERATION_2: 50,
-  GENERATION_3: 25,
-  GENERATION_4: 12,
-  GENERATION_5: 6,
-  GENERATION_6: 3,
 };
 
 function getRewardByGeneration(generation: number): number {
   switch (generation) {
     case 1: return REWARDS.DIRECT_REFERRER;
-    case 2: return REWARDS.GENERATION_2;
-    case 3: return REWARDS.GENERATION_3;
-    case 4: return REWARDS.GENERATION_4;
-    case 5: return REWARDS.GENERATION_5;
-    case 6: return REWARDS.GENERATION_6;
-    default: return 0;
+    default: return 0; // Sem cascata — apenas 1ª geração
   }
 }
 
@@ -228,45 +218,7 @@ export async function completeReferral(
     });
   }
 
-  // Pagar recompensas em cascata (gerações 2-6)
-  let currentUserId = referrerId;
-  for (let generation = 2; generation <= 6; generation++) {
-    if (!currentUserId) break;
-
-    // Buscar quem indicou o usuário atual
-    const { data: user } = await supabase
-      .from('users')
-      .select('referred_by')
-      .eq('id', currentUserId)
-      .single();
-
-    if (!user?.referred_by) break;
-
-    const ancestorId = user.referred_by;
-    const rewardAmount = getRewardByGeneration(generation);
-
-    if (rewardAmount > 0) {
-      await supabase.rpc('add_user_coins', {
-        p_user_id: ancestorId,
-        p_amount: rewardAmount,
-        p_type: 'bonus',
-        p_description: `🎁 Bônus de indicação (${generation}ª geração)!`
-      });
-
-      rewards.push({ userId: ancestorId, amount: rewardAmount, generation });
-
-      // Log
-      await supabase.from('referral_rewards_log').insert({
-        referral_id: referral.id,
-        user_id: ancestorId,
-        new_user_id: userId,
-        generation,
-        reward_amount: rewardAmount,
-      });
-    }
-
-    currentUserId = ancestorId;
-  }
+  // Cascata desativada — apenas 1ª geração (indicador direto)
 
   console.log(`[Referral] Indicação completa! Recompensas pagas:`, rewards);
 
