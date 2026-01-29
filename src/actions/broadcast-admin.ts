@@ -294,6 +294,49 @@ export async function sendBroadcast({
 }
 
 /**
+ * Enviar email de teste para um endereço específico
+ */
+export async function sendTestBroadcast({
+  subject,
+  title,
+  message,
+  ctaText,
+  ctaUrl,
+  testEmail,
+}: {
+  subject: string;
+  title: string;
+  message: string;
+  ctaText?: string;
+  ctaUrl?: string;
+  testEmail: string;
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    await verifyAdmin();
+    const resend = new Resend(process.env.RESEND_API_KEY);
+
+    if (!process.env.RESEND_API_KEY) {
+      return { success: false, error: 'RESEND_API_KEY não configurada' };
+    }
+
+    const fromEmail = process.env.RESEND_FROM_EMAIL || 'noreply@omocodoteamo.com.br';
+    const siteName = 'Arena Te Amo';
+    const html = buildEmailHtml({ title, message, ctaText, ctaUrl });
+
+    await resend.emails.send({
+      from: `${siteName} <${fromEmail}>`,
+      to: [testEmail],
+      subject: `[TESTE] ${subject}`,
+      html,
+    });
+
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: (err as Error).message };
+  }
+}
+
+/**
  * Buscar histórico de broadcasts
  */
 export async function fetchBroadcastHistory(): Promise<{ data: BroadcastRecord[]; error?: string }> {

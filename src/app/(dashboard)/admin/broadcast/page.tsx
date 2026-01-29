@@ -6,6 +6,7 @@ import { Card, Button, Input } from '@/components/ui';
 import {
   countRecipients,
   sendBroadcast,
+  sendTestBroadcast,
   fetchBroadcastHistory,
   type AudienceFilter,
   type BroadcastRecord,
@@ -34,6 +35,11 @@ export default function AdminBroadcastPage() {
   const [confirmSend, setConfirmSend] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  // Test email
+  const [testEmail, setTestEmail] = useState('');
+  const [sendingTest, setSendingTest] = useState(false);
+  const [testResult, setTestResult] = useState<string | null>(null);
 
   // History
   const [history, setHistory] = useState<BroadcastRecord[]>([]);
@@ -343,6 +349,48 @@ export default function AdminBroadcastPage() {
                   )}
                 </span>
               </div>
+            </Card>
+
+            {/* Enviar Teste */}
+            <Card className="p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">🧪 Enviar Teste</h2>
+              <p className="text-sm text-gray-500 mb-3">
+                Envie o email pra um endereço de teste antes de disparar pra todo mundo.
+              </p>
+              <div className="flex gap-2">
+                <Input
+                  value={testEmail}
+                  onChange={(e) => { setTestEmail(e.target.value); setTestResult(null); }}
+                  placeholder="email@exemplo.com"
+                  type="email"
+                  className="flex-1"
+                />
+                <Button
+                  variant="outline"
+                  disabled={!testEmail.trim() || !subject.trim() || !title.trim() || !message.trim() || sendingTest}
+                  onClick={async () => {
+                    setSendingTest(true);
+                    setTestResult(null);
+                    const result = await sendTestBroadcast({
+                      subject,
+                      title,
+                      message,
+                      ctaText: ctaText || undefined,
+                      ctaUrl: ctaUrl || undefined,
+                      testEmail: testEmail.trim(),
+                    });
+                    setSendingTest(false);
+                    setTestResult(result.success ? `✅ Teste enviado para ${testEmail}` : `❌ ${result.error}`);
+                  }}
+                >
+                  {sendingTest ? 'Enviando...' : 'Enviar teste'}
+                </Button>
+              </div>
+              {testResult && (
+                <p className={`text-sm mt-2 ${testResult.startsWith('✅') ? 'text-green-600' : 'text-red-600'}`}>
+                  {testResult}
+                </p>
+              )}
             </Card>
 
             {/* Enviar */}
