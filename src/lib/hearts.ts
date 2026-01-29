@@ -119,11 +119,20 @@ export async function giveHearts(
         .single();
 
       if (userCoins) {
-        // Atualizar saldo existente
-        await supabase
-          .from('user_coins')
-          .update({ balance: userCoins.balance + hearts })
-          .eq('user_id', userId);
+        // Atualizar saldo existente (atomicamente via SQL)
+        await supabase.rpc('increment_user_coins', {
+          p_user_id: userId,
+          p_amount: hearts
+        }).then(({ error: incErr }) => {
+          if (incErr) {
+            // Fallback final: update direto (não atômico)
+            heartsLogger.warn('increment_user_coins falhou, usando update direto', { error: incErr.message });
+            return supabase
+              .from('user_coins')
+              .update({ balance: userCoins.balance + hearts })
+              .eq('user_id', userId);
+          }
+        });
       } else {
         // Criar novo registro
         await supabase
