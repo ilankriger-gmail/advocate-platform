@@ -84,12 +84,12 @@ export function ClaimActions({ claim, rewardType }: ClaimActionsProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [receiptUrl, setReceiptUrl] = useState(claim.delivery_address?.payment_receipt_url || '');
 
-  const handleApprove = async (withPost = false) => {
+  const handleApprove = async () => {
     setIsLoading(true);
     try {
-      const result = await approveClaim(claim.id, withPost);
+      const result = await approveClaim(claim.id);
       if (result.success) {
-        alert('✅ Resgate aprovado com sucesso!');
+        alert('✅ Resgate aprovado com sucesso! Post de celebração criado e email enviado.');
         router.refresh();
       } else {
         alert(`❌ Erro ao aprovar: ${result.error || 'Erro desconhecido'}`);
@@ -161,21 +161,13 @@ export function ClaimActions({ claim, rewardType }: ClaimActionsProps) {
       <div className="flex flex-col gap-2">
         <div className="flex gap-2">
           <Button
-            onClick={() => handleApprove(false)}
+            onClick={() => handleApprove()}
             disabled={isLoading}
             size="sm"
             className="bg-green-600 hover:bg-green-700"
+            title="Aprovar, criar post de celebração e enviar email"
           >
             {isLoading ? '...' : '✅ Aprovar'}
-          </Button>
-          <Button
-            onClick={() => handleApprove(true)}
-            disabled={isLoading}
-            size="sm"
-            className="bg-purple-600 hover:bg-purple-700"
-            title="Aprovar e criar post de celebração"
-          >
-            {isLoading ? '...' : '📣 Aprovar + Publicar'}
           </Button>
           <Button
             onClick={handleReject}

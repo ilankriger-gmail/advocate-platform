@@ -121,8 +121,11 @@ export async function toggleRewardActive(
 
 /**
  * Aprovar resgate (admin)
+ * Sempre cria post de celebração e envia email.
+ * PIX (money) → status 'delivered' (já pagou)
+ * Físico/Digital → status 'approved' (precisa enviar)
  */
-export async function approveClaim(claimId: string, createCelebrationPost = false): Promise<ActionResponse> {
+export async function approveClaim(claimId: string): Promise<ActionResponse> {
   try {
     // Verificar autenticação
     const userCheck = await getAuthenticatedUser();
@@ -149,22 +152,31 @@ export async function approveClaim(claimId: string, createCelebrationPost = fals
       .eq('id', claimId)
       .single();
 
+    if (!claim) {
+      return { error: 'Resgate não encontrado' };
+    }
+
     // Buscar nome e email do usuário
     const { data: profile } = await supabase
       .from('profiles')
       .select('full_name')
-      .eq('id', claim?.user_id)
+      .eq('id', claim.user_id)
       .single();
 
     const { data: userRecord } = await supabase
       .from('users')
       .select('email')
-      .eq('id', claim?.user_id)
+      .eq('id', claim.user_id)
       .single();
 
-    // Se vai publicar (com comprovante), já marca como "delivered" (entregue)
-    // Se só aprovar, fica como "approved"
-    const newStatus = createCelebrationPost ? 'delivered' : 'approved';
+    const reward = claim.rewards as { name: string; type: string; image_url?: string } | null;
+    const userName = profile?.full_name || 'Um membro';
+    const rewardName = reward?.name || 'um prêmio';
+    const rewardType = reward?.type || 'digital';
+    const receiptUrl = claim.delivery_address?.payment_receipt_url as string | undefined;
+
+    // PIX (money) → delivered (já pagou), Físico/Digital → approved (precisa enviar)
+    const newStatus = rewardType === 'money' ? 'delivered' : 'approved';
 
     const { error } = await supabase
       .from('reward_claims')
@@ -179,13 +191,14 @@ export async function approveClaim(claimId: string, createCelebrationPost = fals
       return { error: 'Erro ao aprovar resgate' };
     }
 
-    const reward = claim?.rewards as { name: string; type: string; image_url?: string } | null;
-    const userName = profile?.full_name || 'Um membro';
-    const rewardName = reward?.name || 'um prêmio';
-    const receiptUrl = claim?.delivery_address?.payment_receipt_url as string | undefined;
+    rewardsAdminLogger.info('Resgate aprovado', {
+      claimId: maskId(claimId),
+      rewardType,
+      newStatus,
+    });
 
-    // Sempre enviar email de parabéns ao ganhador (se tiver email)
-    if (createCelebrationPost && userRecord?.email && claim) {
+    // Sempre enviar email de parabéns ao ganhador
+    if (userRecord?.email) {
       try {
         await sendRewardClaimedEmail({
           to: userRecord.email,
@@ -206,8 +219,8 @@ export async function approveClaim(claimId: string, createCelebrationPost = fals
       }
     }
 
-    // Criar post de celebração na comunidade
-    if (createCelebrationPost && claim) {
+    // Sempre criar post de celebração na comunidade
+    try {
       const postContent = `🎉 Parabéns ${userName}!\n\nAcabou de resgatar "${rewardName}" na Arena Te Amo! Isso é o que acontece quando você se dedica de verdade. 👏\n\nContinue participando, completando desafios e acumulando corações — o próximo prêmio pode ser seu! ❤️🏆\n\n#ArenaTeAmo #Resgate #Conquista`;
 
       const { error: postError } = await supabase.from('posts').insert({
@@ -226,10 +239,34 @@ export async function approveClaim(claimId: string, createCelebrationPost = fals
       } else {
         rewardsAdminLogger.info('Post de celebração criado', { claimId: maskId(claimId) });
       }
+    } catch (postErr) {
+      rewardsAdminLogger.error('Erro inesperado ao criar post de celebração', {
+        error: sanitizeError(postErr),
+      });
+    }
+
+    // Criar notificação para o usuário
+    try {
+      const statusMsg = rewardType === 'money'
+        ? 'O pagamento via PIX será processado em breve!'
+        : 'Em breve você receberá mais informações sobre a entrega.';
+      await supabase.from('notifications').insert({
+        user_id: claim.user_id,
+        type: 'reward_approved',
+        title: `🎉 Resgate aprovado!`,
+        message: `Seu resgate de "${rewardName}" foi aprovado! ${statusMsg}`,
+        link: '/premios',
+        read: false,
+      });
+    } catch (notifErr) {
+      rewardsAdminLogger.error('Erro ao criar notificação de aprovação', {
+        error: sanitizeError(notifErr),
+      });
     }
 
     revalidatePath('/admin/premios');
     revalidatePath('/admin/resgates');
+    revalidatePath('/feed');
     return { success: true };
   } catch {
     return { error: 'Erro interno do servidor' };

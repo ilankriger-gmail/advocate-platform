@@ -127,12 +127,29 @@ async function main() {
     process.exit(1);
   }
 
-  console.log(`📊 ${leads?.length || 0} leads aprovados sem email enviado`);
+  console.log(`📊 ${leads?.length || 0} leads aprovados sem email enviado (bruto)`);
 
   if (!leads || leads.length === 0) {
     console.log('✅ Nenhum lead pendente de email');
     process.exit(0);
   }
+
+  // Deduplicar por email (manter o lead mais recente)
+  const seenEmails = new Set<string>();
+  const uniqueLeads = [];
+  // leads já vem em ordem created_at ASC, queremos o mais recente por email
+  const reversed = [...leads].reverse();
+  for (const lead of reversed) {
+    const email = lead.email.toLowerCase().trim();
+    if (!seenEmails.has(email)) {
+      seenEmails.add(email);
+      uniqueLeads.push(lead);
+    }
+  }
+  // Reverter de volta pra ordem cronológica
+  uniqueLeads.reverse();
+
+  console.log(`📊 ${uniqueLeads.length} leads únicos (${leads.length - uniqueLeads.length} duplicados removidos)`);
 
   // Buscar configurações de email
   const settings = await getEmailSettings();
@@ -142,8 +159,8 @@ async function main() {
   let sent = 0;
   let errors = 0;
 
-  for (let i = 0; i < leads.length; i += BATCH_SIZE) {
-    const batch = leads.slice(i, i + BATCH_SIZE);
+  for (let i = 0; i < uniqueLeads.length; i += BATCH_SIZE) {
+    const batch = uniqueLeads.slice(i, i + BATCH_SIZE);
 
     for (const lead of batch) {
       const registrationUrl = `${BASE_URL}/registro?email=${encodeURIComponent(lead.email)}`;
@@ -180,7 +197,7 @@ async function main() {
           .eq('id', lead.id);
 
         sent++;
-        console.log(`  ✅ ${sent}/${leads.length} - ${lead.email}`);
+        console.log(`  ✅ ${sent}/${uniqueLeads.length} - ${lead.email}`);
       } catch (err) {
         console.error(`  ❌ ${lead.email}: ${err instanceof Error ? err.message : 'Erro desconhecido'}`);
         errors++;
@@ -188,7 +205,7 @@ async function main() {
     }
 
     // Rate limit delay
-    if (i + BATCH_SIZE < leads.length) {
+    if (i + BATCH_SIZE < uniqueLeads.length) {
       await sleep(DELAY_MS);
     }
   }
@@ -196,7 +213,7 @@ async function main() {
   console.log(`\n📊 Resultado:`);
   console.log(`  ✅ Enviados: ${sent}`);
   console.log(`  ❌ Erros: ${errors}`);
-  console.log(`  📧 Total: ${leads.length}`);
+  console.log(`  📧 Total únicos: ${uniqueLeads.length}`);
 }
 
 main().catch(console.error);

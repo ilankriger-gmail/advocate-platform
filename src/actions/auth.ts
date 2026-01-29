@@ -113,21 +113,9 @@ export async function register(formData: FormData): Promise<AuthResponse> {
   // Normalizar email para lowercase
   const normalizedEmail = email.toLowerCase().trim();
 
-  // Verificar se o email foi aprovado no NPS
-  const { data: approvedLead } = await supabase
-    .from('nps_leads')
-    .select('id, name, status')
-    .eq('email', normalizedEmail)
-    .eq('status', 'approved')
-    .single();
-
-  // SEGURANCA: Mensagem generica para evitar enumeracao
-  // Nao revelar se o email existe, foi aprovado ou ja esta cadastrado
-  if (!approvedLead) {
-    return {
-      error: 'Nao foi possivel criar a conta. Verifique se preencheu o formulario de inscricao.'
-    };
-  }
+  // NOTA: Cadastro direto é aberto para qualquer pessoa.
+  // O NPS (/seja-arena) é apenas um dos caminhos de entrada.
+  // Não bloqueamos registro por falta de lead aprovado.
 
   const referralCode = (formData.get('ref') as string)?.trim() || '';
 
