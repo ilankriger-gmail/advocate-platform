@@ -108,14 +108,16 @@ DESAFIO: ${challengeTitle}
 META: ${goalValue ? goalDescription : 'Não especificada'}
 
 INSTRUÇÕES DE ANÁLISE:
-1. A pessoa está fazendo o exercício correto para o desafio "${challengeTitle}"?
-2. O exercício está sendo feito com boa forma/técnica?
-3. ${challengeType === 'time'
+1. **IDENTIFICAÇÃO OBRIGATÓRIA:** No INÍCIO do vídeo, a pessoa DEVE dizer seu nome e a data de hoje em voz alta. Se não fizer isso, o vídeo é INVÁLIDO.
+2. A pessoa está fazendo o exercício correto para o desafio "${challengeTitle}"?
+3. O exercício está sendo feito com boa forma/técnica?
+4. ${challengeType === 'time'
   ? 'Quanto tempo (em segundos) a pessoa manteve o exercício?'
   : 'Quantas repetições completas a pessoa fez? Conte cada repetição cuidadosamente.'}
-4. A meta de ${goalValue ? goalDescription : 'não especificada'} foi atingida?
+5. A meta de ${goalValue ? goalDescription : 'não especificada'} foi atingida?
 
 CRITÉRIOS DE VALIDAÇÃO:
+- **A pessoa DEVE dizer nome e data no início da gravação** — sem isso, marque como inválido com reason explicando
 - O exercício deve corresponder ao título do desafio
 - Cada repetição deve ser completa (movimento completo)
 - Para tempo, considere apenas o período de execução ativa

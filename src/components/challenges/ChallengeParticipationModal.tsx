@@ -502,6 +502,7 @@ export function ChallengeParticipationModal({
             ⚠️ <strong>Regras do vídeo:</strong>
           </p>
           <ul className="text-xs text-yellow-700 mt-1 space-y-0.5 list-disc list-inside">
+            <li>🎤 <strong>DIGA SEU NOME E A DATA</strong> no início da gravação</li>
             <li>Deve ser <strong>PÚBLICO</strong> no YouTube</li>
             <li><strong>NÃO</strong> aceitamos YouTube Shorts (vídeo deve ser completo)</li>
             <li>Grave com <strong>BOA ILUMINAÇÃO</strong></li>
