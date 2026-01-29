@@ -36,13 +36,14 @@ export function ReportBugButton() {
 
   return (
     <>
-      {/* Botão flutuante */}
+      {/* Botão flutuante chamativo */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-20 right-4 z-40 p-3 bg-gray-800 hover:bg-gray-700 text-white rounded-full shadow-lg transition-all hover:scale-110"
+        className="fixed bottom-20 right-4 z-40 flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white rounded-full shadow-xl shadow-red-500/30 transition-all hover:scale-105 animate-pulse-slow"
         title="Reportar um bug"
       >
         <Bug className="w-5 h-5" />
+        <span className="text-sm font-bold">Reportar Bug</span>
       </button>
 
       {/* Modal */}
@@ -119,6 +120,13 @@ export function ReportBugButton() {
         }
         .animate-scale-in {
           animation: scale-in 0.2s ease-out;
+        }
+        @keyframes pulse-slow {
+          0%, 100% { box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); }
+          50% { box-shadow: 0 4px 25px rgba(239, 68, 68, 0.5); }
+        }
+        .animate-pulse-slow {
+          animation: pulse-slow 3s ease-in-out infinite;
         }
       `}</style>
     </>
