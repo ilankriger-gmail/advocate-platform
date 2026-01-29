@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface LoginFormProps {
@@ -68,6 +68,7 @@ type AuthMode = 'select' | 'login' | 'register';
 export default function LoginForm({ siteName, subtitle, logoUrl = '/logo.png' }: LoginFormProps) {
   const { user, isLoading, signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [authMode, setAuthMode] = useState<AuthMode>('select');
   const [email, setEmail] = useState('');
@@ -76,6 +77,16 @@ export default function LoginForm({ siteName, subtitle, logoUrl = '/logo.png' }:
   const [ageConfirmed, setAgeConfirmed] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // Mostrar erro de redirect (ex: Google OAuth sem lead aprovado)
+  useEffect(() => {
+    const errorParam = searchParams.get('error');
+    if (errorParam === 'lead_required') {
+      setError('Para criar sua conta, primeiro preencha o formulário de inscrição.');
+    } else if (errorParam === 'auth_callback_error') {
+      setError('Erro na autenticação. Tente novamente.');
+    }
+  }, [searchParams]);
 
   // Redireciona se já autenticado
   useEffect(() => {
@@ -202,6 +213,13 @@ export default function LoginForm({ siteName, subtitle, logoUrl = '/logo.png' }:
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
             <p className="text-sm text-red-600 text-center">{error}</p>
+            {searchParams.get('error') === 'lead_required' && (
+              <p className="text-sm text-center mt-2">
+                <Link href="/seja-arena" className="text-pink-600 font-medium underline hover:text-pink-700">
+                  Preencher formulário de inscrição →
+                </Link>
+              </p>
+            )}
           </div>
         )}
 

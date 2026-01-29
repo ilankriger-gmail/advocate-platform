@@ -5,6 +5,46 @@ import { cookies } from 'next/headers';
 import { scheduleUserOnboarding, sendOnboardingEmail } from '@/lib/notifications';
 import { getLeadSource } from '@/actions/leads';
 
+/**
+ * Verifica se o email tem um lead aprovado no NPS
+ * Retorna true se aprovado, false caso contrário
+ */
+async function hasApprovedLead(email: string): Promise<boolean> {
+  try {
+    const supabase = createAdminClient();
+    const { data } = await supabase
+      .from('nps_leads')
+      .select('id')
+      .eq('email', email.toLowerCase().trim())
+      .eq('status', 'approved')
+      .limit(1)
+      .maybeSingle();
+    return !!data;
+  } catch {
+    // Em caso de erro, não bloquear (fail-open para não travar logins existentes)
+    console.error('[Auth Callback] Erro ao verificar lead aprovado');
+    return true;
+  }
+}
+
+/**
+ * Verifica se o usuário já existe na tabela users (login recorrente vs primeiro acesso)
+ */
+async function isExistingUser(email: string): Promise<boolean> {
+  try {
+    const supabase = createAdminClient();
+    const { data } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', email.toLowerCase().trim())
+      .limit(1)
+      .maybeSingle();
+    return !!data;
+  } catch {
+    return false;
+  }
+}
+
 // Lista de rotas permitidas para redirect (previne Open Redirect)
 const ALLOWED_REDIRECTS = [
   '/',
@@ -129,6 +169,25 @@ export async function GET(request: Request) {
       const { data: { user } } = await supabase.auth.getUser();
 
       if (user) {
+        // SEGURANÇA: Para novos usuários (Google OAuth), verificar se tem lead aprovado
+        // Usuários existentes (login recorrente) passam direto
+        if (user.email) {
+          const existing = await isExistingUser(user.email);
+          if (!existing) {
+            const approved = await hasApprovedLead(user.email);
+            if (!approved) {
+              // Novo usuário sem lead aprovado — revogar sessão e redirecionar
+              console.warn('[Auth Callback] Novo usuário Google sem lead aprovado:', user.email);
+              await supabase.auth.signOut();
+              return NextResponse.redirect(
+                `${origin}/login?error=lead_required&message=${encodeURIComponent(
+                  'Para criar sua conta, primeiro preencha o formulário de inscrição em /seja-arena'
+                )}`
+              );
+            }
+          }
+        }
+
         // Iniciar onboarding para novos usuários (em background, não bloqueia)
         triggerOnboardingIfNew(user.id, user.email || '', user.user_metadata?.full_name || user.email?.split('@')[0] || 'Usuário');
 
