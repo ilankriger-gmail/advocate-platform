@@ -417,32 +417,130 @@ export default async function AdminResgatesPage() {
               <span className={`w-2 h-2 ${config.color} rounded-full`}></span>
               {config.label} ({claims.length})
             </h2>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {claims.slice(0, 10).map((claim) => {
-                const reward = claim.rewards as { id: string; name: string; coins_required: number; type: string } | null;
+                const reward = claim.rewards as { id: string; name: string; description?: string; coins_required: number; type: string; image_url?: string } | null;
                 const user = usersMap.get(claim.user_id);
                 const profile = profilesMap.get(claim.user_id);
                 const displayName = profile?.full_name || user?.full_name || user?.email?.split('@')[0] || 'Usuário';
                 const avatarUrl = profile?.avatar_url || user?.avatar_url;
+                const userEmail = user?.email || '—';
+                const userBalance = coinsMap.get(claim.user_id) ?? 0;
+                const userChallengesList = challengesMap.get(claim.user_id) || [];
 
                 return (
-                  <div key={claim.id} className={`p-3 rounded-lg border ${config.bgColor}`}>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Avatar name={displayName} src={avatarUrl} size="sm" />
-                        <div>
-                          <p className="font-medium text-gray-900">{displayName}</p>
-                          <p className="text-sm text-gray-600">{reward?.name} • {claim.coins_spent} ❤️</p>
+                  <details key={claim.id} className={`rounded-xl border ${config.bgColor} overflow-hidden`}>
+                    <summary className="p-4 cursor-pointer hover:bg-white/50 transition-colors">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <Avatar name={displayName} src={avatarUrl} size="sm" />
+                          <div>
+                            <p className="font-medium text-gray-900">{displayName}</p>
+                            <p className="text-sm text-gray-600">{reward?.name} • {claim.coins_spent} ❤️</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <p className="text-xs text-gray-500">
+                            {new Date(claim.created_at).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
+                          </p>
+                          {status !== 'delivered' && status !== 'rejected' && <ClaimActions claim={claim} rewardType={reward?.type} />}
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-xs text-gray-500">
-                          {new Date(claim.created_at).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
-                        </p>
-                        {status !== 'delivered' && status !== 'rejected' && <ClaimActions claim={claim} />}
+                    </summary>
+                    <div className="px-4 pb-4 space-y-3 border-t border-gray-200/50 pt-3">
+                      {/* Info do usuário */}
+                      <div className="flex items-center gap-3 text-sm text-gray-600">
+                        <span>📧 {userEmail}</span>
+                        <span>❤️ {userBalance} corações</span>
                       </div>
+
+                      {/* Prêmio detalhado */}
+                      <div className="p-3 bg-white/70 rounded-lg border">
+                        <div className="flex items-center gap-3">
+                          {reward?.image_url && (
+                            <img src={reward.image_url} alt={reward?.name} className="w-12 h-12 rounded-lg object-cover border" />
+                          )}
+                          <div>
+                            <p className="font-bold text-gray-900">{reward?.name}</p>
+                            {reward?.description && <p className="text-sm text-gray-600">{reward.description}</p>}
+                            <p className="text-xs text-gray-500 mt-1">
+                              Custo: {claim.coins_spent} ❤️ • ID: <code className="bg-gray-100 px-1 rounded">{claim.id.slice(0, 8)}</code>
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Dados PIX / Endereço */}
+                      {claim.delivery_address && (
+                        <div className="p-3 bg-white/70 rounded-lg border text-sm space-y-2">
+                          {claim.delivery_address.pix_key && (
+                            <div>
+                              <p className="font-semibold text-green-700">🔑 PIX</p>
+                              <p className="text-gray-600">
+                                {claim.delivery_address.recipient_name} • {claim.delivery_address.pix_key_type?.toUpperCase()}
+                              </p>
+                              <p className="font-mono font-medium text-gray-900 bg-white px-2 py-1 rounded border mt-1 select-all">
+                                {claim.delivery_address.pix_key}
+                              </p>
+                            </div>
+                          )}
+                          {claim.delivery_address.street && (
+                            <div>
+                              <p className="font-semibold text-purple-700">📦 Endereço</p>
+                              <p className="text-gray-900">
+                                {claim.delivery_address.street}, {claim.delivery_address.number}
+                                {claim.delivery_address.complement && ` - ${claim.delivery_address.complement}`}
+                                {' • '}{claim.delivery_address.neighborhood}
+                                {' • '}{claim.delivery_address.city}/{claim.delivery_address.state}
+                                {' • CEP: '}{claim.delivery_address.zip_code || claim.delivery_address.cep}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Notas */}
+                      {claim.notes && (
+                        <div className="p-2 bg-blue-50 rounded-lg border border-blue-200 text-sm">
+                          <span className="text-blue-700 font-medium">📝</span> {claim.notes}
+                        </div>
+                      )}
+
+                      {/* Desafios do usuário */}
+                      {userChallengesList.length > 0 && (
+                        <div className="p-3 bg-white/70 rounded-lg border">
+                          <p className="text-sm font-semibold text-indigo-700 mb-2">🏆 Desafios ({userChallengesList.length})</p>
+                          <div className="space-y-1 max-h-40 overflow-y-auto">
+                            {userChallengesList.slice(0, 5).map((ch: any) => {
+                              const challenge = ch.challenges as { title: string; icon: string } | null;
+                              return (
+                                <div key={ch.id} className="flex items-center gap-2 text-sm">
+                                  <span>{challenge?.icon || '🎯'}</span>
+                                  <span className="text-gray-700">{challenge?.title}</span>
+                                  <Badge className={ch.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}>
+                                    {ch.status}
+                                  </Badge>
+                                  {ch.video_proof_url && (
+                                    <a href={ch.video_proof_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">🎥</a>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Comprovante */}
+                      {claim.delivery_address?.payment_receipt_url && (
+                        <div className="p-2 bg-green-50 rounded-lg border border-green-200">
+                          <p className="text-sm font-medium text-green-700 mb-1">✅ Comprovante</p>
+                          <a href={claim.delivery_address.payment_receipt_url} target="_blank" rel="noopener noreferrer">
+                            <img src={claim.delivery_address.payment_receipt_url} alt="Comprovante" className="max-w-[200px] rounded border" />
+                          </a>
+                        </div>
+                      )}
                     </div>
-                  </div>
+                  </details>
                 );
               })}
               {claims.length > 10 && (
