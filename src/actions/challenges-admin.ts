@@ -980,6 +980,37 @@ Participe dos desafios e você também pode ganhar! 💪❤️`;
 }
 
 /**
+ * Remover/rejeitar ganhador (admin)
+ */
+export async function removeWinner(winnerId: string): Promise<ActionResponse> {
+  try {
+    const userCheck = await getAuthenticatedUser();
+    if (userCheck.error) return userCheck;
+
+    const authCheck = await verifyAdminOrCreator(userCheck.data!.id);
+    if (authCheck.error) return authCheck;
+
+    const supabase = await createClient();
+
+    const { error } = await supabase
+      .from('challenge_winners')
+      .delete()
+      .eq('id', winnerId);
+
+    if (error) {
+      challengesAdminLogger.error('Erro ao remover ganhador', { winnerId, error: sanitizeError(error) });
+      return { error: 'Erro ao remover ganhador' };
+    }
+
+    challengesAdminLogger.info('Ganhador removido', { winnerId });
+    revalidatePath('/admin/desafios');
+    return { success: true };
+  } catch {
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+/**
  * Buscar desafio para edição (admin)
  */
 export async function getChallengeForEdit(challengeId: string): Promise<ActionResponse> {

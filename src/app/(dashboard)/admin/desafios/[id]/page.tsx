@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { Card, Badge } from '@/components/ui';
 import { ParticipationActions } from './ParticipationActions';
 import { WinnerActions } from './WinnerActions';
+import { WinnerItemActions } from './WinnerItemActions';
 import { ChallengeActions } from './ChallengeActions';
 
 
@@ -186,6 +187,7 @@ export default async function AdminDesafioDetalhesPage({ params }: PageProps) {
                       ) : (
                         <Badge className="bg-yellow-100 text-yellow-700">Pendente</Badge>
                       )}
+                      <WinnerItemActions winnerId={winner.id} pixSent={winner.pix_sent} />
                     </div>
                   </div>
                 );
