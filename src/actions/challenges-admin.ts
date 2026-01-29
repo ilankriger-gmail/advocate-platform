@@ -980,9 +980,9 @@ Participe dos desafios e você também pode ganhar! 💪❤️`;
 }
 
 /**
- * Remover/rejeitar ganhador (admin)
+ * Remover/rejeitar ganhador (admin) com motivo
  */
-export async function removeWinner(winnerId: string): Promise<ActionResponse> {
+export async function removeWinner(winnerId: string, reason?: string): Promise<ActionResponse> {
   try {
     const userCheck = await getAuthenticatedUser();
     if (userCheck.error) return userCheck;
@@ -991,6 +991,16 @@ export async function removeWinner(winnerId: string): Promise<ActionResponse> {
     if (authCheck.error) return authCheck;
 
     const supabase = await createClient();
+
+    // Buscar dados do ganhador antes de deletar (para notificar)
+    const { data: winner } = await supabase
+      .from('challenge_winners')
+      .select(`
+        *,
+        challenges:challenge_id(title, icon)
+      `)
+      .eq('id', winnerId)
+      .single();
 
     const { error } = await supabase
       .from('challenge_winners')
@@ -1002,7 +1012,28 @@ export async function removeWinner(winnerId: string): Promise<ActionResponse> {
       return { error: 'Erro ao remover ganhador' };
     }
 
-    challengesAdminLogger.info('Ganhador removido', { winnerId });
+    // Notificar o usuário sobre a rejeição (se tiver user_id)
+    if (winner?.user_id && reason) {
+      try {
+        const challengeInfo = winner.challenges as { title: string; icon: string } | null;
+        const challengeTitle = challengeInfo?.title || 'Desafio';
+
+        // Criar notificação
+        await supabase.from('notifications').insert({
+          user_id: winner.user_id,
+          type: 'challenge',
+          title: `❌ Prêmio rejeitado - ${challengeTitle}`,
+          message: `Seu prêmio no desafio "${challengeTitle}" foi rejeitado.\n\nMotivo: ${reason}`,
+          data: { challengeId: winner.challenge_id, winnerId, reason },
+        });
+
+        challengesAdminLogger.info('Notificação de rejeição enviada', { winnerId, userId: winner.user_id });
+      } catch (notifyErr) {
+        challengesAdminLogger.error('Erro ao notificar rejeição', { error: sanitizeError(notifyErr) });
+      }
+    }
+
+    challengesAdminLogger.info('Ganhador removido', { winnerId, reason });
     revalidatePath('/admin/desafios');
     return { success: true };
   } catch {

@@ -13,7 +13,8 @@ interface WinnerItemActionsProps {
 export function WinnerItemActions({ winnerId, pixSent }: WinnerItemActionsProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
+  const [showReject, setShowReject] = useState(false);
+  const [reason, setReason] = useState('');
 
   const handleMarkPaid = async () => {
     setIsLoading(true);
@@ -24,37 +25,49 @@ export function WinnerItemActions({ winnerId, pixSent }: WinnerItemActionsProps)
     setIsLoading(false);
   };
 
-  const handleRemove = async () => {
+  const handleReject = async () => {
+    if (!reason.trim()) return;
     setIsLoading(true);
-    const result = await removeWinner(winnerId);
+    const result = await removeWinner(winnerId, reason.trim());
     if (result.success) {
       router.refresh();
     }
     setIsLoading(false);
-    setShowConfirm(false);
+    setShowReject(false);
+    setReason('');
   };
 
-  if (showConfirm) {
+  if (showReject) {
     return (
-      <div className="flex items-center gap-2">
-        <span className="text-xs text-red-600 font-medium">Tem certeza?</span>
-        <Button
-          size="sm"
-          onClick={handleRemove}
-          disabled={isLoading}
-          className="bg-red-600 hover:bg-red-700 text-white text-xs px-2 py-1"
-        >
-          {isLoading ? '...' : 'Sim, remover'}
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => setShowConfirm(false)}
-          disabled={isLoading}
-          className="text-xs px-2 py-1"
-        >
-          Não
-        </Button>
+      <div className="mt-3 p-3 bg-red-50 rounded-lg border border-red-200 space-y-3">
+        <p className="text-sm font-medium text-red-700">Motivo da rejeição:</p>
+        <textarea
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          placeholder="Explique por que o prêmio está sendo rejeitado..."
+          rows={3}
+          className="w-full px-3 py-2 border border-red-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
+          autoFocus
+        />
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            onClick={handleReject}
+            disabled={isLoading || !reason.trim()}
+            className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1.5"
+          >
+            {isLoading ? 'Rejeitando...' : 'Confirmar Rejeição'}
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => { setShowReject(false); setReason(''); }}
+            disabled={isLoading}
+            className="text-xs px-3 py-1.5"
+          >
+            Cancelar
+          </Button>
+        </div>
       </div>
     );
   }
@@ -74,7 +87,7 @@ export function WinnerItemActions({ winnerId, pixSent }: WinnerItemActionsProps)
       <Button
         size="sm"
         variant="outline"
-        onClick={() => setShowConfirm(true)}
+        onClick={() => setShowReject(true)}
         disabled={isLoading}
         className="border-red-300 text-red-600 hover:bg-red-50 text-xs px-2 py-1"
       >
