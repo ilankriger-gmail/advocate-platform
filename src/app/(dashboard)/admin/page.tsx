@@ -146,6 +146,14 @@ export default async function AdminDashboardPage() {
       description: 'Pendentes de pagamento',
     },
     {
+      title: 'Pagamentos',
+      value: pendingClaims || 0,
+      icon: '💳',
+      href: '/admin/pagamentos',
+      color: 'border-l-emerald-500',
+      description: 'Central de pagamentos',
+    },
+    {
       title: 'Usuários',
       value: totalUsers || 0,
       icon: '👥',
@@ -221,12 +229,20 @@ export default async function AdminDashboardPage() {
               </Link>
             )}
             {(pendingClaims || 0) > 0 && (
-              <Link 
-                href="/admin/resgates" 
-                className="flex items-center gap-2 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium transition-colors"
-              >
-                🎁 {pendingClaims} resgates
-              </Link>
+              <>
+                <Link 
+                  href="/admin/pagamentos" 
+                  className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+                >
+                  💳 Pagar {pendingClaims} resgates
+                </Link>
+                <Link 
+                  href="/admin/resgates" 
+                  className="flex items-center gap-2 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium transition-colors"
+                >
+                  🎁 {pendingClaims} resgates
+                </Link>
+              </>
             )}
           </div>
         </Card>
