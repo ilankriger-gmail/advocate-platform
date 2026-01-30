@@ -50,4 +50,11 @@ next-env.d.ts
 # Env backup
 .env.local.save
 
+# All env files (except examples)
+.env
+.env.lo
+.env.local
+.env.production
+apps/mobile/.env
+
 apps/mobile/screenshots/

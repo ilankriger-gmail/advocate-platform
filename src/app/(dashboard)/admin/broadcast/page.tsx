@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import DOMPurify from 'dompurify';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, Button, Input } from '@/components/ui';
 import {
@@ -458,7 +459,7 @@ export default function AdminBroadcastPage() {
                 <div
                   className="text-gray-700 leading-relaxed"
                   dangerouslySetInnerHTML={{
-                    __html: message || '<span class="italic text-gray-300">Sem mensagem</span>',
+                    __html: DOMPurify.sanitize(message || '<span class="italic text-gray-300">Sem mensagem</span>', { ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'ol', 'li', 'span', 'h1', 'h2', 'h3'], ALLOWED_ATTR: ['href', 'target', 'rel', 'class'] }),
                   }}
                 />
                 {ctaText && ctaUrl && (

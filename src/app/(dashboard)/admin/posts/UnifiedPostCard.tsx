@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import DOMPurify from 'dompurify';
 import { Card, Button } from '@/components/ui';
 import { approvePost, approveBlockedPost, rejectPost, adminDeletePost } from '@/actions/posts';
 import type { Post } from '@/lib/supabase/types';
@@ -159,7 +160,7 @@ export function UnifiedPostCard({ post, author, filter }: UnifiedPostCardProps) 
           {post.content && (
             <div
               className="text-gray-700 text-sm whitespace-pre-wrap line-clamp-6 prose prose-sm max-w-none"
-              dangerouslySetInnerHTML={{ __html: post.content }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content, { ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'ol', 'li', 'span', 'h1', 'h2', 'h3'], ALLOWED_ATTR: ['href', 'target', 'rel', 'class'] }) }}
             />
           )}
 

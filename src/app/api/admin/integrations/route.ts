@@ -1,10 +1,30 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 
 /**
  * API para verificar status das integrações
  * Retorna quais APIs estão configuradas sem expor as chaves
+ * REQUIRES: admin authentication
  */
 export async function GET() {
+  // Security: require admin authentication
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
+  }
+  
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+  
+  if (profile?.role !== 'admin') {
+    return NextResponse.json({ error: 'Não autorizado' }, { status: 403 });
+  }
+
   const integrations = {
     // Supabase (obrigatório)
     supabase: {
