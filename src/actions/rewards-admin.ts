@@ -180,7 +180,11 @@ export async function approveClaim(claimId: string): Promise<ActionResponse> {
 
     const { error } = await supabase
       .from('reward_claims')
-      .update({ status: newStatus })
+      .update({
+        status: newStatus,
+        processed_at: new Date().toISOString(),
+        processed_by: user.id,
+      })
       .eq('id', claimId);
 
     if (error) {
@@ -396,7 +400,11 @@ export async function rejectClaim(claimId: string, reason?: string): Promise<Act
     // Atualizar status para rejected
     const { error: updateError } = await supabase
       .from('reward_claims')
-      .update({ status: 'rejected' })
+      .update({
+        status: 'rejected',
+        processed_at: new Date().toISOString(),
+        processed_by: user.id,
+      })
       .eq('id', claimId);
 
     if (updateError) {
@@ -1261,6 +1269,94 @@ export async function uploadPaymentReceipt(
     return { success: true, data: { url: receiptUrl } };
   } catch (err) {
     rewardsAdminLogger.error('Erro ao fazer upload do comprovante', { error: sanitizeError(err) });
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+/**
+ * Salvar notas administrativas em um resgate
+ */
+export async function saveClaimAdminNotes(
+  claimId: string,
+  notes: string
+): Promise<ActionResponse> {
+  try {
+    const userCheck = await getAuthenticatedUser();
+    if (userCheck.error) return userCheck;
+    const authCheck = await verifyAdminOrCreator(userCheck.data!.id);
+    if (authCheck.error) return authCheck;
+
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from('reward_claims')
+      .update({ admin_notes: notes })
+      .eq('id', claimId);
+
+    if (error) {
+      rewardsAdminLogger.error('Erro ao salvar notas admin', { error: sanitizeError(error) });
+      return { error: 'Erro ao salvar notas' };
+    }
+
+    revalidatePath('/admin/resgates');
+    return { success: true };
+  } catch (err) {
+    return { error: 'Erro interno do servidor' };
+  }
+}
+
+/**
+ * Salvar código de rastreio em um resgate
+ */
+export async function saveClaimTrackingCode(
+  claimId: string,
+  trackingCode: string
+): Promise<ActionResponse> {
+  try {
+    const userCheck = await getAuthenticatedUser();
+    if (userCheck.error) return userCheck;
+    const user = userCheck.data!;
+    const authCheck = await verifyAdminOrCreator(user.id);
+    if (authCheck.error) return authCheck;
+
+    const supabase = await createClient();
+
+    const { error } = await supabase
+      .from('reward_claims')
+      .update({
+        tracking_code: trackingCode,
+        status: 'shipped', // Automatically mark as shipped when tracking is added
+        processed_at: new Date().toISOString(),
+        processed_by: user.id,
+      })
+      .eq('id', claimId);
+
+    if (error) {
+      rewardsAdminLogger.error('Erro ao salvar código de rastreio', { error: sanitizeError(error) });
+      return { error: 'Erro ao salvar código de rastreio' };
+    }
+
+    // Buscar dados para notificar o usuário
+    const { data: claim } = await supabase
+      .from('reward_claims')
+      .select('user_id, rewards:reward_id(name)')
+      .eq('id', claimId)
+      .single();
+
+    if (claim) {
+      const rewardName = (claim.rewards as unknown as { name: string } | null)?.name || 'seu prêmio';
+      await supabase.from('notifications').insert({
+        user_id: claim.user_id,
+        type: 'reward_shipped',
+        title: '📦 Prêmio enviado!',
+        message: `Seu prêmio "${rewardName}" foi enviado! Código de rastreio: ${trackingCode}`,
+        link: '/premios',
+        read: false,
+      });
+    }
+
+    revalidatePath('/admin/resgates');
+    return { success: true };
+  } catch (err) {
     return { error: 'Erro interno do servidor' };
   }
 }
