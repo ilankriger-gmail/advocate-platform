@@ -138,20 +138,16 @@ export async function completeTask(taskSlug: string): Promise<{
     return { success: false, error: 'Erro ao registrar conclusão' };
   }
 
-  // Adicionar corações ao usuário
-  const { error: updateError } = await supabase.rpc('add_hearts', {
+  // Adicionar corações ao usuário via RPC atômico (add_user_coins)
+  const { error: updateError } = await supabase.rpc('add_user_coins', {
     p_user_id: user.id,
     p_amount: task.hearts_reward,
+    p_type: `task_${taskSlug}`,
+    p_description: `❤️ ${task.name}`,
   });
 
   if (updateError) {
-    // Se a função não existir, tentar atualizar direto
-    await supabase
-      .from('users')
-      .update({ 
-        hearts_count: supabase.rpc('coalesce', { val: 'hearts_count', default_val: 0 }) 
-      })
-      .eq('id', user.id);
+    console.error('Erro ao adicionar corações:', updateError);
   }
 
   revalidatePath('/perfil');
@@ -162,6 +158,7 @@ export async function completeTask(taskSlug: string): Promise<{
 
 /**
  * Verificar e completar tarefas de perfil automaticamente
+ * Usa giveHearts (sistema real de corações) em vez do engagement task system
  */
 export async function checkAndCompleteProfileTasks(profileData: {
   full_name?: string;
@@ -173,28 +170,34 @@ export async function checkAndCompleteProfileTasks(profileData: {
   twitter_handle?: string;
   website_url?: string;
 }, previousData?: typeof profileData): Promise<number> {
+  const { giveHearts } = await import('@/lib/hearts');
+  const supabase = await createClient();
+  
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return 0;
+
   let totalHearts = 0;
 
-  const fieldToTask: Record<string, string> = {
-    full_name: 'profile_name',
-    bio: 'profile_bio',
-    avatar_url: 'profile_avatar',
-    instagram_handle: 'profile_instagram',
-    tiktok_handle: 'profile_tiktok',
-    youtube_handle: 'profile_youtube',
-    twitter_handle: 'profile_twitter',
-    website_url: 'profile_website',
+  type HeartAction = 'COMPLETE_PROFILE' | 'ADD_AVATAR' | 'ADD_BIO';
+  
+  const fieldToAction: Record<string, { action: HeartAction; description: string }> = {
+    full_name: { action: 'COMPLETE_PROFILE', description: 'completou o nome do perfil' },
+    bio: { action: 'ADD_BIO', description: 'adicionou bio ao perfil' },
+    avatar_url: { action: 'ADD_AVATAR', description: 'adicionou foto de perfil' },
   };
 
-  for (const [field, taskSlug] of Object.entries(fieldToTask)) {
+  for (const [field, config] of Object.entries(fieldToAction)) {
     const newValue = profileData[field as keyof typeof profileData];
     const oldValue = previousData?.[field as keyof typeof profileData];
 
     // Se o campo foi preenchido (não estava antes ou mudou de vazio para preenchido)
     if (newValue && (!oldValue || oldValue !== newValue)) {
-      const result = await completeTask(taskSlug);
-      if (result.success && result.heartsEarned) {
-        totalHearts += result.heartsEarned;
+      const result = await giveHearts(user.id, config.action, {
+        referenceType: `profile_${field}`,
+        description: config.description,
+      });
+      if (result.success) {
+        totalHearts += result.hearts;
       }
     }
   }
