@@ -3,6 +3,10 @@
  * Suporta multi-domínio:
  * - comece.omocodoteamo.com.br: Landing page pública (sem login)
  * - comunidade.omocodoteamo.com.br: Plataforma fechada (requer login)
+ * 
+ * Inclui sistema de pausa da comunidade:
+ * - Quando community_paused=true em site_settings, redireciona para /pausado
+ * - Admin, prêmios, newsletter e rotas de API continuam acessíveis
  */
 
 import { createServerClient } from '@supabase/ssr';
@@ -28,10 +32,34 @@ const COMUNIDADE_PUBLIC_ROUTES = [
   '/lp', // Landing pages de desafios e prêmios (com NPS)
   '/convite', // Landing pages diretas (sem NPS)
   '/tools', // Mini-apps e ferramentas internas
+  '/newsletter', // Newsletter signup
+  '/pausado', // Página de comunidade pausada
 ];
 
 // Rotas que requerem role de admin
 const ADMIN_ROUTES = ['/admin'];
+
+// Rotas que continuam acessíveis durante pausa da comunidade
+const PAUSE_EXEMPT_ROUTES = [
+  '/admin',       // Admin panel (gestão continua)
+  '/premios',     // Usuários precisam ver/resgatar prêmios
+  '/pausado',     // A própria página de pausa
+  '/newsletter',  // Captação de leads continua
+  '/login',       // Auth precisa funcionar (pra acessar /premios)
+  '/auth',        // Callbacks de auth
+  '/registro',    // Registro (pode querer se cadastrar na newsletter)
+  '/esqueci-senha',
+  '/termos',
+  '/privacidade',
+  '/api',         // APIs continuam funcionando (cron jobs, etc.)
+  '/tools',       // Mini-apps internos
+  '/lp',          // Landing pages
+  '/convite',     // Convites
+];
+
+// Cache simples para o status de pausa (evita query a cada request)
+let pauseCache: { value: boolean; timestamp: number } | null = null;
+const PAUSE_CACHE_TTL_MS = 30_000; // 30 seconds
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -111,6 +139,21 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // === COMMUNITY PAUSE CHECK ===
+  // Verifica se a comunidade está em pausa e redireciona se necessário
+  const isPauseExempt = PAUSE_EXEMPT_ROUTES.some(route =>
+    pathname === route || pathname.startsWith(route + '/')
+  );
+
+  if (!isPauseExempt) {
+    const isPaused = await checkCommunityPaused(supabase);
+    if (isPaused) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/pausado';
+      return NextResponse.redirect(url);
+    }
+  }
+
   // === PROTECAO DE ROTAS ADMIN ===
   // SEGURANCA: Verificar role antes de permitir acesso a rotas admin
   const isAdminRoute = ADMIN_ROUTES.some(route =>
@@ -136,4 +179,30 @@ export async function updateSession(request: NextRequest) {
   }
 
   return supabaseResponse;
+}
+
+/**
+ * Verifica se a comunidade está pausada (com cache de 30s)
+ */
+async function checkCommunityPaused(supabase: ReturnType<typeof createServerClient>): Promise<boolean> {
+  // Check cache first
+  const now = Date.now();
+  if (pauseCache && (now - pauseCache.timestamp) < PAUSE_CACHE_TTL_MS) {
+    return pauseCache.value;
+  }
+
+  try {
+    const { data } = await supabase
+      .from('site_settings')
+      .select('value')
+      .eq('key', 'community_paused')
+      .single();
+
+    const isPaused = data?.value === 'true';
+    pauseCache = { value: isPaused, timestamp: now };
+    return isPaused;
+  } catch {
+    // Em caso de erro, não pausar (fail-open)
+    return false;
+  }
 }

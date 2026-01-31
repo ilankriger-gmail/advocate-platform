@@ -92,7 +92,11 @@ export type SiteSettingKey =
   | 'email_onboarding3_cta'
   | 'email_onboarding3_footer'
   // Google Analytics
-  | 'google_analytics_id';
+  | 'google_analytics_id'
+  // Community Pause
+  | 'community_paused'
+  | 'community_pause_message'
+  | 'community_pause_reopen_date';
 
 /**
  * Tipo para uma configuração do site
@@ -204,6 +208,10 @@ const DEFAULT_VALUES: Record<SiteSettingKey, string> = {
   email_onboarding3_footer: 'Não perca a chance de ganhar prêmios!',
   // Google Analytics
   google_analytics_id: '',
+  // Community Pause
+  community_paused: 'false',
+  community_pause_message: 'A comunidade Arena Te Amo está temporariamente em pausa para melhorias. Estamos trabalhando para trazer uma experiência ainda mais incrível pra você.',
+  community_pause_reopen_date: '',
 };
 
 /**

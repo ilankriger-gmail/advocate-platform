@@ -35,6 +35,14 @@ function StatCard({ title, value, icon, href, color, description }: StatCardProp
 export default async function AdminDashboardPage() {
   const supabase = await createClient();
 
+  // Check community pause status
+  const { data: pauseSetting } = await supabase
+    .from('site_settings')
+    .select('value')
+    .eq('key', 'community_paused')
+    .single();
+  const isCommunityPaused = pauseSetting?.value === 'true';
+
   // Buscar estatisticas em paralelo
   const [
     { count: pendingPosts },
@@ -170,6 +178,14 @@ export default async function AdminDashboardPage() {
       description: 'Cohorts, retenção, métricas',
     },
     {
+      title: 'Pausa',
+      value: isCommunityPaused ? 1 : 0,
+      icon: '⏸️',
+      href: '/admin/pausa',
+      color: isCommunityPaused ? 'border-l-red-500' : 'border-l-gray-300',
+      description: isCommunityPaused ? 'Comunidade PAUSADA' : 'Comunidade ativa',
+    },
+    {
       title: 'Configurações',
       value: 12,
       icon: '⚙️',
@@ -197,6 +213,24 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
+      {/* Community Pause Banner */}
+      {isCommunityPaused && (
+        <Link href="/admin/pausa">
+          <Card className="p-4 bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-300 cursor-pointer hover:shadow-lg transition-shadow">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="inline-block w-3 h-3 rounded-full bg-red-500 animate-pulse"></span>
+                <div>
+                  <h3 className="font-bold text-red-800">⏸️ Comunidade PAUSADA</h3>
+                  <p className="text-sm text-red-600">Usuários estão sendo redirecionados para /pausado</p>
+                </div>
+              </div>
+              <span className="text-red-600 font-medium text-sm">Gerenciar →</span>
+            </div>
+          </Card>
+        </Link>
+      )}
+
       {/* Alerta de Pendências */}
       {((pendingParticipations || 0) > 0 || (pendingPosts || 0) > 0 || (pendingClaims || 0) > 0) && (
         <Card className="p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-300">
@@ -338,6 +372,21 @@ export default async function AdminDashboardPage() {
           >
             <span className="text-xl sm:text-2xl">📢</span>
             <span className="text-xs sm:text-sm text-rose-700 font-medium text-center">Broadcast</span>
+          </Link>
+          <Link
+            href="/admin/pausa"
+            className={`flex flex-col items-center justify-center gap-1.5 sm:gap-2 p-3 sm:p-4 min-h-[80px] rounded-lg transition-colors ${
+              isCommunityPaused
+                ? 'bg-red-50 hover:bg-red-100 border border-red-200'
+                : 'bg-gray-50 hover:bg-gray-100'
+            }`}
+          >
+            <span className="text-xl sm:text-2xl">{isCommunityPaused ? '🔴' : '⏸️'}</span>
+            <span className={`text-xs sm:text-sm font-medium text-center ${
+              isCommunityPaused ? 'text-red-700' : 'text-gray-700'
+            }`}>
+              {isCommunityPaused ? 'Pausada' : 'Pausar'}
+            </span>
           </Link>
           <Link
             href="/admin/analytics"
