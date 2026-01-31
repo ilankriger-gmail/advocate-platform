@@ -66,8 +66,7 @@ export async function GET() {
     // Calculate PIX vs Physical claims
     let pixPending = 0;
     let physicalPending = 0;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (pendingClaimsData || []).forEach((claim: any) => {
+    (pendingClaimsData || []).forEach((claim: Record<string, unknown>) => {
       // Supabase returns joined relations as arrays
       const reward = Array.isArray(claim.reward) ? claim.reward[0] : claim.reward;
       const type = reward?.reward_type || '';
