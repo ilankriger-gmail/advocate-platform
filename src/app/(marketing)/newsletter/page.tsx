@@ -104,11 +104,9 @@ export default function Home() {
         h1 {
           font-size: 40px;
           font-weight: 900;
-          line-height: 1.1;
+          line-height: 1.2;
           margin-bottom: 16px;
-          background: linear-gradient(135deg, #fff 0%, #ccc 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
+          color: #fff;
         }
         .subtitle {
           font-size: 18px;
