@@ -115,7 +115,44 @@ export async function updateSession(request: NextRequest) {
     return supabaseResponse;
   }
 
-  // === DOMÍNIO COMUNIDADE ou LOCALHOST: Requer autenticação ===
+  // === DOMÍNIO COMUNIDADE ou LOCALHOST ===
+
+  const pathname_lower = pathname.toLowerCase();
+
+  // === COMMUNITY CLOSED CHECK (antes de tudo) ===
+  // Quando fechada, TODO MUNDO vai pra /newsletter, exceto admin
+  // Rotas que continuam acessíveis: /newsletter, /api, /login, /auth, /admin, /termos, /privacidade
+  const CLOSED_ALWAYS_ALLOW = ['/newsletter', '/api', '/auth', '/termos', '/privacidade', '/tools'];
+  const isAlwaysAllowed = CLOSED_ALWAYS_ALLOW.some(route =>
+    pathname === route || pathname.startsWith(route + '/')
+  );
+
+  if (!isAlwaysAllowed) {
+    const isClosed = await checkCommunityClosed(supabase);
+    if (isClosed) {
+      // Check if user is admin
+      let isAdmin = false;
+      if (user) {
+        const { data: profile } = await supabase
+          .from('users')
+          .select('role, is_creator')
+          .eq('id', user.id)
+          .single();
+
+        isAdmin = profile?.role === 'admin' || profile?.role === 'creator' || !!profile?.is_creator;
+      }
+
+      if (!isAdmin) {
+        // Everyone else goes to /newsletter
+        const url = request.nextUrl.clone();
+        url.pathname = '/newsletter';
+        return NextResponse.redirect(url);
+      }
+      // Admin continues normally
+    }
+  }
+
+  // === NORMAL AUTH FLOW (only reached if community is open, or user is admin) ===
 
   // Verifica se é rota pública no domínio comunidade
   const isPublicRoute = COMUNIDADE_PUBLIC_ROUTES.some(route =>
@@ -137,37 +174,6 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = '/';
     return NextResponse.redirect(url);
-  }
-
-  // === COMMUNITY CLOSED CHECK ===
-  // Comunidade fechada: todos vão pra /newsletter, exceto admin
-  const isClosedExempt = PAUSE_EXEMPT_ROUTES.some(route =>
-    pathname === route || pathname.startsWith(route + '/')
-  );
-
-  if (!isClosedExempt) {
-    const isClosed = await checkCommunityClosed(supabase);
-    if (isClosed) {
-      // Verificar se é admin — admin continua acessando tudo
-      if (user) {
-        const { data: profile } = await supabase
-          .from('users')
-          .select('role, is_creator')
-          .eq('id', user.id)
-          .single();
-
-        const isAdmin = profile?.role === 'admin' || profile?.role === 'creator' || profile?.is_creator;
-        if (isAdmin) {
-          // Admin passa direto
-          return supabaseResponse;
-        }
-      }
-
-      // Não é admin — redireciona pra newsletter
-      const url = request.nextUrl.clone();
-      url.pathname = '/newsletter';
-      return NextResponse.redirect(url);
-    }
   }
 
   // === PROTECAO DE ROTAS ADMIN ===

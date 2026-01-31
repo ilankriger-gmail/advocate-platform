@@ -329,6 +329,38 @@ export default function Home() {
             </div>
           </div>
 
+          <div style={{
+            marginTop: '40px',
+            padding: '20px',
+            background: 'rgba(239,68,68,0.08)',
+            border: '2px solid rgba(239,68,68,0.3)',
+            borderRadius: '16px',
+            textAlign: 'center',
+          }}>
+            <p style={{ color: '#ef4444', fontWeight: 700, fontSize: '18px', marginBottom: '8px' }}>
+              🐛 Encontrou um bug?
+            </p>
+            <p style={{ color: '#888', fontSize: '14px', marginBottom: '16px' }}>
+              Nos ajude a melhorar! Reporte qualquer problema que encontrar.
+            </p>
+            <a
+              href="mailto:ilankriger@gmail.com?subject=Bug%20Report%20-%20Arena%20Te%20Amo&body=Descreva%20o%20bug%20aqui..."
+              style={{
+                display: 'inline-block',
+                padding: '14px 32px',
+                background: '#ef4444',
+                color: '#fff',
+                borderRadius: '12px',
+                fontWeight: 700,
+                fontSize: '16px',
+                textDecoration: 'none',
+                transition: 'all 0.2s',
+              }}
+            >
+              🐛 Reportar Bug
+            </a>
+          </div>
+
           <div className="footer">
             <a href="https://instagram.com/nextleveldj" target="_blank" rel="noopener">@nextleveldj</a>
           </div>
