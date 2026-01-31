@@ -139,17 +139,33 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // === COMMUNITY PAUSE CHECK ===
-  // Verifica se a comunidade está em pausa e redireciona se necessário
-  const isPauseExempt = PAUSE_EXEMPT_ROUTES.some(route =>
+  // === COMMUNITY CLOSED CHECK ===
+  // Comunidade fechada: todos vão pra /newsletter, exceto admin
+  const isClosedExempt = PAUSE_EXEMPT_ROUTES.some(route =>
     pathname === route || pathname.startsWith(route + '/')
   );
 
-  if (!isPauseExempt) {
-    const isPaused = await checkCommunityPaused(supabase);
-    if (isPaused) {
+  if (!isClosedExempt) {
+    const isClosed = await checkCommunityClosed(supabase);
+    if (isClosed) {
+      // Verificar se é admin — admin continua acessando tudo
+      if (user) {
+        const { data: profile } = await supabase
+          .from('users')
+          .select('role, is_creator')
+          .eq('id', user.id)
+          .single();
+
+        const isAdmin = profile?.role === 'admin' || profile?.role === 'creator' || profile?.is_creator;
+        if (isAdmin) {
+          // Admin passa direto
+          return supabaseResponse;
+        }
+      }
+
+      // Não é admin — redireciona pra newsletter
       const url = request.nextUrl.clone();
-      url.pathname = '/pausado';
+      url.pathname = '/newsletter';
       return NextResponse.redirect(url);
     }
   }
@@ -182,27 +198,38 @@ export async function updateSession(request: NextRequest) {
 }
 
 /**
- * Verifica se a comunidade está pausada (com cache de 30s)
+ * Verifica se a comunidade está fechada (com cache de 30s)
+ * Checa tanto community_closed quanto community_paused
  */
-async function checkCommunityPaused(supabase: ReturnType<typeof createServerClient>): Promise<boolean> {
-  // Check cache first
+async function checkCommunityClosed(supabase: ReturnType<typeof createServerClient>): Promise<boolean> {
   const now = Date.now();
   if (pauseCache && (now - pauseCache.timestamp) < PAUSE_CACHE_TTL_MS) {
     return pauseCache.value;
   }
 
   try {
-    const { data } = await supabase
+    // Check community_closed first, fallback to community_paused
+    const { data: closedData } = await supabase
+      .from('site_settings')
+      .select('value')
+      .eq('key', 'community_closed')
+      .single();
+
+    if (closedData?.value === 'true') {
+      pauseCache = { value: true, timestamp: now };
+      return true;
+    }
+
+    const { data: pausedData } = await supabase
       .from('site_settings')
       .select('value')
       .eq('key', 'community_paused')
       .single();
 
-    const isPaused = data?.value === 'true';
-    pauseCache = { value: isPaused, timestamp: now };
-    return isPaused;
+    const isClosed = pausedData?.value === 'true';
+    pauseCache = { value: isClosed, timestamp: now };
+    return isClosed;
   } catch {
-    // Em caso de erro, não pausar (fail-open)
     return false;
   }
 }
